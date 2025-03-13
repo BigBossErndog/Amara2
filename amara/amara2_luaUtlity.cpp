@@ -1,0 +1,83 @@
+namespace Amara {
+    sol::object json_to_lua(nlohmann::json json) {
+        sol::state& lua = *GameProperties::lua;
+        if (json.is_null()) {
+            return sol::make_object(lua, sol::nil);
+        } else if (json.is_boolean()) {
+            return sol::make_object(lua, json.get<bool>());
+        } else if (json.is_number()) {
+            return sol::make_object(lua, json.get<double>());
+        } else if (json.is_string()) {
+            return sol::make_object(lua, json.get<std::string>());
+        } else if (json.is_array()) {
+            sol::table arr = lua.create_table();
+            for (size_t i = 0; i < json.size(); ++i) {
+                arr[i + 1] = json_to_lua(json[i]);  // Lua tables are 1-based
+            }
+            return sol::make_object(lua, arr);
+        } else if (json.is_object()) {
+            sol::table tbl = lua.create_table();
+            for (auto& item : json.items()) {
+                std::string key = item.key();
+                tbl[key] = json_to_lua(item.value());
+            }
+            return sol::make_object(lua, tbl);
+        }
+
+        return sol::make_object(lua, sol::nil);
+    }
+
+    nlohmann::json lua_to_json(sol::object obj) {
+        if (!obj.valid() || obj.get_type() == sol::type::nil) {
+            return nullptr;
+        } else if (obj.get_type() == sol::type::boolean) {
+            return obj.as<bool>();
+        } else if (obj.get_type() == sol::type::number) {
+            return obj.as<double>();
+        } else if (obj.get_type() == sol::type::string) {
+            return obj.as<std::string>();
+        } else if (obj.get_type() == sol::type::table) {
+            sol::table tbl = obj.as<sol::table>();
+            nlohmann::json json;
+    
+            bool isArray = true;
+            size_t index = 1;
+            for (auto& pair : tbl) {
+                sol::object key = pair.first;
+                sol::object value = pair.second;
+    
+                if (key.get_type() == sol::type::number && key.as<size_t>() == index) {
+                    json.push_back(lua_to_json(value));
+                    ++index;
+                } else {
+                    isArray = false;
+                    break;
+                }
+            }
+    
+            if (isArray) {
+                return json;  // JSON array
+            } else {
+                for (auto& pair : tbl) {
+                    sol::object key = pair.first;
+                    sol::object value = pair.second;
+    
+                    if (key.get_type() == sol::type::string) {
+                        json[key.as<std::string>()] = lua_to_json(value);
+                    }
+                }
+                return json;  // JSON object
+            }
+        }
+    
+        return nullptr;  // Unsupported types
+    }
+
+    void log(std::string msg) {
+        SDL_Log("%s", msg.c_str());
+    }
+
+    void bindLuaFunctions(sol::state& lua) {
+        lua.set_function("log", &Amara::log);
+    }
+}
