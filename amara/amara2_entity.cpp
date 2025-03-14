@@ -24,10 +24,11 @@ namespace Amara {
         float depth = 0;
         bool lockDepthToY = false;
 
-        Entity() {}
+        Entity() {
+            entityID = "entity";
+        }
 
         virtual void init() {
-
             if (luaCreate.valid()) {
                 try {
                     luaCreate(*this);
@@ -79,27 +80,36 @@ namespace Amara {
             if (lockDepthToY) depth = pos.y;
         }
 
+        Amara::Entity* add(Amara::Entity* entity) {
+            entity->scene = scene;
+            entity->parent = this;
+            children.push_back(entity);
+            entity->init();
+            return entity;
+        }
+
         sol::object get(std::string key) {
             return props[key];
         }
 
-        Entity* instance() {
-            return new Entity();
+        void printID() {
+            SDL_Log("%s", id.c_str());
         }
         
-        static void luaBind(sol::state& lua) {
+        static void bindLua(sol::state& lua) {
             lua.new_usertype<Entity>("Entity",
+                sol::constructors<Entity()>(),
                 "pos", &Entity::pos,
                 "id", &Entity::id,
                 "entityID", &Entity::entityID,
-                "parent", &Entity::parent,
+                "parent", sol::readonly(&Entity::parent),
                 "props", &Entity::props,
-                "scene", &Entity::scene,
                 "children", &Entity::children,
                 "configure", &Entity::luaConfigure,
                 "super_configure", &Entity::configure,
                 "depth", &Entity::depth,
-                "lockDepthToY", &Entity::lockDepthToY
+                "lockDepthToY", &Entity::lockDepthToY,
+                "printID", &Entity::printID
             );
         }
     };

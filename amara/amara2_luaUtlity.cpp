@@ -73,11 +73,33 @@ namespace Amara {
         return nullptr;  // Unsupported types
     }
 
+    std::string lua_object_to_string(sol::object obj) {
+        nlohmann::json j = lua_to_json(obj);
+        if (j.is_string()) return j.get<std::string>();
+        return j.dump();
+    }
+
+    template <typename T>
+    sol::table vector_to_lua(const std::vector<T>& vec) {
+        sol::state& lua = *GameProperties::lua;
+        sol::table lua_table = lua.create_table();
+    
+        for (size_t i = 0; i < vec.size(); ++i) {
+            lua_table[i + 1] = vec[i];  // Lua uses 1-based indexing
+        }
+    
+        return lua_table;
+    }
+
     void log(std::string msg) {
         SDL_Log("%s", msg.c_str());
     }
+    void lua_log(sol::object msg) {
+        log(lua_object_to_string(msg));
+    }
 
-    void bindLuaFunctions(sol::state& lua) {
-        lua.set_function("log", &Amara::log);
+    void bindLuaUtilityFunctions(sol::state& lua) {
+        lua.set_function("log", &Amara::lua_log);
+        lua.set_function("object_to_string", &Amara::lua_object_to_string);
     }
 }

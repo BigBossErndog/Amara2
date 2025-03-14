@@ -4,7 +4,7 @@ namespace Amara {
         sol::function luaPrepare;
         sol::function luaScript;
 
-        static void luaBind(sol::state& lua) {
+        static void bindLua(sol::state& lua) {
             lua.new_usertype<Script>("Script",
                 "prepare", &Script::luaPrepare,
                 "script", &Script::luaScript

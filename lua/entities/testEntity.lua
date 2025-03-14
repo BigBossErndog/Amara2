@@ -1,9 +1,4 @@
-entity = Entity.instance()
+entity = factory:create("entity")
+entity.id = "new entity"
 
-entity.create = function(self) {
-    self.props.child = game.factory.create("")
-}
-
-entity.update = function(self)
-    self.props.child.x += 1
-end
+return entity;

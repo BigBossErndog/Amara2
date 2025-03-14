@@ -2,46 +2,47 @@ namespace Amara {
     class EntityFactory {
     public:
         std::unordered_map<std::string, std::function<Entity*()>> factory;
-
         std::unordered_map<std::string, std::string> entityScripts;
+
+        sol::table props;
 
         void add(std::string key, std::string script) {
             entityScripts[key] = script;
         }
-
+        static Amara::Entity invalidEntity;
         Amara::Entity* create(std::string key) {
             auto it = factory.find(key);
-            if (it != factory.end() && it->second) return it->second();
-
+            if (it != factory.end() && it->second) return (it->second());
+            
             if (entityScripts.find(key) == entityScripts.end()) {
-                SDL_Log("");
+                SDL_Log("Error: Entity \"%s\" has not been defined.", key.c_str());
                 return nullptr;
             }
             Amara::Entity* entity = nullptr;
             try {
-                std::string path = entityScripts[key];
-                entity = GameProperties::files->run(string_concat(std::vector<std::string>({
-                    GameProperties::lua_script_path,
-                    entityScripts[key]
-                }))).as<Amara::Entity*>();
+                return (GameProperties::files->run(entityScripts[key]).as<Amara::Entity*>());
             }
             catch (const sol::error& e) {
                 SDL_Log("%s error: %s", key.c_str(), e.what());
-                entity = nullptr;
             }
-            return entity;
+            return nullptr;
         }
 
-        Entity* entity() { return new Entity(); }
+        void prepareEntities() {
+            invalidEntity.id = "invalid";
 
-        void luaBind(sol::state& lua) {
+            factory["entity"] = []() -> Entity* { return new Entity(); };
+        }
+
+        static void bindLua(sol::state& lua) {
+            Entity::bindLua(lua);
+
             lua.new_usertype<EntityFactory>("EntityFactory",
                 "add", &EntityFactory::add,
-                "create", &EntityFactory::create,
-                "entity", &EntityFactory::entity
+                "props", &EntityFactory::props,
+                "create", &EntityFactory::create
             );
-
-            Entity::luaBind(lua);
         }
     };
+    Entity EntityFactory::invalidEntity = Amara::Entity();
 }

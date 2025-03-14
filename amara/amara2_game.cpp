@@ -11,42 +11,81 @@ namespace Amara {
         FileManager files;
         MessageQueue messages;
 
+        std::string id = "Game";
+
         Game() {
             prepare();
         }
         Game(nlohmann::json config): Game() {
-            if (config.is_string()) configure(files.readJSON(config));
+            if (config.is_string()) configure(files.readJSON((std::string)config));
             else if (config.is_object()) configure(config);
         }
 
         void prepare() {
+            GameProperties::game = this;
             GameProperties::files = &files;
             GameProperties::messages = &messages;
 
-            lua.open_libraries(sol::lib::base);
+            factory.prepareEntities();
+
+            lua_checkstack(lua.lua_state(), GameProperties::lua_stack_size);
+
+            lua.open_libraries(
+                sol::lib::base,
+                sol::lib::package,
+                sol::lib::coroutine,
+                sol::lib::string,
+                sol::lib::os,
+                sol::lib::math,
+                sol::lib::table,
+                sol::lib::debug,
+                sol::lib::io,
+                sol::lib::bit32,
+                sol::lib::ffi,
+                sol::lib::jit,
+                sol::lib::utf8
+            );
+
             GameProperties::lua = &lua;
-            // luaBind(lua);
+            Game::bindLua(lua);
+
+            lua["game"] = this;
+            lua["files"] = &files;
+            lua["factory"] = &factory;
+            lua["scenes"] = &scenes;
+            lua["scripts"] = &scripts;
         }
 
         void configure(nlohmann::json config) {
-            
+            std::cout << config << std::endl;
         }
 
         void luaConfigure(sol::object config) {
             configure(lua_to_json(config));
         }
+
+        sol::object run(std::string path) {
+            return files.run(path);
+        }
         
-        void luaBind(sol::state& lua) {
+        static void bindLua(sol::state& lua) {
+            bindLuaUtilityFunctions(lua);
+            bindLuaGeometry(lua);
+
+            FileManager::bindLua(lua);
+            
+            ScriptFactory::bindLua(lua);
+            EntityFactory::bindLua(lua);
+            SceneManager::bindLua(lua);
+            
             lua.new_usertype<Game>("Game",
+                "id", &Game::id,
                 "scenes", &Game::scenes,
                 "factory", &Game::factory,
-                "configure", &Game::luaConfigure
+                "props", &Game::props,
+                "configure", &Game::luaConfigure,
+                "run", &Game::run
             );
-
-            scenes.luaBind(lua);
-            factory.luaBind(lua);
-
-            bindLuaFunctions(lua);
         }
     };
 }
