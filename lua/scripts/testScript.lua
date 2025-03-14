@@ -5,7 +5,9 @@ local f = factory:create("TestEntity")
 f.id = "2"
 local c = e:createChild("Scene");
 
-print(e.props.hello())
+log("wtf ", "is ", "dis")
+
+-- game:execute("make win64")
 
 -- e.props.wtf("hello")
 -- print(f.id)

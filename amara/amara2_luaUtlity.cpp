@@ -73,7 +73,7 @@ namespace Amara {
         return nullptr;  // Unsupported types
     }
 
-    std::string lua_object_to_string(sol::object obj) {
+    std::string lua_to_string(sol::object obj) {
         nlohmann::json j = lua_to_json(obj);
         if (j.is_string()) return j.get<std::string>();
         return j.dump();
@@ -91,15 +91,40 @@ namespace Amara {
         return lua_table;
     }
 
-    void log(std::string msg) {
-        SDL_Log("%s", msg.c_str());
+    
+    template<typename... Args>
+    void log(Args... args) {
+        std::ostringstream ss;
+        (ss << ... << args);
+        SDL_Log("%s", ss.str().c_str());
     }
-    void lua_log(sol::object msg) {
-        log(lua_object_to_string(msg));
+    void lua_log(sol::variadic_args args) {
+        std::ostringstream ss;
+        for (auto arg : args) {
+            ss << lua_to_string(arg);
+        }
+        log(ss.str());
+    }
+    std::string c_style_log(const char* format, ...) {
+        va_list args;
+        va_start(args, format);
+
+        int size = vsnprintf(nullptr, 0, format, args);
+        va_end(args);
+        
+        if (size <= 0) return "";
+
+        std::vector<char> buffer(size + 1);
+    
+        va_start(args, format);
+        vsnprintf(buffer.data(), buffer.size(), format, args);
+        va_end(args);
+    
+        log(std::string(buffer.data()));
     }
 
     void bindLuaUtilityFunctions(sol::state& lua) {
         lua.set_function("log", &Amara::lua_log);
-        lua.set_function("object_to_string", &Amara::lua_object_to_string);
+        lua.set_function("object_to_string", &Amara::lua_to_string);
     }
 }

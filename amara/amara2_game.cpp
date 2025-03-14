@@ -49,6 +49,21 @@ namespace Amara {
                 sol::lib::utf8
             );
 
+            props = lua.create_table();
+
+            sol::table props_meta = lua.create_table();
+            props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+                if (value.is<sol::function>()) {
+                    sol::function callback = value.as<sol::function>();
+                    sol::function func = sol::make_object(*GameProperties::lua, [this, callback](sol::variadic_args va)->sol::object {
+                        return callback(this, sol::as_args(va));
+                    });
+                    tbl.raw_set(key, func);
+                }
+                else tbl.raw_set(key, value);
+            };
+            props[sol::metatable_key] = props_meta;
+
             GameProperties::lua = &lua;
             Game::bindLua(lua);
 
@@ -70,6 +85,10 @@ namespace Amara {
         sol::object run(std::string path) {
             return files.run(path);
         }
+
+        void execute(std::string command) {
+            std::system(command.c_str());
+        }
         
         static void bindLua(sol::state& lua) {
             bindLuaUtilityFunctions(lua);
@@ -89,7 +108,8 @@ namespace Amara {
                 "factory", &Game::factory,
                 "props", &Game::props,
                 "configure", &Game::luaConfigure,
-                "run", &Game::run
+                "run", &Game::run,
+                "execute", &Game::execute
             );
         }
     };

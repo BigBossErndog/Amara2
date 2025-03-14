@@ -16,7 +16,7 @@ namespace Amara {
                 return (GameProperties::files->run(scriptScripts[key]).as<Amara::Script*>());
             }
             catch (const sol::error& e) {
-                SDL_Log("EntityFactory error: Failed to create script \'%s\'", key.c_str());
+                c_style_log("EntityFactory error: Failed to create script \'%s\'", key.c_str());
             }
             return nullptr;
         }

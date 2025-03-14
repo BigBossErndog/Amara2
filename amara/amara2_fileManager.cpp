@@ -21,7 +21,7 @@ namespace Amara {
                 return contents;
             }
             else {
-                SDL_Log("Failed to read file \"%s\"", filePath.c_str());
+                c_style_log("Failed to read file \"%s\"", filePath.c_str());
             }
             return "";
         }
@@ -33,41 +33,48 @@ namespace Amara {
             return json_to_lua(readJSON(path));
         }
 
-        bool writeFile(std::string input, std::string path) {
+        bool writeFile(std::string path, nlohmann::json input) {
             std::filesystem::path filePath = getContextualPath(path);
+            std::string output;
+            if (input.is_string()) output = input;
+            else output = input.dump();
+            std::cout << output << std::endl;
 
             std::ofstream file(filePath);
 			if (file.fail()) {
-				SDL_Log("Failed to write to path: %s", filePath.c_str());
+				c_style_log("Failed to write to path: %s", filePath.c_str());
 				return false;
 			}
 			else {
-				SDL_Log("Written file: %s", filePath.c_str());
-				file << input;
+				c_style_log("Written file: %s", filePath.c_str());
+				file << output;
 				file.close();
 				return true;
 			}
 			return false;
+        }
+        bool luaWriteFile(std::string path, sol::object input) {
+            return writeFile(path, lua_to_json(input));
         }
 
         bool deleteFile(std::string path) {
             std::filesystem::path filePath = getContextualPath(path);
 
             if (!std::filesystem::exists(path)) {
-                SDL_Log("Error: File does not exist: \"%s\"", filePath.c_str());
+                c_style_log("Error: File does not exist: \"%s\"", filePath.c_str());
                 return false;
             }
 
             try {
                 if (std::filesystem::remove(path)) {
-                    SDL_Log("Error: File deleted successfully: \"%s\"", filePath.c_str());
+                    c_style_log("Error: File deleted successfully: \"%s\"", filePath.c_str());
                     return true;
                 } else {
-                    SDL_Log("Error: Failed to delete file (unknown reason): \"%s\"", filePath.c_str());
+                    c_style_log("Error: Failed to delete file (unknown reason): \"%s\"", filePath.c_str());
                     return false;
                 }
             } catch (const std::exception& e) {
-                SDL_Log("Exception while deleting file:  \"%s\"", filePath.c_str());
+                c_style_log("Exception while deleting file:  \"%s\"", filePath.c_str());
                 return false;
             }
 		    return false;
@@ -82,11 +89,26 @@ namespace Amara {
             std::filesystem::path filePath = getContextualPath(path);
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(path)) {
-                SDL_Log("Error: \"%s\" does not exist or is not a directory.", path.c_str());
+                c_style_log("Error: \"%s\" does not exist or is not a directory.", path.c_str());
                 return false;
             }
         
             return std::filesystem::directory_iterator(path) == std::filesystem::directory_iterator();
+        }
+
+        bool createDirectory(std::string path) {
+            std::filesystem::path dir = getContextualPath(path);
+            if (!std::filesystem::exists(dir)) {
+                if (std::filesystem::create_directory(dir)) {
+                    c_style_log("Directory created: \"%s\"", dir.c_str());
+                    return true;
+                } else {
+                    c_style_log("Failed to create directory: \"%s\"", dir.c_str());
+                }
+            } else {
+                c_style_log("Directory already exists: \"%s\"", dir.c_str());
+            }
+            return false;
         }
 
         std::vector<std::string> getDirectoryContents(std::string path) {
@@ -95,7 +117,7 @@ namespace Amara {
             std::vector<std::string> contents;
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(filePath)) {
-                SDL_Log("Error: \"%s\" does not exist or is not a directory.", filePath.c_str());
+                c_style_log("Error: \"%s\" does not exist or is not a directory.", filePath.c_str());
                 return contents;
             }
 
@@ -142,7 +164,7 @@ namespace Amara {
                 "fileExists", &FileManager::fileExists,
                 "readFile", &FileManager::readFile,
                 "readJSON", &FileManager::luaReadJSON,
-                "writeFile", &FileManager::writeFile,
+                "writeFile", &FileManager::luaWriteFile,
                 "deleteFile", &FileManager::deleteFile,
                 "isDirectory", &FileManager::isDirectory,
                 "isDirectoryEmpty", &FileManager::isDirectoryEmpty,

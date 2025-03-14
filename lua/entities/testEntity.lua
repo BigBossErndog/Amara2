@@ -7,6 +7,4 @@ entity.props.hello = function(self, msg)
     return self.props.what
 end
 
--- entity.props.wtf("Hello!")
-
 return entity;

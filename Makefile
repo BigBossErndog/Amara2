@@ -110,13 +110,9 @@ play:
 	make playwin
 
 playwin:
-	rm -rf build/assets/*
-	cp -R assets/ build/
 	$(BUILD_EXECUTABLE_WIN)
 
 playlinux:
-	rm -rf build/assets/*
-	cp -R assets/ build/
 	./$(BUILD_EXECUTABLE_LINUX)
 
 valgrind:

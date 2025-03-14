@@ -9,7 +9,7 @@ namespace Amara {
 
         void add(std::string key, std::string script) {
             if (factory.find(key) != factory.end()) {
-                SDL_Log("Error: \"%s\" is a reserved entity name.", key.c_str());
+                c_style_log("Error: \"%s\" is a reserved entity name.", key.c_str());
                 return;
             }
             entityScripts[key] = script;
@@ -20,7 +20,7 @@ namespace Amara {
             if (it != factory.end() && it->second) return (it->second());
             
             if (entityScripts.find(key) == entityScripts.end()) {
-                SDL_Log("Error: Entity \"%s\" has not been defined.", key.c_str());
+                c_style_log("Error: Entity \"%s\" has not been defined.", key.c_str());
                 return nullptr;
             }
             Amara::Entity* entity = nullptr;
@@ -28,7 +28,7 @@ namespace Amara {
                 return (GameProperties::files->run(entityScripts[key]).as<Amara::Entity*>());
             }
             catch (const sol::error& e) {
-                SDL_Log("EntityFactory error: Failed to create entity \'%s\'", key.c_str());
+                c_style_log("EntityFactory error: Failed to create entity \'%s\'", key.c_str());
             }
             return nullptr;
         }
@@ -43,7 +43,7 @@ namespace Amara {
             if (it != entityRegistry.end()) {
                 return it->second(entity);
             }
-            else SDL_Log("Entity with key \"%s\" was not registered.", entity->entityID.c_str());
+            else c_style_log("Entity with key \"%s\" was not registered.", entity->entityID.c_str());
             return sol::lua_nil;
         }
 
@@ -88,7 +88,7 @@ namespace Amara {
             scenes.push_back(scene);
         }
         catch (const sol::error& e) {
-            SDL_Log("EntityFactory error: Failed to create scene \'%s\'", key.c_str());
+            c_style_log("EntityFactory error: Failed to create scene \'%s\'", key.c_str());
         }
         return scene;
     }

@@ -26,6 +26,7 @@ namespace Amara {
 
         Entity() {
             entityID = "Entity";
+            
             props = GameProperties::lua->create_table();
 
             sol::table props_meta = GameProperties::lua->create_table();
@@ -48,7 +49,7 @@ namespace Amara {
                     luaCreate(*this);
                 }
                 catch (const sol::error& e) {
-                    SDL_Log("%s: \"%s\" error on create().", entityID.c_str(), id.c_str());
+                    c_style_log("%s: \"%s\" error on create().", entityID.c_str(), id.c_str());
                 }
             }
         }
@@ -66,7 +67,7 @@ namespace Amara {
                     f(*this, config);
                 }
                 catch (const sol::error& e) {
-                    SDL_Log("%s: \"%s\" error on configure().", entityID.c_str(), id.c_str());
+                    c_style_log("%s: \"%s\" error on configure().", entityID.c_str(), id.c_str());
                 }
             }
             configure(lua_to_json(config));
@@ -78,7 +79,7 @@ namespace Amara {
                     luaPreload(*this);
                 }
                 catch (const sol::error& e) {
-                    SDL_Log("%s: \"%s\" error on preload().", entityID.c_str(), id.c_str());
+                    c_style_log("%s: \"%s\" error on preload().", entityID.c_str(), id.c_str());
                 }
             }
         }
@@ -94,7 +95,7 @@ namespace Amara {
                     luaUpdate(*this);
                 }
                 catch (const sol::error& e) {
-                    SDL_Log("%s: \"%s\" error on update().", entityID.c_str(), id.c_str());
+                    c_style_log("%s: \"%s\" error on update().", entityID.c_str(), id.c_str());
                 }
             }
 

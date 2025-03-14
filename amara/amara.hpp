@@ -22,6 +22,9 @@
     #include <random>
     #include <iomanip>
     #include <filesystem>
+    #include <cstdlib>
+    #include <cstdarg>
+    #include <sstream>
     #include <nlohmann/json.hpp>
     #include <MurmurHash3.cpp>
 
