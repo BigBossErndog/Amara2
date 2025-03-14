@@ -32,6 +32,7 @@ namespace Amara {
             invalidEntity.id = "invalid";
 
             factory["entity"] = []() -> Entity* { return new Entity(); };
+            factory["scene"] = []() -> Entity* { return new Scene(); };
         }
 
         static void bindLua(sol::state& lua) {
