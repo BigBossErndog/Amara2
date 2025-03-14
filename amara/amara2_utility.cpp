@@ -25,12 +25,11 @@ namespace Amara {
         return false;
     }
 
-    std::string string_concat(std::vector<std::string> list) {
-        std::string result = "";
-        for (std::string str: list) {
-            result += str;
-        }
-        return result;
+    template<typename... Args>
+    std::string string_concat(Args... args) {
+        std::ostringstream ss;
+        (ss << ... << args);
+        return ss.str();
     }
 
     bool string_endsWith(std::string str, std::string suffix) {
@@ -56,7 +55,7 @@ namespace Amara {
         if (num > max) return max;
         return num;
     }
-
+    
     float abs_mod(float num, float den) {
         while (num < 0) num += den;
         float result = fmod(num, den);

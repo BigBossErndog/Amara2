@@ -96,7 +96,7 @@ namespace Amara {
     void log(Args... args) {
         std::ostringstream ss;
         (ss << ... << args);
-        SDL_Log("%s", ss.str().c_str());
+        std::cout << ss.str().c_str() << std::endl;
     }
     void lua_log(sol::variadic_args args) {
         std::ostringstream ss;

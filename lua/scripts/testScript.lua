@@ -1,11 +1,11 @@
 factory:add("TestEntity", "entities/testEntity.lua")
 local e = factory:create("TestEntity")
-e.id = "1"
+e.id = "testEntity1"
 local f = factory:create("TestEntity")
-f.id = "2"
+f.id = "testEntity2"
 local c = e:createChild("Scene");
 
-log("wtf ", "is ", "dis")
+e.props.hello()
 
 -- game:execute("make win64")
 
