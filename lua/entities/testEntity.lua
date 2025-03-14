@@ -1,4 +1,12 @@
-entity = factory:create("entity")
-entity.id = "new entity"
+local entity = factory:create("Entity")
+
+entity.id = "testEntity"
+entity.props.what = "WHAT"
+
+entity.props.hello = function(self, msg)
+    return self.props.what
+end
+
+-- entity.props.wtf("Hello!")
 
 return entity;

@@ -25,7 +25,21 @@ namespace Amara {
         bool lockDepthToY = false;
 
         Entity() {
-            entityID = "entity";
+            entityID = "Entity";
+            props = GameProperties::lua->create_table();
+
+            sol::table props_meta = GameProperties::lua->create_table();
+            props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+                if (value.is<sol::function>()) {
+                    sol::function callback = value.as<sol::function>();
+                    sol::function func = sol::make_object(*GameProperties::lua, [this, callback](sol::variadic_args va)->sol::object {
+                        return callback(this, sol::as_args(va));
+                    });
+                    tbl.raw_set(key, func);
+                }
+                else tbl.raw_set(key, value);
+            };
+            props[sol::metatable_key] = props_meta;
         }
 
         virtual void init() {
@@ -34,7 +48,7 @@ namespace Amara {
                     luaCreate(*this);
                 }
                 catch (const sol::error& e) {
-                    SDL_Log("%s error: %s", entityID.c_str(), e.what());
+                    SDL_Log("%s: \"%s\" error on create().", entityID.c_str(), id.c_str());
                 }
             }
         }
@@ -52,7 +66,7 @@ namespace Amara {
                     f(*this, config);
                 }
                 catch (const sol::error& e) {
-                    SDL_Log("%s error: %s", entityID.c_str(), e.what());
+                    SDL_Log("%s: \"%s\" error on configure().", entityID.c_str(), id.c_str());
                 }
             }
             configure(lua_to_json(config));
@@ -64,7 +78,7 @@ namespace Amara {
                     luaPreload(*this);
                 }
                 catch (const sol::error& e) {
-                    SDL_Log("%s error: %s", entityID.c_str(), e.what());
+                    SDL_Log("%s: \"%s\" error on preload().", entityID.c_str(), id.c_str());
                 }
             }
         }
@@ -75,7 +89,14 @@ namespace Amara {
             messages.run();
 
             update();
-            if (luaUpdate.valid()) luaUpdate(*this);
+            if (luaUpdate.valid()) {
+                try {
+                    luaUpdate(*this);
+                }
+                catch (const sol::error& e) {
+                    SDL_Log("%s: \"%s\" error on update().", entityID.c_str(), id.c_str());
+                }
+            }
 
             if (lockDepthToY) depth = pos.y;
         }
@@ -87,21 +108,29 @@ namespace Amara {
             entity->init();
             return entity;
         }
+        sol::object luaAdd(std::string);
 
         sol::object get(std::string key) {
+            if (props[key].valid() && props[key].is<sol::function>()) {
+                sol::function func = props[key];
+                return sol::make_object(*GameProperties::lua, [this, &func](sol::table table, sol::variadic_args va, sol::this_state s) -> sol::object {
+                    return func(this, sol::as_args(va));
+                });
+            }
             return props[key];
         }
-
-        void printID() {
-            SDL_Log("%s", id.c_str());
+        void set(std::string key, sol::object obj) {
+            props[key] = obj;
         }
-        
+
+        sol::object as(std::string);
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Entity>("Entity",
                 sol::constructors<Entity()>(),
                 "pos", &Entity::pos,
                 "id", &Entity::id,
-                "entityID", &Entity::entityID,
+                "entityID", sol::readonly(&Entity::entityID),
                 "parent", sol::readonly(&Entity::parent),
                 "props", &Entity::props,
                 "children", &Entity::children,
@@ -109,7 +138,13 @@ namespace Amara {
                 "super_configure", &Entity::configure,
                 "depth", &Entity::depth,
                 "lockDepthToY", &Entity::lockDepthToY,
-                "printID", &Entity::printID
+                "onPreload", &Entity::luaPreload,
+                "onCreate", &Entity::luaCreate,
+                "onUpdate", &Entity::luaUpdate,
+                "createChild", &Entity::luaAdd,
+                "addChild", &Entity::add,
+                "get", &Entity::get,
+                "set", &Entity::set
             );
         }
     };

@@ -23,6 +23,9 @@ namespace Amara {
 
         void prepare() {
             GameProperties::game = this;
+            GameProperties::factory = &factory;
+            GameProperties::scenes = &scenes;
+            GameProperties::scripts = &scripts;
             GameProperties::files = &files;
             GameProperties::messages = &messages;
 
@@ -73,10 +76,12 @@ namespace Amara {
             bindLuaGeometry(lua);
 
             FileManager::bindLua(lua);
+
+            Entity::bindLua(lua);
             
             ScriptFactory::bindLua(lua);
-            EntityFactory::bindLua(lua);
             SceneManager::bindLua(lua);
+            EntityFactory::bindLua(lua);
             
             lua.new_usertype<Game>("Game",
                 "id", &Game::id,

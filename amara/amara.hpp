@@ -65,8 +65,8 @@
 
     #include "amara2_scene.cpp"
 
-    #include "amara2_entityFactory.cpp"
     #include "amara2_sceneManager.cpp"
+    #include "amara2_entityFactory.cpp"
 
     #include "amara2_game.cpp"
 #endif
