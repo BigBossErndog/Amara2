@@ -27,7 +27,7 @@ namespace Amara {
                 return contents;
             }
             else {
-                c_style_log("Failed to read file \"%s\"", filePath.c_str());
+               log("Failed to read file \"", filePath.c_str(), "\"");
             }
             return "";
         }
@@ -46,19 +46,15 @@ namespace Amara {
             std::string output;
             if (input.is_string()) output = input;
             else output = input.dump();
-            std::cout << output << std::endl;
 
             std::ofstream file(filePath);
-			if (file.fail()) {
-				c_style_log("Failed to write to path: %s", filePath.c_str());
-				return false;
-			}
-			else {
-				c_style_log("Written file: %s", filePath.c_str());
-				file << output;
+			if (file.is_open() && !file.fail()) {
+			    log("Written file: ", filePath);
+				file.write(output.c_str(), output.size());
 				file.close();
 				return true;
 			}
+			log("Failed to write to path: ", filePath);
 			return false;
         }
         bool luaWriteFile(std::string path, sol::object input) {
@@ -69,7 +65,7 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(path)) {
-                c_style_log("Error: File does not exist: \"%s\"", filePath.c_str());
+                log("Error: File does not exist: \"", filePath.c_str(), "\"");
                 return false;
             }
 

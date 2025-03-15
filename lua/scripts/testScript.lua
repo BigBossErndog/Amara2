@@ -5,9 +5,11 @@ local f = factory:create("TestEntity")
 f.id = "testEntity2"
 local c = e:createChild("Scene");
 
-files:setBasePath("C:/")
-files:resetBasePath()
-files:writeFile("hello.txt", "hi")
+local config = {
+    name = "Ernest Placido",
+    project_name = "Amara 2"
+}
+log(config)
 
 -- game:execute("make win64")
 
