@@ -5,7 +5,9 @@ local f = factory:create("TestEntity")
 f.id = "testEntity2"
 local c = e:createChild("Scene");
 
-e.props.hello()
+files:setBasePath("C:/")
+files:resetBasePath()
+files:writeFile("hello.txt", "hi")
 
 -- game:execute("make win64")
 

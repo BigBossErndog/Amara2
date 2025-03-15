@@ -1,13 +1,19 @@
 namespace Amara {
     class FileManager {
     public:
+        std::string basePath;
+
+        FileManager() {
+            getBasePath();
+        }
+
         bool fileExists(std::string path) {
-            std::filesystem::path filePath = getContextualPath(path);
+            std::filesystem::path filePath = getRelativePath(path);
             return std::filesystem::exists(filePath);
         }
 
         std::string readFile(std::string path) {
-            std::filesystem::path filePath = getContextualPath(path);
+            std::filesystem::path filePath = getRelativePath(path);
 
             std::ifstream in(filePath, std::ios::in | std::ios::binary);
             if (in) {
@@ -34,7 +40,9 @@ namespace Amara {
         }
 
         bool writeFile(std::string path, nlohmann::json input) {
-            std::filesystem::path filePath = getContextualPath(path);
+            std::filesystem::path filePath = getRelativePath(path);
+            std::filesystem::create_directories(filePath.parent_path());
+
             std::string output;
             if (input.is_string()) output = input;
             else output = input.dump();
@@ -58,7 +66,7 @@ namespace Amara {
         }
 
         bool deleteFile(std::string path) {
-            std::filesystem::path filePath = getContextualPath(path);
+            std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(path)) {
                 c_style_log("Error: File does not exist: \"%s\"", filePath.c_str());
@@ -81,12 +89,12 @@ namespace Amara {
 		}
 
         bool isDirectory(std::string path) {
-            std::filesystem::path filePath = getContextualPath(path);
+            std::filesystem::path filePath = getRelativePath(path);
             return std::filesystem::is_directory(filePath);
         }
 
         bool isDirectoryEmpty(std::string path) {
-            std::filesystem::path filePath = getContextualPath(path);
+            std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(path)) {
                 c_style_log("Error: \"%s\" does not exist or is not a directory.", path.c_str());
@@ -97,7 +105,9 @@ namespace Amara {
         }
 
         bool createDirectory(std::string path) {
-            std::filesystem::path dir = getContextualPath(path);
+            std::filesystem::path dir = getRelativePath(path);
+            std::filesystem::create_directories(dir.parent_path());
+
             if (!std::filesystem::exists(dir)) {
                 if (std::filesystem::create_directory(dir)) {
                     c_style_log("Directory created: \"%s\"", dir.c_str());
@@ -112,7 +122,7 @@ namespace Amara {
         }
 
         std::vector<std::string> getDirectoryContents(std::string path) {
-            std::filesystem::path filePath = getContextualPath(path);
+            std::filesystem::path filePath = getRelativePath(path);
 
             std::vector<std::string> contents;
 
@@ -133,20 +143,27 @@ namespace Amara {
         }
 
         std::string getBasePath() {
-            char* basePath = SDL_GetBasePath();
-            std::filesystem::path exeDir = basePath;
-            SDL_free(basePath);
-            return exeDir.string();
+            if (basePath.empty()) {
+                char* c_basePath = SDL_GetBasePath();
+                std::filesystem::path exeDir = c_basePath;
+                std::filesystem::path contextPath = GameProperties::context_path;
+                std::filesystem::path finalContext = exeDir / contextPath;
+                SDL_free(c_basePath);
+                basePath = finalContext.string();
+            }
+            return basePath;
         }
+        std::string setBasePath(std::string path) {
+            basePath = path;
+            return getBasePath();
+        }
+        std::string resetBasePath() {
+            return setBasePath("");
+        }
+        
         std::string getRelativePath(std::string path) {
             std::filesystem::path exeDir = getBasePath();
             std::filesystem::path filePath = exeDir / (std::filesystem::path)path;
-            return filePath.lexically_normal().string();
-        }
-        std::string getContextualPath(std::string path) {
-            std::filesystem::path scriptPath = GameProperties::context_path;
-            std::filesystem::path exeDir = getBasePath();
-            std::filesystem::path filePath = exeDir / scriptPath / (std::filesystem::path)path;
             return filePath.lexically_normal().string();
         }
 
@@ -155,7 +172,7 @@ namespace Amara {
         }
 
         sol::object run(std::string path) {
-            std::filesystem::path filePath = getContextualPath(GameProperties::lua_script_path) / (std::filesystem::path)path;
+            std::filesystem::path filePath = getRelativePath(GameProperties::lua_script_path) / (std::filesystem::path)path;
             return GameProperties::lua->script_file(filePath.string());
         }
 
@@ -170,6 +187,8 @@ namespace Amara {
                 "isDirectoryEmpty", &FileManager::isDirectoryEmpty,
                 "getDirectoryContents", &FileManager::luaGetDirectoryContents,
                 "getBasePath", &FileManager::getBasePath,
+                "setBasePath", &FileManager::setBasePath,
+                "resetBasePath", &FileManager::resetBasePath,
                 "getRelativePath", &FileManager::getRelativePath,
                 "getFileName", &FileManager::getFileName,
                 "run", &FileManager::run
