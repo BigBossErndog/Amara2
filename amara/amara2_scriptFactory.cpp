@@ -21,12 +21,17 @@ namespace Amara {
             return nullptr;
         }
 
+        sol::object run(std::string path) {
+            return GameProperties::files->run(path);
+        }
+
         static void bindLua(sol::state& lua) {
             Script::bindLua(lua);
 
             lua.new_usertype<ScriptFactory>("ScriptFactory",
                 "add", &ScriptFactory::add,
-                "get", &ScriptFactory::get
+                "get", &ScriptFactory::get,
+                "run", &ScriptFactory::run
             );
         }
     };

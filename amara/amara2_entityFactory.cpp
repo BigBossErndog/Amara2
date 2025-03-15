@@ -17,15 +17,14 @@ namespace Amara {
 
         Amara::Entity* create(std::string key) {
             auto it = factory.find(key);
-            if (it != factory.end() && it->second) return (it->second());
+            if (it != factory.end() && it->second) return (it->second())->init_build();
             
             if (entityScripts.find(key) == entityScripts.end()) {
                 c_style_log("Error: Entity \"%s\" has not been defined.", key.c_str());
                 return nullptr;
             }
-            Amara::Entity* entity = nullptr;
             try {
-                return (GameProperties::files->run(entityScripts[key]).as<Amara::Entity*>());
+                return (GameProperties::files->run(entityScripts[key]).as<Amara::Entity*>())->init_build();
             }
             catch (const sol::error& e) {
                 c_style_log("EntityFactory error: Failed to create entity \'%s\'", key.c_str());
@@ -35,10 +34,10 @@ namespace Amara {
 
         sol::object luaCreate(std::string key) {
             Amara::Entity* entity = create(key);
-            return castEntity(entity, entity->entityID);
+            return entity->make_lua_object();
         }
 
-        sol::object castEntity(Amara::Entity* entity, std::string key) {
+        sol::object castLuaEntity(Amara::Entity* entity, std::string key) {
             auto it = entityRegistry.find(key);
             if (it != entityRegistry.end()) {
                 return it->second(entity);
@@ -73,10 +72,17 @@ namespace Amara {
     };
 
     sol::object Entity::luaAdd(std::string key) {
-        return GameProperties::factory->luaCreate(key);
+        Amara::Entity* entity = GameProperties::factory->create(key);
+        add(entity);
+        return entity->make_lua_object();
     }
-    sol::object Entity::as(std::string key) {
-        return GameProperties::factory->castEntity(this, key);
+
+    template <typename T>
+    T* Entity::as() {
+        return dynamic_cast<T*>(this);
+    }
+    sol::object Entity::make_lua_object() {
+        return GameProperties::factory->castLuaEntity(this, entityID);
     }
 
     Amara::Scene* SceneManager::addSceneViaScript(std::string key, std::string path) {

@@ -8,16 +8,11 @@ namespace Amara {
 
         Amara::Scene* add(std::string key, Amara::Scene* scene);
 
-        Amara::Scene* create() {
-            return new Amara::Scene();
-        }
-
         static void bindLua(sol::state& lua) {
             Amara::Scene::bindLua(lua);
-
+            
             lua.new_usertype<SceneManager>("SceneManager",
-                "add", &SceneManager::addSceneViaScript,
-                "create", &SceneManager::create
+                "add", &SceneManager::addSceneViaScript
             );
         }
     };

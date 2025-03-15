@@ -13,7 +13,7 @@ SDL_LIBRARY_PATHS_WIN64 = -L libs/SDL2/lib -L libs/SDL2_image/lib -L libs/SDL2_t
 
 SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags` -I libs/SDL_FontCache
 
-LINKER_FLAGS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+SDL_LINKER_FLAGS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 THEORA_LINKER_FLAGS =  -ltheora -lvorbisenc -lvorbisfile -lvorbis -logg
 
 THEORA_INCLUDE_PATHS_WIN = -I libs/ogg/include -I libs/vorbis/include -I libs/theora/include -I libs/sdlogv
@@ -79,15 +79,11 @@ cpDLLsAlt:
 	xcopy /s /e /i /y "dlls\win64\*.*" "$(BUILD_PATH)\"
 	if not exist "$(BUILD_PATH)\saves" md "$(BUILD_PATH)\saves"
 
-win64: $(SRC_FILES)
-	make clearBuild
-	make cpAssetsToBuild
-	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_WIN)
+win: $(SRC_FILES)
+	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(SDL_LINKER_FLAGS) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLs
 
-win64Alt: $(SRC_FILES)
-	make clearBuildAlt
-	make cpAssetsToBuildAlt
+win_alt: $(SRC_FILES)
 	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLsAlt
 

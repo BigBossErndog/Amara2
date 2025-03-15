@@ -2,7 +2,6 @@ namespace Amara {
     class Game {
     public:
         sol::state lua;
-        sol::table props;
 
         SceneManager scenes;
         EntityFactory factory;
@@ -11,17 +10,41 @@ namespace Amara {
         FileManager files;
         MessageQueue messages;
 
-        std::string id = "Game";
+        sol::table props;
+        sol::object asLuaObject;
+
+        std::vector<nlohmann::json> arguments;
 
         Game() {
             prepare();
         }
-        Game(nlohmann::json config): Game() {
-            if (config.is_string()) configure(files.readJSON((std::string)config));
-            else if (config.is_object()) configure(config);
+
+        Game(int argv, char** args): Game() {
+            if (argv > 1) {
+                std::cout << "Arguments: ";
+                for (int i = 1; i < argv; i++) {
+                    std::cout << args[i];
+                    if (i < argv-1) std::cout << ", ";
+                    if (nlohmann::json::accept(args[i])) arguments.push_back(nlohmann::json::parse(args[i]));
+                    else arguments.push_back(std::string(args[i]));
+                }
+                std::cout << std::endl;
+            }
         }
 
+        Game(nlohmann::json config): Game() {
+            if (config.is_string()) {
+                std::string path = config.get<std::string>();
+                if (string_endsWith(path, ".json")) configure(files.readJSON(path));
+                else if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) scripts.run(path);
+            }
+            else if (config.is_object()) configure(config);
+        }   
+        Game(sol::object obj): Game(lua_to_json(obj)) {}
+
         void prepare() {
+            GameProperties::lua = &lua;
+
             GameProperties::game = this;
             GameProperties::factory = &factory;
             GameProperties::scenes = &scenes;
@@ -48,10 +71,17 @@ namespace Amara {
                 sol::lib::jit,
                 sol::lib::utf8
             );
+            init_build();
 
-            props = lua.create_table();
+            Game::bindLua(lua);
 
-            sol::table props_meta = lua.create_table();
+            lua["game"] = this;
+        }
+
+        Amara::Game* init_build() {
+            props = GameProperties::lua->create_table();
+
+            sol::table props_meta = GameProperties::lua->create_table();
             props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
                 if (value.is<sol::function>()) {
                     sol::function callback = value.as<sol::function>();
@@ -64,26 +94,46 @@ namespace Amara {
             };
             props[sol::metatable_key] = props_meta;
 
-            GameProperties::lua = &lua;
-            Game::bindLua(lua);
+            asLuaObject = make_lua_object();
 
-            lua["game"] = this;
-            lua["files"] = &files;
-            lua["factory"] = &factory;
-            lua["scenes"] = &scenes;
-            lua["scripts"] = &scripts;
+            return this;
         }
 
-        void configure(nlohmann::json config) {
+        Amara::Game* configure(nlohmann::json config) {
             std::cout << config << std::endl;
+            return this;
         }
-
-        void luaConfigure(sol::object config) {
+        Amara::Game* configure(std::string key, nlohmann::json value) {
+            nlohmann::json obj;
+            obj[key] = value;
+            return configure(obj);
+        }
+        sol::object super_configure(sol::object config) {
             configure(lua_to_json(config));
+            return asLuaObject;
         }
 
-        sol::object run(std::string path) {
-            return files.run(path);
+        sol::function configure_override;
+        sol::object luaConfigure(sol::object config) {
+            if (configure_override.valid()) {
+                try {
+                    configure_override(asLuaObject, config);
+                }
+                catch (const sol::error& e) {
+                    c_style_log("%s: error on configure().", "Game");
+                }
+            }
+            else configure(lua_to_json(config));
+            return asLuaObject;
+        }
+        sol::object luaConfigure(std::string key, sol::object val) {
+            sol::table config = GameProperties::lua->create_table();
+            config[key] = val;
+            return luaConfigure(config);
+        }
+
+        sol::object make_lua_object() {
+            return sol::make_object(*GameProperties::lua, this);
         }
 
         void execute(std::string command) {
@@ -103,14 +153,27 @@ namespace Amara {
             EntityFactory::bindLua(lua);
             
             lua.new_usertype<Game>("Game",
-                "id", &Game::id,
-                "scenes", &Game::scenes,
-                "factory", &Game::factory,
+                sol::constructors<Game(), Game(sol::object)>(),
                 "props", &Game::props,
-                "configure", &Game::luaConfigure,
-                "run", &Game::run,
-                "execute", &Game::execute
+                "scenes", &Game::scenes,
+                "scripts", &Game::scripts,
+                "factory", &Game::factory,
+                "configure", sol::overload(
+                    sol::resolve<sol::object(sol::object)>(Game::luaConfigure),
+                    sol::resolve<sol::object(std::string, sol::object)>(&Game::luaConfigure)
+                ),
+                "configure_override", &Game::configure_override,
+                "super_configure", &Game::super_configure,
+                "execute", &Game::execute,
+                "arguments", sol::property([](const Game& g) -> sol::object {
+                    return json_to_lua(g.arguments);
+                })
             );
+        }
+
+        ~Game() {
+            lua["game"] = sol::nil;
+            lua.collect_garbage();
         }
     };
 }

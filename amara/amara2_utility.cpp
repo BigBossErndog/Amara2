@@ -50,6 +50,11 @@ namespace Amara {
         return str1.compare(str2) == 0;
     }
 
+    std::string float_string(float n) {
+        nlohmann::json json(n);
+        return json.dump();
+    }
+
     float fixed_range(float num, float min, float max) {
         if (num < min) return min;
         if (num > max) return max;

@@ -12,7 +12,7 @@ namespace Amara {
         } else if (json.is_array()) {
             sol::table arr = lua.create_table();
             for (size_t i = 0; i < json.size(); ++i) {
-                arr[i + 1] = json_to_lua(json[i]);  // Lua tables are 1-based
+                arr[i + 1] = json_to_lua(json[i]);
             }
             return sol::make_object(lua, arr);
         } else if (json.is_object()) {
@@ -56,7 +56,7 @@ namespace Amara {
             }
     
             if (isArray) {
-                return json;  // JSON array
+                return json;
             } else {
                 for (auto& pair : tbl) {
                     sol::object key = pair.first;
@@ -66,16 +66,19 @@ namespace Amara {
                         json[key.as<std::string>()] = lua_to_json(value);
                     }
                 }
-                return json;  // JSON object
+                return json;
             }
         }
     
-        return nullptr;  // Unsupported types
+        return nullptr;
     }
 
     std::string lua_to_string(sol::object obj) {
+        if (obj.is<std::string>()) return obj.as<std::string>();
+        if (obj.is<Vector3>()) return std::string(obj.as<Vector3>());
+        if (obj.is<Vector2>()) return std::string(obj.as<Vector2>());
+
         nlohmann::json j = lua_to_json(obj);
-        if (j.is_string()) return j.get<std::string>();
         return j.dump();
     }
 
@@ -85,7 +88,7 @@ namespace Amara {
         sol::table lua_table = lua.create_table();
     
         for (size_t i = 0; i < vec.size(); ++i) {
-            lua_table[i + 1] = vec[i];  // Lua uses 1-based indexing
+            lua_table[i + 1] = vec[i];
         }
     
         return lua_table;
@@ -119,7 +122,7 @@ namespace Amara {
         va_start(args, format);
         vsnprintf(buffer.data(), buffer.size(), format, args);
         va_end(args);
-    
+        
         log(std::string(buffer.data()));
     }
 

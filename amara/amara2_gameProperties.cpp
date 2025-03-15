@@ -37,6 +37,6 @@ namespace Amara {
     #else
         std::string GameProperties::context_path = "../";
     #endif
-    std::string GameProperties::lua_script_path = "./lua";
+    std::string GameProperties::lua_script_path = "./lua_scripts";
     std::string GameProperties::assets_path = "./assets";
 }
