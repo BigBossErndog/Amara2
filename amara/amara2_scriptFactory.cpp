@@ -2,22 +2,42 @@ namespace Amara {
     class ScriptFactory {
     public:
         std::unordered_map<std::string, std::function<Script*()>> factory;
-        std::unordered_map<std::string, std::string> scriptScripts;
+        std::unordered_map<std::string, std::string> readScripts;
+        std::unordered_map<std::string, sol::function> compiledScripts;
 
-        void add(std::string key, std::string script) {
-            scriptScripts[key] = script;
+        void add(std::string key, std::string path) {
+            std::string script = GameProperties::files->getScriptPath(path);
+            if (string_endsWith(script, ".lua")) {
+                readScripts[key] = path;
+            }
+            else {
+                compiledScripts[key] = GameProperties::files->load_script(path);
+            }
         }
 
         Amara::Script* get(std::string key) {
             auto it = factory.find(key);
             if (it != factory.end() && it->second) return (it->second());
 
-            try {
-                return (GameProperties::files->run(scriptScripts[key]).as<Amara::Script*>());
+            if (compiledScripts.find(key) != compiledScripts.end()) {
+                try {
+                    sol::object result = compiledScripts[key]();
+                    return result.as<Amara::Script*>();
+                }
+                catch (const sol::error& e) {
+                    log("Failed to create Script \"", key, "\".");
+                }
             }
-            catch (const sol::error& e) {
-                c_style_log("EntityFactory error: Failed to create script \'%s\'", key.c_str());
+            else if (readScripts.find(key) != readScripts.end()) {
+                try {
+                    sol::object result = GameProperties::files->run(readScripts[key]);
+                    return result.as<Amara::Script*>();
+                }
+                catch (const sol::error& e) {
+                    log("Failed to create Script \"", key, "\" from script \"", GameProperties::files->getScriptPath(readScripts[key]), "\".");
+                }
             }
+            else log("Script \"", key, "\" was not found.");
             return nullptr;
         }
 

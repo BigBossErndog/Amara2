@@ -23,7 +23,7 @@ namespace Amara {
                 in.seekg(0, std::ios::beg);
                 in.read(&contents[0], contents.size());
                 in.close();
-
+                
                 return contents;
             }
             else {
@@ -58,6 +58,7 @@ namespace Amara {
 			return false;
         }
         bool luaWriteFile(std::string path, sol::object input) {
+            if (input.is<std::string>()) return writeFile(path, input.as<std::string>());
             return writeFile(path, lua_to_json(input));
         }
 
@@ -166,10 +167,31 @@ namespace Amara {
         std::string getFileName(std::string path) {
             return std::filesystem::path(path).filename().string();
         }
+        std::string getScriptPath(std::string path) {
+            std::filesystem::path filePath = getRelativePath(GameProperties::lua_script_path) / (std::filesystem::path)path;
+            if (!fileExists(filePath.string())) {
+                path = filePath.string() + ".lua";
+                if (fileExists(path)) return path;
+                path = filePath.string() + ".luac";
+                if (fileExists(path)) return path;
+            }
+            return filePath.string();
+        }
 
         sol::object run(std::string path) {
-            std::filesystem::path filePath = getRelativePath(GameProperties::lua_script_path) / (std::filesystem::path)path;
-            return GameProperties::lua->script_file(filePath.string());
+            std::filesystem::path filePath = getScriptPath(path);
+            try {
+                return GameProperties::lua->script_file(filePath.string());
+            }
+            catch (const sol::error& e) {
+                log(e.what());
+                throw e;
+            }
+            return sol::nil;
+        }
+        sol::load_result load_script(std::string path) {
+            std::filesystem::path filePath = getScriptPath(path);
+            return GameProperties::lua->load_file(filePath.string());
         }
 
         static void bindLua(sol::state& lua) {

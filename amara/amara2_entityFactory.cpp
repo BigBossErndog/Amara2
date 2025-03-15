@@ -2,33 +2,49 @@ namespace Amara {
     class EntityFactory {
     public:
         std::unordered_map<std::string, std::function<Entity*()>> factory;
-        std::unordered_map<std::string, std::string> entityScripts;
+        std::unordered_map<std::string, std::string> readScripts;
+        std::unordered_map<std::string, sol::function> compiledScripts;
         static inline std::unordered_map<std::string, std::function<sol::object(Entity*)>> entityRegistry;
 
         sol::table props;
 
-        void add(std::string key, std::string script) {
+        void add(std::string key, std::string path) {
             if (factory.find(key) != factory.end()) {
                 c_style_log("Error: \"%s\" is a reserved entity name.", key.c_str());
                 return;
             }
-            entityScripts[key] = script;
+            std::string script = GameProperties::files->getScriptPath(path);
+            if (string_endsWith(script, ".lua")) {
+                readScripts[key] = path;
+            }
+            else {
+                compiledScripts[key] = GameProperties::files->load_script(path);
+            }
         }
 
         Amara::Entity* create(std::string key) {
             auto it = factory.find(key);
             if (it != factory.end() && it->second) return (it->second())->init_build();
             
-            if (entityScripts.find(key) == entityScripts.end()) {
-                c_style_log("Error: Entity \"%s\" has not been defined.", key.c_str());
-                return nullptr;
+            if (compiledScripts.find(key) != compiledScripts.end()) {
+                try {
+                    sol::object result = compiledScripts[key]();
+                    return result.as<Amara::Entity*>()->init_build();
+                }
+                catch (const sol::error& e) {
+                    log("Failed to create Entity \"", key, "\".");
+                }
             }
-            try {
-                return (GameProperties::files->run(entityScripts[key]).as<Amara::Entity*>())->init_build();
+            else if (readScripts.find(key) != readScripts.end()) {
+                try {
+                    sol::object result = GameProperties::files->run(readScripts[key]);
+                    return result.as<Amara::Entity*>()->init_build();
+                }
+                catch (const sol::error& e) {
+                    log("Failed to create Entity \"", key, "\" from script \"", GameProperties::files->getScriptPath(readScripts[key]), "\".");
+                }
             }
-            catch (const sol::error& e) {
-                c_style_log("EntityFactory error: Failed to create entity \'%s\'", key.c_str());
-            }
+            else log("Entity \"", key, "\" was not found.");
             return nullptr;
         }
 
@@ -78,8 +94,8 @@ namespace Amara {
     }
 
     template <typename T>
-    T* Entity::as() {
-        return dynamic_cast<T*>(this);
+    T Entity::as() {
+        return dynamic_cast<T>(this);
     }
     sol::object Entity::make_lua_object() {
         return GameProperties::factory->castLuaEntity(this, entityID);
@@ -89,12 +105,12 @@ namespace Amara {
         Scene* scene = nullptr;
         try {
             GameProperties::factory->add(key, path);
-            scene = GameProperties::files->run(path).as<Amara::Scene*>();
+            scene = GameProperties::files->run(path).as<Amara::Scene*>()->init_build()->as<Amara::Scene*>();
             sceneMap[key] = scene;
             scenes.push_back(scene);
         }
         catch (const sol::error& e) {
-            c_style_log("EntityFactory error: Failed to create scene \'%s\'", key.c_str());
+            log("Failed to create Scene \"", key, "\" from script \"", GameProperties::files->getScriptPath(path), "\".");
         }
         return scene;
     }

@@ -137,8 +137,23 @@ namespace Amara {
                     return &v;
                 }
             ),
+            "move", sol::overload(
+                &Vector2::operator+=,
+                [](Vector2& v, float _x, float _y) -> Vector2* {
+                    v.x += _x;
+                    v.y += _y;
+                    return &v;
+                }
+            ),
             sol::meta_function::subtraction, &Vector2::operator-,
-            "subtract", &Vector2::operator-=,
+            "subtract", sol::overload(
+                &Vector2::operator-=,
+                [](Vector2& v, float _x, float _y) -> Vector2* {
+                    v.x -= _x;
+                    v.y -= _y;
+                    return &v;
+                }
+            ),
             sol::meta_function::equal_to, &Vector2::operator==,
             sol::meta_function::to_string, [](const Vector2& v) {
                 return std::string(v);
@@ -156,6 +171,21 @@ namespace Amara {
                 sol::resolve<Vector3(const Vector2&) const>(&Vector3::operator+)
             ),
             "add", sol::overload(
+                sol::resolve<Vector3&(const Vector3&)>(&Vector3::operator+=),
+                sol::resolve<Vector3&(const Vector2&)>(&Vector3::operator+=),
+                [](Vector3& v, float _x, float _y) -> Vector3* {
+                    v.x += _x;
+                    v.y += _y;
+                    return &v;
+                },
+                [](Vector3& v, float _x, float _y, float _z) -> Vector3* {
+                    v.x += _x;
+                    v.y += _y;
+                    v.z += _z;
+                    return &v;
+                } 
+            ),
+            "move", sol::overload(
                 sol::resolve<Vector3&(const Vector3&)>(&Vector3::operator+=),
                 sol::resolve<Vector3&(const Vector2&)>(&Vector3::operator+=),
                 [](Vector3& v, float _x, float _y) -> Vector3* {

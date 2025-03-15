@@ -152,7 +152,7 @@ namespace Amara {
         }
 
         template <typename T>
-        T* as();
+        T as();
 
         sol::object make_lua_object();
 

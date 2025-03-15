@@ -76,6 +76,10 @@ namespace Amara {
             Game::bindLua(lua);
 
             lua["game"] = this;
+
+            lua.set_panic([](lua_State* L) -> int {
+                return 0;
+            });
         }
 
         Amara::Game* init_build() {
@@ -166,6 +170,7 @@ namespace Amara {
                 "super_configure", &Game::super_configure,
                 "execute", &Game::execute,
                 "arguments", sol::property([](const Game& g) -> sol::object {
+                    if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.arguments);
                 })
             );
