@@ -6,12 +6,12 @@ namespace Amara {
         std::unordered_map<std::string, sol::function> compiledScripts;
 
         void add(std::string key, std::string path) {
-            std::string script = GameProperties::files->getScriptPath(path);
+            std::string script = WorldProperties::files->getScriptPath(path);
             if (string_endsWith(script, ".lua")) {
                 readScripts[key] = path;
             }
             else {
-                compiledScripts[key] = GameProperties::files->load_script(path);
+                compiledScripts[key] = WorldProperties::files->load_script(path);
             }
         }
 
@@ -30,11 +30,11 @@ namespace Amara {
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
-                    sol::object result = GameProperties::files->run(readScripts[key]);
+                    sol::object result = WorldProperties::files->run(readScripts[key]);
                     return result.as<Amara::Script*>();
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create Script \"", key, "\" from script \"", GameProperties::files->getScriptPath(readScripts[key]), "\".");
+                    log("Failed to create Script \"", key, "\" from script \"", WorldProperties::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
             else log("Script \"", key, "\" was not found.");
@@ -42,7 +42,7 @@ namespace Amara {
         }
 
         sol::object run(std::string path) {
-            return GameProperties::files->run(path);
+            return WorldProperties::files->run(path);
         }
 
         static void bindLua(sol::state& lua) {

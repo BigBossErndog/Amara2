@@ -27,7 +27,7 @@ namespace Amara {
                 return contents;
             }
             else {
-               log("Failed to read file \"", filePath.c_str(), "\"");
+               log("Error: Failed to read file \"", filePath.c_str(), "\"");
             }
             return "";
         }
@@ -66,20 +66,20 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(path)) {
-                log("Error: File does not exist: \"", filePath, "\".");
+                log("Error: File does not exist: \"", filePath.string(), "\".");
                 return false;
             }
 
             try {
                 if (std::filesystem::remove(path)) {
-                    log("File deleted successfully: \"", filePath, "\"");
+                    log("File deleted successfully: \"", filePath.string(), "\"");
                     return true;
                 } else {
                     log("Error: Failed to delete file (unknown reason): \"", filePath.string(), "\".");
                     return false;
                 }
             } catch (const std::exception& e) {
-                log("Exception while deleting file:  \"", filePath.string(), "\".");
+                log("Error: Exception while deleting file:  \"", filePath.string(), "\".");
                 return false;
             }
 		    return false;
@@ -94,7 +94,7 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(path)) {
-                c_style_log("Error: \"%s\" does not exist or is not a directory.", path.c_str());
+                log("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
                 return false;
             }
         
@@ -107,13 +107,13 @@ namespace Amara {
 
             if (!std::filesystem::exists(dir)) {
                 if (std::filesystem::create_directory(dir)) {
-                    c_style_log("Directory created: \"%s\"", dir.c_str());
+                    log("Directory created: \"", dir.string(), "\".");
                     return true;
                 } else {
-                    c_style_log("Failed to create directory: \"%s\"", dir.c_str());
+                    log("Error: Failed to create directory: \"", dir.string(), "\".");
                 }
             } else {
-                c_style_log("Directory already exists: \"%s\"", dir.c_str());
+                log("Error: Directory already exists: \"", dir.string(), "\".");
             }
             return false;
         }
@@ -124,7 +124,7 @@ namespace Amara {
             std::vector<std::string> contents;
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(filePath)) {
-                c_style_log("Error: \"%s\" does not exist or is not a directory.", filePath.c_str());
+                log("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
                 return contents;
             }
 
@@ -174,7 +174,7 @@ namespace Amara {
             if (basePath.empty()) {
                 char* c_basePath = SDL_GetBasePath();
                 std::filesystem::path exeDir = c_basePath;
-                std::filesystem::path contextPath = GameProperties::context_path;
+                std::filesystem::path contextPath = WorldProperties::context_path;
                 std::filesystem::path finalContext = exeDir / contextPath;
                 SDL_free(c_basePath);
                 basePath = finalContext.string();
@@ -196,7 +196,7 @@ namespace Amara {
         }
 
         std::string getScriptPath(std::string path) {
-            std::filesystem::path filePath = getRelativePath(GameProperties::lua_script_path) / (std::filesystem::path)path;
+            std::filesystem::path filePath = getRelativePath(WorldProperties::lua_script_path) / (std::filesystem::path)path;
             if (!fileExists(filePath.string())) {
                 path = filePath.string() + ".luac";
                 if (fileExists(path)) return path;
@@ -233,29 +233,28 @@ namespace Amara {
             std::filesystem::path source = getRelativePath(input);
             std::filesystem::path destination = getRelativePath(output);
             try {
-                if (!std::filesystem::exists(source)) {
-                    log("\"", source.string(), "\" does not exist.");
+                if (!fileExists(source.string())) {
+                    log("Error: \"", source.string(), "\" does not exist.");
                     return false;
+                }
+                if (fileExists(destination.string())) {
+                    if (overwrite) deleteFile(destination.string());
+                    else {
+                        log("Error: \"", destination.string(), "\" already exists.");
+                        return false;
+                    }
                 }
                 
                 if (std::filesystem::is_regular_file(source)) {
                     std::filesystem::copy_options options = std::filesystem::copy_options::update_existing;
-                    if (overwrite) {
-                        options |= std::filesystem::copy_options::overwrite_existing;
-                    }
-        
                     std::filesystem::copy(source, destination, options);
                 }
                 else if (std::filesystem::is_directory(source)) {
                     std::filesystem::copy_options options = std::filesystem::copy_options::recursive;
-                    if (overwrite) {
-                        options |= std::filesystem::copy_options::overwrite_existing;
-                    }
-        
                     std::filesystem::copy(source, destination, options);
                 }
                 else {
-                    log("Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
+                    log("Error: Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
                     return false;
                 }
         
@@ -263,7 +262,7 @@ namespace Amara {
                 return true;
             }
             catch (const std::exception& e) {
-                log("Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
+                log("Error: Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
             }
             return false;
         }
@@ -274,7 +273,7 @@ namespace Amara {
         sol::object run(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
             try {
-                return GameProperties::lua->script_file(filePath.string());
+                return WorldProperties::lua().script_file(filePath.string());
             }
             catch (const sol::error& e) {
                 log(e.what());
@@ -284,25 +283,25 @@ namespace Amara {
         }
         sol::load_result load_script(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
-            return GameProperties::lua->load_file(filePath.string());
+            return WorldProperties::lua().load_file(filePath.string());
         }
 
-        bool compile(std::string path, std::string dest) {
+        bool compileScript(std::string path, std::string dest) {
             std::filesystem::path filePath = getRelativePath(path);
             if (!fileExists(filePath.string())) {
-                log("Script not found \"", filePath.string(), "\".");
+                log("Error: Script not found \"", filePath.string(), "\".");
                 return false;
             }
-            sol::load_result script = GameProperties::lua->load_file(filePath.string());
+            sol::load_result script = WorldProperties::lua().load_file(filePath.string());
 
             if (!script.valid()) {
                 sol::error err = script;
-                std::cerr << "Error loading script: " << err.what() << std::endl;
+                std::cerr << "Error: Failed to load script: " << err.what() << std::endl;
             } else {
                 sol::function func = script;
 
                 try {
-                    sol::function dump = (*GameProperties::lua)["string"]["dump"];
+                    sol::function dump = (WorldProperties::lua())["string"]["dump"];
                     sol::object bytecode = dump(func);
                 
                     if (bytecode.is<std::string>()) {
@@ -317,11 +316,11 @@ namespace Amara {
                         return true;
                     }
                     else {
-                        log("Could not compile script \"", getScriptPath(path), "\"");
+                        log("Error: Could not compile script \"", getScriptPath(path), "\"");
                     }
                 }
                 catch (const sol::error& e) {
-                    log("Could not compile script \"", getScriptPath(path), "\"");
+                    log("Error: Could not compile script \"", getScriptPath(path), "\"");
                 }
             }
             return false;
@@ -353,7 +352,7 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string)>(&FileManager::copy)
                 ),
                 "run", &FileManager::run,
-                "compile", &FileManager::compile
+                "compileScript", &FileManager::compileScript
             );
         }
     };

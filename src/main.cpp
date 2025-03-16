@@ -1,9 +1,8 @@
 #include <amara.hpp>
-using namespace Amara;
-using namespace std;
 
 int main(int argv, char** args) {
-    Game game(argv, args);
-    game.scripts.run("index");
+    Amara::Creator creation;
+    Amara::World world;
+    world.init("index");
     return 0;
 }

@@ -66,4 +66,9 @@ namespace Amara {
         float result = fmod(num, den);
         return result;
     }
+
+    struct ProgramArgs {
+        int argv;
+        char** args;
+    };
 }

@@ -53,7 +53,7 @@
     #include "amara2_utility.cpp"
     #include "amara2_geometry.cpp"
 
-    #include "amara2_gameProperties.cpp"
+    #include "amara2_worldProperties.cpp"
     #include "amara2_luaUtlity.cpp"
 
     #include "amara2_fileManager.cpp"
@@ -71,5 +71,6 @@
     #include "amara2_sceneManager.cpp"
     #include "amara2_entityFactory.cpp"
 
-    #include "amara2_game.cpp"
+    #include "amara2_world.cpp"
+    #include "amara2_creator.cpp"
 #endif

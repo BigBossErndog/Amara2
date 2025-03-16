@@ -1,4 +1,4 @@
-scene = game.factory:create("Scene")
+scene = world.factory:create("Scene")
 
 scene.onPeload = function(self) 
     self.load.image()

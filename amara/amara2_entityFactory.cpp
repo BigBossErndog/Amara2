@@ -8,17 +8,25 @@ namespace Amara {
 
         sol::table props;
 
+        bool exists(std::string key) {
+            if (factory.find(key) != factory.end()) return true;
+            if (compiledScripts.find(key) != compiledScripts.end())  return true;
+            if (readScripts.find(key) != readScripts.end()) return true;
+
+            return false;
+        } 
+
         void add(std::string key, std::string path) {
             if (factory.find(key) != factory.end()) {
-                c_style_log("Error: \"%s\" is a reserved entity name.", key.c_str());
+                log("Error: \"", key, "\" is a reserved entity name.");
                 return;
             }
-            std::string script = GameProperties::files->getScriptPath(path);
+            std::string script = WorldProperties::files->getScriptPath(path);
             if (string_endsWith(script, ".lua")) {
                 readScripts[key] = path;
             }
             else {
-                compiledScripts[key] = GameProperties::files->load_script(path);
+                compiledScripts[key] = WorldProperties::files->load_script(path);
             }
         }
 
@@ -29,7 +37,7 @@ namespace Amara {
             if (compiledScripts.find(key) != compiledScripts.end()) {
                 try {
                     sol::object result = compiledScripts[key]();
-                    return result.as<Amara::Entity*>();
+                    return result.as<Amara::Entity*>()->init_build();
                 }
                 catch (const sol::error& e) {
                     log("Failed to create Entity \"", key, "\".");
@@ -37,11 +45,11 @@ namespace Amara {
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
-                    sol::object result = GameProperties::files->run(readScripts[key]);
-                    return result.as<Amara::Entity*>();
+                    sol::object result = WorldProperties::files->run(readScripts[key]);
+                    return result.as<Amara::Entity*>()->init_build();
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create Entity \"", key, "\" from script \"", GameProperties::files->getScriptPath(readScripts[key]), "\".");
+                    log("Failed to create Entity \"", key, "\" from script \"", WorldProperties::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
             else log("Entity \"", key, "\" was not found.");
@@ -58,7 +66,9 @@ namespace Amara {
             if (it != entityRegistry.end()) {
                 return it->second(entity);
             }
-            else c_style_log("Entity with key \"%s\" was not registered.", entity->entityID.c_str());
+            else {
+                log("Error: Entity type with key \"", entity->entityID, "\" was not registered.");
+            }
             return sol::lua_nil;
         }
 
@@ -67,7 +77,7 @@ namespace Amara {
             factory[key] = []() -> T* { return new T(); };
             entityRegistry[key] = [](Entity* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
-                    return sol::make_object(*GameProperties::lua, derived);
+                    return sol::make_object(WorldProperties::lua(), derived);
                 }
                 return sol::lua_nil;
             };
@@ -88,7 +98,7 @@ namespace Amara {
     };
 
     sol::object Entity::luaAdd(std::string key) {
-        Amara::Entity* entity = GameProperties::factory->create(key);
+        Amara::Entity* entity = WorldProperties::factory->create(key);
         add(entity);
         return entity->make_lua_object();
     }
@@ -98,19 +108,22 @@ namespace Amara {
         return dynamic_cast<T>(this);
     }
     sol::object Entity::make_lua_object() {
-        return GameProperties::factory->castLuaEntity(this, entityID);
+        if (luaobject.valid()) return luaobject; 
+        return WorldProperties::factory->castLuaEntity(this, entityID);
     }
 
-    Amara::Scene* SceneManager::addSceneViaScript(std::string key, std::string path) {
+    Amara::Scene* SceneManager::create_scene(std::string key, std::string path) {
         Scene* scene = nullptr;
         try {
-            GameProperties::factory->add(key, path);
-            scene = GameProperties::files->run(path).as<Amara::Scene*>()->init_build()->as<Amara::Scene*>();
+            WorldProperties::factory->add(key, path);
+            scene = WorldProperties::files->run(path).as<Amara::Scene*>()->init_build()->as<Amara::Scene*>();
+            scene->id = key;
+            scene->scene = scene;
             sceneMap[key] = scene;
             scenes.push_back(scene);
         }
         catch (const sol::error& e) {
-            log("Failed to create Scene \"", key, "\" from script \"", GameProperties::files->getScriptPath(path), "\".");
+            log("Failed to create Scene \"", key, "\" from script \"", WorldProperties::files->getScriptPath(path), "\".");
         }
         return scene;
     }

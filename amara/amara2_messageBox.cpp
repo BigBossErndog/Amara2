@@ -16,7 +16,7 @@ namespace Amara {
 
         void run() {
             if (!messageBox.empty()) {
-                MessageQueue* messages = GameProperties::messages;
+                MessageQueue* messages = WorldProperties::messages;
 
                 for (
                     auto it = messages->begin();

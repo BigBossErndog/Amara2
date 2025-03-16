@@ -4,7 +4,7 @@ namespace Amara {
         std::vector<Scene*> scenes;
         std::unordered_map<std::string, Amara::Scene*> sceneMap;
 
-        Amara::Scene* addSceneViaScript(std::string key, std::string path);
+        Amara::Scene* create_scene(std::string key, std::string path);
 
         Amara::Scene* add(std::string key, Amara::Scene* scene);
 
@@ -12,7 +12,7 @@ namespace Amara {
             Amara::Scene::bindLua(lua);
             
             lua.new_usertype<SceneManager>("SceneManager",
-                "add", &SceneManager::addSceneViaScript
+                "add", &SceneManager::create_scene
             );
         }
     };
