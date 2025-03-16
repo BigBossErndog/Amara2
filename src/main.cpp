@@ -1,8 +1,7 @@
 #include <amara.hpp>
 
 int main(int argv, char** args) {
-    Amara::Creator creation;
-    Amara::World world;
-    world.init("index");
+    Amara::Creator creator(argv, args);
+    creator.init("index");
     return 0;
 }

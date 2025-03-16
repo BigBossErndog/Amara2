@@ -25,6 +25,8 @@ namespace Amara {
         float depth = 0;
         bool lockDepthToY = false;
 
+        bool isDestroyed = false;
+
         Entity() {
             entityID = "Entity";
         }
@@ -182,6 +184,18 @@ namespace Amara {
 
         sol::object make_lua_object();
 
+        static void cleanEntityList(std::vector<Amara::Entity*>& list) {
+            Amara::Entity* entity;
+			for (auto it = list.begin(); it != list.end();) {
+				entity = *it;
+				if (entity == nullptr || entity->isDestroyed) {
+					it = list.erase(it);
+					continue;
+				}
+				++it;
+			}
+        }
+
         static void bindLua(sol::state& lua) {
             sol::usertype<Entity> entity_type = lua.new_usertype<Entity>("Entity",
                 sol::constructors<Entity()>(),
@@ -204,7 +218,8 @@ namespace Amara {
                 "createChild", &Entity::luaAdd,
                 "addChild", &Entity::add,
                 "get", &Entity::get,
-                "set", &Entity::set
+                "set", &Entity::set,
+                "isDestroyed", sol::readonly(&Entity::isDestroyed)
             );
 
             lua.new_usertype<std::vector<Amara::Entity*>>("EntityVector",
@@ -213,13 +228,16 @@ namespace Amara {
                     vec.push_back(entity);
                 },
                 "get", [](std::vector<Amara::Entity*>& vec, size_t index) -> sol::object {
+                    std::vector<Amara::Entity*> copylist = vec;
+                    cleanEntityList(copylist);
                     if (index > 0 && index <= vec.size()) {
-                        return vec[index-1]->make_lua_object();
+                        return copylist[index-1]->make_lua_object();
                     }
                     return nullptr;
                 },
                 "find", [](std::vector<Amara::Entity*>& vec, std::string gid) -> sol::object {
                     for (Amara::Entity* entity: vec) {
+                        if (entity->isDestroyed) continue;
                         if (string_equal(entity->id, gid)) {
                             return entity->make_lua_object();
                         }
@@ -233,7 +251,7 @@ namespace Amara {
                 }
             );
 
-            entity_type["children"] = &Entity::children;
+            entity_type["children"] = sol::readonly(&Entity::children);
         }
     };
 }

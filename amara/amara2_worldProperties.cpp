@@ -1,7 +1,6 @@
 namespace Amara {
     class World;
     class EntityFactory;
-    class SceneManager;
     class ScriptFactory;
     class FileManager;
     class MessageQueue;
@@ -16,7 +15,6 @@ namespace Amara {
         static World* world;
 
         static EntityFactory* factory;
-        static SceneManager* scenes;
         static ScriptFactory* scripts;
 
         static FileManager* files;
@@ -33,7 +31,6 @@ namespace Amara {
     World* WorldProperties::world = nullptr;
     int WorldProperties::lua_stack_size = 100000;
     EntityFactory* WorldProperties::factory = nullptr;
-    SceneManager* WorldProperties::scenes = nullptr;
     ScriptFactory* WorldProperties::scripts = nullptr;
     FileManager* WorldProperties::files = nullptr;
     MessageQueue* WorldProperties::messages = nullptr;

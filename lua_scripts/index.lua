@@ -4,6 +4,6 @@
 -- game:configure_override = function(config)
 --     if config["hello"] then log("HELLO!") end
 -- end
-world.scripts:run("scripts/testScript.lua");
+scripts:run("scripts/testScript.lua");
 
 return ""

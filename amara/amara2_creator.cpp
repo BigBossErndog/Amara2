@@ -3,11 +3,20 @@ namespace Amara {
     public:
         sol::state lua;
 
-        std::deque<World> worlds;
+        std::deque<World*> worlds;
         std::vector<nlohmann::json> arguments;
+
+        FileManager files;
+        ScriptFactory scripts;
+        EntityFactory factory;
+        MessageQueue messages;
 
         Creator() {
             WorldProperties::set_lua(lua);
+            WorldProperties::files = &files;
+            WorldProperties::factory = &factory;
+            WorldProperties::scripts = &scripts;
+            WorldProperties::messages = &messages;
             
             lua_checkstack(lua.lua_state(), WorldProperties::lua_stack_size);
 
@@ -33,7 +42,13 @@ namespace Amara {
                 return 0;
             });
 
-            lua["creation"] = this;
+            factory.prepareEntities();
+            factory.registerEntity<World>("World");
+
+            lua["creator"] = this;
+            lua["files"] = &files;
+            lua["factory"] = &factory;
+            lua["scripts"] = &scripts;
         }
 
         Creator(int argv, char** args): Creator() {
@@ -51,9 +66,17 @@ namespace Amara {
         Creator(ProgramArgs args): Creator(args.argv, args.args) {}
 
         void bindLua() {
+            bindLuaUtilityFunctions(lua);
+            bindLuaGeometry(lua);
+
+            FileManager::bindLua(lua);
+
             World::bindLua(lua);
 
             lua.new_usertype<Creator>("Creator",
+                "createWorld", [this](Amara::Creator& c) -> sol::object {
+                    return c.createWorld().make_lua_object();
+                },
                 "arguments", sol::property([](const Creator& g) -> sol::object {
                     if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.arguments);
@@ -61,9 +84,14 @@ namespace Amara {
             );
         }
 
-        World& create_world() {
-            worlds.push_back(World());
-            return worlds.back();
+        sol::object init(std::string path) {
+            return files.run(path);
+        }
+
+        World& createWorld() {
+            World* new_world = new World();
+            worlds.push_back(new_world);
+            return *new_world;
         }
     };
 }

@@ -12,7 +12,7 @@ namespace Amara {
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];
-            entity_type["scene"] = &Entity::scene;
+            entity_type["scene"] = sol::readonly(&Entity::scene);
         }
     };
 }

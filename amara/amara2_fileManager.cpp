@@ -326,6 +326,10 @@ namespace Amara {
             return false;
         }
 
+        int execute(std::string command) {
+            return std::system(command.c_str());
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<FileManager>("FileManager",
                 "fileExists", &FileManager::fileExists,
@@ -352,7 +356,8 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string)>(&FileManager::copy)
                 ),
                 "run", &FileManager::run,
-                "compileScript", &FileManager::compileScript
+                "compileScript", &FileManager::compileScript,
+                "execute", &FileManager::execute
             );
         }
     };

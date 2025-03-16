@@ -1,13 +1,7 @@
-local e = world.factory:create("Entity")
-
-e.id = "WE"
+local e = factory:create("Entity")
 
 e.props.hello = function(self, msg)
-    -- log("Hello from ", self.props.name, "!")
-    print(msg)
-    print(self.id)
+    log("Hello from ", self.id, "!")
 end
-
-e.props.wtf = "WTF"
 
 return e

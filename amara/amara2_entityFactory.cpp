@@ -89,6 +89,9 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
+            Amara::Entity::bindLua(lua);
+            Amara::Scene::bindLua(lua);
+
             lua.new_usertype<EntityFactory>("EntityFactory",
                 "add", &EntityFactory::add,
                 "props", &EntityFactory::props,
@@ -110,21 +113,5 @@ namespace Amara {
     sol::object Entity::make_lua_object() {
         if (luaobject.valid()) return luaobject; 
         return WorldProperties::factory->castLuaEntity(this, entityID);
-    }
-
-    Amara::Scene* SceneManager::create_scene(std::string key, std::string path) {
-        Scene* scene = nullptr;
-        try {
-            WorldProperties::factory->add(key, path);
-            scene = WorldProperties::files->run(path).as<Amara::Scene*>()->init_build()->as<Amara::Scene*>();
-            scene->id = key;
-            scene->scene = scene;
-            sceneMap[key] = scene;
-            scenes.push_back(scene);
-        }
-        catch (const sol::error& e) {
-            log("Failed to create Scene \"", key, "\" from script \"", WorldProperties::files->getScriptPath(path), "\".");
-        }
-        return scene;
     }
 }
