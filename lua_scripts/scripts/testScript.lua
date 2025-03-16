@@ -9,25 +9,26 @@ if game.arguments then log(game.arguments) end
 -- log(e.pos:subtract(1, 2))
 
 
-function printFiles(currentPath)
+function buildScripts(currentPath, currentRoute)
     local subdirs, files;
     files = game.files:getFilesInDirectory(currentPath)
     for i, v in ipairs(files) do
         if (v:ends_with(".lua")) then
-            local d = "C:/Users/ernes/Documents/Creations/amara2/file.luac"
-            -- game.files:compile(v, d)
-            log(d, ": ", game.files:getRelativePath(d))
+            local d = game.files:getRelativePath(currentRoute) .. "/" .. game.files:removeFileExtension(
+                game.files:getFileName(v)
+            ) .. ".luac"
+            game.files:compile(v, d)
         end
     end
     subdirs = game.files:getSubDirectories(currentPath)
     if #subdirs > 0  then
         for i, v in ipairs(subdirs) do
-            printFiles(v)
+            buildScripts(v, currentRoute .. "/" .. game.files:getDirectoryName(v))
         end
     end
 end
 
-printFiles("./lua_scripts")
+buildScripts("./lua_scripts", "./build/lua_scripts")
 
 -- print(string.starts_with(p, "hello"))
 

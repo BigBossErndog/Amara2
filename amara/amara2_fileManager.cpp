@@ -209,6 +209,9 @@ namespace Amara {
         std::string getFileName(std::string path) {
             return std::filesystem::path(path).filename().string();
         }
+        std::string getDirectoryName(std::string path) {
+            return getFileName(path);
+        }
         std::string getFileExtension(std::string path) {
             return std::filesystem::path(path).extension().string();
         }
@@ -289,6 +292,7 @@ namespace Amara {
                 "resetBasePath", &FileManager::resetBasePath,
                 "getRelativePath", &FileManager::getRelativePath,
                 "getFileName", &FileManager::getFileName,
+                "getDirectoryName", &FileManager::getDirectoryName,
                 "getFileExtension", &FileManager::getFileExtension,
                 "removeFileExtension", &FileManager::removeFileExtension,
                 "run", &FileManager::run,
