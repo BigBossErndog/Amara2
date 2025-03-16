@@ -134,9 +134,40 @@ namespace Amara {
             
             return contents;
         }
-        
         sol::table luaGetDirectoryContents(std::string path) {
             return vector_to_lua(getDirectoryContents(path));
+        }
+
+        std::vector<std::string> getFilesInDirectory(std::string path) {
+            std::filesystem::path dirPath = getRelativePath(path);
+            std::vector<std::string> list;
+
+            for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+                if (entry.is_regular_file()) {
+                    list.push_back(entry.path().string());
+                }
+            }
+        
+            return list;
+        }
+        sol::table luaGetFilesInDirectory(std::string path) {
+            return vector_to_lua(getFilesInDirectory(path));
+        }
+
+        std::vector<std::string> getSubDirectories(std::string path) {
+            std::filesystem::path dirPath = getRelativePath(path);
+            std::vector<std::string> list;
+
+            for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+                if (entry.is_directory()) {
+                    list.push_back(entry.path().string());
+                }
+            }
+        
+            return list;
+        }
+        sol::table luaGetSubDirectories(std::string path) {
+            return vector_to_lua(getSubDirectories(path));
         }
 
         std::string getBasePath() {
@@ -251,6 +282,8 @@ namespace Amara {
                 "isDirectory", &FileManager::isDirectory,
                 "isDirectoryEmpty", &FileManager::isDirectoryEmpty,
                 "getDirectoryContents", &FileManager::luaGetDirectoryContents,
+                "getFilesInDirectory", &FileManager::luaGetFilesInDirectory,
+                "getSubDirectories", &FileManager::luaGetSubDirectories,
                 "getBasePath", &FileManager::getBasePath,
                 "setBasePath", &FileManager::setBasePath,
                 "resetBasePath", &FileManager::resetBasePath,

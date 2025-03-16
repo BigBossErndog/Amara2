@@ -31,9 +31,8 @@ namespace Amara {
 
         Amara::Entity* init_build() {
             props = GameProperties::lua->create_table();
-
-            sol::table props_meta = GameProperties::lua->create_table();
-            props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+            
+            props.set_function("__newindex", [this](sol::table tbl, sol::object key, sol::object value) {
                 if (value.is<sol::function>()) {
                     sol::function callback = value.as<sol::function>();
                     sol::function func = sol::make_object(*GameProperties::lua, [this, callback](sol::variadic_args va)->sol::object {
@@ -42,8 +41,7 @@ namespace Amara {
                     tbl.raw_set(key, func);
                 }
                 else tbl.raw_set(key, value);
-            };
-            props[sol::metatable_key] = props_meta;
+            });
 
             asLuaObject = make_lua_object();
 
