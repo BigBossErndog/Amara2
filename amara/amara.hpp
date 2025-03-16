@@ -6,6 +6,7 @@
     #include <string>
     #include <iostream>
     #include <fstream>
+    #include <sstream>
     #include <streambuf>
     #include <time.h>
     #include <limits>
@@ -24,7 +25,7 @@
     #include <filesystem>
     #include <cstdlib>
     #include <cstdarg>
-    #include <sstream>
+    #include <atomic>
     #include <nlohmann/json.hpp>
     #include <MurmurHash3.cpp>
 
@@ -52,6 +53,9 @@
     #include <SDL_ttf.h>
     #include <SDL_mixer.h>
     #include <SDL_FontCache.c>
+    #ifdef __EMSCRIPTEN__
+        #include <emscripten/fetch.h>
+    #endif
     #ifdef AMARA_WEB
         #include <SDL_net.h>
     #endif
@@ -79,6 +83,11 @@
     #include "amara2_scriptFactory.cpp"
 
     #include "amara2_entity.cpp"
+
+    #ifdef AMARA_WEB_SERVER
+        #include "amara2_webServer.cpp"
+    #endif
+    
     #include "amara2_scene.cpp"
 
     #include "amara2_entityFactory.cpp"

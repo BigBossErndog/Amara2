@@ -7,7 +7,9 @@ namespace Amara {
         std::string platform;
 
         GameManager() {
-            #if defined(_WIN32)
+            #if defined(__EMSCRIPTEN__)
+                platform = "web";
+            #elif defined(_WIN32)
                 platform = "windows";
             #elif defined(__linux__)
                 platform = "linux";

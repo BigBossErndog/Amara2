@@ -75,6 +75,7 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "lcode.c": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "filesystem": "cpp"
     }
 }
