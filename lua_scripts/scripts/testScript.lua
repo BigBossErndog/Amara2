@@ -30,6 +30,8 @@ end
 
 buildScripts("./lua_scripts", "./build/lua_scripts")
 
+game.files:copy("Makefile", "MakeFile.txt")
+
 -- print(string.starts_with(p, "hello"))
 
 -- if game.files:compile("lua_scripts/entities/testEntity.lua", "lua_scripts/entities/testEntity.luac") then

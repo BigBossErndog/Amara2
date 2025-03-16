@@ -219,6 +219,58 @@ namespace Amara {
             return std::filesystem::path(path).replace_extension().string();
         }
 
+        std::string mergePaths(std::string str1, std::string str2) {
+            std::filesystem::path p1(getRelativePath(str1));
+            std::filesystem::path p2(getRelativePath(str2));
+
+            if (p1.string().find(p2.string()) == 0) {
+                return p1.string();
+            }
+            return p2.string();
+        }
+
+        bool copy(std::string input, std::string output, bool overwrite) {
+            std::filesystem::path source = getRelativePath(input);
+            std::filesystem::path destination = getRelativePath(output);
+            try {
+                if (!std::filesystem::exists(source)) {
+                    log("\"", source.string(), "\" does not exist.");
+                    return false;
+                }
+                
+                if (std::filesystem::is_regular_file(source)) {
+                    std::filesystem::copy_options options = std::filesystem::copy_options::update_existing;
+                    if (overwrite) {
+                        options |= std::filesystem::copy_options::overwrite_existing;
+                    }
+        
+                    std::filesystem::copy(source, destination, options);
+                }
+                else if (std::filesystem::is_directory(source)) {
+                    std::filesystem::copy_options options = std::filesystem::copy_options::recursive;
+                    if (overwrite) {
+                        options |= std::filesystem::copy_options::overwrite_existing;
+                    }
+        
+                    std::filesystem::copy(source, destination, options);
+                }
+                else {
+                    log("Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
+                    return false;
+                }
+        
+                log("Copied \"", source.string(), "\" to \"", destination.string(), "\".");
+                return true;
+            }
+            catch (const std::exception& e) {
+                log("Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
+            }
+            return false;
+        }
+        bool copy(std::string input, std::string output) {
+            return copy(input, output, true);
+        }
+
         sol::object run(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
             try {
@@ -295,6 +347,11 @@ namespace Amara {
                 "getDirectoryName", &FileManager::getDirectoryName,
                 "getFileExtension", &FileManager::getFileExtension,
                 "removeFileExtension", &FileManager::removeFileExtension,
+                "mergePaths", &FileManager::mergePaths,
+                "copy", sol::overload(
+                    sol::resolve<bool(std::string, std::string, bool)>(&FileManager::copy),
+                    sol::resolve<bool(std::string, std::string)>(&FileManager::copy)
+                ),
                 "run", &FileManager::run,
                 "compile", &FileManager::compile
             );
