@@ -6,19 +6,22 @@ namespace Amara {
         std::deque<World*> worlds;
         std::vector<nlohmann::json> arguments;
 
+        GameManager game;
+
         FileManager files;
         ScriptFactory scripts;
         EntityFactory factory;
         MessageQueue messages;
 
         Creator() {
-            WorldProperties::set_lua(lua);
-            WorldProperties::files = &files;
-            WorldProperties::factory = &factory;
-            WorldProperties::scripts = &scripts;
-            WorldProperties::messages = &messages;
+            Properties::set_lua(lua);
+            Properties::game = &game;
+            Properties::files = &files;
+            Properties::factory = &factory;
+            Properties::scripts = &scripts;
+            Properties::messages = &messages;
             
-            lua_checkstack(lua.lua_state(), WorldProperties::lua_stack_size);
+            lua_checkstack(lua.lua_state(), Properties::lua_stack_size);
 
             lua.open_libraries(
                 sol::lib::base,
@@ -46,6 +49,7 @@ namespace Amara {
             factory.registerEntity<World>("World");
 
             lua["creator"] = this;
+            lua["game"] = &game;
             lua["files"] = &files;
             lua["factory"] = &factory;
             lua["scripts"] = &scripts;
@@ -63,11 +67,12 @@ namespace Amara {
                 std::cout << std::endl;
             }
         }
-        Creator(ProgramArgs args): Creator(args.argv, args.args) {}
 
         void bindLua() {
             bindLuaUtilityFunctions(lua);
             bindLuaGeometry(lua);
+            
+            GameManager::bindLua(lua);
 
             FileManager::bindLua(lua);
 
@@ -89,7 +94,7 @@ namespace Amara {
         }
 
         World& createWorld() {
-            World* new_world = new World();
+            World* new_world = factory.create("World")->as<World*>();
             worlds.push_back(new_world);
             return *new_world;
         }

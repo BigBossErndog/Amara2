@@ -10,16 +10,17 @@ COMPILER = g++
 
 SDL_INCLUDE_PATHS_WIN64 = -I libs/SDL2/include/SDL2 -I libs/SDL2_image/include/SDL2 -I libs/SDL2_ttf/include/SDL2 -I libs/SDL2_mixer/include/SDL2 -I libs/SDL2_net/include/SDL2 -I libs/SDL_FontCache
 SDL_LIBRARY_PATHS_WIN64 = -L libs/SDL2/lib -L libs/SDL2_image/lib -L libs/SDL2_ttf/lib -L libs/SDL2_mixer/lib -L libs/SDL2_net/lib
+SDL_LINKER_FLAGS_WIN64 = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
 SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags` -I libs/SDL_FontCache
 
-SDL_LINKER_FLAGS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
-THEORA_LINKER_FLAGS =  -ltheora -lvorbisenc -lvorbisfile -lvorbis -logg
+THEORA_INCLUDE_PATHS_WIN64 = -I libs/ogg/include -I libs/vorbis/include -I libs/theora/include -I libs/sdlogv
+THEORA_LIBRARY_PATHS_WIN64 = -L libs/ogg/lib -L libs/vorbis/lib -L libs/theora/lib
+THEORA_LINKER_FLAGS_WIN64 =  -ltheora -lvorbisenc -lvorbisfile -lvorbis -logg
 
-THEORA_INCLUDE_PATHS_WIN = -I libs/ogg/include -I libs/vorbis/include -I libs/theora/include -I libs/sdlogv
-THEORA_LIBRARY_PATHS_WIN = -L libs/ogg/lib -L libs/vorbis/lib -L libs/theora/lib
+THEORA_WIN64 = $(THEORA_INCLUDE_PATHS_WIN64) $(THEORA_LIBRARY_PATHS_WIN64) $(THEORA_LINKER_FLAGS_WIN64)
 
-THEORA_WIN = $(THEORA_INCLUDE_PATHS_WIN) $(THEORA_LIBRARY_PATHS_WIN) $(THEORA_LINKER_FLAGS)
+LINKER_FLAGS_WIN64 = -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(SDL_LINKER_FLAGS_WIN64) -DAMARA_WINDOWS
 
 OTHER_LIB_PATHS = -I libs/nlohmann/include -I ./src -I libs/murmurhash3 -I libs/lua -I libs/sol2
 
@@ -50,24 +51,10 @@ cplibs:
 	rm -rf dlls/*
 	cp -T -r ../amara/dlls ./dlls
 
-clean:
-	rm -rf $(BUILD_PATH)/*
-
-clearBuild:
-	rm -rf build/*.exe
-	rm -rf build/*.game
-	rm -rf build/*.html
-	rm -rf build/*.dll
-	rm -rf build/assets/*
-
-clearBuildAlt:
-	del build\*.exe /S /Q
-	del build\*.dll /S /Q
-
-cpAssetsToBuild:
+cpAssets:
 	cp -R assets/ build/
 
-cpAssetsToBuildAlt:
+cpAssets_alt:
 	if not exist build md build
 	if not exist "build\assets" md "build\assets"
 	xcopy /s /e /i /y "assets\*.*" "build\assets"
@@ -80,11 +67,12 @@ cpDLLsAlt:
 	if not exist "$(BUILD_PATH)\saves" md "$(BUILD_PATH)\saves"
 
 win: $(SRC_FILES)
-	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(SDL_LINKER_FLAGS) -o $(BUILD_EXECUTABLE_WIN)
+	rm -rf ./build/*
+	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLs
 
 win_alt: $(SRC_FILES)
-	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_WIN)
+	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLsAlt
 
 win32: $(SRC_FILES)
@@ -96,7 +84,7 @@ win32: $(SRC_FILES)
 	md "$(BUILD_PATH)\saves"
 
 linux:
-	make clearBuild
+	rm -rf /path/to/folder/*
 	cp -R assets/ build/
 	cp -R videos/ build/
 	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(SDL_INCLUDE_PATHS_LINUX) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_LINUX)

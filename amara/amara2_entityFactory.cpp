@@ -21,12 +21,12 @@ namespace Amara {
                 log("Error: \"", key, "\" is a reserved entity name.");
                 return;
             }
-            std::string script = WorldProperties::files->getScriptPath(path);
+            std::string script = Properties::files->getScriptPath(path);
             if (string_endsWith(script, ".lua")) {
                 readScripts[key] = path;
             }
             else {
-                compiledScripts[key] = WorldProperties::files->load_script(path);
+                compiledScripts[key] = Properties::files->load_script(path);
             }
         }
 
@@ -45,11 +45,11 @@ namespace Amara {
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
-                    sol::object result = WorldProperties::files->run(readScripts[key]);
+                    sol::object result = Properties::files->run(readScripts[key]);
                     return result.as<Amara::Entity*>()->init_build();
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create Entity \"", key, "\" from script \"", WorldProperties::files->getScriptPath(readScripts[key]), "\".");
+                    log("Failed to create Entity \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
             else log("Entity \"", key, "\" was not found.");
@@ -77,7 +77,7 @@ namespace Amara {
             factory[key] = []() -> T* { return new T(); };
             entityRegistry[key] = [](Entity* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
-                    return sol::make_object(WorldProperties::lua(), derived);
+                    return sol::make_object(Properties::lua(), derived);
                 }
                 return sol::lua_nil;
             };
@@ -101,7 +101,7 @@ namespace Amara {
     };
 
     sol::object Entity::luaAdd(std::string key) {
-        Amara::Entity* entity = WorldProperties::factory->create(key);
+        Amara::Entity* entity = Properties::factory->create(key);
         add(entity);
         return entity->make_lua_object();
     }
@@ -112,6 +112,6 @@ namespace Amara {
     }
     sol::object Entity::make_lua_object() {
         if (luaobject.valid()) return luaobject; 
-        return WorldProperties::factory->castLuaEntity(this, entityID);
+        return Properties::factory->castLuaEntity(this, entityID);
     }
 }

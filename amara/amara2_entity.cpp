@@ -33,13 +33,13 @@ namespace Amara {
 
         Amara::Entity* init_build() {
             if (!props.valid()) {
-                props = WorldProperties::lua().create_table();
+                props = Properties::lua().create_table();
 
-                sol::table props_meta = WorldProperties::lua().create_table();
+                sol::table props_meta = Properties::lua().create_table();
                 props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
                     if (value.is<sol::function>()) {
                         sol::function callback = value.as<sol::function>();
-                        sol::function func = sol::make_object(WorldProperties::lua(), [this, callback](sol::variadic_args va)->sol::object {
+                        sol::function func = sol::make_object(Properties::lua(), [this, callback](sol::variadic_args va)->sol::object {
                             return callback(this->make_lua_object(), sol::as_args(va));
                         });
                         tbl.raw_set(key, func);
@@ -56,7 +56,9 @@ namespace Amara {
             return this;
         }
 
+        virtual void create() {}
         virtual void init() {
+            create();
             if (luaCreate.valid()) {
                 try {
                     luaCreate(make_lua_object());
@@ -71,11 +73,11 @@ namespace Amara {
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
                 if (string_endsWith(path, ".json")) {
-                    configure(WorldProperties::files->readJSON(path));
+                    configure(Properties::files->readJSON(path));
                     return this;
                 }
                 if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
-                    configure(lua_to_json(WorldProperties::scripts->run(path)));
+                    configure(lua_to_json(Properties::scripts->run(path)));
                     return this;
                 }
             }
@@ -99,11 +101,11 @@ namespace Amara {
             if (config.is<std::string>()) {
                 std::string path = config.as<std::string>();
                 if (string_endsWith(path, ".json")) {
-                    luaConfigure(json_to_lua(WorldProperties::files->readJSON(path)));
+                    luaConfigure(json_to_lua(Properties::files->readJSON(path)));
                     return make_lua_object();
                 }
                 if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
-                    luaConfigure(WorldProperties::scripts->run(path));
+                    luaConfigure(Properties::scripts->run(path));
                     return make_lua_object();
                 }
             }
@@ -119,7 +121,7 @@ namespace Amara {
             return make_lua_object();
         }
         sol::object luaConfigure(std::string key, sol::object val) {
-            sol::table config = WorldProperties::lua().create_table();
+            sol::table config = Properties::lua().create_table();
             config[key] = val;
             return luaConfigure(config);
         }
@@ -153,9 +155,7 @@ namespace Amara {
             if (lockDepthToY) depth = pos.y;
         }
 
-        virtual void draw() {
-
-        } 
+        virtual void draw() {} 
 
         Amara::Entity* add(Amara::Entity* entity) {
             entity->scene = scene;
@@ -169,7 +169,7 @@ namespace Amara {
         sol::object get(std::string key) {
             if (props[key].valid() && props[key].is<sol::function>()) {
                 sol::function func = props[key];
-                return sol::make_object(WorldProperties::lua(), [this, &func](sol::table table, sol::variadic_args va, sol::this_state s) -> sol::object {
+                return sol::make_object(Properties::lua(), [this, &func](sol::table table, sol::variadic_args va, sol::this_state s) -> sol::object {
                     return func(this->make_lua_object(), sol::as_args(va));
                 });
             }

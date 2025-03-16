@@ -5,6 +5,23 @@ namespace Amara {
             entityID = "Scene";
         }
 
+        void update_properties() {
+            if (props.valid()) Properties::lua()["scene"] = make_lua_object();
+        }
+
+        virtual void preload() override {
+            update_properties();
+            Amara::Entity::preload();
+        }
+
+        virtual void create() override {
+            update_properties();
+        }
+
+        virtual void update() override {
+            update_properties();
+        }
+        
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Scene>("Scene",
                 sol::constructors<Scene()>(),

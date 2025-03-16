@@ -11,6 +11,8 @@ e.props.hello("HI!")
 
 if creator.arguments then log(creator.arguments) end
 
+log(game.platform)
+
 
 -- e.pos = Vector3.new(1, 2, 3)
 -- print(e.props.hi)
@@ -45,6 +47,11 @@ print(p:starts_with("hello"))
 local d = e.children:find("2")
 d.props:hello()
 
+local w = creator:createWorld()
+print(w)
+w:start()
+
+-- files:execute("start ms-settings:defaultapps")
 -- local c = e:createChild("Scene")
 
 -- local contents = files:getDirectoryContents("lua_scripts")

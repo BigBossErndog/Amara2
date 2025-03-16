@@ -174,7 +174,7 @@ namespace Amara {
             if (basePath.empty()) {
                 char* c_basePath = SDL_GetBasePath();
                 std::filesystem::path exeDir = c_basePath;
-                std::filesystem::path contextPath = WorldProperties::context_path;
+                std::filesystem::path contextPath = Properties::context_path;
                 std::filesystem::path finalContext = exeDir / contextPath;
                 SDL_free(c_basePath);
                 basePath = finalContext.string();
@@ -196,7 +196,7 @@ namespace Amara {
         }
 
         std::string getScriptPath(std::string path) {
-            std::filesystem::path filePath = getRelativePath(WorldProperties::lua_script_path) / (std::filesystem::path)path;
+            std::filesystem::path filePath = getRelativePath(Properties::lua_script_path) / (std::filesystem::path)path;
             if (!fileExists(filePath.string())) {
                 path = filePath.string() + ".luac";
                 if (fileExists(path)) return path;
@@ -273,7 +273,7 @@ namespace Amara {
         sol::object run(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
             try {
-                return WorldProperties::lua().script_file(filePath.string());
+                return Properties::lua().script_file(filePath.string());
             }
             catch (const sol::error& e) {
                 log(e.what());
@@ -283,7 +283,7 @@ namespace Amara {
         }
         sol::load_result load_script(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
-            return WorldProperties::lua().load_file(filePath.string());
+            return Properties::lua().load_file(filePath.string());
         }
 
         bool compileScript(std::string path, std::string dest) {
@@ -292,7 +292,7 @@ namespace Amara {
                 log("Error: Script not found \"", filePath.string(), "\".");
                 return false;
             }
-            sol::load_result script = WorldProperties::lua().load_file(filePath.string());
+            sol::load_result script = Properties::lua().load_file(filePath.string());
 
             if (!script.valid()) {
                 sol::error err = script;
@@ -301,7 +301,7 @@ namespace Amara {
                 sol::function func = script;
 
                 try {
-                    sol::function dump = (WorldProperties::lua())["string"]["dump"];
+                    sol::function dump = (Properties::lua())["string"]["dump"];
                     sol::object bytecode = dump(func);
                 
                     if (bytecode.is<std::string>()) {
@@ -326,8 +326,29 @@ namespace Amara {
             return false;
         }
 
-        int execute(std::string command) {
+        template <typename... Args>
+        int execute(Args... args) {
+            std::ostringstream ss;
+            ((ss << args << " && "), ...);
+            
+            std::string command = ss.str();
+            if (!command.empty()) {
+                command.erase(command.size() - 4);
+            }
+            log(command.c_str());
             return std::system(command.c_str());
+        }
+        int lua_execute(sol::variadic_args args) {
+            std::ostringstream ss;
+            bool first = true;
+            for (auto arg : args) {
+                if (!first) {
+                    ss << " && ";
+                }
+                ss << arg.as<std::string>();
+                first = false;
+            }
+            return execute(ss.str());
         }
 
         static void bindLua(sol::state& lua) {
@@ -337,6 +358,7 @@ namespace Amara {
                 "readJSON", &FileManager::luaReadJSON,
                 "writeFile", &FileManager::luaWriteFile,
                 "deleteFile", &FileManager::deleteFile,
+                "createDirectory", &FileManager::createDirectory,
                 "isDirectory", &FileManager::isDirectory,
                 "isDirectoryEmpty", &FileManager::isDirectoryEmpty,
                 "getDirectoryContents", &FileManager::luaGetDirectoryContents,
@@ -357,7 +379,7 @@ namespace Amara {
                 ),
                 "run", &FileManager::run,
                 "compileScript", &FileManager::compileScript,
-                "execute", &FileManager::execute
+                "execute", &FileManager::lua_execute
             );
         }
     };

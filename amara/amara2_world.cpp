@@ -3,20 +3,25 @@ namespace Amara {
     public:
         World(): Entity() {
             entityID = "World";
-            prepare();
+        }
+
+        virtual void preload() override {
+            update_properties();
+            Amara::Entity::preload();
+        }
+
+        virtual void create() override {
+            update_properties();
+        }
+        
+        virtual void update() override {
+            update_properties();
         }
 
         void update_properties() {
-            WorldProperties::world = this;
-
             if (props.valid()) {
-                WorldProperties::lua()["world"] = make_lua_object();
+                Properties::lua()["world"] = make_lua_object();
             }
-        }
-
-        void prepare() {
-            update_properties();
-            init_build();
         }
 
         void start() {
@@ -32,7 +37,8 @@ namespace Amara {
             
             lua.new_usertype<World>("World",
                 sol::constructors<World()>(),
-                sol::base_classes, sol::bases<Amara::Entity>()
+                sol::base_classes, sol::bases<Amara::Entity>(),
+                "start", &World::start
             );
         }
     };

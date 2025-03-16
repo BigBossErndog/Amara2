@@ -28,6 +28,18 @@
     #include <nlohmann/json.hpp>
     #include <MurmurHash3.cpp>
 
+    #if defined(_WIN32)
+        #include <windows.h>
+    #elif defined(__linux__)
+    #elif defined(__ANDROID__)
+    #elif defined(__APPLE__)
+        #include <TargetConditionals.h>
+        #if TARGET_OS_IPHONE
+        #else
+        #endif
+    #else
+    #endif
+
     #define LUA_IMPLEMENTATION
     #include <lua_single.h>
     #include <sol/sol.hpp>
@@ -53,11 +65,13 @@
     #include "amara2_utility.cpp"
     #include "amara2_geometry.cpp"
 
-    #include "amara2_worldProperties.cpp"
+    #include "amara2_properties.cpp"
     #include "amara2_luaUtlity.cpp"
 
-    #include "amara2_fileManager.cpp"
+    #include "amara2_gameManager.cpp"
 
+    #include "amara2_fileManager.cpp"
+    
     #include "amara2_messages.cpp"
     #include "amara2_messageBox.cpp"
 
