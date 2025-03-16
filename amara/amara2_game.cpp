@@ -159,6 +159,7 @@ namespace Amara {
             lua.new_usertype<Game>("Game",
                 sol::constructors<Game(), Game(sol::object)>(),
                 "props", &Game::props,
+                "files", &Game::files,
                 "scenes", &Game::scenes,
                 "scripts", &Game::scripts,
                 "factory", &Game::factory,

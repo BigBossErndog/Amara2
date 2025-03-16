@@ -29,7 +29,7 @@ namespace Amara {
             if (compiledScripts.find(key) != compiledScripts.end()) {
                 try {
                     sol::object result = compiledScripts[key]();
-                    return result.as<Amara::Entity*>()->init_build();
+                    return result.as<Amara::Entity*>();
                 }
                 catch (const sol::error& e) {
                     log("Failed to create Entity \"", key, "\".");
@@ -38,7 +38,7 @@ namespace Amara {
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
                     sol::object result = GameProperties::files->run(readScripts[key]);
-                    return result.as<Amara::Entity*>()->init_build();
+                    return result.as<Amara::Entity*>();
                 }
                 catch (const sol::error& e) {
                     log("Failed to create Entity \"", key, "\" from script \"", GameProperties::files->getScriptPath(readScripts[key]), "\".");
@@ -47,7 +47,7 @@ namespace Amara {
             else log("Entity \"", key, "\" was not found.");
             return nullptr;
         }
-
+        
         sol::object luaCreate(std::string key) {
             Amara::Entity* entity = create(key);
             return entity->make_lua_object();

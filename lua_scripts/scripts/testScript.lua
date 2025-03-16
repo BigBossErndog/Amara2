@@ -1,13 +1,16 @@
 game.factory:add("TestEntity", "entities/testEntity")
 local e = game.factory:create("TestEntity")
-e.id = "testEntity1"
 local f = e:createChild("TestEntity")
-f.id = "testEntity2"
 
 if game.arguments then log(game.arguments) end
 
 -- e.pos = Vector3.new(1, 2, 3)
+print(e.props.hi)
 log(e.pos:subtract(1, 2))
+
+-- if game.files:compile("lua_scripts/entities/testEntity.lua", "lua_scripts/entities/testEntity.luac") then
+--     game.files:deleteFile("lua_scripts/entities/testEntity.lua")
+-- end
 
 -- d.props:hello()
 -- game:execute("make win64")

@@ -66,20 +66,20 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(path)) {
-                log("Error: File does not exist: \"", filePath.c_str(), "\"");
+                log("Error: File does not exist: \"", filePath, "\".");
                 return false;
             }
 
             try {
                 if (std::filesystem::remove(path)) {
-                    c_style_log("Error: File deleted successfully: \"%s\"", filePath.c_str());
+                    log("File deleted successfully: \"", filePath, "\"");
                     return true;
                 } else {
-                    c_style_log("Error: Failed to delete file (unknown reason): \"%s\"", filePath.c_str());
+                    log("Error: Failed to delete file (unknown reason): \"", filePath.string(), "\".");
                     return false;
                 }
             } catch (const std::exception& e) {
-                c_style_log("Exception while deleting file:  \"%s\"", filePath.c_str());
+                log("Exception while deleting file:  \"", filePath.string(), "\".");
                 return false;
             }
 		    return false;
@@ -164,18 +164,25 @@ namespace Amara {
             return filePath.lexically_normal().string();
         }
 
-        std::string getFileName(std::string path) {
-            return std::filesystem::path(path).filename().string();
-        }
         std::string getScriptPath(std::string path) {
             std::filesystem::path filePath = getRelativePath(GameProperties::lua_script_path) / (std::filesystem::path)path;
             if (!fileExists(filePath.string())) {
-                path = filePath.string() + ".lua";
-                if (fileExists(path)) return path;
                 path = filePath.string() + ".luac";
+                if (fileExists(path)) return path;
+                path = filePath.string() + ".lua";
                 if (fileExists(path)) return path;
             }
             return filePath.string();
+        }
+
+        std::string getFileName(std::string path) {
+            return std::filesystem::path(path).filename().string();
+        }
+        std::string getFileExtension(std::string path) {
+            return std::filesystem::path(path).extension().string();
+        }
+        std::string removeFileExtension(std::string path) {
+            return std::filesystem::path(path).replace_extension().string();
         }
 
         sol::object run(std::string path) {
@@ -194,6 +201,46 @@ namespace Amara {
             return GameProperties::lua->load_file(filePath.string());
         }
 
+        bool compile(std::string path, std::string dest) {
+            std::filesystem::path filePath = getRelativePath(path);
+            if (!fileExists(filePath.string())) {
+                log("Script not found \"", filePath.string(), "\".");
+                return false;
+            }
+            sol::load_result script = GameProperties::lua->load_file(filePath.string());
+
+            if (!script.valid()) {
+                sol::error err = script;
+                std::cerr << "Error loading script: " << err.what() << std::endl;
+            } else {
+                sol::function func = script;
+
+                try {
+                    sol::function dump = (*GameProperties::lua)["string"]["dump"];
+                    sol::object bytecode = dump(func);
+                
+                    if (bytecode.is<std::string>()) {
+                        std::filesystem::path destPath = getRelativePath(dest);
+                        std::filesystem::create_directories(destPath.parent_path());
+
+                        std::string bytecode_str = bytecode.as<std::string>();
+                        std::ofstream out(destPath, std::ios::binary);
+                        out.write(bytecode_str.data(), bytecode_str.size());
+                        out.close();
+                        log("Compiled script to \"", destPath.string(), "\"");
+                        return true;
+                    }
+                    else {
+                        log("Could not compile script \"", getScriptPath(path), "\"");
+                    }
+                }
+                catch (const sol::error& e) {
+                    log("Could not compile script \"", getScriptPath(path), "\"");
+                }
+            }
+            return false;
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<FileManager>("FileManager",
                 "fileExists", &FileManager::fileExists,
@@ -209,7 +256,10 @@ namespace Amara {
                 "resetBasePath", &FileManager::resetBasePath,
                 "getRelativePath", &FileManager::getRelativePath,
                 "getFileName", &FileManager::getFileName,
-                "run", &FileManager::run
+                "getFileExtension", &FileManager::getFileExtension,
+                "removeFileExtension", &FileManager::removeFileExtension,
+                "run", &FileManager::run,
+                "compile", &FileManager::compile
             );
         }
     };
