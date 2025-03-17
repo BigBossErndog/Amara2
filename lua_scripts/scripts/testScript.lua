@@ -48,8 +48,12 @@ local d = e.children:find("2")
 d.props:hello()
 
 local w = creator:createWorld()
-print(w)
-w:start()
+-- print(w)
+-- w:start()
+
+log(string.concat(
+    "1", "2", "3"
+))
 
 -- files:execute("start ms-settings:defaultapps")
 -- local c = e:createChild("Scene")

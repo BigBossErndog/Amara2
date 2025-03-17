@@ -94,6 +94,13 @@ namespace Amara {
         return lua_table;
     }
 
+    std::string lua_string_concat(sol::variadic_args args) {
+        std::ostringstream ss;
+        for (auto arg : args) {
+            ss << lua_to_string(arg);
+        }
+        return ss.str();
+    }
     
     template<typename... Args>
     void log(Args... args) {
@@ -129,7 +136,7 @@ namespace Amara {
     void bindLuaUtilityFunctions(sol::state& lua) {
         lua.set_function("log", &Amara::lua_log);
         lua.set_function("object_to_string", &Amara::lua_to_string);
-
+        
         sol::table string_metatable = lua["string"];
         string_metatable.set_function("starts_with", [](std::string self, std::string check) -> bool {
             return string_startsWith(self, check);
@@ -137,5 +144,6 @@ namespace Amara {
         string_metatable.set_function("ends_with", [](std::string self, std::string check) -> bool {
             return string_endsWith(self, check);
         });
+        string_metatable.set_function("concat", &Amara::lua_string_concat);
     }
 }
