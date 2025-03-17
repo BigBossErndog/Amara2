@@ -32,12 +32,12 @@ namespace Amara {
 
         Amara::Entity* create(std::string key) {
             auto it = factory.find(key);
-            if (it != factory.end() && it->second) return (it->second())->init_build();
+            if (it != factory.end() && it->second) return (it->second());
             
             if (compiledScripts.find(key) != compiledScripts.end()) {
                 try {
                     sol::object result = compiledScripts[key]();
-                    return result.as<Amara::Entity*>()->init_build();
+                    return result.as<Amara::Entity*>();
                 }
                 catch (const sol::error& e) {
                     log("Failed to create Entity \"", key, "\".");
@@ -46,7 +46,7 @@ namespace Amara {
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
                     sol::object result = Properties::files->run(readScripts[key]);
-                    return result.as<Amara::Entity*>()->init_build();
+                    return result.as<Amara::Entity*>();
                 }
                 catch (const sol::error& e) {
                     log("Failed to create Entity \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
@@ -58,7 +58,7 @@ namespace Amara {
         
         sol::object luaCreate(std::string key) {
             Amara::Entity* entity = create(key);
-            return entity->make_lua_object();
+            return entity->get_lua_object();
         }
 
         sol::object castLuaEntity(Amara::Entity* entity, std::string key) {
@@ -103,15 +103,34 @@ namespace Amara {
     sol::object Entity::luaAdd(std::string key) {
         Amara::Entity* entity = Properties::factory->create(key);
         add(entity);
-        return entity->make_lua_object();
+        return entity->get_lua_object();
     }
 
     template <typename T>
     T Entity::as() {
         return dynamic_cast<T>(this);
     }
-    sol::object Entity::make_lua_object() {
-        if (luaobject.valid()) return luaobject; 
-        return Properties::factory->castLuaEntity(this, entityID);
+    sol::object Entity::get_lua_object() {
+        if (luaobject.valid()) return luaobject;
+
+        luaobject = Properties::factory->castLuaEntity(this, entityID);
+
+        props = Properties::lua().create_table();
+
+        sol::table props_meta = Properties::lua().create_table();
+        props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+            if (value.is<sol::function>()) {
+                sol::function callback = value.as<sol::function>();
+                sol::function func = sol::make_object(Properties::lua(), [this, callback](sol::variadic_args va)->sol::object {
+                    return callback(this->get_lua_object(), sol::as_args(va));
+                });
+                tbl.raw_set(key, func);
+            }
+            else tbl.raw_set(key, value);
+        };
+
+        props[sol::metatable_key] = props_meta;
+
+        return luaobject;
     }
 }

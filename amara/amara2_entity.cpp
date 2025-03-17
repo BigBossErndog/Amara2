@@ -29,31 +29,7 @@ namespace Amara {
 
         Entity() {
             entityID = "Entity";
-        }
-
-        Amara::Entity* init_build() {
-            if (!props.valid()) {
-                props = Properties::lua().create_table();
-
-                sol::table props_meta = Properties::lua().create_table();
-                props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
-                    if (value.is<sol::function>()) {
-                        sol::function callback = value.as<sol::function>();
-                        sol::function func = sol::make_object(Properties::lua(), [this, callback](sol::variadic_args va)->sol::object {
-                            return callback(this->make_lua_object(), sol::as_args(va));
-                        });
-                        tbl.raw_set(key, func);
-                    }
-                    else tbl.raw_set(key, value);
-                };
-
-                props[sol::metatable_key] = props_meta;
-            }
-            if (!luaobject.valid()) {
-                luaobject = make_lua_object();
-            }
-
-            return this;
+            get_lua_object();
         }
 
         virtual void create() {}
@@ -61,7 +37,7 @@ namespace Amara {
             create();
             if (luaCreate.valid()) {
                 try {
-                    luaCreate(make_lua_object());
+                    luaCreate(get_lua_object());
                 }
                 catch (const sol::error& e) {
                     log(entityID, ": \"", id, "\" error on create.");
@@ -93,7 +69,7 @@ namespace Amara {
         }
         sol::object super_configure(sol::object config) {
             configure(lua_to_json(config));
-            return make_lua_object();
+            return get_lua_object();
         }
 
         sol::function configure_override;
@@ -102,11 +78,11 @@ namespace Amara {
                 std::string path = config.as<std::string>();
                 if (string_endsWith(path, ".json")) {
                     luaConfigure(json_to_lua(Properties::files->readJSON(path)));
-                    return make_lua_object();
+                    return get_lua_object();
                 }
                 if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
                     luaConfigure(Properties::scripts->run(path));
-                    return make_lua_object();
+                    return get_lua_object();
                 }
             }
             if (configure_override.valid()) {
@@ -118,7 +94,7 @@ namespace Amara {
                 }
             }
             else configure(lua_to_json(config));
-            return make_lua_object();
+            return get_lua_object();
         }
         sol::object luaConfigure(std::string key, sol::object val) {
             sol::table config = Properties::lua().create_table();
@@ -137,15 +113,15 @@ namespace Amara {
             }
         }
 
-        virtual void update() {}
+        virtual void update(double deltaTime) {}
 
-        virtual void run(float delta) {
+        virtual void run(double deltaTime) {
             messages.run();
 
-            update();
+            update(deltaTime);
             if (luaUpdate.valid()) {
                 try {
-                    luaUpdate(make_lua_object(), delta);
+                    luaUpdate(get_lua_object(), deltaTime);
                 }
                 catch (const sol::error& e) {
                     c_style_log("%s: \"%s\" error on update().", entityID.c_str(), id.c_str());
@@ -170,7 +146,7 @@ namespace Amara {
             if (props[key].valid() && props[key].is<sol::function>()) {
                 sol::function func = props[key];
                 return sol::make_object(Properties::lua(), [this, &func](sol::table table, sol::variadic_args va, sol::this_state s) -> sol::object {
-                    return func(this->make_lua_object(), sol::as_args(va));
+                    return func(this->get_lua_object(), sol::as_args(va));
                 });
             }
             return props[key];
@@ -182,7 +158,7 @@ namespace Amara {
         template <typename T>
         T as();
 
-        sol::object make_lua_object();
+        sol::object get_lua_object();
 
         static void cleanEntityList(std::vector<Amara::Entity*>& list) {
             Amara::Entity* entity;
@@ -231,7 +207,7 @@ namespace Amara {
                     std::vector<Amara::Entity*> copylist = vec;
                     cleanEntityList(copylist);
                     if (index > 0 && index <= vec.size()) {
-                        return copylist[index-1]->make_lua_object();
+                        return copylist[index-1]->get_lua_object();
                     }
                     return nullptr;
                 },
@@ -239,7 +215,7 @@ namespace Amara {
                     for (Amara::Entity* entity: vec) {
                         if (entity->isDestroyed) continue;
                         if (string_equal(entity->id, gid)) {
-                            return entity->make_lua_object();
+                            return entity->get_lua_object();
                         }
                     }
                     return nullptr;

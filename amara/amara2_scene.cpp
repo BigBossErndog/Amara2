@@ -6,7 +6,8 @@ namespace Amara {
         }
 
         void update_properties() {
-            if (props.valid()) Properties::lua()["scene"] = make_lua_object();
+            Properties::scene = this;
+            Properties::lua()["scene"] = get_lua_object();
         }
 
         virtual void preload() override {
@@ -18,7 +19,7 @@ namespace Amara {
             update_properties();
         }
 
-        virtual void update() override {
+        virtual void update(double deltaTime) override {
             update_properties();
         }
         

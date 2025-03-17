@@ -1,5 +1,6 @@
 namespace Amara {
     class World;
+    class Scene;
     class GameManager;
     class EntityFactory;
     class ScriptFactory;
@@ -13,8 +14,11 @@ namespace Amara {
         static std::string assets_path;
         static int lua_stack_size;
 
-        static GameManager* game;
         static std::string platform;
+
+        static GameManager* game;
+        static World* world;
+        static Scene* scene;
 
         static EntityFactory* factory;
         static ScriptFactory* scripts;
@@ -32,6 +36,8 @@ namespace Amara {
     };
     int Properties::lua_stack_size = 100000;
     GameManager* Properties::game = nullptr;
+    World* Properties::world = nullptr;
+    Scene* Properties::scene = nullptr;
     EntityFactory* Properties::factory = nullptr;
     ScriptFactory* Properties::scripts = nullptr;
     FileManager* Properties::files = nullptr;

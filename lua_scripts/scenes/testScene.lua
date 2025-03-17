@@ -7,7 +7,7 @@ end
 scene.onCreate = function(self)
 end
 
-scene.onUpdate = function(self) 
+scene.onUpdate = function(self, deltaTime)
 end
     
 

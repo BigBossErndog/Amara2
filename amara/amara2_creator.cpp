@@ -80,7 +80,7 @@ namespace Amara {
 
             lua.new_usertype<Creator>("Creator",
                 "createWorld", [this](Amara::Creator& c) -> sol::object {
-                    return c.createWorld().make_lua_object();
+                    return c.createWorld().get_lua_object();
                 },
                 "arguments", sol::property([](const Creator& g) -> sol::object {
                     if (g.arguments.size() == 0) return sol::nil;

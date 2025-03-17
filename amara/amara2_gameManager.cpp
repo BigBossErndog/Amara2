@@ -2,7 +2,7 @@ namespace Amara {
     class GameManager {
     public:
         int targetFPS = 60;
-        float delta = 0;
+        float deltaTime = 0;
 
         std::string platform;
 
@@ -30,7 +30,7 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<GameManager>("GameManager",
                 "targetFPS", sol::readonly(&GameManager::targetFPS),
-                "delta", sol::readonly(&GameManager::delta),
+                "deltaTime", sol::readonly(&GameManager::deltaTime),
                 "platform", sol::readonly(&GameManager::platform)
             );
         }
