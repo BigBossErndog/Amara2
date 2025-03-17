@@ -152,23 +152,24 @@ namespace Amara {
                 }
             }
 
-            if (value.is<sol::function>()) {
-                sol::function callback = value.as<sol::function>();
-                sol::function func = sol::make_object(Properties::lua(), [this, callback](sol::variadic_args va)->sol::object {
-                    return callback(this->get_lua_object(), sol::as_args(va));
-                });
-                this->props.raw_set(key, func);
-            }
-            else this->props.raw_set(key, value);
+            this->props[key] = value;
         };
 
         sol::function old_indexer = metatable["__index"];
-        metatable["__index"] = [this, old_indexer](sol::object obj, sol::object key) -> sol::object {
+        metatable["__index"] = [this, old_indexer](sol::userdata obj, sol::object key) -> sol::object {
+            sol::table metatable = obj[sol::metatable_key];
+
+            if (key.is<std::string>()) {
+                std::string key_str = key.as<std::string>();
+                if (metatable[key_str].valid()) {
+                    return old_indexer(obj, key);
+                }
+            }
+
             if (this->props[key].valid()) {
                 return this->props[key];
             }
-            sol::userdata entity_data = obj.as<sol::userdata>();
-            sol::table entity_meta = entity_data[sol::metatable_key];
+
             return old_indexer(obj, key);
         };
 

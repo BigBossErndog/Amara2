@@ -7,6 +7,9 @@ e.id = "entity1"
 local f = e:createChild("TestEntity")
 f.id = "entity2"
 
+e.pos.x = e.pos.x + 1
+print(e.pos)
+
 if creator.arguments then log(creator.arguments) end
 
 log(game.platform)
