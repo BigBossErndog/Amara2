@@ -1,13 +1,11 @@
 factory:add("TestEntity", "entities/testEntity")
 local e = factory:create("TestEntity")
-e.id = "1"
+e.id = "entity1"
 -- e.props.name = "hi"
 
 
 local f = e:createChild("TestEntity")
-f.id = "2"
-
-e.props.hello("HI!")
+f.id = "entity2"
 
 if creator.arguments then log(creator.arguments) end
 
@@ -44,8 +42,9 @@ log(game.platform)
 local p = "hello world"
 print(p:starts_with("hello"))
 
-local d = e.children:find("2")
-d.props:hello()
+local d = e.children:find("entity2");
+
+d:hello()
 
 local w = creator:createWorld()
 -- print(w)

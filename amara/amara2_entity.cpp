@@ -142,19 +142,6 @@ namespace Amara {
         }
         sol::object luaAdd(std::string);
 
-        sol::object get(std::string key) {
-            if (props[key].valid() && props[key].is<sol::function>()) {
-                sol::function func = props[key];
-                return sol::make_object(Properties::lua(), [this, &func](sol::table table, sol::variadic_args va, sol::this_state s) -> sol::object {
-                    return func(this->get_lua_object(), sol::as_args(va));
-                });
-            }
-            return props[key];
-        }
-        void set(std::string key, sol::object obj) {
-            props[key] = obj;
-        }
-
         template <typename T>
         T as();
 
@@ -193,8 +180,6 @@ namespace Amara {
                 "onUpdate", &Entity::luaUpdate,
                 "createChild", &Entity::luaAdd,
                 "addChild", &Entity::add,
-                "get", &Entity::get,
-                "set", &Entity::set,
                 "isDestroyed", sol::readonly(&Entity::isDestroyed)
             );
 
