@@ -27,6 +27,8 @@ namespace Amara {
         static MessageQueue* messages;
         static sol::state* lua_state;
 
+        static Rectangle viewport;
+
         static sol::state& lua() {
             return *lua_state;
         };
@@ -34,6 +36,16 @@ namespace Amara {
             lua_state = &_lua;
         }
     };
+
+    #ifdef AMARA_FINAL_BUILD
+        std::string Properties::context_path = "./";
+    #else
+        std::string Properties::context_path = "../";
+    #endif
+    std::string Properties::lua_script_path = "./lua_scripts";
+    std::string Properties::assets_path = "./assets";
+    std::string Properties::platform = "unknown";
+
     int Properties::lua_stack_size = 100000;
     GameManager* Properties::game = nullptr;
     World* Properties::world = nullptr;
@@ -44,12 +56,6 @@ namespace Amara {
     MessageQueue* Properties::messages = nullptr;
     sol::state* Properties::lua_state = nullptr;
 
-    #ifdef AMARA_FINAL_BUILD
-        std::string Properties::context_path = "./";
-    #else
-        std::string Properties::context_path = "../";
-    #endif
-    std::string Properties::lua_script_path = "./lua_scripts";
-    std::string Properties::assets_path = "./assets";
-    std::string Properties::platform = "unknown";
+    Rectangle Properties::viewport;
+
 }

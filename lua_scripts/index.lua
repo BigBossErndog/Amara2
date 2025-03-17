@@ -4,6 +4,13 @@
 -- game:configure_override = function(config)
 --     if config["hello"] then log("HELLO!") end
 -- end
-scripts:run("scripts/testScript.lua");
 
-return ""
+-- scripts:run("scripts/testScript.lua");
+
+local w = creator:createWorld()
+local e = w:createChild("Entity")
+
+e.onUpdate = function(self, delta) 
+    log(game.fps)
+end
+-- log(w)

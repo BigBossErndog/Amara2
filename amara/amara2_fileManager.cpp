@@ -170,6 +170,21 @@ namespace Amara {
             return vector_to_lua(getSubDirectories(path));
         }
 
+        bool deleteDirectory(const std::string& path) {
+            std::filesystem::path dirPath = getRelativePath(path);
+            try {
+                if (std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath)) {
+                    std::filesystem::remove_all(dirPath);  // Deletes the directory and all its contents
+                    return true;
+                } else {
+                    log("Error: Path does not exist or is not a directory \"", dirPath.string(), "\".");
+                }
+            } catch (const std::filesystem::filesystem_error& e) {
+                log("Error: Failed to delete directory \"", dirPath.string(), "\".");
+            }
+            return false;
+        }
+
         std::string getBasePath() {
             if (basePath.empty()) {
                 char* c_basePath = SDL_GetBasePath();

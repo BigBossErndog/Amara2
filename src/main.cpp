@@ -2,6 +2,6 @@
 
 int main(int argv, char** args) {
     Amara::Creator creator(argv, args);
-    creator.init("index");
+    creator.startCreation("index");
     return 0;
 }

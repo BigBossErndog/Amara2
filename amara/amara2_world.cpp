@@ -5,26 +5,27 @@ namespace Amara {
             baseEntityID = "World";
         }
 
-        void update_properties() {
+        virtual void update_properties(double deltaTime) override {
             Properties::world = this;
             Properties::lua()["world"] = get_lua_object();
+            Entity::update_properties(deltaTime);
         }
 
         virtual void preload() override {
-            update_properties();
+            update_properties(0);
             Amara::Entity::preload();
         }
 
         virtual void create() override {
-            update_properties();
+            update_properties(0);
         }
         
         virtual void update(double deltaTime) override {
-            update_properties();
+            update_properties(deltaTime);
         }
 
         void start() {
-            update_properties();
+            update_properties(0);
             Entity::init();
         }
         

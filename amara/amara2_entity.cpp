@@ -11,6 +11,7 @@ namespace Amara {
         Amara::Scene* scene = nullptr;
 
         std::vector<Amara::Entity*> children;
+        std::vector<Amara::Entity*> children_copy_list;
         
         sol::table props;
         sol::object luaobject;
@@ -27,6 +28,7 @@ namespace Amara {
         bool lockDepthToY = false;
 
         bool isDestroyed = false;
+        bool isPaused = false;
 
         Entity() {
             baseEntityID = "Entity";
@@ -41,7 +43,7 @@ namespace Amara {
                     luaCreate(get_lua_object());
                 }
                 catch (const sol::error& e) {
-                    log(baseEntityID, ": \"", id, "\" error on create.");
+                    log("Error: On ", baseEntityID, ": \"", id, "\" while executing onCreate().");
                 }
             }
         }
@@ -91,7 +93,7 @@ namespace Amara {
                     configure_override(this, config);
                 }
                 catch (const sol::error& e) {
-                    c_style_log("%s: \"%s\" error on configure().", baseEntityID.c_str(), id.c_str());
+                    log("Error: On ", baseEntityID, ": \"", id, "\" while executing configure().");
                 }
             }
             else configure(lua_to_json(config));
@@ -109,12 +111,13 @@ namespace Amara {
                     luaPreload(*this);
                 }
                 catch (const sol::error& e) {
-                    c_style_log("%s: \"%s\" error on preload().", baseEntityID.c_str(), id.c_str());
+                    log("Error: On ", baseEntityID, ": \"", id, "\" while executing onPreload().");
                 }
             }
         }
-
+        
         virtual void update(double deltaTime) {}
+        virtual void update_properties(double deltaTime) {}
 
         virtual void run(double deltaTime) {
             messages.run();
@@ -125,14 +128,36 @@ namespace Amara {
                     luaUpdate(get_lua_object(), deltaTime);
                 }
                 catch (const sol::error& e) {
-                    c_style_log("%s: \"%s\" error on update().", baseEntityID.c_str(), id.c_str());
+                    log("Error: On ", baseEntityID, ": \"", id, "\" while executing onUpdate().");
                 }
             }
 
             if (lockDepthToY) depth = pos.y;
+
+            if (!isDestroyed) runChildren(deltaTime);
+            cleanEntityList(children);
+        }
+        void runChildren(double deltaTime) {
+            children_copy_list = children;
+
+            Amara::Entity* child;
+			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
+				update_properties(deltaTime);
+
+                child = *it;
+				if (child == nullptr || child->isDestroyed || child->parent != this || child->isPaused) {
+					++it;
+					continue;
+				}
+				child->run(deltaTime);
+				++it;
+				if (isDestroyed) break;
+			}
         }
 
-        virtual void draw() {} 
+        virtual void draw() {}
+
+        void sortChildren();
 
         Amara::Entity* add(Amara::Entity* entity) {
             entity->scene = scene;
@@ -147,6 +172,18 @@ namespace Amara {
         T as();
 
         sol::object get_lua_object();
+
+        sol::function to_string_override;
+        explicit operator std::string() const {
+            return string_concat(
+                "(", baseEntityID, ", ", 
+                entityID, ": \"",
+                id, "\") "
+            );
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Entity& e) {
+            return os << static_cast<std::string>(e);
+        }
 
         static void cleanEntityList(std::vector<Amara::Entity*>& list) {
             Amara::Entity* entity;
@@ -182,7 +219,10 @@ namespace Amara {
                 "onUpdate", &Entity::luaUpdate,
                 "createChild", &Entity::luaAdd,
                 "addChild", &Entity::add,
-                "isDestroyed", sol::readonly(&Entity::isDestroyed)
+                "isDestroyed", sol::readonly(&Entity::isDestroyed),
+                "string", [](Amara::Entity* e){
+                    return std::string(*e);
+                }
             );
 
             lua.new_usertype<std::vector<Amara::Entity*>>("EntityVector",
@@ -211,10 +251,27 @@ namespace Amara {
                     if (index > 0 && index <= vec.size()) {
                         vec.erase(vec.begin() + index-1);
                     }
+                },
+                "string", [](std::vector<Amara::Entity*>& vec) -> std::string {
+                    std::string output;
+                    for (int i = 0; i < vec.size(); i++) {
+                        output += std::string(*vec[i]);
+                        if (i < vec.size()-1) {
+                            output += "\n";
+                        }
+                    }
+                    return output;
                 }
             );
 
             entity_type["children"] = sol::readonly(&Entity::children);
         }
     };
+
+    bool is_entity(sol::object obj) {
+        return obj.is<Amara::Entity>();
+    }
+    std::string entity_to_string(sol::object obj) {
+        return std::string(obj.as<Amara::Entity>());
+    } 
 }

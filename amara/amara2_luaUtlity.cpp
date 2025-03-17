@@ -1,4 +1,6 @@
 namespace Amara {
+    class Entity;
+
     sol::object json_to_lua(nlohmann::json json) {
         sol::state& lua = Properties::lua();
         if (json.is_null()) {
@@ -72,9 +74,11 @@ namespace Amara {
     
         return nullptr;
     }
-
+    
+    std::string entity_to_string(sol::object);
     std::string lua_to_string(sol::object obj) {
         if (obj.is<std::string>()) return obj.as<std::string>();
+        if (is_entity(obj)) return entity_to_string(obj);
         if (obj.is<Vector3>()) return std::string(obj.as<Vector3>());
         if (obj.is<Vector2>()) return std::string(obj.as<Vector2>());
 

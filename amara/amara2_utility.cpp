@@ -66,4 +66,6 @@ namespace Amara {
         float result = fmod(num, den);
         return result;
     }
+
+    bool is_entity(sol::object);
 }
