@@ -34,6 +34,7 @@ namespace Amara {
 					++it;
 					continue;
 				}
+                update_properties();
 				if (child->is_camera) child->draw();
 				++it;
 			}

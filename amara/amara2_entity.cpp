@@ -175,16 +175,14 @@ namespace Amara {
 
             Amara::Entity* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
-				update_properties();
-
                 child = *it;
 				if (child == nullptr || child->isDestroyed || child->parent != this) {
 					++it;
 					continue;
 				}
+                update_properties();
 				child->draw();
 				++it;
-				if (isDestroyed) break;
 			}
         }
 
