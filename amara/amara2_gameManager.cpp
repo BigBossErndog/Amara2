@@ -1,8 +1,8 @@
 namespace Amara {
     class GameManager {
     public:
-        int fps = 1;
-        int targetFPS = -1;
+        float fps = 60;
+        float targetFPS = -1;
         double deltaTime = 1;
 
         std::string platform;
@@ -28,9 +28,9 @@ namespace Amara {
             Properties::platform = platform;
         }
 
-        void setTargetFPS(int _fps) {
-            if (_fps < 1) {
-                log("Error: Target FPS cannot be set lower than 1.");
+        void setTargetFPS(float _fps) {
+            if (_fps <= 0) {
+                log("Error: Target FPS cannot be 0 or less.");
                 return;
             }
             targetFPS = _fps;
@@ -43,10 +43,10 @@ namespace Amara {
             lua.new_usertype<GameManager>("GameManager",
                 "fps", sol::readonly(&GameManager::fps),
                 "targetFPS", sol::readonly(&GameManager::targetFPS),
+                "setTargetFPS", &GameManager::setTargetFPS,
+                "uncapFPS", &GameManager::uncapFPS,
                 "deltaTime", sol::readonly(&GameManager::deltaTime),
-                "platform", sol::readonly(&GameManager::platform),
-                "setFPS", &GameManager::setTargetFPS,
-                "uncapFPS", &GameManager::uncapFPS
+                "platform", sol::readonly(&GameManager::platform)
             );
         }
     };

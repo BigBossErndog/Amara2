@@ -16,6 +16,8 @@ namespace Amara {
 
         static std::string platform;
 
+        static double deltaTime;
+
         static GameManager* game;
         static World* world;
         static Scene* scene;
@@ -45,6 +47,7 @@ namespace Amara {
     std::string Properties::lua_script_path = "./lua_scripts";
     std::string Properties::assets_path = "./assets";
     std::string Properties::platform = "unknown";
+    double Properties::deltaTime = 1;
 
     int Properties::lua_stack_size = 100000;
     GameManager* Properties::game = nullptr;

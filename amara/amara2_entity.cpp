@@ -1,5 +1,6 @@
 namespace Amara {
     class Scene;
+    class World;
 
     class Entity {
     public:
@@ -7,6 +8,7 @@ namespace Amara {
         std::string entityID;
         std::string baseEntityID;
 
+        Amara::World* world = nullptr;
         Amara::Entity* parent = nullptr;
         Amara::Scene* scene = nullptr;
 
@@ -30,6 +32,8 @@ namespace Amara {
         bool isDestroyed = false;
         bool isPaused = false;
 
+        bool is_camera = false;
+
         Entity() {
             baseEntityID = "Entity";
             get_lua_object();
@@ -37,6 +41,7 @@ namespace Amara {
 
         virtual void create() {}
         virtual void init() {
+            update_properties();
             create();
             if (luaCreate.valid()) {
                 try {
@@ -49,6 +54,7 @@ namespace Amara {
         }
 
         virtual Amara::Entity* configure(nlohmann::json config) {
+            update_properties();
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
                 if (string_endsWith(path, ".json")) {
@@ -77,6 +83,7 @@ namespace Amara {
 
         sol::function configure_override;
         sol::object luaConfigure(sol::object config) {
+            update_properties();
             if (config.is<std::string>()) {
                 std::string path = config.as<std::string>();
                 if (string_endsWith(path, ".json")) {
@@ -106,6 +113,7 @@ namespace Amara {
         }
 
         virtual void preload() {
+            update_properties();
             if (luaPreload.valid()) {
                 try {
                     luaPreload(*this);
@@ -117,9 +125,10 @@ namespace Amara {
         }
         
         virtual void update(double deltaTime) {}
-        virtual void update_properties(double deltaTime) {}
+        virtual void update_properties() {}
 
         virtual void run(double deltaTime) {
+            update_properties();
             messages.run();
 
             update(deltaTime);
@@ -142,7 +151,7 @@ namespace Amara {
 
             Amara::Entity* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
-				update_properties(deltaTime);
+				update_properties();
 
                 child = *it;
 				if (child == nullptr || child->isDestroyed || child->parent != this || child->isPaused) {
@@ -155,18 +164,72 @@ namespace Amara {
 			}
         }
 
-        virtual void draw() {}
+        virtual void draw() {
+            if (isDestroyed) return;
+
+            sortChildren();
+            drawChildren();
+        }
+        virtual void drawChildren() {
+            children_copy_list = children;
+
+            Amara::Entity* child;
+			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
+				update_properties();
+
+                child = *it;
+				if (child == nullptr || child->isDestroyed || child->parent != this) {
+					++it;
+					continue;
+				}
+				child->draw();
+				++it;
+				if (isDestroyed) break;
+			}
+        }
 
         void sortChildren();
 
-        Amara::Entity* add(Amara::Entity* entity) {
+        Amara::Entity* addChild(Amara::Entity* entity) {
+            update_properties();
+            entity->world = world;
             entity->scene = scene;
             entity->parent = this;
             children.push_back(entity);
             entity->init();
             return entity;
         }
-        sol::object luaAdd(std::string);
+        Amara::Entity* createChild(std::string);
+        sol::object luaCreateChild(std::string);
+
+        void removeChild(Amara::Entity* find) {
+            if (isDestroyed) return;
+            Amara::Entity* child;
+			for (auto it = children.begin(); it != children.end();) {
+                child = *it;
+				if (child == find) {
+					it = children.erase(it);
+					continue;
+				}
+				++it;
+			}
+        }
+
+        void destroy() {
+            if (isDestroyed) return;
+            isDestroyed = true;
+
+            parent->removeChild(this);
+
+            Amara::Entity* child;
+            for (auto it = children.begin(); it != children.end();) {
+                child = *it;
+                child->destroy();
+				++it;
+			}
+
+            // NOTE: ADD TO GARBAGE QUEUE
+        }
 
         template <typename T>
         T as();
@@ -217,8 +280,8 @@ namespace Amara {
                 "onPreload", &Entity::luaPreload,
                 "onCreate", &Entity::luaCreate,
                 "onUpdate", &Entity::luaUpdate,
-                "createChild", &Entity::luaAdd,
-                "addChild", &Entity::add,
+                "createChild", &Entity::luaCreateChild,
+                "addChild", &Entity::addChild,
                 "isDestroyed", sol::readonly(&Entity::isDestroyed),
                 "string", [](Amara::Entity* e){
                     return std::string(*e);
@@ -273,5 +336,10 @@ namespace Amara {
     }
     std::string entity_to_string(sol::object obj) {
         return std::string(obj.as<Amara::Entity>());
-    } 
+    }
+
+
+    void Entity::sortChildren() {
+        // NOTE: Implement children sorting
+    }
 }

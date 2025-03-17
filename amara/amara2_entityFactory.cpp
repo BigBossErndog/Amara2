@@ -82,6 +82,7 @@ namespace Amara {
         template <typename T>
         void registerEntity(std::string key) {
             factory[key] = []() -> T* { return new T(); };
+            
             entityRegistry[key] = [](Entity* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
                     return sol::make_object(Properties::lua(), derived);
@@ -97,6 +98,7 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             Amara::Entity::bindLua(lua);
+            Amara::Camera::bindLua(lua);
             Amara::Scene::bindLua(lua);
 
             lua.new_usertype<EntityFactory>("EntityFactory",
@@ -107,10 +109,16 @@ namespace Amara {
         }
     };
 
-    sol::object Entity::luaAdd(std::string key) {
+    Amara::Entity* Entity::createChild(std::string key) {
         Amara::Entity* entity = Properties::factory->create(key);
-        add(entity);
-        return entity->get_lua_object();
+        if (entity) addChild(entity);
+        return entity;
+    }
+
+    sol::object Entity::luaCreateChild(std::string key) {
+        Amara::Entity* entity = createChild(key);
+        if (entity) return entity->get_lua_object();
+        return sol::nil;
     }
 
     template <typename T>

@@ -162,7 +162,7 @@ namespace Amara {
                     }
                 }
                 current_tick = SDL_GetPerformanceCounter();
-                game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
+                Properties::deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
                 game.fps = 1 / ((double)(current_tick - rec_tick) / (double)freq);
                 rec_tick = current_tick;
             }

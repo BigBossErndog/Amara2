@@ -78,7 +78,7 @@
     
     #include "amara2_messages.cpp"
     #include "amara2_messageBox.cpp"
-
+    
     #include "amara2_script.cpp"
     #include "amara2_scriptFactory.cpp"
 
@@ -87,6 +87,8 @@
     #ifdef AMARA_WEB_SERVER
         #include "amara2_webServer.cpp"
     #endif
+
+    #include "amara2_camera.cpp"
     
     #include "amara2_scene.cpp"
 
