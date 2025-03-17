@@ -2,7 +2,7 @@ namespace Amara {
     class World: public Entity {
     public:
         World(): Entity() {
-            entityID = "World";
+            baseEntityID = "World";
         }
 
         void update_properties() {

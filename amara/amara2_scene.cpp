@@ -2,7 +2,7 @@ namespace Amara {
     class Scene: public Amara::Entity {
     public:
         Scene(): Entity() {
-            entityID = "Scene";
+            baseEntityID = "Scene";
         }
 
         void update_properties() {

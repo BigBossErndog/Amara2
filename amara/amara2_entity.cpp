@@ -5,6 +5,7 @@ namespace Amara {
     public:
         std::string id;
         std::string entityID;
+        std::string baseEntityID;
 
         Amara::Entity* parent = nullptr;
         Amara::Scene* scene = nullptr;
@@ -28,7 +29,7 @@ namespace Amara {
         bool isDestroyed = false;
 
         Entity() {
-            entityID = "Entity";
+            baseEntityID = "Entity";
             get_lua_object();
         }
 
@@ -40,7 +41,7 @@ namespace Amara {
                     luaCreate(get_lua_object());
                 }
                 catch (const sol::error& e) {
-                    log(entityID, ": \"", id, "\" error on create.");
+                    log(baseEntityID, ": \"", id, "\" error on create.");
                 }
             }
         }
@@ -90,7 +91,7 @@ namespace Amara {
                     configure_override(this, config);
                 }
                 catch (const sol::error& e) {
-                    c_style_log("%s: \"%s\" error on configure().", entityID.c_str(), id.c_str());
+                    c_style_log("%s: \"%s\" error on configure().", baseEntityID.c_str(), id.c_str());
                 }
             }
             else configure(lua_to_json(config));
@@ -108,7 +109,7 @@ namespace Amara {
                     luaPreload(*this);
                 }
                 catch (const sol::error& e) {
-                    c_style_log("%s: \"%s\" error on preload().", entityID.c_str(), id.c_str());
+                    c_style_log("%s: \"%s\" error on preload().", baseEntityID.c_str(), id.c_str());
                 }
             }
         }
@@ -124,7 +125,7 @@ namespace Amara {
                     luaUpdate(get_lua_object(), deltaTime);
                 }
                 catch (const sol::error& e) {
-                    c_style_log("%s: \"%s\" error on update().", entityID.c_str(), id.c_str());
+                    c_style_log("%s: \"%s\" error on update().", baseEntityID.c_str(), id.c_str());
                 }
             }
 
@@ -164,6 +165,7 @@ namespace Amara {
                 sol::constructors<Entity()>(),
                 "pos", &Entity::pos,
                 "id", &Entity::id,
+                "baseEntityID", sol::readonly(&Entity::baseEntityID),
                 "entityID", sol::readonly(&Entity::entityID),
                 "parent", sol::readonly(&Entity::parent),
                 "props", &Entity::props,

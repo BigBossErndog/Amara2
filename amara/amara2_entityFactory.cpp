@@ -30,14 +30,21 @@ namespace Amara {
             }
         }
 
+        Amara::Entity* prepEntity(Amara::Entity* entity, std::string key) {
+            entity->entityID = key;
+            return entity;
+        }
+
         Amara::Entity* create(std::string key) {
             auto it = factory.find(key);
-            if (it != factory.end() && it->second) return (it->second());
+            if (it != factory.end() && it->second) {
+                return prepEntity(it->second(), key);
+            }
             
             if (compiledScripts.find(key) != compiledScripts.end()) {
                 try {
                     sol::object result = compiledScripts[key]();
-                    return result.as<Amara::Entity*>();
+                    return prepEntity(result.as<Amara::Entity*>(), key);
                 }
                 catch (const sol::error& e) {
                     log("Failed to create Entity \"", key, "\".");
@@ -46,7 +53,7 @@ namespace Amara {
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
                     sol::object result = Properties::files->run(readScripts[key]);
-                    return result.as<Amara::Entity*>();
+                    return prepEntity(result.as<Amara::Entity*>(), key);
                 }
                 catch (const sol::error& e) {
                     log("Failed to create Entity \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
@@ -67,7 +74,7 @@ namespace Amara {
                 return it->second(entity);
             }
             else {
-                log("Error: Entity type with key \"", entity->entityID, "\" was not registered.");
+                log("Error: Entity type with key \"", entity->baseEntityID, "\" was not registered.");
             }
             return sol::lua_nil;
         }
@@ -113,7 +120,7 @@ namespace Amara {
     sol::object Entity::get_lua_object() {
         if (luaobject.valid()) return luaobject;
 
-        luaobject = Properties::factory->castLuaEntity(this, entityID);
+        luaobject = Properties::factory->castLuaEntity(this, baseEntityID);
 
         props = Properties::lua().create_table();
 
