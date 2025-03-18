@@ -77,8 +77,9 @@ namespace Amara {
         }
 
         void bindLua() {
-            bindLuaUtilityFunctions(lua);
-            bindLuaGeometry(lua);
+            bindLua_UtilityFunctions(lua);
+            bindLua_Geometry(lua);
+            bindLua_Easing(lua);
             
             GameManager::bindLua(lua);
             lua["GameManager"]["arguments"] = sol::property([this](const Creator& g) -> sol::object {

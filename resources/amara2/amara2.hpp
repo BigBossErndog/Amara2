@@ -26,6 +26,7 @@
     #include <cstdlib>
     #include <cstdarg>
     #include <atomic>
+    #include <thread>
     #include <nlohmann/json.hpp>
     #include <MurmurHash3.cpp>
 
@@ -67,10 +68,13 @@
 #ifndef AMARA_DEF
 #define AMARA_DEF
     #include "amara2_utility.cpp"
+    #include "amara2_easing.cpp"
     #include "amara2_geometry.cpp"
 
     #include "amara2_properties.cpp"
     #include "amara2_luaUtlity.cpp"
+
+    #include "amara2_stateManager.cpp"
 
     #include "amara2_gameManager.cpp"
 
@@ -91,6 +95,9 @@
     #include "amara2_camera.cpp"
     
     #include "amara2_scene.cpp"
+
+    #include "amara2_action.cpp"
+    #include "amara2_tween.cpp"
 
     #include "amara2_entityFactory.cpp"
 

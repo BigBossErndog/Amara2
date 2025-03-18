@@ -24,7 +24,7 @@ LINKER_FLAGS_WIN64 = -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -ls
 
 OTHER_LIB_PATHS = -I resources/libs/nlohmann/include -I ./src -I resources/libs/murmurhash3 -I resources/libs/lua -I resources/libs/sol2
 
-AMARA_PATH = -I ./resources/amara
+AMARA_PATH = -I ./resources/amara2
 
 INCLUDE_DEPTH = 1000
 EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)

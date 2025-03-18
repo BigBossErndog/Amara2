@@ -139,7 +139,7 @@ namespace Amara {
         log(std::string(buffer.data()));
     }
 
-    void bindLuaUtilityFunctions(sol::state& lua) {
+    void bindLua_UtilityFunctions(sol::state& lua) {
         lua.set_function("log", &Amara::lua_log);
         lua.set_function("object_to_string", &Amara::lua_to_string);
         

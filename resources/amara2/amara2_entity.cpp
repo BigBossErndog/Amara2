@@ -14,6 +14,8 @@ namespace Amara {
 
         std::vector<Amara::Entity*> children;
         std::vector<Amara::Entity*> children_copy_list;
+
+        std::unordered_map<std::string, std::function<void(nlohmann::json)>> configurables;
         
         sol::table props;
         sol::object luaobject;
@@ -28,12 +30,14 @@ namespace Amara {
         
         float depth = 0;
         bool lockDepthToY = false;
+        bool do_not_depth_sort = false;
 
         bool isDestroyed = false;
         bool isPaused = false;
         bool isVisible = true;
 
         bool is_camera = false;
+        bool is_scene = false;
 
         Entity() {
             baseEntityID = "Entity";
@@ -49,34 +53,52 @@ namespace Amara {
                     luaCreate(get_lua_object());
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", baseEntityID, ": \"", id, "\" while executing onCreate().");
+                    log("Error: On ", *this, "\" while executing onCreate().");
                 }
             }
+            make_configurables();
         }
 
-        virtual Amara::Entity* configure(nlohmann::json config) {
+        virtual void make_configurables() {
+            configurables["id"] = [this](nlohmann::json val) { this->id = val; };
+            configurables["x"] = [this](nlohmann::json val) { this->pos.x = val; };
+            configurables["y"] = [this](nlohmann::json val) { this->pos.y = val; };
+            configurables["z"] = [this](nlohmann::json val) { this->pos.z = val; };
+        }
+
+        virtual nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                { "id", id },
+                { "x", pos.x },
+                { "y", pos.y },
+                { "z", pos.z }
+            });
+        }
+        
+        Amara::Entity* configure(std::string key, nlohmann::json value) {
+            configurables[key](value);
+            return this;
+        }
+
+        Amara::Entity* configure(nlohmann::json config) {
             update_properties();
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
                 if (string_endsWith(path, ".json")) {
                     configure(Properties::files->readJSON(path));
-                    return this;
                 }
-                if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
+                else if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
                     configure(lua_to_json(Properties::scripts->run(path)));
-                    return this;
                 }
+                return this;
             }
-            if (json_has(config, "x")) pos.x = config["x"];
-            if (json_has(config, "y")) pos.y = config["y"];
-            if (json_has(config, "z")) pos.z = config["z"];
+            for (auto it = config.begin(); it != config.end(); ++it) {
+                configure(it.key(), it.value());
+            }
+            
             return this;
         }
-        Amara::Entity* configure(std::string key, nlohmann::json value) {
-            nlohmann::json obj;
-            obj[key] = value;
-            return configure(obj);
-        }
+        
         sol::object super_configure(sol::object config) {
             configure(lua_to_json(config));
             return get_lua_object();
@@ -101,16 +123,15 @@ namespace Amara {
                     configure_override(this, config);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", baseEntityID, ": \"", id, "\" while executing configure().");
+                    log("Error: On ", *this, "\" while executing configure().");
                 }
             }
             else configure(lua_to_json(config));
             return get_lua_object();
         }
         sol::object luaConfigure(std::string key, sol::object val) {
-            sol::table config = Properties::lua().create_table();
-            config[key] = val;
-            return luaConfigure(config);
+            configure(key, lua_to_json(val));
+            return get_lua_object();
         }
 
         virtual void preload() {
@@ -120,7 +141,7 @@ namespace Amara {
                     luaPreload(*this);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", baseEntityID, ": \"", id, "\" while executing onPreload().");
+                    log("Error: On ", *this, "\" while executing onPreload().");
                 }
             }
         }
@@ -138,7 +159,7 @@ namespace Amara {
                     luaUpdate(get_lua_object(), deltaTime);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", baseEntityID, ": \"", id, "\" while executing onUpdate().");
+                    log("Error: On ", *this, "\" while executing onUpdate().");
                 }
             }
 
@@ -189,7 +210,7 @@ namespace Amara {
 
         void sortChildren();
 
-        Amara::Entity* addChild(Amara::Entity* entity) {
+        virtual Amara::Entity* addChild(Amara::Entity* entity) {
             if (isDestroyed) return entity;
 
             update_properties();
@@ -261,9 +282,10 @@ namespace Amara {
 			}
         }
 
+        virtual ~Entity() {}
+
         static void bindLua(sol::state& lua) {
             sol::usertype<Entity> entity_type = lua.new_usertype<Entity>("Entity",
-                sol::constructors<Entity()>(),
                 "pos", &Entity::pos,
                 "id", &Entity::id,
                 "baseEntityID", sol::readonly(&Entity::baseEntityID),
@@ -284,6 +306,7 @@ namespace Amara {
                 "createChild", &Entity::luaCreateChild,
                 "addChild", &Entity::addChild,
                 "isDestroyed", sol::readonly(&Entity::isDestroyed),
+                "do_not_depth_sort", &Entity::do_not_depth_sort,
                 "string", [](Amara::Entity* e){
                     return std::string(*e);
                 }
@@ -291,6 +314,27 @@ namespace Amara {
 
             lua.new_usertype<std::vector<Amara::Entity*>>("EntityVector",
                 "size", &std::vector<Amara::Entity*>::size,
+                sol::meta_function::length, &std::vector<Amara::Entity*>::size,
+                sol::meta_function::index, [](std::vector<Amara::Entity*>& vec, sol::object getter) -> sol::object {
+                    if (getter.is<size_t>()) {
+                        size_t index = getter.as<size_t>();
+                        std::vector<Amara::Entity*> copylist = vec;
+                        cleanEntityList(copylist);
+                        if (index > 0 && index <= vec.size()) {
+                            return copylist[index-1]->get_lua_object();
+                        }
+                    }
+                    else if (getter.is<std::string>()) {
+                        std::string gid = getter.as<std::string>();
+                        for (Amara::Entity* entity: vec) {
+                            if (entity->isDestroyed) continue;
+                            if (string_equal(entity->id, gid)) {
+                                return entity->get_lua_object();
+                            }
+                        }
+                    }
+                    return sol::nil;
+                }, 
                 "push", [](std::vector<Amara::Entity*>& vec, Amara::Entity* entity) {
                     vec.push_back(entity);
                 },
@@ -300,7 +344,7 @@ namespace Amara {
                     if (index > 0 && index <= vec.size()) {
                         return copylist[index-1]->get_lua_object();
                     }
-                    return nullptr;
+                    return sol::nil;
                 },
                 "find", [](std::vector<Amara::Entity*>& vec, std::string gid) -> sol::object {
                     for (Amara::Entity* entity: vec) {
@@ -309,7 +353,7 @@ namespace Amara {
                             return entity->get_lua_object();
                         }
                     }
-                    return nullptr;
+                    return sol::nil;
                 },
                 "remove", [](std::vector<Amara::Entity*>& vec, size_t index) {
                     if (index > 0 && index <= vec.size()) {
@@ -339,9 +383,17 @@ namespace Amara {
         return std::string(obj.as<Amara::Entity>());
     }
 
-    void Entity::sortChildren() {
-        // NOTE: Implement children sorting
-    }
+    struct sort_entities_by_depth {
+		inline bool operator() (Amara::Entity* entity1, Amara::Entity* entity2) {
+			if (entity1 == nullptr) return true;
+			if (entity2 == nullptr) return true;
+            if (entity1->isDestroyed || entity1->do_not_depth_sort) return true;
+			if (entity2->isDestroyed || entity2->do_not_depth_sort) return true;
+            return (entity1->depth < entity2->depth);
+		}
+	};
 
-    virtual ~Entity() {}
+    void Entity::sortChildren() {
+        std::stable_sort(children.begin(), children.end(), sort_entities_by_depth());
+    }
 }

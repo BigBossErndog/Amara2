@@ -1,9 +1,15 @@
 namespace Amara {
     class Camera: public Entity {
     public:
+        Rectangle viewport;
+
         Camera(): Entity() {
             baseEntityID = "Camera";
             is_camera = true;
+        }
+
+        virtual void update_properties() override {
+            Properties::viewport = viewport;
         }
 
         virtual void drawChildren() override {
@@ -24,7 +30,6 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Scene>("Camera",
-                sol::constructors<Camera()>(),
                 sol::base_classes, sol::bases<Amara::Entity>()
             );
         }

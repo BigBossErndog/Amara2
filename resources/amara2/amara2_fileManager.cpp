@@ -201,7 +201,8 @@ namespace Amara {
             return getBasePath();
         }
         std::string resetBasePath() {
-            return setBasePath("");
+            basePath.clear();
+            return getBasePath();
         }
         
         std::string getRelativePath(std::string path) {
@@ -341,6 +342,12 @@ namespace Amara {
             return false;
         }
 
+        bool execute_blocking = true;
+
+        static int run_command(std::string command) {
+            return std::system(command.c_str());
+        }
+
         template <typename... Args>
         int execute(Args... args) {
             std::ostringstream ss;
@@ -351,7 +358,12 @@ namespace Amara {
                 command.erase(command.size() - 4);
             }
             log(command.c_str());
-            return std::system(command.c_str());
+            if (execute_blocking) return run_command(command);
+            else {
+                std::thread t(run_command, command);
+                t.detach();
+                return 0;
+            } 
         }
         int lua_execute(sol::variadic_args args) {
             std::ostringstream ss;
@@ -364,6 +376,155 @@ namespace Amara {
                 first = false;
             }
             return execute(ss.str());
+        }
+
+        bool isPathInRegistry(const std::string& path) {
+            #if defined(_WIN32) 
+                HKEY hKey;
+                const char* regPath = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+            
+                // Open registry key
+                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
+                    log("Error: Unable to access environment variables.");
+                    return false;
+                }
+            
+                // Get required buffer size
+                DWORD bufferSize = 0;
+                if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, nullptr, &bufferSize) != ERROR_SUCCESS) {
+                    log("Error: Unable to access environment variables.");
+                    RegCloseKey(hKey);
+                    return false;
+                }
+            
+                // Use vector for dynamic buffer
+                std::vector<char> buffer(bufferSize);
+                if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, reinterpret_cast<LPBYTE>(buffer.data()), &bufferSize) != ERROR_SUCCESS) {
+                    log("Error: Unable to access environment variables.");
+                    RegCloseKey(hKey);
+                    return false;
+                }
+            
+                // Close registry key
+                RegCloseKey(hKey);
+            
+                // Convert to std::string and check if the path exists
+                std::string currentPath(buffer.data());
+                return currentPath.find(path) != std::string::npos;
+            #else
+                return false;
+            #endif
+        }
+
+        bool isPathInEnvironment(const std::string& path) {
+            #if defined(_WIN32)
+                // Get the required buffer size
+                DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
+                if (size == 0) {
+                    log("Error: Unable to access environment variables.");
+                    return false;
+                }
+                
+                // Use std::vector<char> to store the PATH value
+                std::vector<char> buffer(size);
+                if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
+                    log("Error: Unable to access environment variables.");
+                    return false;
+                }
+            
+                // Convert buffer to std::string and check if the path exists
+                std::string currentPath(buffer.data());
+                return currentPath.find(path) != std::string::npos;
+            #else
+                return false;
+            #endif
+        }
+
+        bool setEnvironmentVar(std::string path, bool permanent) {
+            std::filesystem::path filePath = getRelativePath(path);
+            #if defined(_WIN32)
+                if (isPathInRegistry(filePath.string())) {
+                    log("Info: Path \"", filePath.string(), "\" is already set in registry.");
+                    return true;
+                }
+                if (isPathInEnvironment(filePath.string())) {
+                    log("Info: Path \"", filePath.string(), "\" is already set in environment.");
+                    return true;
+                }
+                if (permanent) {
+                    HKEY hKey;
+                    const char* regPath = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+                    const std::string newPath = getRelativePath(path);
+                    // Open the registry key
+                    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS) {
+                        log("Error: Unable to access environment variables.");
+                        return 1;
+                    }
+
+                    // Get the required buffer size
+                    DWORD bufferSize = 0;
+                    if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, nullptr, &bufferSize) != ERROR_SUCCESS) {
+                        log("Error: Unable to access environment variables.");
+                        RegCloseKey(hKey);
+                        return false;
+                    }
+
+                    // Use vector as a dynamically sized buffer
+                    std::vector<char> currentPath(bufferSize);
+                    if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, reinterpret_cast<LPBYTE>(currentPath.data()), &bufferSize) != ERROR_SUCCESS) {
+                        log("Error: Unable to access environment variables.");
+                        RegCloseKey(hKey);
+                        return false;
+                    }
+
+                    // Convert to std::string and append new path
+                    std::string updatedPath(currentPath.data());
+                    updatedPath += ";" + newPath;
+
+                    // Set the new PATH value
+                    if (RegSetValueEx(hKey, "Path", 0, REG_EXPAND_SZ, reinterpret_cast<const BYTE*>(updatedPath.c_str()), updatedPath.size() + 1) != ERROR_SUCCESS) {
+                        log("Error: Unable to add new environment variable.");
+                        RegCloseKey(hKey);
+                        return false;
+                    }
+
+                    // Close the registry key
+                    RegCloseKey(hKey);
+
+                    // Notify the system of the change
+                    SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>("Environment"));
+                    
+                    return true;
+                }
+                else {
+                    DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
+                    if (size == 0) {
+                        log("Error: Unable to access environment variables.");
+                        return false;
+                    }
+                    std::vector<char> buffer(size);
+                    if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
+                        log("Error: Unable to access environment variables.");
+                        return false;
+                    }
+
+                    std::string updatedPath(buffer.data());
+                    updatedPath += ";" + filePath.string();
+
+                    if (!SetEnvironmentVariable("PATH", updatedPath.c_str())) {
+                        log("Error: Unable to add new environment variable.");
+                        return false;
+                    }
+                }
+                    
+                return true;
+            #endif
+
+            return false;
+        }
+
+        bool setEnvironmentVar(std::string path) {
+            return setEnvironmentVar(path, false);
         }
 
         static void bindLua(sol::state& lua) {
@@ -394,7 +555,11 @@ namespace Amara {
                 ),
                 "run", &FileManager::run,
                 "compileScript", &FileManager::compileScript,
-                "execute", &FileManager::lua_execute
+                "execute", &FileManager::lua_execute,
+                "setEnvironmentVar", sol::overload(
+                    sol::resolve<bool(std::string, bool)>(&FileManager::setEnvironmentVar),
+                    sol::resolve<bool(std::string)>(&FileManager::setEnvironmentVar)
+                )
             );
         }
     };

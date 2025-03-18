@@ -92,10 +92,21 @@ namespace Amara {
 
     struct Rectangle: public Vector2 {
         Rectangle() = default;
-        Rectangle(float x_, float y_, float w_, float h_) : Vector2(x_, y_), width(w_), height(h_) {}
+        Rectangle(float x_, float y_, float w_, float h_) : Vector2(x_, y_), w(w_), h(h_) {}
 
-        float width = 0;
-        float height = 0;
+        float w = 0;
+        float h = 0;
+
+        bool operator==(const Rectangle& other) const {
+            return x == other.x && y == other.y && w == other.w && h == other.h;
+        }
+        
+        explicit operator std::string() const {
+            return "{ x: " + float_string(x) + ", y: " + float_string(y) + ", w: " + float_string(w) + ", h: " + float_string(h) + " }";
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Rectangle& v) {
+            return os << static_cast<std::string>(v);
+        }
     };
 
     struct Circle: public Vector2 {
@@ -123,7 +134,7 @@ namespace Amara {
         Vector2 p3 = {0, 0};
     };
 
-    void bindLuaGeometry(sol::state& lua) {
+    void bindLua_Geometry(sol::state& lua) {
         lua.new_usertype<Vector2>("Vector2",
             sol::constructors<Vector2(), Vector2(float, float)>(),
             "x", &Vector2::x,
@@ -225,6 +236,14 @@ namespace Amara {
             },
             "string", [](const Vector3& v) {
                 return std::string(v);
+            }
+        );
+        lua.new_usertype<Rectangle>("Rectangle",
+            sol::constructors<Rectangle(), Rectangle(float, float, float, float)>(),
+            "w", &Rectangle::w,
+            "h", &Rectangle::h,
+            "rectangle", [](const Rectangle& r) {
+                return std::string(r);
             }
         );
     }
