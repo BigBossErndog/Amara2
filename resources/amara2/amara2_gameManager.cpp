@@ -1,7 +1,7 @@
 namespace Amara {
     class GameManager {
     public:
-        float fps = 60;
+        float fps = 0;
         float targetFPS = -1;
         double deltaTime = 1;
 

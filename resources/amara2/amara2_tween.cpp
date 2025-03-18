@@ -40,7 +40,7 @@ namespace Amara {
 
             for (auto it = data.begin(); it != data.end(); ++it) {
                 if (it.value().is_null()) continue;
-                
+
                 if (string_equal("duration", it.key())) tween_duration = data["duration"];
                 else if (string_equal("ease", it.key())) easing = data["easing"];
                 else target_data[it.key()] = it.value();
@@ -64,7 +64,6 @@ namespace Amara {
         virtual void prepare() override {
             if (!target_data.is_null()) {
                 if (!lua_actor_table.valid()) {
-                    std::cout << actor->id << std::endl;
                     lua_actor_table = actor->get_lua_object().as<sol::table>();
                 }
             
@@ -110,6 +109,12 @@ namespace Amara {
                 "to", &Tween::to,
                 "on", &Tween::on
             );
+
+            sol::usertype<Entity> entity_type = lua["Entity"];
+            entity_type["tween"] = sol::property([](Amara::Entity& e) -> sol::object {
+                Amara::Tween* tween = e.addChild(new Tween())->as<Amara::Tween*>();
+                return tween->get_lua_object();
+            });
         }
     };
 }
