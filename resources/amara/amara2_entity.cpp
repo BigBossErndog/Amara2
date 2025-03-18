@@ -31,6 +31,7 @@ namespace Amara {
 
         bool isDestroyed = false;
         bool isPaused = false;
+        bool isVisible = true;
 
         bool is_camera = false;
 
@@ -189,6 +190,8 @@ namespace Amara {
         void sortChildren();
 
         Amara::Entity* addChild(Amara::Entity* entity) {
+            if (isDestroyed) return entity;
+
             update_properties();
             entity->world = world;
             entity->scene = scene;
@@ -336,8 +339,9 @@ namespace Amara {
         return std::string(obj.as<Amara::Entity>());
     }
 
-
     void Entity::sortChildren() {
         // NOTE: Implement children sorting
     }
+
+    virtual ~Entity() {}
 }

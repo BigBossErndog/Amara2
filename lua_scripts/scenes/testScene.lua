@@ -1,4 +1,4 @@
-scene = world.factory:create("Scene")
+scene = factory:create("Scene")
 
 scene.onPeload = function(self) 
     self.load.image()
@@ -9,7 +9,5 @@ end
 
 scene.onUpdate = function(self, deltaTime)
 end
-    
-
 
 return scene;

@@ -1,4 +1,4 @@
-factory:add("TestEntity", "entities/testEntity")
+factory:load("TestEntity", "entities/testEntity")
 
 local e = factory:create("TestEntity")
 e.id = "entity1"

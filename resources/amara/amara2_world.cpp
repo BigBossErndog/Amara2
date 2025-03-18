@@ -11,24 +11,6 @@ namespace Amara {
             Properties::lua()["world"] = get_lua_object();
             Entity::update_properties();
         }
-
-        virtual void preload() override {
-            update_properties();
-            Amara::Entity::preload();
-        }
-
-        virtual void create() override {
-            update_properties();
-        }
-        
-        virtual void update(double deltaTime) override {
-            update_properties();
-        }
-
-        void start() {
-            update_properties();
-            Entity::init();
-        }
         
         static void bindLua(sol::state& lua) {
             EntityFactory::bindLua(lua);
@@ -36,8 +18,7 @@ namespace Amara {
             
             lua.new_usertype<World>("World",
                 sol::constructors<World()>(),
-                sol::base_classes, sol::bases<Amara::Entity>(),
-                "start", &World::start
+                sol::base_classes, sol::bases<Amara::Entity>()
             );
         }
     };

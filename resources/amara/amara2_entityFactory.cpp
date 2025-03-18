@@ -16,18 +16,27 @@ namespace Amara {
             return false;
         } 
 
-        void add(std::string key, std::string path) {
+        bool load(std::string key, std::string path) {
             if (factory.find(key) != factory.end()) {
                 log("Error: \"", key, "\" is a reserved entity name.");
-                return;
+                return false;
             }
-            std::string script = Properties::files->getScriptPath(path);
-            if (string_endsWith(script, ".lua")) {
+
+            std::string script_path = Properties::files->getScriptPath(path);
+
+            if (!Properties::files->fileExists(script_path)) {
+                log("Error: Failed to load Entity \"", key, "\" from \"", path, "\". File not found.");
+                return false;
+            }
+            
+            if (string_endsWith(script_path, ".lua")) {
                 readScripts[key] = path;
             }
             else {
-                compiledScripts[key] = Properties::files->load_script(path);
+                compiledScripts[key] = Properties::files->load_script(script_path);
             }
+
+            return true;
         }
 
         Amara::Entity* prepEntity(Amara::Entity* entity, std::string key) {
@@ -102,7 +111,7 @@ namespace Amara {
             Amara::Scene::bindLua(lua);
 
             lua.new_usertype<EntityFactory>("EntityFactory",
-                "add", &EntityFactory::add,
+                "load", &EntityFactory::load,
                 "props", &EntityFactory::props,
                 "create", &EntityFactory::luaCreate
             );

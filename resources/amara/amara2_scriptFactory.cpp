@@ -5,14 +5,19 @@ namespace Amara {
         std::unordered_map<std::string, std::string> readScripts;
         std::unordered_map<std::string, sol::function> compiledScripts;
 
-        void add(std::string key, std::string path) {
+        bool load(std::string key, std::string path) {
             std::string script_path = Properties::files->getScriptPath(path);
+            if (!Properties::files->fileExists(script_path)) {
+                log("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
+                return false;
+            }
             if (string_endsWith(script_path, ".lua")) {
                 readScripts[key] = script_path;
             }
             else {
                 compiledScripts[key] = Properties::files->load_script(script_path);
             }
+            return true;
         }
 
         Amara::Script* get(std::string key) {
@@ -25,7 +30,7 @@ namespace Amara {
                     return result.as<Amara::Script*>();
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create Script \"", key, "\".");
+                    log("Failed to create script \"", key, "\".");
                 }
             }
             else if (readScripts.find(key) != readScripts.end()) {
@@ -34,7 +39,7 @@ namespace Amara {
                     return result.as<Amara::Script*>();
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create Script \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
+                    log("Failed to create script \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
             else log("Script \"", key, "\" was not found.");
@@ -69,7 +74,7 @@ namespace Amara {
             Script::bindLua(lua);
 
             lua.new_usertype<ScriptFactory>("ScriptFactory",
-                "add", &ScriptFactory::add,
+                "load", &ScriptFactory::load,
                 "get", &ScriptFactory::get,
                 "run", &ScriptFactory::run
             );
