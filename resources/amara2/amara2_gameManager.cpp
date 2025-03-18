@@ -39,6 +39,10 @@ namespace Amara {
             targetFPS = -1;
         }
 
+        int get_lua_stack_size() {
+            return lua_gettop(Properties::lua().lua_state());
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<GameManager>("GameManager",
                 "fps", sol::readonly(&GameManager::fps),
@@ -46,7 +50,8 @@ namespace Amara {
                 "setTargetFPS", &GameManager::setTargetFPS,
                 "uncapFPS", &GameManager::uncapFPS,
                 "deltaTime", sol::readonly(&GameManager::deltaTime),
-                "platform", sol::readonly(&GameManager::platform)
+                "platform", sol::readonly(&GameManager::platform),
+                "get_lua_stack_size", &GameManager::get_lua_stack_size
             );
         }
     };

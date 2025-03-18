@@ -16,13 +16,15 @@ namespace Amara {
         }
 
         virtual void create() override {
-            setMainCamera(createChild("Camera")->as<Amara::Camera*>());
-            Amara::Entity::create();
+            // setMainCamera(createChild("Camera")->as<Amara::Camera*>());
         }
 
         virtual void run(double deltaTime) {
             Amara::Entity::run(deltaTime);
-            if (mainCamera->isDestroyed) mainCamera = nullptr;
+            if (
+                mainCamera != nullptr &&
+                mainCamera->isDestroyed
+            ) mainCamera = nullptr;
         }
 
         virtual void drawChildren() override {
@@ -52,7 +54,7 @@ namespace Amara {
         
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Scene>("Scene",
-                sol::base_classes, sol::bases<Amara::Entity>(),
+                sol::constructors<Scene()>(),
                 "setMainCamera", sol::overload(
                     sol::resolve<Amara::Camera*(Amara::Camera*, bool)>(&Scene::setMainCamera),
                     sol::resolve<Amara::Camera*(Amara::Camera*)>(&Scene::setMainCamera)

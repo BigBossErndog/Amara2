@@ -49,7 +49,8 @@ namespace Amara {
     std::string Properties::platform = "unknown";
     double Properties::deltaTime = 1;
 
-    int Properties::lua_stack_size = 100000;
+    int Properties::lua_stack_size = 1000000;
+    
     GameManager* Properties::game = nullptr;
     World* Properties::world = nullptr;
     Scene* Properties::scene = nullptr;

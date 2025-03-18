@@ -9,6 +9,7 @@ namespace Amara {
 
         bool isFinished = false;
         bool hasStarted = false;
+        bool isWaitingForChildren = false;
 
         bool locked = false;
 
@@ -24,6 +25,7 @@ namespace Amara {
 
         virtual void prepare() {
             hasStarted = true;
+
             if (onPrepare.valid()) {
                 try {
                     onPrepare(actor);
@@ -36,10 +38,9 @@ namespace Amara {
 
         virtual void act(double deltaTime) {
             if (!hasStarted) {
-                hasStarted = true;
                 prepare();
             }
-            if (onAct.valid()) {
+            if (hasStarted && onAct.valid()) {
                 try {
                     onAct(actor, deltaTime);
                 }
@@ -56,6 +57,7 @@ namespace Amara {
         virtual void run(double deltaTime) override {
             Amara::Entity::run(deltaTime);
             if (isFinished && !isDestroyed && !has_running_child_actions()) {
+                isWaitingForChildren = false;
                 // Destroy self when done and children are done.
                 destroy();
             }
@@ -81,6 +83,9 @@ namespace Amara {
                     log("Error: On ", *this, "\" while executing onFinish().");
                 }
             }
+
+            start_child_actions();
+            isWaitingForChildren = true;
         }
 
         bool finishEvt() {
@@ -124,7 +129,7 @@ namespace Amara {
 					++it;
 					continue;
 				}
-				if (!child->isFinished) return true;
+				if (!child->isFinished || child->isWaitingForChildren) return true;
 				++it;
 			}
             return false;
@@ -132,7 +137,6 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Action>("Action",
-                sol::base_classes, sol::bases<Amara::Entity, Amara::StateManager>(),
                 "onPrepare", &Action::onPrepare,
                 "onAct", &Action::onAct,
                 "hasStarted", sol::readonly(&Action::hasStarted),

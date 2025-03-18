@@ -292,6 +292,9 @@ namespace Amara {
                 "entityID", sol::readonly(&Entity::entityID),
                 "parent", sol::readonly(&Entity::parent),
                 "props", &Entity::props,
+                "x", sol::property([](Entity& e, float val) { e.pos.x = val; }, [](Entity& e) { return e.pos.x; }),
+                "y", sol::property([](Entity& e, float val) { e.pos.y = val; }, [](Entity& e) { return e.pos.y; }),
+                "z", sol::property([](Entity& e, float val) { e.pos.z = val; }, [](Entity& e) { return e.pos.z; }),
                 "configure", sol::overload(
                     sol::resolve<sol::object(sol::object)>(&Entity::luaConfigure),
                     sol::resolve<sol::object(std::string, sol::object)>(&Entity::luaConfigure)
