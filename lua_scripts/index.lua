@@ -13,6 +13,5 @@ local w = creator:createWorld()
 local e = w:createChild("Entity")
 
 e.onUpdate = function(self, delta)
-    log(game.fps)
+    log("FPS: ", math.floor(game.fps))
 end
-log(w)

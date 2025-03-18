@@ -8,23 +8,23 @@ BUILD_EXECUTABLE_LINUX = $(BUILD_PATH)/$(BUILD_NAME).game
 
 COMPILER = g++
 
-SDL_INCLUDE_PATHS_WIN64 = -I libs/SDL2/include/SDL2 -I libs/SDL2_image/include/SDL2 -I libs/SDL2_ttf/include/SDL2 -I libs/SDL2_mixer/include/SDL2 -I libs/SDL2_net/include/SDL2 -I libs/SDL_FontCache
-SDL_LIBRARY_PATHS_WIN64 = -L libs/SDL2/lib -L libs/SDL2_image/lib -L libs/SDL2_ttf/lib -L libs/SDL2_mixer/lib -L libs/SDL2_net/lib
+SDL_INCLUDE_PATHS_WIN64 = -I resources/libs/SDL2/include/SDL2 -I resources/libs/SDL2_image/include/SDL2 -I resources/libs/SDL2_ttf/include/SDL2 -I resources/libs/SDL2_mixer/include/SDL2 -I resources/libs/SDL2_net/include/SDL2 -I resources/libs/SDL_FontCache
+SDL_LIBRARY_PATHS_WIN64 = -L resources/libs/SDL2/lib -L resources/libs/SDL2_image/lib -L resources/libs/SDL2_ttf/lib -L resources/libs/SDL2_mixer/lib -L resources/libs/SDL2_net/lib
 SDL_LINKER_FLAGS_WIN64 = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
-SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags` -I libs/SDL_FontCache
+SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags` -I resources/libs/SDL_FontCache
 
-THEORA_INCLUDE_PATHS_WIN64 = -I libs/ogg/include -I libs/vorbis/include -I libs/theora/include -I libs/sdlogv
-THEORA_LIBRARY_PATHS_WIN64 = -L libs/ogg/lib -L libs/vorbis/lib -L libs/theora/lib
+THEORA_INCLUDE_PATHS_WIN64 = -I resources/libs/ogg/include -I resources/libs/vorbis/include -I resources/libs/theora/include -I resources/libs/sdlogv
+THEORA_LIBRARY_PATHS_WIN64 = -L resources/libs/ogg/lib -L resources/libs/vorbis/lib -L resources/libs/theora/lib
 THEORA_LINKER_FLAGS_WIN64 =  -ltheora -lvorbisenc -lvorbisfile -lvorbis -logg
 
 THEORA_WIN64 = $(THEORA_INCLUDE_PATHS_WIN64) $(THEORA_LIBRARY_PATHS_WIN64) $(THEORA_LINKER_FLAGS_WIN64)
 
 LINKER_FLAGS_WIN64 = -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(SDL_LINKER_FLAGS_WIN64) -DAMARA_WINDOWS
 
-OTHER_LIB_PATHS = -I libs/nlohmann/include -I ./src -I libs/murmurhash3 -I libs/lua -I libs/sol2
+OTHER_LIB_PATHS = -I resources/libs/nlohmann/include -I ./src -I resources/libs/murmurhash3 -I resources/libs/lua -I resources/libs/sol2
 
-AMARA_PATH = -I ./amara
+AMARA_PATH = -I ./resources/amara
 
 INCLUDE_DEPTH = 1000
 EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)
@@ -46,9 +46,9 @@ cpamara:
 	cp -T -r ../amaraRPG/amaraRPG ./amaraRPG
 
 cplibs:
-	rm -rf libs/*
+	rm -rf resources/libs/*
 	cp -T -r ../amara/libs ./libs
-	rm -rf dlls/*
+	rm -rf resources/dlls/*
 	cp -T -r ../amara/dlls ./dlls
 
 cpAssets:
@@ -60,7 +60,7 @@ cpAssets_alt:
 	xcopy /s /e /i /y "assets\*.*" "build\assets"
 
 cpDLLs:
-	cp dlls/win64/* $(BUILD_PATH)/
+	cp resources/dlls/win64/* $(BUILD_PATH)/
 
 cpDLLsAlt:
 	xcopy /s /e /i /y "dlls\win64\*.*" "$(BUILD_PATH)\"
@@ -79,7 +79,7 @@ win32: $(SRC_FILES)
 	make clearBuildWin
 	cp -R assets/ build/
 	cp -R videos/ build/
-	$(COMPILER) $(SRC_FILES) -m32 $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN32) $(SDL_LIBRARY_PATHS_WIN32) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(LINKER_FLAGS) -I libs/SDL2-32/bin -o $(BUILD_EXECUTABLE_WIN)
+	$(COMPILER) $(SRC_FILES) -m32 $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN32) $(SDL_LIBRARY_PATHS_WIN32) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(LINKER_FLAGS) -I resources/libs/SDL2-32/bin -o $(BUILD_EXECUTABLE_WIN)
 	xcopy /s /e /i /y "dlls\win62\*.*" "$(BUILD_PATH)/"
 	md "$(BUILD_PATH)\saves"
 
