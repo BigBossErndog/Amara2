@@ -31,13 +31,19 @@ namespace Amara {
                 return tween->to(lua_data);
             }
 
+            if (lua_data["onFinish"].valid()) {
+                onFinish = lua_data["onFinish"];
+            }
+
             nlohmann::json data = lua_to_json(lua_data);
             target_data = nlohmann::json::object();
 
             for (auto it = data.begin(); it != data.end(); ++it) {
+                if (it.value().is_null()) continue;
+                
                 if (string_equal("duration", it.key())) tween_duration = data["duration"];
                 else if (string_equal("ease", it.key())) easing = data["easing"];
-                else target_data[it.key()] = data[it.key()];
+                else target_data[it.key()] = it.value();
             }
 
             return get_lua_object();

@@ -37,14 +37,19 @@ end
 local w = creator:createWorld()
 
 local e = w:createChild("Entity")
+e.id = "acting entity"
+
 local a = e:createChild("Action")
 local t = e:createChild("Tween"):to({
     x = 3,
-    duration = 3
-}):to({
-    x = 0,
-    duration = 3
+    duration = 3,
+    onFinish = function(self)
+        self:createChild("Tween"):to({
+            x = 0,
+            duration = 3
+        })
+    end
 })
 e.onUpdate = function(self, delta)
-    log(e.pos)
+    log(e.x, " ", game.fps)
 end
