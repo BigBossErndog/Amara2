@@ -5,9 +5,9 @@ namespace Amara {
 
         sol::function onPrepare;
         sol::function onAct;
-        sol::function onFinish;
+        sol::function onComplete;
 
-        bool isFinished = false;
+        bool isCompleted = false;
         bool hasStarted = false;
         bool isWaitingForChildren = false;
 
@@ -51,12 +51,12 @@ namespace Amara {
         }
 
         virtual void update(double deltaTime) override {
-            if (!isDestroyed && !locked && !isFinished) act(deltaTime);
+            if (!isDestroyed && !locked && !isCompleted) act(deltaTime);
         }
 
         virtual void run(double deltaTime) override {
             Amara::Entity::run(deltaTime);
-            if (isFinished && !isDestroyed && !has_running_child_actions()) {
+            if (isCompleted && !isDestroyed && !has_running_child_actions()) {
                 isWaitingForChildren = false;
                 // Destroy self when done and children are done.
                 destroy();
@@ -72,15 +72,15 @@ namespace Amara {
             return Amara::Entity::addChild(entity);
         }
 
-        void finish() {
-            if (isFinished) return;
-            isFinished = true;
-            if (onFinish.valid()) {
+        void complete() {
+            if (isCompleted) return;
+            isCompleted = true;
+            if (onComplete.valid()) {
                 try {
-                    onFinish(actor);
+                    onComplete(actor);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing onFinish().");
+                    log("Error: On ", *this, "\" while executing onComplete().");
                 }
             }
 
@@ -88,9 +88,9 @@ namespace Amara {
             isWaitingForChildren = true;
         }
 
-        bool finishEvt() {
+        bool completeEvt() {
             if (once()) {
-                finish();
+                complete();
                 return true;
             }
             return false;
@@ -129,7 +129,7 @@ namespace Amara {
 					++it;
 					continue;
 				}
-				if (!child->isFinished || child->isWaitingForChildren) return true;
+				if (!child->isCompleted || child->isWaitingForChildren) return true;
 				++it;
 			}
             return false;
@@ -141,9 +141,9 @@ namespace Amara {
                 "onPrepare", &Action::onPrepare,
                 "onAct", &Action::onAct,
                 "hasStarted", sol::readonly(&Action::hasStarted),
-                "isFinished", sol::readonly(&Action::isFinished),
-                "finish", &Action::finish,
-                "finishEvt", &Action::finishEvt,
+                "isCompleted", sol::readonly(&Action::isCompleted),
+                "complete", &Action::complete,
+                "completeEvt", &Action::completeEvt,
                 "addChild", &Action::addChild
             );
         }

@@ -2,6 +2,7 @@ namespace Amara {
     class Scene: public Amara::Entity {
     public:
         Amara::Camera* mainCamera = nullptr;
+        std::vector<Amara::Entity*> cameras;
 
         Scene() {
             baseEntityID = "Scene";
@@ -16,7 +17,7 @@ namespace Amara {
         }
 
         virtual void create() override {
-            // setMainCamera(createChild("Camera")->as<Amara::Camera*>());
+            setMainCamera(createChild("Camera")->as<Amara::Camera*>());
         }
 
         virtual void run(double deltaTime) {
@@ -25,10 +26,11 @@ namespace Amara {
                 mainCamera != nullptr &&
                 mainCamera->isDestroyed
             ) mainCamera = nullptr;
+            clean_entity_list(cameras);
         }
 
         virtual void drawChildren() override {
-            children_copy_list = children;
+            children_copy_list = cameras;
 
             Amara::Entity* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
@@ -38,18 +40,26 @@ namespace Amara {
 					continue;
 				}
                 update_properties();
-				if (child->is_camera) child->draw();
+				child->draw();
 				++it;
 			}
         }
 
         Amara::Camera* setMainCamera(Amara::Camera* cam, bool destroyExisting) {
-            if (destroyExisting) mainCamera->destroy();
+            if (destroyExisting && mainCamera != nullptr) mainCamera->destroy();
             mainCamera = cam;
             return cam;
         }
         Amara::Camera* setMainCamera(Amara::Camera* cam) {
             return setMainCamera(cam, true);
+        }
+
+        Amara::Entity* addChild(Amara::Entity* entity) {
+            Amara::Camera* cam = entity->as<Amara::Camera*>();
+            if (cam) {
+                cameras.push_back(cam);
+            }
+            return Amara::Entity::addChild(entity);
         }
         
         static void bindLua(sol::state& lua) {

@@ -166,7 +166,7 @@ namespace Amara {
             if (lockDepthToY) depth = pos.y;
 
             if (!isDestroyed) runChildren(deltaTime);
-            cleanEntityList(children);
+            clean_entity_list(children);
         }
         void runChildren(double deltaTime) {
             children_copy_list = children;
@@ -242,7 +242,7 @@ namespace Amara {
             if (isDestroyed) return;
             isDestroyed = true;
 
-            parent->removeChild(this);
+            if (parent) parent->removeChild(this);
 
             Amara::Entity* child;
             for (auto it = children.begin(); it != children.end();) {
@@ -271,7 +271,7 @@ namespace Amara {
             return os << static_cast<std::string>(e);
         }
 
-        static void cleanEntityList(std::vector<Amara::Entity*>& list) {
+        static void clean_entity_list(std::vector<Amara::Entity*>& list) {
             Amara::Entity* entity;
 			for (auto it = list.begin(); it != list.end();) {
 				entity = *it;
@@ -310,6 +310,7 @@ namespace Amara {
                 "createChild", &Entity::luaCreateChild,
                 "addChild", &Entity::addChild,
                 "isDestroyed", sol::readonly(&Entity::isDestroyed),
+                "destroy", &Entity::destroy,
                 "do_not_depth_sort", &Entity::do_not_depth_sort,
                 "string", [](Amara::Entity* e){
                     return std::string(*e);
@@ -323,7 +324,7 @@ namespace Amara {
                     if (getter.is<size_t>()) {
                         size_t index = getter.as<size_t>();
                         std::vector<Amara::Entity*> copylist = vec;
-                        cleanEntityList(copylist);
+                        clean_entity_list(copylist);
                         if (index > 0 && index <= vec.size()) {
                             return copylist[index-1]->get_lua_object();
                         }
@@ -344,7 +345,7 @@ namespace Amara {
                 },
                 "get", [](std::vector<Amara::Entity*>& vec, size_t index) -> sol::object {
                     std::vector<Amara::Entity*> copylist = vec;
-                    cleanEntityList(copylist);
+                    clean_entity_list(copylist);
                     if (index > 0 && index <= vec.size()) {
                         return copylist[index-1]->get_lua_object();
                     }

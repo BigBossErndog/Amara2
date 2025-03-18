@@ -11,6 +11,8 @@ namespace Amara {
 
         Amara::Ease easing = Amara::Ease::Linear;
 
+        sol::function onUpdate;
+
         Tween(): Amara::Action() {
             baseEntityID = "Tween";
         }
@@ -31,8 +33,11 @@ namespace Amara {
                 return tween->to(lua_data);
             }
 
-            if (lua_data["onFinish"].valid()) {
-                onFinish = lua_data["onFinish"];
+            if (lua_data["onComplete"].valid()) {
+                onComplete = lua_data["onComplete"];
+            }
+            if (lua_data["onUpdate"].valid()) {
+                onUpdate = lua_data["onUpdate"];
             }
 
             nlohmann::json data = lua_to_json(lua_data);
@@ -89,12 +94,21 @@ namespace Amara {
                 progress += deltaTime/tween_duration;
                 if (progress >= 1) {
                     progress = 1;
-                    finish();
+                    complete();
                 }
 
                 for (auto it = target_data.begin(); it != target_data.end(); ++it) {
                     if (lua_actor_table.valid()) {
                         lua_actor_table[it.key()] = ease(start_data[it.key()], target_data[it.key()], progress, easing);
+                    }
+                }
+
+                if (onUpdate.valid()) {
+                    try {
+                        onUpdate(actor);
+                    }
+                    catch (const sol::error& e) {
+                        log("Error: On ", *this, "\" while executing onUpdate().");
                     }
                 }
             }
