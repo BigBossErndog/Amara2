@@ -49,8 +49,9 @@ namespace Amara {
     bool string_equal(std::string str1, std::string str2) {
         return str1.compare(str2) == 0;
     }
-
+    
     std::string float_string(float n) {
+        if (floor(n) == n) return (std::to_string((int)n));
         nlohmann::json json(n);
         return json.dump();
     }

@@ -41,12 +41,12 @@ namespace Amara {
 
         Entity() {
             baseEntityID = "Entity";
-            get_lua_object();
         }
 
         virtual void create() {}
         virtual void init() {
             update_properties();
+            get_lua_object();
             create();
             if (luaCreate.valid()) {
                 try {
@@ -212,13 +212,14 @@ namespace Amara {
 
         virtual Amara::Entity* addChild(Amara::Entity* entity) {
             if (isDestroyed) return entity;
-
+            
             update_properties();
             entity->world = world;
             entity->scene = scene;
             entity->parent = this;
             children.push_back(entity);
             entity->init();
+
             return entity;
         }
         Amara::Entity* createChild(std::string);

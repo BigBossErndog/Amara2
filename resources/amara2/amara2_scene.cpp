@@ -54,7 +54,7 @@ namespace Amara {
         
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Scene>("Scene",
-                sol::constructors<Scene()>(),
+                sol::base_classes, sol::bases<Entity>(),
                 "setMainCamera", sol::overload(
                     sol::resolve<Amara::Camera*(Amara::Camera*, bool)>(&Scene::setMainCamera),
                     sol::resolve<Amara::Camera*(Amara::Camera*)>(&Scene::setMainCamera)

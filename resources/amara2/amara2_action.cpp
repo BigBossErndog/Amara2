@@ -63,13 +63,13 @@ namespace Amara {
             }
         }
 
-        virtual Amara::Entity* addChild(Amara::Entity* entity) override {
+        Amara::Entity* addChild(Amara::Entity* entity) {
             Amara::Action* action = entity->as<Amara::Action*>();
             if (action) {
                 action->actor = actor;
                 action->locked = true;
             }
-            Amara::Entity::addChild(entity);
+            return Amara::Entity::addChild(entity);
         }
 
         void finish() {
@@ -137,12 +137,14 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Action>("Action",
+                sol::base_classes, sol::bases<Entity>(),
                 "onPrepare", &Action::onPrepare,
                 "onAct", &Action::onAct,
                 "hasStarted", sol::readonly(&Action::hasStarted),
                 "isFinished", sol::readonly(&Action::isFinished),
                 "finish", &Action::finish,
-                "finishEvt", &Action::finishEvt
+                "finishEvt", &Action::finishEvt,
+                "addChild", &Action::addChild
             );
         }
     };

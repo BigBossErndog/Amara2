@@ -146,56 +146,56 @@ namespace Amara {
 
         luaobject = Properties::factory->castLuaEntity(this, baseEntityID);
 
-        // props = Properties::lua().create_table();
+        props = Properties::lua().create_table();
 
-        // sol::table props_meta = Properties::lua().create_table();
-        // props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
-        //     if (value.is<sol::function>()) {
-        //         sol::function callback = value.as<sol::function>();
-        //         sol::function func = sol::make_object(Properties::lua(), [this, callback](sol::variadic_args va)->sol::object {
-        //             return callback(this->get_lua_object(), sol::as_args(va));
-        //         });
-        //         tbl.raw_set(key, func);
-        //     }
-        //     else tbl.raw_set(key, value);
-        // };
-        // props[sol::metatable_key] = props_meta;
+        sol::table props_meta = Properties::lua().create_table();
+        props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+            if (value.is<sol::function>()) {
+                sol::function callback = value.as<sol::function>();
+                sol::function func = sol::make_object(Properties::lua(), [this, callback](sol::variadic_args va)->sol::object {
+                    return callback(this->get_lua_object(), sol::as_args(va));
+                });
+                tbl.raw_set(key, func);
+            }
+            else tbl.raw_set(key, value);
+        };
+        props[sol::metatable_key] = props_meta;
 
-        // sol::userdata entityData = luaobject.as<sol::userdata>();
-        // sol::table metatable = entityData[sol::metatable_key];
+        sol::userdata entityData = luaobject.as<sol::userdata>();
+        sol::table metatable = entityData[sol::metatable_key];
 
-        // sol::function old_newindexer = metatable["__newindex"];
-        // metatable["__newindex"] = [this, old_newindexer](sol::userdata obj, sol::object key, sol::object value) {
-        //     sol::table metatable = obj[sol::metatable_key];
+        sol::function old_newindexer = metatable["__newindex"];
+        metatable["__newindex"] = [this, old_newindexer](sol::userdata obj, sol::object key, sol::object value) {
+            sol::table metatable = obj[sol::metatable_key];
             
-        //     if (key.is<std::string>()) {
-        //         std::string key_str = key.as<std::string>();
-        //         if (metatable[key_str].valid()) {
-        //             old_newindexer(obj, key, value);
-        //             return;
-        //         }
-        //     }
+            if (key.is<std::string>()) {
+                std::string key_str = key.as<std::string>();
+                if (metatable[key_str].valid()) {
+                    old_newindexer(obj, key, value);
+                    return;
+                }
+            }
 
-        //     this->props[key] = value;
-        // };
+            this->props[key] = value;
+        };
 
-        // sol::function old_indexer = metatable["__index"];
-        // metatable["__index"] = [this, old_indexer](sol::userdata obj, sol::object key) -> sol::object {
-        //     sol::table metatable = obj[sol::metatable_key];
+        sol::function old_indexer = metatable["__index"];
+        metatable["__index"] = [this, old_indexer](sol::userdata obj, sol::object key) -> sol::object {
+            sol::table metatable = obj[sol::metatable_key];
 
-        //     if (key.is<std::string>()) {
-        //         std::string key_str = key.as<std::string>();
-        //         if (metatable[key_str].valid()) {
-        //             return old_indexer(obj, key);
-        //         }
-        //     }
+            if (key.is<std::string>()) {
+                std::string key_str = key.as<std::string>();
+                if (metatable[key_str].valid()) {
+                    return old_indexer(obj, key);
+                }
+            }
 
-        //     if (this->props[key].valid()) {
-        //         return this->props[key];
-        //     }
+            if (this->props[key].valid()) {
+                return this->props[key];
+            }
 
-        //     return old_indexer(obj, key);
-        // };
+            return old_indexer(obj, key);
+        };
 
         return luaobject;
     }

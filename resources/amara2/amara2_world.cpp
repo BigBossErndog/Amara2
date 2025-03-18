@@ -20,6 +20,9 @@ namespace Amara {
                 sol::constructors<World()>(),
                 sol::base_classes, sol::bases<Amara::Entity>()
             );
+
+            sol::usertype<Entity> entity_type = lua["Entity"];
+            entity_type["world"] = sol::readonly(&Entity::world);
         }
     };
 }

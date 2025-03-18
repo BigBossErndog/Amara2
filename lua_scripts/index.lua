@@ -1,31 +1,11 @@
 function print_all_fields(obj)
-    print("== Properties ==")
-
-    -- Check if obj is a table (Lua table or userdata)
-    if type(obj) == "table" then
-        for key, value in pairs(obj) do
-            print(key, value)
-        end
-    end
-
-    -- Get the metatable
     local mt = getmetatable(obj)
     if mt then
         -- Check if __index exists in the metatable (this is where methods/properties usually reside)
         if mt.__index then
-            if type(mt.__index) == "table" then
-                print("== Methods in __index (sol::table) ==")
-                for key, value in pairs(mt.__index) do
-                    print(key, value)
-                end
-            elseif type(mt.__index) == "function" then
-                print("== Method in __index (function) ==")
-                print(mt.__index)  -- just print the function reference
-            else
-                print("== Metatable ==")
-                for key, value in pairs(mt) do
-                    print(key, value)
-                end
+            print("== __index ==")
+            for key, value in pairs(mt.__index) do
+                print(key, value)
             end
         else
             print("== Metatable ==")
@@ -35,21 +15,36 @@ function print_all_fields(obj)
         end
     end
 end
+
+function printObjectInfo(obj)
+    print("Object properties and methods:")
+    
+    -- Iterate through the object's fields and methods
+    for key, value in pairs(obj) do
+        local valueType = type(value)
+        if valueType == "function" then
+            print(key .. " (method)")
+        else
+            print(key .. " (property: " .. valueType .. ")")
+        end
+    end
+end
 -- scripts:run("scripts/testScript.lua");
 
-game:setTargetFPS(5)
+-- game:setTargetFPS(5)
 
 
 local w = creator:createWorld()
+
 local e = w:createChild("Entity")
-
-local t = e:createChild("Tween")
--- log(t)
-local s = Scene.new()
-print(s)
-print_all_fields(e)
-
--- t:to({ x = 10, y = 2 })
--- e.onUpdate = function(self, delta)
---     log(self.pos)
--- end
+local a = e:createChild("Action")
+local t = e:createChild("Tween"):to({
+    x = 3,
+    duration = 3
+}):to({
+    x = 0,
+    duration = 3
+})
+e.onUpdate = function(self, delta)
+    log(e.pos)
+end
