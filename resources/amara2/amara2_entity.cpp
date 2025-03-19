@@ -296,6 +296,52 @@ namespace Amara {
             // NOTE: ADD TO GARBAGE QUEUE
         }
 
+        sol::object bringToFront() {
+            if (parent == nullptr || isDestroyed) return get_lua_object();
+            
+            std::vector<Entity*> family = parent->children;
+            Entity* entity = nullptr;
+
+            bool foundSelf = false;
+
+            for (int i = 0; i < family.size(); i++) {
+                entity = family[i];
+                if (entity == this) foundSelf = true;
+                else if (foundSelf) {
+                    family[i - 1] = entity;
+                    family[i] = entity;
+                    if (!entity->isDestroyed && entity->depth > depth) {
+                        depth = entity->depth;
+                    }
+                }
+            }
+            if (foundSelf) parent->children = family;
+            return get_lua_object();
+        }
+
+        sol::object sendToBack() {
+            if (parent == nullptr || isDestroyed) return get_lua_object();
+            
+            std::vector<Entity*> family = parent->children;
+            Entity* entity = nullptr;
+
+            bool foundSelf = false;
+
+            for (int i = family.size()-1; i >= 0; i--) {
+                entity = family[i];
+                if (entity == this) foundSelf = true;
+                else if (foundSelf) {
+                    family[i + 1] = entity;
+                    family[i] = entity;
+                    if (!entity->isDestroyed && entity->depth < depth) {
+                        depth = entity->depth;
+                    }
+                }
+            }
+            if (foundSelf) parent->children = family;
+            return get_lua_object();
+        }
+
         template <typename T>
         T as();
 
