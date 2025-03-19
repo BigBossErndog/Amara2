@@ -4,7 +4,7 @@ e.onCreate = function(self)
     log(self, " was created!")
 end
 e.props.hello = function(self, msg)
-    log("Hello from ", self, "!", #self.children)
+    log("Hello from ", self, "!")
 end
 
 e.x = 100;

@@ -69,7 +69,8 @@
 #define AMARA_DEF
     #include "amara2_utility.cpp"
     #include "amara2_easing.cpp"
-    #include "amara2_geometry.cpp"
+    #include "amara2_vectors.cpp"
+    #include "amara2_shapes.cpp"
 
     #include "amara2_properties.cpp"
     #include "amara2_luaUtlity.cpp"

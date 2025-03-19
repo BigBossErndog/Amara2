@@ -16,6 +16,7 @@ namespace Amara {
         Action(): Entity() {
             set_base_entity_id("Action");
             do_not_depth_sort = true;
+            is_action = true;
         }
 
         virtual void init() override {
@@ -135,6 +136,11 @@ namespace Amara {
             return false;
         }
 
+        sol::object chain(std::string key) {
+            Amara::Action* action = createChild(key)->as<Amara::Action*>();
+            return action->get_lua_object();
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Action>("Action",
                 sol::base_classes, sol::bases<Entity>(),
@@ -144,8 +150,27 @@ namespace Amara {
                 "isCompleted", sol::readonly(&Action::isCompleted),
                 "complete", &Action::complete,
                 "completeEvt", &Action::completeEvt,
-                "addChild", &Action::addChild
+                "addChild", &Action::addChild,
+                "chain", &Action::chain
             );
+
+            sol::usertype<Entity> entity_type = lua["Entity"];
+            entity_type["act"] = sol::property([](Amara::Entity& e, std::string key) -> sol::object {
+                Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
+                return action->get_lua_object();
+            });
+            entity_type["isActing"] = sol::property([](Amara::Entity& e) -> bool {
+                for (Amara::Entity* ent: e.children) {
+                    if (!ent->isDestroyed && ent->is_action) return true;
+                }
+                return false;
+            });
+            entity_type["finishedActing"] = sol::property([](Amara::Entity& e) -> bool {
+                for (Amara::Entity* ent: e.children) {
+                    if (!ent->isDestroyed && ent->is_action) return false;
+                }
+                return true;
+            });
         }
     };
 }

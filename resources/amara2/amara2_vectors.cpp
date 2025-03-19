@@ -90,51 +90,7 @@ namespace Amara {
         }
     };
 
-    struct Rectangle: public Vector2 {
-        Rectangle() = default;
-        Rectangle(float x_, float y_, float w_, float h_) : Vector2(x_, y_), w(w_), h(h_) {}
-
-        float w = 0;
-        float h = 0;
-
-        bool operator==(const Rectangle& other) const {
-            return x == other.x && y == other.y && w == other.w && h == other.h;
-        }
-        
-        explicit operator std::string() const {
-            return "{ x: " + float_string(x) + ", y: " + float_string(y) + ", w: " + float_string(w) + ", h: " + float_string(h) + " }";
-        }
-        friend std::ostream& operator<<(std::ostream& os, const Rectangle& v) {
-            return os << static_cast<std::string>(v);
-        }
-    };
-
-    struct Circle: public Vector2 {
-        Circle() = default;
-        Circle(float x_, float y_, float r_) : Vector2(x_, y_), radius(r_) {}
-        float radius = 0;
-    };
-
-    struct Line {
-        // From point to point
-        Line() = default;
-        Line(float x1, float y1, float x2, float y2) {
-            start = { x1, y1 };
-            end = { x2, y2 };
-        }
-        Line(Vector2 _s, Vector2 _e): Line(_s.x, _s.y, _e.x, _e.y) {}
-
-        Vector2 start = {0, 0};
-        Vector2 end = {0, 0};
-    };
-    
-    struct Triangle {
-        Vector2 p1 = {0, 0};
-        Vector2 p2 = {0, 0};
-        Vector2 p3 = {0, 0};
-    };
-
-    void bindLua_Geometry(sol::state& lua) {
+    void bindLua_Vectors(sol::state& lua) {
         lua.new_usertype<Vector2>("Vector2",
             sol::constructors<Vector2(), Vector2(float, float)>(),
             "x", &Vector2::x,
@@ -236,14 +192,6 @@ namespace Amara {
             },
             "string", [](const Vector3& v) {
                 return std::string(v);
-            }
-        );
-        lua.new_usertype<Rectangle>("Rectangle",
-            sol::constructors<Rectangle(), Rectangle(float, float, float, float)>(),
-            "w", &Rectangle::w,
-            "h", &Rectangle::h,
-            "rectangle", [](const Rectangle& r) {
-                return std::string(r);
             }
         );
     }

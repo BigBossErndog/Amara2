@@ -39,6 +39,7 @@ namespace Amara {
 
         bool is_camera = false;
         bool is_scene = false;
+        bool is_action = false;
 
         std::deque<std::string> inheritanceChain;
 
@@ -283,13 +284,13 @@ namespace Amara {
             return string_concat(
                 "(", baseEntityID, ", ", 
                 entityID, ": \"",
-                id, "\") "
+                id, "\")"
             );
         }
         friend std::ostream& operator<<(std::ostream& os, const Entity& e) {
             return os << static_cast<std::string>(e);
         }
-
+        
         static void clean_entity_list(std::vector<Amara::Entity*>& list) {
             Amara::Entity* entity;
 			for (auto it = list.begin(); it != list.end();) {

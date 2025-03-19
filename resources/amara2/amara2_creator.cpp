@@ -77,7 +77,8 @@ namespace Amara {
 
         void bindLua() {
             bindLua_UtilityFunctions(lua);
-            bindLua_Geometry(lua);
+            bindLua_Vectors(lua);
+            bindLua_Shapes(lua);
             bindLua_Easing(lua);
             
             GameManager::bindLua(lua);

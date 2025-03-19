@@ -51,13 +51,15 @@ end
 local p = "hello world"
 print(p:starts_with("hello"))
 
-local d = e.children:find("entity2");
+local d = e.children:find("entity 2");
 -- print(w)
 -- w:start()
 
 log(string.concat(
     "1", "2", "3"
 ))
+
+d.props.hi = "hi"
 
 -- files:execute("start ms-settings:defaultapps")
 -- local c = e:createChild("Scene")
