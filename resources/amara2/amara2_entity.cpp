@@ -30,8 +30,10 @@ namespace Amara {
         Vector3 pos = { 0, 0, 0 };
         
         float depth = 0;
-        bool lockDepthToY = false;
-        bool do_not_depth_sort = false;
+        bool yDepthLocked = false;
+        bool zDepthLocked = false;
+
+        bool depthSortEnabled = true;
 
         bool isDestroyed = false;
         bool isPaused = false;
@@ -174,8 +176,9 @@ namespace Amara {
                 }
             }
 
-            if (lockDepthToY) depth = pos.y;
-
+            if (yDepthLocked) depth = pos.y;
+            else if (zDepthLocked) depth = pos.z;
+            
             if (!isDestroyed) runChildren(deltaTime);
             clean_entity_list(children);
         }
@@ -323,7 +326,8 @@ namespace Amara {
                 "configure_override", &Entity::configure_override,
                 "super_configure", &Entity::super_configure,
                 "depth", &Entity::depth,
-                "lockDepthToY", &Entity::lockDepthToY,
+                "yDepthLocked", &Entity::yDepthLocked,
+                "zDepthLocked", &Entity::zDepthLocked,
                 "onPreload", &Entity::luaPreload,
                 "onCreate", &Entity::luaCreate,
                 "onUpdate", &Entity::luaUpdate,
@@ -332,7 +336,7 @@ namespace Amara {
                 "addChild", &Entity::addChild,
                 "isDestroyed", sol::readonly(&Entity::isDestroyed),
                 "destroy", &Entity::destroy,
-                "do_not_depth_sort", &Entity::do_not_depth_sort,
+                "depthSortEnabled", &Entity::depthSortEnabled,
                 "string", [](Amara::Entity* e){
                     return std::string(*e);
                 }
@@ -413,8 +417,8 @@ namespace Amara {
 		inline bool operator() (Amara::Entity* entity1, Amara::Entity* entity2) {
 			if (entity1 == nullptr) return true;
 			if (entity2 == nullptr) return true;
-            if (entity1->isDestroyed || entity1->do_not_depth_sort) return true;
-			if (entity2->isDestroyed || entity2->do_not_depth_sort) return true;
+            if (entity1->isDestroyed || !entity1->depthSortEnabled) return true;
+			if (entity2->isDestroyed || !entity2->depthSortEnabled) return true;
             return (entity1->depth < entity2->depth);
 		}
 	};

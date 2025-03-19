@@ -15,7 +15,7 @@ namespace Amara {
 
         Action(): Entity() {
             set_base_entity_id("Action");
-            do_not_depth_sort = true;
+            depthSortEnabled = true;
             is_action = true;
         }
 
