@@ -4,7 +4,6 @@ namespace Amara {
         sol::state lua;
 
         std::deque<World*> worlds;
-        std::vector<nlohmann::json> arguments;
 
         GameManager game;
 
@@ -69,8 +68,8 @@ namespace Amara {
                 for (int i = 1; i < argv; i++) {
                     std::cout << args[i];
                     if (i < argv-1) std::cout << ", ";
-                    if (nlohmann::json::accept(args[i])) arguments.push_back(nlohmann::json::parse(args[i]));
-                    else arguments.push_back(std::string(args[i]));
+                    if (nlohmann::json::accept(args[i])) game.arguments.push_back(nlohmann::json::parse(args[i]));
+                    else game.arguments.push_back(std::string(args[i]));
                 }
                 std::cout << std::endl;
             }
@@ -82,10 +81,6 @@ namespace Amara {
             bindLua_Easing(lua);
             
             GameManager::bindLua(lua);
-            lua["GameManager"]["arguments"] = sol::property([this](const Creator& g) -> sol::object {
-                if (this->arguments.size() == 0) return sol::nil;
-                return json_to_lua(this->arguments);
-            });
 
             FileManager::bindLua(lua);
 
@@ -100,11 +95,7 @@ namespace Amara {
                     else world = c.createWorld();
                     if (world) return world->get_lua_object();
                     return sol::nil;
-                },
-                "arguments", sol::property([](const Creator& g) -> sol::object {
-                    if (g.arguments.size() == 0) return sol::nil;
-                    return json_to_lua(g.arguments);
-                })
+                }
             );
         }
 

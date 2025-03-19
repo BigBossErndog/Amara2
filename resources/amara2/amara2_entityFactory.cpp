@@ -164,38 +164,54 @@ namespace Amara {
         sol::userdata entityData = luaobject.as<sol::userdata>();
         sol::table metatable = entityData[sol::metatable_key];
 
-        sol::function old_newindexer = metatable["__newindex"];
-        metatable["__newindex"] = [this, old_newindexer](sol::userdata obj, sol::object key, sol::object value) {
-            sol::table metatable = obj[sol::metatable_key];
-            
-            if (key.is<std::string>()) {
-                std::string key_str = key.as<std::string>();
-                if (metatable[key_str].valid()) {
-                    old_newindexer(obj, key, value);
-                    return;
+        if (!metatable["__indexing_overridden"].valid()) {
+            metatable["__indexing_overridden"] = true;
+
+            sol::function old_indexer = metatable["__index"];
+            metatable["__index_rec"] = old_indexer;
+            metatable["__index"] = [old_indexer](Amara::Entity& e, sol::object key) -> sol::object {
+                if (e.props[key].valid()) {
+                    return e.props[key];
                 }
-            }
+                return old_indexer(e, key);
+            };
 
-            this->props[key] = value;
-        };
+            // sol::function old_newindexer = metatable["__newindex"];
+            // metatable["__newindex"] = [old_indexer](sol::table self, sol::object key, sol::object value) {
+            //     sol::table metatable = obj.as<sol::userdata>()[sol::metatable_key];
 
-        sol::function old_indexer = metatable["__index"];
-        metatable["__index"] = [this, old_indexer](sol::userdata obj, sol::object key) -> sol::object {
-            sol::table metatable = obj[sol::metatable_key];
+            //     if (key.is<std::string>()) {
+            //         std::string key_str = key.as<std::string>();
 
-            if (key.is<std::string>()) {
-                std::string key_str = key.as<std::string>();
-                if (metatable[key_str].valid()) {
-                    return old_indexer(obj, key);
-                }
-            }
+            //         if (metatable[key_str].valid()) {
+            //             old_newindexer(obj, key, value);
+            //             return;
+            //         }
 
-            if (this->props[key].valid()) {
-                return this->props[key];
-            }
+            //         // Walk up the metatable chain
+            //         sol::table parent_meta = metatable;
+            //         while (parent_meta.valid()) {
+            //             sol::object indexer = parent_meta["__index"];
 
-            return old_indexer(obj, key);
-        };
+            //             if (indexer.is<sol::table>()) {
+            //                 parent_meta = indexer.as<sol::table>();
+
+            //                 if (parent_meta[key_str].valid()) {
+            //                     // If found in parent, update it there
+            //                     parent_meta[key_str] = value;
+            //                     return;
+            //                 }
+            //             } else {
+            //                 break;  // Stop if __index is not a table
+            //             }
+            //         }
+            //     }
+
+
+            //     Amara::Entity& e = self.as<Amara::Entity&>();
+            //     e.props
+            // };
+        }
 
         return luaobject;
     }

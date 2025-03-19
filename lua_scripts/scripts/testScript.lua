@@ -1,20 +1,24 @@
 factory:load("TestEntity", "entities/testEntity")
 
 local e = factory:create("TestEntity")
-e.id = "entity1"
 print(e)
 -- e.props.name = "hi"
 
 
 local f = e:createChild("TestEntity")
-f.id = "entity2"
+f.id = "entity 2"
+e.id = "entity 1"
 
 e.pos.x = e.pos.x + 1
-log(e.pos)
+log(e.id)
+e:hello()
+f:hello()
 
-if game.arguments then log(game.arguments) end
+if game.arguments then
+    log(game.arguments(1))
+end
 
-log(game.platform)
+-- log(game.platform)
 
 
 -- e.pos = Vector3.new(1, 2, 3)

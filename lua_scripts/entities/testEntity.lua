@@ -3,8 +3,11 @@ local e = factory:create("Entity")
 e.onCreate = function(self)
     log(self, " was created!")
 end
-e.hello = function(self, msg)
-    log("Hello from ", self.id, "!")
+e.props.hello = function(self, msg)
+    log("Hello from ", self, "!", #self.children)
 end
+
+e.x = 100;
+log(e)
 
 return e

@@ -7,6 +7,8 @@ namespace Amara {
 
         std::string platform;
 
+        std::vector<nlohmann::json> arguments;
+
         GameManager() {
             #if defined(__EMSCRIPTEN__)
                 platform = "web";
@@ -51,7 +53,11 @@ namespace Amara {
                 "uncapFPS", &GameManager::uncapFPS,
                 "deltaTime", sol::readonly(&GameManager::deltaTime),
                 "platform", sol::readonly(&GameManager::platform),
-                "get_lua_stack_size", &GameManager::get_lua_stack_size
+                "get_lua_stack_size", &GameManager::get_lua_stack_size,
+                "arguments", sol::property([](const GameManager& g) -> sol::object {
+                    if (g.arguments.size() == 0) return sol::nil;
+                    return json_to_lua(g.arguments);
+                })
             );
         }
     };

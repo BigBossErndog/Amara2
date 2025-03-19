@@ -35,34 +35,41 @@ namespace Amara {
 
             if (lua_data["onComplete"].valid()) {
                 onComplete = lua_data["onComplete"];
+                lua_data["onComplete"] = sol::nil;
             }
             if (lua_data["onUpdate"].valid()) {
                 onUpdate = lua_data["onUpdate"];
+                lua_data["onUpdate"] = sol::nil;
+            }
+            if (lua_data["duration"].valid()) {
+                tween_duration = lua_data["duration"];
+                lua_data["duration"] = sol::nil;
+            }
+            if (lua_data["ease"].valid()) {
+                easing = lua_data["ease"].get<Amara::Ease>();
+                lua_data["ease"] = sol::nil;
             }
 
             nlohmann::json data = lua_to_json(lua_data);
             target_data = nlohmann::json::object();
-
             for (auto it = data.begin(); it != data.end(); ++it) {
                 if (it.value().is_null()) continue;
-
-                if (string_equal("duration", it.key())) tween_duration = data["duration"];
-                else if (string_equal("ease", it.key())) easing = data["easing"];
-                else target_data[it.key()] = it.value();
+                target_data[it.key()] = it.value();
             }
 
             return get_lua_object();
         }
 
-        nlohmann::json clean_start_data() {
+        void clean_data() {
             std::vector<std::string> to_clean;
             for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                if (!json_has(target_data, it.key())) {
+                if (!json_has(target_data, it.key()) || it.value().is_null()) {
                     to_clean.push_back(it.key());
                 }
             }
             for (std::string& key: to_clean) {
-                start_data.erase(key);
+                json_erase(start_data, key);
+                json_erase(target_data, key);
             }
         }
 
@@ -77,9 +84,10 @@ namespace Amara {
                     for (auto it = target_data.begin(); it != target_data.end(); ++it) {
                         start_data[it.key()] = lua_to_json(lua_actor_table[it.key()]);
                     }
+                    clean_data();
                 }
                 else {
-                    clean_start_data();
+                    clean_data();
                     for (auto it = start_data.begin(); it != start_data.end(); ++it) {
                         lua_actor_table[it.key()] = it.value();
                     }
