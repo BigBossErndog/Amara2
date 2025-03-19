@@ -1,5 +1,5 @@
 namespace Amara {
-    class Action: public Entity, public StateManager {
+    class Action: public Entity {
     public:
         Amara::Entity* actor = nullptr;
 
@@ -19,9 +19,9 @@ namespace Amara {
             is_action = true;
         }
 
-        virtual void init() override {
-            Amara::Entity::init();
+        virtual void create() override {
             if (actor == nullptr) actor = parent;
+            Action::Entity::create();
         }
 
         virtual void prepare() {
@@ -87,14 +87,6 @@ namespace Amara {
 
             start_child_actions();
             isWaitingForChildren = true;
-        }
-
-        bool completeEvt() {
-            if (once()) {
-                complete();
-                return true;
-            }
-            return false;
         }
 
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
@@ -165,7 +157,6 @@ namespace Amara {
                 "hasStarted", sol::readonly(&Action::hasStarted),
                 "isCompleted", sol::readonly(&Action::isCompleted),
                 "complete", &Action::complete,
-                "completeEvt", &Action::completeEvt,
                 "addChild", &Action::addChild,
                 "chain", &Action::chain,
                 "whenDone", &Action::whenDone

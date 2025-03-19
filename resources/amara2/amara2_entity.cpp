@@ -56,11 +56,7 @@ namespace Amara {
             baseEntityID = key;
         }
 
-        virtual void create() {}
-        virtual void init() {
-            update_properties();
-            get_lua_object();
-            create();
+        virtual void create() {
             if (luaCreate.valid()) {
                 try {
                     luaCreate(get_lua_object());
@@ -69,6 +65,11 @@ namespace Amara {
                     debug_log("Error: On ", *this, "\" while executing onCreate().");
                 }
             }
+        }
+
+        virtual void init() {
+            update_properties();
+            get_lua_object();
             make_configurables();
         }
 
@@ -251,7 +252,8 @@ namespace Amara {
             entity->scene = scene;
             entity->parent = this;
             children.push_back(entity);
-            entity->init();
+            
+            entity->create();
 
             return entity;
         }

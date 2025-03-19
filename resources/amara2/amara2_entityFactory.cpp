@@ -41,6 +41,7 @@ namespace Amara {
 
         Amara::Entity* prepEntity(Amara::Entity* entity, std::string key) {
             entity->entityID = key;
+            entity->init();
             return entity;
         }
 

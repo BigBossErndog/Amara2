@@ -2,19 +2,22 @@
 
 -- local e = factory:create("Entity");
 -- e.props.hello = function() log("hi") end
-
-local w = Creator:createWorld()
+local world = Creator:createWorld()
+-- Every window is represented with a World.
+-- You can create multiple worlds.
+-- Calling world:destroy() will close the window.
 
 -- game:setTargetFPS(60)
+local e = world:createChild("Entity")
 
-local e = w:createChild("Entity")
 -- -- e.id = "acting entity"
-
 -- w.onUpdate = function(self) log(math.floor(game.fps)) end
 -- w.id = "hi"
 -- e.onUpdate = function(self) log(world.x) end
 
 -- print_metatable(w)
+
+local s = world:createChild("Scene")
 
 e.tween:from({
         x = 10
@@ -35,5 +38,9 @@ e.tween:from({
         print("finished")
         self.world:destroy()
     end)
-
+print(5)
 -- scripts:run("scripts/testScript")
+
+
+-- Return the world if you want Amara to manage it and give you debugging tools.
+return world
