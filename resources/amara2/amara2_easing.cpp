@@ -20,7 +20,7 @@ namespace Amara {
         return -(cos(M_PI * progress) - 1) / 2;
     }
 
-    double ease(float startVal, float endVal, double progress, Amara::Ease easing) {
+    double ease(double startVal, double endVal, double progress, Amara::Ease easing) {
         double eased_progress = progress;
         switch (easing) {
             case Ease::SineIn:
@@ -35,7 +35,7 @@ namespace Amara {
         }
         return (endVal - startVal)*eased_progress + startVal;
     }
-    double ease(float startVal, float endVal, double progress) {
+    double ease(double startVal, double endVal, double progress) {
         return ease(startVal, endVal, progress, Ease::Linear);
     }
 
@@ -59,8 +59,8 @@ namespace Amara {
             "SineInOut", Ease::SineInOut
         );
         lua.set_function("ease", sol::overload(
-            sol::resolve<double(float, float, double, Amara::Ease)>(&Amara::ease),
-            sol::resolve<double(float, float, double)>(&Amara::ease)
+            sol::resolve<double(double, double, double, Amara::Ease)>(&Amara::ease),
+            sol::resolve<double(double, double, double)>(&Amara::ease)
         ));
     }
 }

@@ -2,7 +2,7 @@ namespace Amara {
     class World: public Entity {
     public:
         World(): Entity() {
-            baseEntityID = "World";
+            set_base_entity_id("World");
             world = this;
         }
 

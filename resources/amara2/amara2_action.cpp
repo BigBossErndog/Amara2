@@ -14,7 +14,7 @@ namespace Amara {
         bool locked = false;
 
         Action(): Entity() {
-            baseEntityID = "Action";
+            set_base_entity_id("Action");
             do_not_depth_sort = true;
         }
 

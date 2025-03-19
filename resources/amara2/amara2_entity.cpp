@@ -23,6 +23,7 @@ namespace Amara {
         sol::function luaPreload;
         sol::function luaCreate;
         sol::function luaUpdate;
+        sol::function luaDestroy;
         
         MessageBox messages;
 
@@ -39,8 +40,17 @@ namespace Amara {
         bool is_camera = false;
         bool is_scene = false;
 
+        std::deque<std::string> inheritanceChain;
+
         Entity() {
-            baseEntityID = "Entity";
+            set_base_entity_id("Entity");
+        }
+
+        void set_base_entity_id(std::string key) {
+            if (!baseEntityID.empty()) {
+                inheritanceChain.push_front(baseEntityID);
+            }
+            baseEntityID = key;
         }
 
         virtual void create() {}
@@ -242,6 +252,15 @@ namespace Amara {
             if (isDestroyed) return;
             isDestroyed = true;
 
+            if (luaDestroy.valid()) {
+                try {
+                    luaDestroy(get_lua_object());
+                }
+                catch (const sol::error& e) {
+                    log("Error: On ", *this, "\" while executing onDestroy().");
+                }
+            }
+
             if (parent) parent->removeChild(this);
 
             Amara::Entity* child;
@@ -307,6 +326,7 @@ namespace Amara {
                 "onPreload", &Entity::luaPreload,
                 "onCreate", &Entity::luaCreate,
                 "onUpdate", &Entity::luaUpdate,
+                "onDestroy", &Entity::luaDestroy,
                 "createChild", &Entity::luaCreateChild,
                 "addChild", &Entity::addChild,
                 "isDestroyed", sol::readonly(&Entity::isDestroyed),

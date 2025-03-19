@@ -14,7 +14,7 @@ namespace Amara {
         sol::function onUpdate;
 
         Tween(): Amara::Action() {
-            baseEntityID = "Tween";
+            set_base_entity_id("Tween");
         }
 
         sol::object on(sol::table _t) {
@@ -23,10 +23,14 @@ namespace Amara {
         }
 
         sol::object from(sol::table lua_data) {
+            if (!target_data.is_null()) {
+                Amara::Tween* tween = addChild(new Tween())->as<Amara::Tween*>();
+                return tween->from(lua_data);
+            }
             start_data = lua_to_json(lua_data);
             return get_lua_object();
         }
-
+        
         sol::object to(sol::table lua_data) {
             if (!target_data.is_null()) {
                 Amara::Tween* tween = addChild(new Tween())->as<Amara::Tween*>();
@@ -81,15 +85,16 @@ namespace Amara {
             
                 if (start_data.is_null()) {
                     start_data = nlohmann::json::object();
-                    for (auto it = target_data.begin(); it != target_data.end(); ++it) {
-                        start_data[it.key()] = lua_to_json(lua_actor_table[it.key()]);
+                    if (lua_actor_table.valid()) {
+                        for (auto it = target_data.begin(); it != target_data.end(); ++it) {
+                            start_data[it.key()] = lua_to_json(lua_actor_table[it.key()]);
+                        }
                     }
                     clean_data();
                 }
-                else {
-                    clean_data();
+                else if (lua_actor_table.valid()) {
                     for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                        lua_actor_table[it.key()] = it.value();
+                        lua_actor_table.set(it.key(), it.value().get<double>());
                     }
                 }
 
@@ -105,9 +110,9 @@ namespace Amara {
                     complete();
                 }
 
-                for (auto it = target_data.begin(); it != target_data.end(); ++it) {
-                    if (lua_actor_table.valid()) {
-                        lua_actor_table[it.key()] = ease(start_data[it.key()], target_data[it.key()], progress, easing);
+                if (lua_actor_table.valid()) {
+                    for (auto it = target_data.begin(); it != target_data.end(); ++it) {
+                        lua_actor_table.set(it.key(), ease(start_data[it.key()], target_data[it.key()], progress, easing));
                     }
                 }
 
@@ -129,6 +134,7 @@ namespace Amara {
                 "progress", sol::readonly(&Tween::progress),
                 "from", &Tween::from,
                 "to", &Tween::to,
+                "set", &Tween::from,
                 "on", &Tween::on
             );
 

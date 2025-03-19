@@ -4,7 +4,7 @@ namespace Amara {
         Rectangle viewport;
 
         Camera(): Entity() {
-            baseEntityID = "Camera";
+            set_base_entity_id("Camera");
             is_camera = true;
         }
 

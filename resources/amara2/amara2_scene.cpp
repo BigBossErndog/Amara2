@@ -5,7 +5,7 @@ namespace Amara {
         std::vector<Amara::Entity*> cameras;
 
         Scene() {
-            baseEntityID = "Scene";
+            set_base_entity_id("Scene");
             scene = this;
             is_scene = true;
         }
