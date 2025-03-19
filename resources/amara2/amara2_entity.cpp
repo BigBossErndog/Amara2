@@ -66,7 +66,7 @@ namespace Amara {
                     luaCreate(get_lua_object());
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing onCreate().");
+                    debug_log("Error: On ", *this, "\" while executing onCreate().");
                 }
             }
             make_configurables();
@@ -89,7 +89,9 @@ namespace Amara {
         }
         
         Amara::Entity* configure(std::string key, nlohmann::json value) {
-            configurables[key](value);
+            if (configurables.find(key) != configurables.end()) {
+                configurables[key](value);
+            }
             return this;
         }
 
@@ -105,21 +107,19 @@ namespace Amara {
                 }
                 return this;
             }
-            for (auto it = config.begin(); it != config.end(); ++it) {
-                configure(it.key(), it.value());
-            }
             
             return this;
         }
         
         sol::object super_configure(sol::object config) {
-            configure(lua_to_json(config));
-            return get_lua_object();
-        }
+            if (config.is<sol::table>()) {
+                sol::table tbl = config.as<sol::table>();
+                for (const auto& it: tbl) {
+                    luaConfigure(it.first.as<std::string>(), it.second);
+                }
+                return get_lua_object();
+            }
 
-        sol::function configure_override;
-        sol::object luaConfigure(sol::object config) {
-            update_properties();
             if (config.is<std::string>()) {
                 std::string path = config.as<std::string>();
                 if (string_endsWith(path, ".json")) {
@@ -131,19 +131,38 @@ namespace Amara {
                     return get_lua_object();
                 }
             }
+
+            configure(lua_to_json(config));
+            return get_lua_object();
+        }
+
+        sol::function configure_override;
+        sol::object luaConfigure(sol::object config) {
+            update_properties();
+
             if (configure_override.valid()) {
                 try {
                     configure_override(this, config);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing configure().");
+                    debug_log("Error: On ", *this, "\" while executing configure().");
                 }
             }
-            else configure(lua_to_json(config));
+            else {
+                super_configure(config);
+            }
+
             return get_lua_object();
         }
-        sol::object luaConfigure(std::string key, sol::object val) {
-            configure(key, lua_to_json(val));
+        virtual sol::object luaConfigure(std::string key, sol::object val) {
+            if (val.is<sol::function>()) {
+                sol::function func = val.as<sol::function>();
+                if (string_equal("onPreload", key)) luaPreload = func;
+                else if (string_equal("onCreate", key)) luaCreate = func;
+                else if (string_equal("onUpdate", key)) luaUpdate = func;
+                else if (string_equal("onDestroy", key)) luaDestroy = func;
+            }
+            else configure(key, lua_to_json(val));
             return get_lua_object();
         }
 
@@ -154,7 +173,7 @@ namespace Amara {
                     luaPreload(*this);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing onPreload().");
+                    debug_log("Error: On ", *this, "\" while executing onPreload().");
                 }
             }
         }
@@ -172,7 +191,7 @@ namespace Amara {
                     luaUpdate(get_lua_object(), deltaTime);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing onUpdate().");
+                    debug_log("Error: On ", *this, "\" while executing onUpdate().");
                 }
             }
 
@@ -261,7 +280,7 @@ namespace Amara {
                     luaDestroy(get_lua_object());
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing onDestroy().");
+                    debug_log("Error: On ", *this, "\" while executing onDestroy().");
                 }
             }
 

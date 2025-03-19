@@ -32,7 +32,7 @@ namespace Amara {
                     onPrepare(actor);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing onPrepare().");
+                    debug_log("Error: On ", *this, "\" while executing onPrepare().");
                 }
             }
         }
@@ -46,7 +46,7 @@ namespace Amara {
                     onAct(actor, deltaTime);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing onAct().");
+                    debug_log("Error: On ", *this, "\" while executing onAct().");
                 }
             }
         }
@@ -81,7 +81,7 @@ namespace Amara {
                     onComplete(actor);
                 }
                 catch (const sol::error& e) {
-                    log("Error: On ", *this, "\" while executing onComplete().");
+                    debug_log("Error: On ", *this, "\" while executing onComplete().");
                 }
             }
 
@@ -95,6 +95,16 @@ namespace Amara {
                 return true;
             }
             return false;
+        }
+
+        virtual sol::object luaConfigure(std::string key, sol::object val) override {
+            if (val.is<sol::function>()) {
+                sol::function func = val.as<sol::function>();
+                if (string_equal("onPrepare", key)) onPrepare = func;
+                else if (string_equal("onAct", key)) onAct = func;
+                else if (string_equal("onComplete", key)) onComplete = func;
+            }
+            return luaConfigure(key, val);
         }
 
         void start_child_actions() {
@@ -118,6 +128,11 @@ namespace Amara {
                 child->prepare();
 				++it;
 			}
+        }
+
+        sol::object whenDone(sol::function func) {
+            onComplete = func;
+            return get_lua_object();
         }
 
         bool has_running_child_actions() {
@@ -146,12 +161,14 @@ namespace Amara {
                 sol::base_classes, sol::bases<Entity>(),
                 "onPrepare", &Action::onPrepare,
                 "onAct", &Action::onAct,
+                "onComplete", &Action::onComplete,
                 "hasStarted", sol::readonly(&Action::hasStarted),
                 "isCompleted", sol::readonly(&Action::isCompleted),
                 "complete", &Action::complete,
                 "completeEvt", &Action::completeEvt,
                 "addChild", &Action::addChild,
-                "chain", &Action::chain
+                "chain", &Action::chain,
+                "whenDone", &Action::whenDone
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];

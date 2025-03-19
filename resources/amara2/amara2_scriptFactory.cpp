@@ -8,7 +8,7 @@ namespace Amara {
         bool load(std::string key, std::string path) {
             std::string script_path = Properties::files->getScriptPath(path);
             if (!Properties::files->fileExists(script_path)) {
-                log("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
+                debug_log("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
             if (string_endsWith(script_path, ".lua")) {
@@ -30,7 +30,7 @@ namespace Amara {
                     return result.as<Amara::Script*>();
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create script \"", key, "\".");
+                    debug_log("Failed to create script \"", key, "\".");
                 }
             }
             else if (readScripts.find(key) != readScripts.end()) {
@@ -39,10 +39,10 @@ namespace Amara {
                     return result.as<Amara::Script*>();
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create script \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
+                    debug_log("Failed to create script \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
-            else log("Script \"", key, "\" was not found.");
+            else debug_log("Script \"", key, "\" was not found.");
             return nullptr;
         }
 
@@ -53,7 +53,7 @@ namespace Amara {
                     return result;
                 }
                 catch (const sol::error& e) {
-                    log("Failed to run cached script \"", path, "\".");
+                    debug_log("Failed to run cached script \"", path, "\".");
                     return sol::nil;
                 }
             }
@@ -63,7 +63,7 @@ namespace Amara {
                     return result;
                 }
                 catch (const sol::error& e) {
-                    log("Failed to run script \"", path, "\" from file \"", Properties::files->getScriptPath(readScripts[path]), "\".");
+                    debug_log("Failed to run script \"", path, "\" from file \"", Properties::files->getScriptPath(readScripts[path]), "\".");
                     return sol::nil;
                 }
             }

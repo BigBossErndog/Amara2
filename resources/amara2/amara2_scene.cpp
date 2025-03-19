@@ -12,7 +12,6 @@ namespace Amara {
 
         void update_properties() {
             Properties::scene = this;
-            Properties::lua()["scene"] = get_lua_object();
             Amara::Entity::update_properties();
         }
 

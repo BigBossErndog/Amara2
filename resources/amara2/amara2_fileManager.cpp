@@ -27,7 +27,7 @@ namespace Amara {
                 return contents;
             }
             else {
-               log("Error: Failed to read file \"", filePath.c_str(), "\"");
+               debug_log("Error: Failed to read file \"", filePath.c_str(), "\"");
             }
             return "";
         }
@@ -49,12 +49,12 @@ namespace Amara {
 
             std::ofstream file(filePath);
 			if (file.is_open() && !file.fail()) {
-			    log("Written file: ", filePath);
+			    debug_log("Written file: ", filePath);
 				file.write(output.c_str(), output.size());
 				file.close();
 				return true;
 			}
-			log("Failed to write to path: ", filePath);
+			debug_log("Failed to write to path: ", filePath);
 			return false;
         }
         bool luaWriteFile(std::string path, sol::object input) {
@@ -66,20 +66,20 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(path)) {
-                log("Error: File does not exist: \"", filePath.string(), "\".");
+                debug_log("Error: File does not exist: \"", filePath.string(), "\".");
                 return false;
             }
 
             try {
                 if (std::filesystem::remove(path)) {
-                    log("File deleted successfully: \"", filePath.string(), "\"");
+                    debug_log("File deleted successfully: \"", filePath.string(), "\"");
                     return true;
                 } else {
-                    log("Error: Failed to delete file (unknown reason): \"", filePath.string(), "\".");
+                    debug_log("Error: Failed to delete file (unknown reason): \"", filePath.string(), "\".");
                     return false;
                 }
             } catch (const std::exception& e) {
-                log("Error: Exception while deleting file:  \"", filePath.string(), "\".");
+                debug_log("Error: Exception while deleting file:  \"", filePath.string(), "\".");
                 return false;
             }
 		    return false;
@@ -94,7 +94,7 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(path)) {
-                log("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
+                debug_log("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
                 return false;
             }
         
@@ -107,13 +107,13 @@ namespace Amara {
 
             if (!std::filesystem::exists(dir)) {
                 if (std::filesystem::create_directory(dir)) {
-                    log("Directory created: \"", dir.string(), "\".");
+                    debug_log("Directory created: \"", dir.string(), "\".");
                     return true;
                 } else {
-                    log("Error: Failed to create directory: \"", dir.string(), "\".");
+                    debug_log("Error: Failed to create directory: \"", dir.string(), "\".");
                 }
             } else {
-                log("Error: Directory already exists: \"", dir.string(), "\".");
+                debug_log("Error: Directory already exists: \"", dir.string(), "\".");
             }
             return false;
         }
@@ -124,7 +124,7 @@ namespace Amara {
             std::vector<std::string> contents;
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(filePath)) {
-                log("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
+                debug_log("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
                 return contents;
             }
 
@@ -177,10 +177,10 @@ namespace Amara {
                     std::filesystem::remove_all(dirPath);  // Deletes the directory and all its contents
                     return true;
                 } else {
-                    log("Error: Path does not exist or is not a directory \"", dirPath.string(), "\".");
+                    debug_log("Error: Path does not exist or is not a directory \"", dirPath.string(), "\".");
                 }
             } catch (const std::filesystem::filesystem_error& e) {
-                log("Error: Failed to delete directory \"", dirPath.string(), "\".");
+                debug_log("Error: Failed to delete directory \"", dirPath.string(), "\".");
             }
             return false;
         }
@@ -250,13 +250,13 @@ namespace Amara {
             std::filesystem::path destination = getRelativePath(output);
             try {
                 if (!fileExists(source.string())) {
-                    log("Error: \"", source.string(), "\" does not exist.");
+                    debug_log("Error: \"", source.string(), "\" does not exist.");
                     return false;
                 }
                 if (fileExists(destination.string())) {
                     if (overwrite) deleteFile(destination.string());
                     else {
-                        log("Error: \"", destination.string(), "\" already exists.");
+                        debug_log("Error: \"", destination.string(), "\" already exists.");
                         return false;
                     }
                 }
@@ -270,15 +270,15 @@ namespace Amara {
                     std::filesystem::copy(source, destination, options);
                 }
                 else {
-                    log("Error: Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
+                    debug_log("Error: Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
                     return false;
                 }
         
-                log("Copied \"", source.string(), "\" to \"", destination.string(), "\".");
+                debug_log("Copied \"", source.string(), "\" to \"", destination.string(), "\".");
                 return true;
             }
             catch (const std::exception& e) {
-                log("Error: Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
+                debug_log("Error: Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
             }
             return false;
         }
@@ -292,7 +292,7 @@ namespace Amara {
                 return Properties::lua().script_file(filePath.string());
             }
             catch (const sol::error& e) {
-                log(e.what());
+                debug_log(e.what());
                 throw e;
             }
             return sol::nil;
@@ -305,7 +305,7 @@ namespace Amara {
         bool compileScript(std::string path, std::string dest) {
             std::filesystem::path filePath = getRelativePath(path);
             if (!fileExists(filePath.string())) {
-                log("Error: Script not found \"", filePath.string(), "\".");
+                debug_log("Error: Script not found \"", filePath.string(), "\".");
                 return false;
             }
             sol::load_result script = Properties::lua().load_file(filePath.string());
@@ -328,15 +328,15 @@ namespace Amara {
                         std::ofstream out(destPath, std::ios::binary);
                         out.write(bytecode_str.data(), bytecode_str.size());
                         out.close();
-                        log("Compiled script to \"", destPath.string(), "\"");
+                        debug_log("Compiled script to \"", destPath.string(), "\"");
                         return true;
                     }
                     else {
-                        log("Error: Could not compile script \"", getScriptPath(path), "\"");
+                        debug_log("Error: Could not compile script \"", getScriptPath(path), "\"");
                     }
                 }
                 catch (const sol::error& e) {
-                    log("Error: Could not compile script \"", getScriptPath(path), "\"");
+                    debug_log("Error: Could not compile script \"", getScriptPath(path), "\"");
                 }
             }
             return false;
@@ -357,7 +357,7 @@ namespace Amara {
             if (!command.empty()) {
                 command.erase(command.size() - 4);
             }
-            log(command.c_str());
+            debug_log(command.c_str());
             if (execute_blocking) return run_command(command);
             else {
                 std::thread t(run_command, command);
@@ -385,14 +385,14 @@ namespace Amara {
             
                 // Open registry key
                 if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
-                    log("Error: Unable to access environment variables.");
+                    debug_log("Error: Unable to access environment variables.");
                     return false;
                 }
             
                 // Get required buffer size
                 DWORD bufferSize = 0;
                 if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, nullptr, &bufferSize) != ERROR_SUCCESS) {
-                    log("Error: Unable to access environment variables.");
+                    debug_log("Error: Unable to access environment variables.");
                     RegCloseKey(hKey);
                     return false;
                 }
@@ -400,7 +400,7 @@ namespace Amara {
                 // Use vector for dynamic buffer
                 std::vector<char> buffer(bufferSize);
                 if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, reinterpret_cast<LPBYTE>(buffer.data()), &bufferSize) != ERROR_SUCCESS) {
-                    log("Error: Unable to access environment variables.");
+                    debug_log("Error: Unable to access environment variables.");
                     RegCloseKey(hKey);
                     return false;
                 }
@@ -421,14 +421,14 @@ namespace Amara {
                 // Get the required buffer size
                 DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
                 if (size == 0) {
-                    log("Error: Unable to access environment variables.");
+                    debug_log("Error: Unable to access environment variables.");
                     return false;
                 }
                 
                 // Use std::vector<char> to store the PATH value
                 std::vector<char> buffer(size);
                 if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
-                    log("Error: Unable to access environment variables.");
+                    debug_log("Error: Unable to access environment variables.");
                     return false;
                 }
             
@@ -444,11 +444,11 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
             #if defined(_WIN32)
                 if (isPathInRegistry(filePath.string())) {
-                    log("Info: Path \"", filePath.string(), "\" is already set in registry.");
+                    debug_log("Info: Path \"", filePath.string(), "\" is already set in registry.");
                     return true;
                 }
                 if (isPathInEnvironment(filePath.string())) {
-                    log("Info: Path \"", filePath.string(), "\" is already set in environment.");
+                    debug_log("Info: Path \"", filePath.string(), "\" is already set in environment.");
                     return true;
                 }
                 if (permanent) {
@@ -457,14 +457,14 @@ namespace Amara {
                     const std::string newPath = getRelativePath(path);
                     // Open the registry key
                     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS) {
-                        log("Error: Unable to access environment variables.");
+                        debug_log("Error: Unable to access environment variables.");
                         return 1;
                     }
 
                     // Get the required buffer size
                     DWORD bufferSize = 0;
                     if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, nullptr, &bufferSize) != ERROR_SUCCESS) {
-                        log("Error: Unable to access environment variables.");
+                        debug_log("Error: Unable to access environment variables.");
                         RegCloseKey(hKey);
                         return false;
                     }
@@ -472,7 +472,7 @@ namespace Amara {
                     // Use vector as a dynamically sized buffer
                     std::vector<char> currentPath(bufferSize);
                     if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, reinterpret_cast<LPBYTE>(currentPath.data()), &bufferSize) != ERROR_SUCCESS) {
-                        log("Error: Unable to access environment variables.");
+                        debug_log("Error: Unable to access environment variables.");
                         RegCloseKey(hKey);
                         return false;
                     }
@@ -483,7 +483,7 @@ namespace Amara {
 
                     // Set the new PATH value
                     if (RegSetValueEx(hKey, "Path", 0, REG_EXPAND_SZ, reinterpret_cast<const BYTE*>(updatedPath.c_str()), updatedPath.size() + 1) != ERROR_SUCCESS) {
-                        log("Error: Unable to add new environment variable.");
+                        debug_log("Error: Unable to add new environment variable.");
                         RegCloseKey(hKey);
                         return false;
                     }
@@ -499,12 +499,12 @@ namespace Amara {
                 else {
                     DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
                     if (size == 0) {
-                        log("Error: Unable to access environment variables.");
+                        debug_log("Error: Unable to access environment variables.");
                         return false;
                     }
                     std::vector<char> buffer(size);
                     if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
-                        log("Error: Unable to access environment variables.");
+                        debug_log("Error: Unable to access environment variables.");
                         return false;
                     }
 
@@ -512,7 +512,7 @@ namespace Amara {
                     updatedPath += ";" + filePath.string();
 
                     if (!SetEnvironmentVariable("PATH", updatedPath.c_str())) {
-                        log("Error: Unable to add new environment variable.");
+                        debug_log("Error: Unable to add new environment variable.");
                         return false;
                     }
                 }

@@ -18,14 +18,14 @@ namespace Amara {
 
         bool load(std::string key, std::string path) {
             if (factory.find(key) != factory.end()) {
-                log("Error: \"", key, "\" is a reserved entity name.");
+                debug_log("Error: \"", key, "\" is a reserved entity name.");
                 return false;
             }
 
             std::string script_path = Properties::files->getScriptPath(path);
 
             if (!Properties::files->fileExists(script_path)) {
-                log("Error: Failed to load Entity \"", key, "\" from \"", path, "\". File not found.");
+                debug_log("Error: Failed to load Entity \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
             
@@ -56,7 +56,7 @@ namespace Amara {
                     return prepEntity(result.as<Amara::Entity*>(), key);
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create Entity \"", key, "\".");
+                    debug_log("Failed to create Entity \"", key, "\".");
                 }
             }
             else if (readScripts.find(key) != readScripts.end()) {
@@ -65,10 +65,10 @@ namespace Amara {
                     return prepEntity(result.as<Amara::Entity*>(), key);
                 }
                 catch (const sol::error& e) {
-                    log("Failed to create Entity \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
+                    debug_log("Failed to create Entity \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
-            else log("Entity \"", key, "\" was not found.");
+            else debug_log("Entity \"", key, "\" was not found.");
             return nullptr;
         }
         
@@ -83,7 +83,7 @@ namespace Amara {
                 return it->second(entity);
             }
             else {
-                log("Error: Entity type with key \"", entity->baseEntityID, "\" was not registered.");
+                debug_log("Error: Entity type with key \"", entity->baseEntityID, "\" was not registered.");
             }
             return sol::lua_nil;
         }

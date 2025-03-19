@@ -74,7 +74,7 @@ namespace Amara {
                 currentState = key;
 
                 if (debug) {
-                    log("StateManager: start state \"", key, "\".");
+                    debug_log("StateManager: start state \"", key, "\".");
                 }
             }
 
@@ -122,7 +122,7 @@ namespace Amara {
             data.clear();
 
             if (debug) {
-                log("StateManager: switch state \"", key, "\".");
+                debug_log("StateManager: switch state \"", key, "\".");
             }
         }
 
@@ -156,7 +156,7 @@ namespace Amara {
                 stateRecords.pop_back();
 
                 if (debug) {
-                    log("StateManager: return state \"", currentState, "\".");
+                    debug_log("StateManager: return state \"", currentState, "\".");
                 }
             }
         }
@@ -179,7 +179,7 @@ namespace Amara {
 
             currentEvent = 1;
             if (debug) {
-                log("StateManager: restart state \"", currentState, "\".");
+                debug_log("StateManager: restart state \"", currentState, "\".");
             }
         }
 

@@ -55,11 +55,11 @@ namespace Amara {
             factory.prepareEntities();
             factory.registerEntity<World>("World");
 
-            lua["creator"] = this;
-            lua["game"] = &game;
-            lua["files"] = &files;
-            lua["factory"] = &factory;
-            lua["scripts"] = &scripts;
+            lua["Creator"] = this;
+            lua["Game"] = &game;
+            lua["Files"] = &files;
+            lua["Factory"] = &factory;
+            lua["Scripts"] = &scripts;
         }
 
         Creator(int argv, char** args): Creator() {
@@ -104,7 +104,7 @@ namespace Amara {
             World* new_world = factory.create(key)->as<World*>();
 
             if (new_world == nullptr) {
-                log("Error: World with \"", key, "\" has not been registered.");
+                debug_log("Error: World with \"", key, "\" has not been registered.");
                 return nullptr;
             }
 

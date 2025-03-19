@@ -8,7 +8,6 @@ namespace Amara {
 
         virtual void update_properties() override {
             Properties::world = this;
-            Properties::lua()["world"] = get_lua_object();
             Entity::update_properties();
         }
         

@@ -1,4 +1,4 @@
-local e = factory:create("Entity")
+local e = Factory:create("Entity")
 
 e.onCreate = function(self)
     log(self, " was created!")

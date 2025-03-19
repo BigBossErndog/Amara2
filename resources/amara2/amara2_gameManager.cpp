@@ -32,7 +32,7 @@ namespace Amara {
 
         void setTargetFPS(float _fps) {
             if (_fps <= 0) {
-                log("Error: Target FPS cannot be 0 or less.");
+                debug_log("Error: Target FPS cannot be 0 or less.");
                 return;
             }
             targetFPS = _fps;

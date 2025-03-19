@@ -1,4 +1,4 @@
-scene = factory:create("Scene")
+scene = Factory:create("Scene")
 
 scene.onPeload = function(self) 
     self.load.image()

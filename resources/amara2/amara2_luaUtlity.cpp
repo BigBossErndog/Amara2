@@ -113,17 +113,17 @@ namespace Amara {
     }
     
     template<typename... Args>
-    void log(Args... args) {
+    void debug_log(Args... args) {
         std::ostringstream ss;
         (ss << ... << args);
         std::cout << ss.str().c_str() << std::endl;
     }
-    void lua_log(sol::variadic_args args) {
+    void lua_debug_log(sol::variadic_args args) {
         std::ostringstream ss;
         for (auto arg : args) {
             ss << lua_to_string(arg);
         }
-        log(ss.str());
+        debug_log(ss.str());
     }
     std::string c_style_log(const char* format, ...) {
         va_list args;
@@ -140,11 +140,11 @@ namespace Amara {
         vsnprintf(buffer.data(), buffer.size(), format, args);
         va_end(args);
         
-        log(std::string(buffer.data()));
+        debug_log(std::string(buffer.data()));
     }
 
     void bindLua_UtilityFunctions(sol::state& lua) {
-        lua.set_function("log", &Amara::lua_log);
+        lua.set_function("debug_log", &Amara::lua_debug_log);
         lua.set_function("object_to_string", &Amara::lua_to_string);
         
         sol::table string_metatable = lua["string"];

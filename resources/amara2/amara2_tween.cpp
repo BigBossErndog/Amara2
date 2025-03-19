@@ -67,7 +67,7 @@ namespace Amara {
         void clean_data() {
             std::vector<std::string> to_clean;
             for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                if (!json_has(target_data, it.key()) || it.value().is_null()) {
+                if (!json_has(target_data, it.key()) || !it.value().is_number()) {
                     to_clean.push_back(it.key());
                 }
             }
@@ -90,13 +90,13 @@ namespace Amara {
                             start_data[it.key()] = lua_to_json(lua_actor_table[it.key()]);
                         }
                     }
-                    clean_data();
                 }
                 else if (lua_actor_table.valid()) {
                     for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                        lua_actor_table.set(it.key(), it.value().get<double>());
+                        lua_actor_table.set(it.key(), json_to_lua(it.value()));
                     }
                 }
+                clean_data();
 
                 Amara::Action::prepare();
             }
@@ -107,7 +107,6 @@ namespace Amara {
                 progress += deltaTime/tween_duration;
                 if (progress >= 1) {
                     progress = 1;
-                    complete();
                 }
 
                 if (lua_actor_table.valid()) {
@@ -121,9 +120,11 @@ namespace Amara {
                         onUpdate(actor);
                     }
                     catch (const sol::error& e) {
-                        log("Error: On ", *this, "\" while executing onUpdate().");
+                        debug_log("Error: On ", *this, "\" while executing onUpdate().");
                     }
                 }
+
+                if (progress == 1) complete();
             }
             Amara::Action::act(deltaTime);
         }

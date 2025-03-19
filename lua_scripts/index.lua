@@ -3,7 +3,7 @@
 -- local e = factory:create("Entity");
 -- e.props.hello = function() log("hi") end
 
-local w = creator:createWorld()
+local w = Creator:createWorld()
 
 -- game:setTargetFPS(60)
 
@@ -17,28 +17,23 @@ local e = w:createChild("Entity")
 -- print_metatable(w)
 
 e.tween:from({
-    x = 10
-}):to({
-    x = 0,
-    duration = 1,
-    onUpdate = function(self)
-        -- log(e.x)
-    end,
-    ease = Ease.SineOut
-}):to({
-    x = 10,
-    duration = 1,
-    onUpdate = function(self)
-        -- log(e.x)
-    end,
-    onComplete = function(self)
+        x = 10
+    }):to({
+        x = 0,
+        duration = 1,
+        onUpdate = function(self)
+            print(e.x)
+        end,
+        ease = Ease.SineOut
+    }):to({
+        x = 10,
+        duration = 1,
+        onUpdate = function(self)
+            print(e.x)
+        end
+    }):whenDone(function(self)
+        print("finished")
         self.world:destroy()
-        log("done")
-    end
-})
-
-e.onUpdate = function(self) 
-    if (self.isActing) then log("acting") end
-end
+    end)
 
 -- scripts:run("scripts/testScript")

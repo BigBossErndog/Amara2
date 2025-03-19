@@ -1,6 +1,6 @@
-factory:load("TestEntity", "entities/testEntity")
+Factory:load("TestEntity", "entities/testEntity")
 
-local e = factory:create("TestEntity")
+local e = Factory:create("TestEntity")
 print(e)
 -- e.props.name = "hi"
 
@@ -10,7 +10,7 @@ f.id = "entity 2"
 e.id = "entity 1"
 
 e.pos.x = e.pos.x + 1
-log(e.id)
+print(e.id)
 e:hello()
 f:hello()
 
@@ -52,10 +52,10 @@ local p = "hello world"
 print(p:starts_with("hello"))
 
 local d = e.children:find("entity 2");
--- print(w)
+print(w)
 -- w:start()
 
-log(string.concat(
+print(string.concat(
     "1", "2", "3"
 ))
 
