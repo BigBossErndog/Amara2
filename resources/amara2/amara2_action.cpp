@@ -165,10 +165,10 @@ namespace Amara {
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];
-            entity_type["act"] = sol::property([](Amara::Entity& e, std::string key) -> sol::object {
+            entity_type["act"] = [](Amara::Entity& e, std::string key) -> sol::object {
                 Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
                 return action->get_lua_object();
-            });
+            };
             entity_type["isActing"] = sol::property([](Amara::Entity& e) -> bool {
                 for (Amara::Entity* ent: e.children) {
                     if (!ent->isDestroyed && ent->is_action) return true;
