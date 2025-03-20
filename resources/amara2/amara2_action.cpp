@@ -169,13 +169,19 @@ namespace Amara {
                 Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
                 return action->get_lua_object();
             };
+            entity_type["then"] = [](Amara::Entity& e, std::string key) -> sol::object {
+                Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
+                return action->get_lua_object();
+            };
             entity_type["isActing"] = sol::property([](Amara::Entity& e) -> bool {
+                if (e.is_action) return !e.isDestroyed;
                 for (Amara::Entity* ent: e.children) {
                     if (!ent->isDestroyed && ent->is_action) return true;
                 }
                 return false;
             });
             entity_type["finishedActing"] = sol::property([](Amara::Entity& e) -> bool {
+                if (e.is_action) return e.isDestroyed;
                 for (Amara::Entity* ent: e.children) {
                     if (!ent->isDestroyed && ent->is_action) return false;
                 }

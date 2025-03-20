@@ -13,11 +13,11 @@ namespace Amara {
             Entity::update_properties();
         }
 
-        virtual void run() override {
+        virtual void run(double deltaTime) override {
             if (!base_dir_path.empty()) {
                 Properties::files->setBasePath(base_dir_path);
             }
-            Amara::Entity::run();
+            Amara::Entity::run(deltaTime);
         }
         
         static void bindLua(sol::state& lua) {
@@ -27,7 +27,7 @@ namespace Amara {
             lua.new_usertype<World>("World",
                 sol::constructors<World()>(),
                 sol::base_classes, sol::bases<Amara::Entity>(),
-                "base_dir_path", &Amara::Entity::base_dir_path
+                "base_dir_path", &World::base_dir_path
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];

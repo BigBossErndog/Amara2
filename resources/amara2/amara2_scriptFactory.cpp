@@ -67,6 +67,7 @@ namespace Amara {
                     return sol::nil;
                 }
             }
+            path = Properties::files->getScriptPath(path);
             return Properties::files->run(path);
         }
 

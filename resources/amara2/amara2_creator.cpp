@@ -7,7 +7,6 @@ namespace Amara {
         std::vector<World*> copy_worlds_list;
 
         std::vector<World*> new_worlds;
-        std::vector<World*> new_worlds_buffer;
 
         GameManager game;
 
@@ -115,7 +114,7 @@ namespace Amara {
             }
 
             worlds.push_back(new_world);
-            new_worlds_buffer.push_back(new_world);
+            new_worlds.push_back(new_world);
 
             new_world->init();
 
@@ -134,15 +133,14 @@ namespace Amara {
                     continue;
                 }
                 ++it;
-            } 
-            new_worlds = new_worlds_buffer;
-            new_worlds_buffer.clear();
+            }
+            new_worlds.clear();
         }
 
         void startCreation(std::string path) {
             SDL_Init(SDL_INIT_VIDEO);
 
-            files.run(path);
+            scripts.run(path);
 
             rec_tick = SDL_GetPerformanceCounter();
             Uint64 freq = SDL_GetPerformanceFrequency();

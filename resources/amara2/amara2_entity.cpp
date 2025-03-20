@@ -457,6 +457,10 @@ namespace Amara {
                         vec.erase(vec.begin() + index-1);
                     }
                 },
+                "clear", [](std::vector<Amara::Entity*>& vec) {
+                    // This is dangerous.
+                    vec.clear();
+                },
                 "string", [](std::vector<Amara::Entity*>& vec) -> std::string {
                     std::string output;
                     for (int i = 0; i < vec.size(); i++) {

@@ -287,7 +287,7 @@ namespace Amara {
         }
 
         sol::object run(std::string path) {
-            std::filesystem::path filePath = getScriptPath(path);
+            std::filesystem::path filePath = getRelativePath(path);
             try {
                 return Properties::lua().script_file(filePath.string());
             }
