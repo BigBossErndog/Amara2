@@ -100,7 +100,9 @@ namespace Amara {
                     else world = c.createWorld();
                     if (world) return world->get_lua_object();
                     return sol::nil;
-                }
+                },
+                "worlds", sol::readonly(&Creator::worlds),
+                "new_worlds", sol::readonly(&Creator::new_worlds)
             );
         }
 
