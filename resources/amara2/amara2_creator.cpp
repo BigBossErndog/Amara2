@@ -4,6 +4,7 @@ namespace Amara {
         sol::state lua;
 
         std::vector<World*> worlds;
+        std::vector<World*> copy_worlds_list;
 
         GameManager game;
 
@@ -137,12 +138,13 @@ namespace Amara {
 
             rec_tick = SDL_GetPerformanceCounter();
             Uint64 freq = SDL_GetPerformanceFrequency();
-
+            
             while (worlds.size() != 0) { // Creation cannot exist without any worlds.
                 
                 std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
                 
-                for (auto it = worlds.begin(); it != worlds.end(); it++) {
+                copy_worlds_list = worlds;
+                for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
                     currentWorld = *it;
                     currentWorld->run(game.deltaTime);
                     currentWorld->draw();

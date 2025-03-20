@@ -1,6 +1,8 @@
 namespace Amara {
     class World: public Entity {
     public:
+        std::string base_dir_path;    
+
         World(): Entity() {
             set_base_entity_id("World");
             world = this;
@@ -10,6 +12,13 @@ namespace Amara {
             Properties::world = this;
             Entity::update_properties();
         }
+
+        virtual void run() override {
+            if (!base_dir_path.empty()) {
+                Properties::files->setBasePath(base_dir_path);
+            }
+            Amara::Entity::run();
+        }
         
         static void bindLua(sol::state& lua) {
             EntityFactory::bindLua(lua);
@@ -17,7 +26,8 @@ namespace Amara {
             
             lua.new_usertype<World>("World",
                 sol::constructors<World()>(),
-                sol::base_classes, sol::bases<Amara::Entity>()
+                sol::base_classes, sol::bases<Amara::Entity>(),
+                "base_dir_path", &Amara::Entity::base_dir_path
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];
