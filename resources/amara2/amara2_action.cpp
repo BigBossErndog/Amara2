@@ -73,8 +73,8 @@ namespace Amara {
             return Amara::Entity::addChild(entity);
         }
 
-        void complete() {
-            if (isCompleted) return;
+        sol::object complete() {
+            if (isCompleted) return get_lua_object();
             isCompleted = true;
             if (onComplete.valid()) {
                 try {
@@ -87,6 +87,13 @@ namespace Amara {
 
             start_child_actions();
             isWaitingForChildren = true;
+
+            return get_lua_object();
+        }
+
+        sol::object whenDone(sol::function func) {
+            onComplete = func;
+            return get_lua_object();
         }
 
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
@@ -120,11 +127,6 @@ namespace Amara {
                 child->prepare();
 				++it;
 			}
-        }
-
-        sol::object whenDone(sol::function func) {
-            onComplete = func;
-            return get_lua_object();
         }
 
         bool has_running_child_actions() {

@@ -3,7 +3,7 @@ namespace Amara {
     public:
         sol::state lua;
 
-        std::deque<World*> worlds;
+        std::vector<World*> worlds;
 
         GameManager game;
 
@@ -139,6 +139,8 @@ namespace Amara {
             Uint64 freq = SDL_GetPerformanceFrequency();
 
             while (worlds.size() != 0) { // Creation cannot exist without any worlds.
+                
+                std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
                 
                 for (auto it = worlds.begin(); it != worlds.end(); it++) {
                     currentWorld = *it;

@@ -11,7 +11,9 @@ local world = Creator:createWorld()
 local e = world:createChild("Entity")
 
 -- -- e.id = "acting entity"
--- w.onUpdate = function(self) log(math.floor(game.fps)) end
+world.onUpdate = function(self)
+    print(math.floor(Game.fps)) 
+end
 -- w.id = "hi"
 -- e.onUpdate = function(self) log(world.x) end
 
@@ -25,20 +27,19 @@ e.tween:from({
         x = 0,
         duration = 1,
         onUpdate = function(self)
-            print(e.x)
+            -- print(e.x)
         end,
         ease = Ease.SineOut
     }):to({
         x = 10,
         duration = 1,
         onUpdate = function(self)
-            print(e.x)
+            -- print(e.x)
         end
     }):whenDone(function(self)
         print("finished")
         self.world:destroy()
     end)
-print(5)
 -- scripts:run("scripts/testScript")
 
 
