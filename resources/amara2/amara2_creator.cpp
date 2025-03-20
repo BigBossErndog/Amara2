@@ -6,6 +6,9 @@ namespace Amara {
         std::vector<World*> worlds;
         std::vector<World*> copy_worlds_list;
 
+        std::vector<World*> new_worlds;
+        std::vector<World*> new_worlds_buffer;
+
         GameManager game;
 
         FileManager files;
@@ -110,6 +113,7 @@ namespace Amara {
             }
 
             worlds.push_back(new_world);
+            new_worlds_buffer.push_back(new_world);
 
             new_world->init();
 
@@ -129,6 +133,8 @@ namespace Amara {
                 }
                 ++it;
             } 
+            new_worlds = new_worlds_buffer;
+            new_worlds_buffer.clear();
         }
 
         void startCreation(std::string path) {
