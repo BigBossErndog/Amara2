@@ -12,7 +12,7 @@ namespace Amara {
         std::vector<Amara::Entity*> batch_queue;
         std::deque<Amara::Entity*> batch_overflow;
         
-        int batch_size = 10;
+        int batch_size = 100;
 
         bool debug = false;
 
@@ -59,7 +59,7 @@ namespace Amara {
                 if (debug) debug_log("GarbageCollector: Deleting ", batch_queue.size(), " entities.");
                 
                 lua_gc(Props::lua().lua_state(), LUA_GCCOLLECT, 0);
-                
+
                 for (Amara::Entity* entity: batch_queue) {
                     deleteEntity(entity);
                 }
