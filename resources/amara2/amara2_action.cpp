@@ -68,7 +68,7 @@ namespace Amara {
             Amara::Action* action = entity->as<Amara::Action*>();
             if (action) {
                 action->actor = actor;
-                action->locked = true;
+                if (!isCompleted) action->locked = true;
             }
             return Amara::Entity::addChild(entity);
         }
@@ -161,7 +161,13 @@ namespace Amara {
                 "complete", &Action::complete,
                 "addChild", &Action::addChild,
                 "chain", &Action::chain,
-                "whenDone", &Action::whenDone
+                "whenDone", &Action::whenDone,
+                "alongside", [](Amara::Entity& e, std::string key) -> sol::object {
+                    Amara::Action* action = nullptr;
+                    if (e.parent) action = e.parent->createChild(key)->as<Amara::Action*>();
+                    else action = e.createChild(key)->as<Amara::Action*>();
+                    return action->get_lua_object();
+                }
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];
@@ -170,20 +176,31 @@ namespace Amara {
                 return action->get_lua_object();
             };
             entity_type["then"] = [](Amara::Entity& e, std::string key) -> sol::object {
-                Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
+                // Chain to child actions.
+                Amara::Action* action = nullptr;
+                Amara::Entity* child = nullptr;
+                for (int i = e.children.size()-1; i >= 0; i++) {
+                    child = e.children[i];
+                    if (!child->isDestroyed && child->is_action) {
+                        action = child->createChild(key)->as<Amara::Action*>();
+                        break;
+                    }
+                }
+                if (action == nullptr) action = e.createChild(key)->as<Amara::Action*>();
+
                 return action->get_lua_object();
             };
             entity_type["isActing"] = sol::property([](Amara::Entity& e) -> bool {
                 if (e.is_action) return !e.isDestroyed;
-                for (Amara::Entity* ent: e.children) {
-                    if (!ent->isDestroyed && ent->is_action) return true;
+                for (Amara::Entity* child: e.children) {
+                    if (!child->isDestroyed && child->is_action) return true;
                 }
                 return false;
             });
             entity_type["finishedActing"] = sol::property([](Amara::Entity& e) -> bool {
                 if (e.is_action) return e.isDestroyed;
-                for (Amara::Entity* ent: e.children) {
-                    if (!ent->isDestroyed && ent->is_action) return false;
+                for (Amara::Entity* child: e.children) {
+                    if (!child->isDestroyed && child->is_action) return false;
                 }
                 return true;
             });
