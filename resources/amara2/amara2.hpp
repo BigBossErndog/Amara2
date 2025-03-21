@@ -96,6 +96,8 @@
 
     #include "amara2_entityFactory.cpp"
 
+    #include "amara2_garbage.cpp"
+
     #include "amara2_world.cpp"
 
     #include "amara2_demiurge.cpp"

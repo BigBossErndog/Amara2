@@ -9,6 +9,7 @@ namespace Amara {
         std::vector<World*> new_worlds;
 
         GameManager game;
+        MessageQueue messages;
 
         Uint64 rec_tick = 0;
         Uint64 current_tick = 0;
@@ -18,10 +19,8 @@ namespace Amara {
 
         Creator(): Demiurge() {
             Props::set_lua(lua);
+
             Props::game = &game;
-            Props::files = &files;
-            Props::factory = &factory;
-            Props::scripts = &scripts;
             Props::messages = &messages;
 
             worlds.clear();
@@ -98,8 +97,6 @@ namespace Amara {
                         delete demiurge;
                         world->demiurge = nullptr;
                     }
-                    // TODO: Garbage queue world here.
-
                     it = worlds.erase(it);
                     continue;
                 }
@@ -112,7 +109,9 @@ namespace Amara {
             if (currentWorld && currentWorld->demiurge) {
                 currentWorld->demiurge->override_existence();
             }
-            else override_existence();
+            else {
+                override_existence();
+            }
         }
 
         void createDemiurge(Amara::World& world) {

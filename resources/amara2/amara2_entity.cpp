@@ -303,7 +303,7 @@ namespace Amara {
 				++it;
 			}
 
-            // TODO: ADD TO GARBAGE QUEUE
+            Props::queue_garbage(this);
         }
 
         sol::object bringToFront() {

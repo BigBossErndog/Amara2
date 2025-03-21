@@ -1,4 +1,5 @@
 namespace Amara {
+    class Entity;
     class World;
     class Scene;
     class GameManager;
@@ -6,6 +7,7 @@ namespace Amara {
     class ScriptFactory;
     class FileManager;
     class MessageQueue;
+    class GarbageCollector;
 
     class Props {
     public:
@@ -24,9 +26,15 @@ namespace Amara {
 
         static EntityFactory* factory;
         static ScriptFactory* scripts;
-
         static FileManager* files;
         static MessageQueue* messages;
+        static GarbageCollector* garbageCollector;
+
+        static void queue_garbage(Amara::Entity*, double);
+        static void queue_garbage(Amara::Entity* entity) {
+            Props::queue_garbage(entity, 1);
+        }
+
         static sol::state* lua_state;
 
         static Rectangle viewport;
@@ -58,6 +66,8 @@ namespace Amara {
     ScriptFactory* Props::scripts = nullptr;
     FileManager* Props::files = nullptr;
     MessageQueue* Props::messages = nullptr;
+    GarbageCollector* Props::garbageCollector = nullptr;
+    
     sol::state* Props::lua_state = nullptr;
 
     Rectangle Props::viewport;

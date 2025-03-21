@@ -8,7 +8,7 @@ namespace Amara {
         FileManager files;
         ScriptFactory scripts;
         EntityFactory factory;
-        MessageQueue messages;
+        GarbageCollector garbageCollector;
 
         Demiurge() {}
 
@@ -17,6 +17,11 @@ namespace Amara {
             Props::lua()["Files"] = &files;
             Props::lua()["Factory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
+            
+            Props::files = &files;
+            Props::factory = &factory;
+            Props::scripts = &scripts;
+            Props::garbageCollector = &garbageCollector;
         }
 
         void setup() {
