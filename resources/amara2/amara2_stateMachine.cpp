@@ -35,7 +35,7 @@ namespace Amara {
             reset();
         }
 
-        virtual void act(double deltaTime) {
+        virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
 
             if (hasStarted) {
@@ -51,6 +51,10 @@ namespace Amara {
         sol::object addState(std::string key, sol::function func) {
             state_map[key] = func;
             return get_lua_object();
+        }
+
+        sol::object setDefaultState(sol::function func) {
+            return addState("", func);
         }
 
         void reset() {
@@ -195,7 +199,7 @@ namespace Amara {
             }
 
             if (event()) {
-                double t = time / Properties::deltaTime;
+                double t = time / Props::deltaTime;
 
                 waitCounter += 1;
                 if (waitCounter >= t || skip) {
@@ -263,6 +267,14 @@ namespace Amara {
                 sol::constructors<StateMachine()>(),
                 sol::base_classes, sol::bases<Amara::Action>()
             );
+
+            sol::usertype<Entity> entity_type = lua["Entity"];
+            entity_type["state"] = [](Amara::Entity& entity) -> sol::object {
+                if (entity.stateMachine == nullptr) {
+                    entity.stateMachine = entity.createChild("StateMachine")->as<Amara::StateMachine*>();
+                }
+                return entity.stateMachine->get_lua_object();
+            };
         }
     };
 }

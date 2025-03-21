@@ -9,7 +9,7 @@ namespace Amara {
         }
 
         virtual void update_properties() override {
-            Properties::viewport = viewport;
+            Props::viewport = viewport;
         }
 
         virtual void drawChildren() override {

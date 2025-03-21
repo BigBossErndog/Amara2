@@ -7,7 +7,7 @@ namespace Amara {
     class FileManager;
     class MessageQueue;
 
-    class Properties {
+    class Props {
     public:
         static std::string context_path;
         static std::string lua_script_path;
@@ -40,26 +40,26 @@ namespace Amara {
     };
 
     #ifdef AMARA_FINAL_BUILD
-        std::string Properties::context_path = "./";
+        std::string Props::context_path = "./";
     #else
-        std::string Properties::context_path = "../";
+        std::string Props::context_path = "../";
     #endif
-    std::string Properties::lua_script_path = "./lua_scripts";
-    std::string Properties::assets_path = "./assets";
-    std::string Properties::platform = "unknown";
-    double Properties::deltaTime = 1;
+    std::string Props::lua_script_path = "./lua_scripts";
+    std::string Props::assets_path = "./assets";
+    std::string Props::platform = "unknown";
+    double Props::deltaTime = 1;
 
-    int Properties::lua_stack_size = 1000000;
+    int Props::lua_stack_size = 1000000;
     
-    GameManager* Properties::game = nullptr;
-    World* Properties::world = nullptr;
-    Scene* Properties::scene = nullptr;
-    EntityFactory* Properties::factory = nullptr;
-    ScriptFactory* Properties::scripts = nullptr;
-    FileManager* Properties::files = nullptr;
-    MessageQueue* Properties::messages = nullptr;
-    sol::state* Properties::lua_state = nullptr;
+    GameManager* Props::game = nullptr;
+    World* Props::world = nullptr;
+    Scene* Props::scene = nullptr;
+    EntityFactory* Props::factory = nullptr;
+    ScriptFactory* Props::scripts = nullptr;
+    FileManager* Props::files = nullptr;
+    MessageQueue* Props::messages = nullptr;
+    sol::state* Props::lua_state = nullptr;
 
-    Rectangle Properties::viewport;
+    Rectangle Props::viewport;
 
 }

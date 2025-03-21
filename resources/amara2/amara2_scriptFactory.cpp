@@ -6,8 +6,8 @@ namespace Amara {
         std::unordered_map<std::string, sol::function> compiledScripts;
 
         bool load(std::string key, std::string path) {
-            std::string script_path = Properties::files->getScriptPath(path);
-            if (!Properties::files->fileExists(script_path)) {
+            std::string script_path = Props::files->getScriptPath(path);
+            if (!Props::files->fileExists(script_path)) {
                 debug_log("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
@@ -15,7 +15,7 @@ namespace Amara {
                 readScripts[key] = script_path;
             }
             else {
-                compiledScripts[key] = Properties::files->load_script(script_path);
+                compiledScripts[key] = Props::files->load_script(script_path);
             }
             return true;
         }
@@ -35,11 +35,11 @@ namespace Amara {
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
-                    sol::object result = Properties::files->run(readScripts[key]);
+                    sol::object result = Props::files->run(readScripts[key]);
                     return result.as<Amara::Script*>();
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to create script \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
+                    debug_log("Failed to create script \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
             else debug_log("Script \"", key, "\" was not found.");
@@ -59,16 +59,16 @@ namespace Amara {
             }
             else if (readScripts.find(path) != readScripts.end()) {
                 try {
-                    sol::object result = Properties::files->run(readScripts[path]);
+                    sol::object result = Props::files->run(readScripts[path]);
                     return result;
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to run script \"", path, "\" from file \"", Properties::files->getScriptPath(readScripts[path]), "\".");
+                    debug_log("Failed to run script \"", path, "\" from file \"", Props::files->getScriptPath(readScripts[path]), "\".");
                     return sol::nil;
                 }
             }
-            path = Properties::files->getScriptPath(path);
-            return Properties::files->run(path);
+            path = Props::files->getScriptPath(path);
+            return Props::files->run(path);
         }
 
         static void bindLua(sol::state& lua) {

@@ -67,7 +67,7 @@
     #include "amara2_vectors.cpp"
     #include "amara2_shapes.cpp"
 
-    #include "amara2_properties.cpp"
+    #include "amara2_props.cpp"
     #include "amara2_luaUtlity.cpp"
 
     #include "amara2_gameManager.cpp"

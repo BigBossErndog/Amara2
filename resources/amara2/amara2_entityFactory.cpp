@@ -22,9 +22,9 @@ namespace Amara {
                 return false;
             }
 
-            std::string script_path = Properties::files->getScriptPath(path);
+            std::string script_path = Props::files->getScriptPath(path);
 
-            if (!Properties::files->fileExists(script_path)) {
+            if (!Props::files->fileExists(script_path)) {
                 debug_log("Error: Failed to load Entity \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
@@ -33,7 +33,7 @@ namespace Amara {
                 readScripts[key] = path;
             }
             else {
-                compiledScripts[key] = Properties::files->load_script(script_path);
+                compiledScripts[key] = Props::files->load_script(script_path);
             }
 
             return true;
@@ -62,11 +62,11 @@ namespace Amara {
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
-                    sol::object result = Properties::files->run(readScripts[key]);
+                    sol::object result = Props::files->run(readScripts[key]);
                     return prepEntity(result.as<Amara::Entity*>(), key);
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to create Entity \"", key, "\" from script \"", Properties::files->getScriptPath(readScripts[key]), "\".");
+                    debug_log("Failed to create Entity \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
             else debug_log("Entity \"", key, "\" was not found.");
@@ -95,7 +95,7 @@ namespace Amara {
             
             entityRegistry[key] = [](Entity* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
-                    return sol::make_object(Properties::lua(), derived);
+                    return sol::make_object(Props::lua(), derived);
                 }
                 return sol::lua_nil;
             };
@@ -126,7 +126,7 @@ namespace Amara {
     };
 
     Amara::Entity* Entity::createChild(std::string key) {
-        Amara::Entity* entity = Properties::factory->create(key);
+        Amara::Entity* entity = Props::factory->create(key);
         if (entity) addChild(entity);
         return entity;
     }
@@ -144,15 +144,15 @@ namespace Amara {
     sol::object Entity::get_lua_object() {
         if (luaobject.valid()) return luaobject;
 
-        luaobject = Properties::factory->castLuaEntity(this, baseEntityID);
+        luaobject = Props::factory->castLuaEntity(this, baseEntityID);
 
-        props = Properties::lua().create_table();
+        props = Props::lua().create_table();
 
-        sol::table props_meta = Properties::lua().create_table();
+        sol::table props_meta = Props::lua().create_table();
         props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
             if (value.is<sol::function>()) {
                 sol::function callback = value.as<sol::function>();
-                sol::function func = sol::make_object(Properties::lua(), [this, callback](sol::variadic_args va)->sol::object {
+                sol::function func = sol::make_object(Props::lua(), [this, callback](sol::variadic_args va)->sol::object {
                     return callback(this->get_lua_object(), sol::as_args(va));
                 });
                 tbl.raw_set(key, func);

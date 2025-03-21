@@ -17,16 +17,16 @@ namespace Amara {
         World* currentWorld = nullptr;
 
         Creator(): Demiurge() {
-            Properties::set_lua(lua);
-            Properties::game = &game;
-            Properties::files = &files;
-            Properties::factory = &factory;
-            Properties::scripts = &scripts;
-            Properties::messages = &messages;
+            Props::set_lua(lua);
+            Props::game = &game;
+            Props::files = &files;
+            Props::factory = &factory;
+            Props::scripts = &scripts;
+            Props::messages = &messages;
 
             worlds.clear();
             
-            lua_checkstack(lua.lua_state(), Properties::lua_stack_size);
+            lua_checkstack(lua.lua_state(), Props::lua_stack_size);
 
             lua.open_libraries(
                 sol::lib::base,
@@ -156,7 +156,7 @@ namespace Amara {
                     }
                 }
                 current_tick = SDL_GetPerformanceCounter();
-                Properties::deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
+                Props::deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
                 game.fps = 1 / game.deltaTime;
                 rec_tick = current_tick;
             }

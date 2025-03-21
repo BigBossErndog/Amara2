@@ -189,7 +189,7 @@ namespace Amara {
             if (basePath.empty()) {
                 char* c_basePath = SDL_GetBasePath();
                 std::filesystem::path exeDir = c_basePath;
-                std::filesystem::path contextPath = Properties::context_path;
+                std::filesystem::path contextPath = Props::context_path;
                 std::filesystem::path finalContext = exeDir / contextPath;
                 SDL_free(c_basePath);
                 basePath = finalContext.string();
@@ -212,7 +212,7 @@ namespace Amara {
         }
 
         std::string getScriptPath(std::string path) {
-            std::filesystem::path filePath = getRelativePath(Properties::lua_script_path) / (std::filesystem::path)path;
+            std::filesystem::path filePath = getRelativePath(Props::lua_script_path) / (std::filesystem::path)path;
             if (!fileExists(filePath.string())) {
                 path = filePath.string() + ".luac";
                 if (fileExists(path)) return path;
@@ -289,7 +289,7 @@ namespace Amara {
         sol::object run(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
             try {
-                return Properties::lua().script_file(filePath.string());
+                return Props::lua().script_file(filePath.string());
             }
             catch (const sol::error& e) {
                 debug_log(e.what());
@@ -299,7 +299,7 @@ namespace Amara {
         }
         sol::load_result load_script(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
-            return Properties::lua().load_file(filePath.string());
+            return Props::lua().load_file(filePath.string());
         }
 
         bool compileScript(std::string path, std::string dest) {
@@ -308,7 +308,7 @@ namespace Amara {
                 debug_log("Error: Script not found \"", filePath.string(), "\".");
                 return false;
             }
-            sol::load_result script = Properties::lua().load_file(filePath.string());
+            sol::load_result script = Props::lua().load_file(filePath.string());
 
             if (!script.valid()) {
                 sol::error err = script;
@@ -317,7 +317,7 @@ namespace Amara {
                 sol::function func = script;
 
                 try {
-                    sol::function dump = (Properties::lua())["string"]["dump"];
+                    sol::function dump = (Props::lua())["string"]["dump"];
                     sol::object bytecode = dump(func);
                 
                     if (bytecode.is<std::string>()) {

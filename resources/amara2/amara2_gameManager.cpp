@@ -27,7 +27,7 @@ namespace Amara {
             #else
                 platform = "unknown";
             #endif
-            Properties::platform = platform;
+            Props::platform = platform;
         }
 
         void setTargetFPS(float _fps) {
@@ -42,7 +42,7 @@ namespace Amara {
         }
 
         int get_lua_stack_size() {
-            return lua_gettop(Properties::lua().lua_state());
+            return lua_gettop(Props::lua().lua_state());
         }
 
         static void bindLua(sol::state& lua) {

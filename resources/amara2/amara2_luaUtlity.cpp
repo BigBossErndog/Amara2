@@ -2,7 +2,7 @@ namespace Amara {
     class Entity;
 
     sol::object json_to_lua(nlohmann::json json) {
-        sol::state& lua = Properties::lua();
+        sol::state& lua = Props::lua();
         if (json.is_null()) {
             return sol::make_object(lua, sol::nil);
         } else if (json.is_boolean()) {
@@ -94,7 +94,7 @@ namespace Amara {
 
     template <typename T>
     sol::table vector_to_lua(const std::vector<T>& vec) {
-        sol::state& lua = Properties::lua();
+        sol::state& lua = Props::lua();
         sol::table lua_table = lua.create_table();
     
         for (size_t i = 0; i < vec.size(); ++i) {

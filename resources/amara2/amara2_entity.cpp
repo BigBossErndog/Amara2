@@ -1,6 +1,7 @@
 namespace Amara {
     class Scene;
     class World;
+    class StateMachine;
 
     class Entity {
     public:
@@ -107,10 +108,10 @@ namespace Amara {
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
                 if (string_endsWith(path, ".json")) {
-                    configure(Properties::files->readJSON(path));
+                    configure(Props::files->readJSON(path));
                 }
                 else if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
-                    configure(lua_to_json(Properties::scripts->run(path)));
+                    configure(lua_to_json(Props::scripts->run(path)));
                 }
                 return this;
             }
@@ -130,11 +131,11 @@ namespace Amara {
             if (config.is<std::string>()) {
                 std::string path = config.as<std::string>();
                 if (string_endsWith(path, ".json")) {
-                    luaConfigure(json_to_lua(Properties::files->readJSON(path)));
+                    luaConfigure(json_to_lua(Props::files->readJSON(path)));
                     return get_lua_object();
                 }
                 if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
-                    luaConfigure(Properties::scripts->run(path));
+                    luaConfigure(Props::scripts->run(path));
                     return get_lua_object();
                 }
             }
@@ -220,7 +221,7 @@ namespace Amara {
 					++it;
 					continue;
 				}
-                
+
 				child->run(deltaTime);
 				++it;
 				if (isDestroyed) break;
@@ -379,6 +380,8 @@ namespace Amara {
 				++it;
 			}
         }
+
+        Amara::StateMachine* stateMachine = nullptr;
 
         virtual ~Entity() {}
 

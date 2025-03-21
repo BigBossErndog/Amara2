@@ -13,10 +13,10 @@ namespace Amara {
         Demiurge() {}
 
         void override_existence() {
-            Properties::lua()["Creator"] = this;
-            Properties::lua()["Files"] = &files;
-            Properties::lua()["Factory"] = &factory;
-            Properties::lua()["Scripts"] = &scripts;
+            Props::lua()["Creator"] = this;
+            Props::lua()["Files"] = &files;
+            Props::lua()["Factory"] = &factory;
+            Props::lua()["Scripts"] = &scripts;
         }
 
         void setup() {

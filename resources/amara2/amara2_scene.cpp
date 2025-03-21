@@ -11,7 +11,7 @@ namespace Amara {
         }
 
         virtual void update_properties() override {
-            Properties::scene = this;
+            Props::scene = this;
             Amara::Entity::update_properties();
         }
 

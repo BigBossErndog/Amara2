@@ -16,7 +16,7 @@ namespace Amara {
 
         void run() {
             if (!messageBox.empty()) {
-                MessageQueue* messages = Properties::messages;
+                MessageQueue* messages = Props::messages;
 
                 for (
                     auto it = messages->begin();

@@ -13,13 +13,13 @@ namespace Amara {
         }
 
         virtual void update_properties() override {
-            Properties::world = this;
+            Props::world = this;
             Entity::update_properties();
         }
 
         virtual void run(double deltaTime) override {
             if (!base_dir_path.empty()) {
-                Properties::files->setBasePath(base_dir_path);
+                Props::files->setBasePath(base_dir_path);
             }
             Amara::Entity::run(deltaTime);
         }
