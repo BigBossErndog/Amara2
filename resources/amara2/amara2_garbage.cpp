@@ -26,7 +26,9 @@ namespace Amara {
         
         void clearImmediately() {
             if (debug) debug_log("GarbageCollector: Clearing all ", collection.size(), " ", batch_queue.size(), " ", batch_overflow.size());
-            Props::lua().script("collectgarbage()");
+            
+            lua_gc(Props::lua().lua_state(), LUA_GCCOLLECT, 0);
+
             for (GarbageTask& task: collection) {
                 deleteEntity(task.target);
             }
@@ -56,7 +58,8 @@ namespace Amara {
             if (batch_queue.size() >= batch_size) {
                 if (debug) debug_log("GarbageCollector: Deleting ", batch_queue.size(), " entities.");
                 
-                Props::lua().script("collectgarbage()"); 
+                lua_gc(Props::lua().lua_state(), LUA_GCCOLLECT, 0);
+                
                 for (Amara::Entity* entity: batch_queue) {
                     deleteEntity(entity);
                 }
