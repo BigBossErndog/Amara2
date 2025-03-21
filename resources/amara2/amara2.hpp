@@ -28,7 +28,6 @@
     #include <atomic>
     #include <thread>
     #include <nlohmann/json.hpp>
-    #include <MurmurHash3.cpp>
 
     #if defined(_WIN32)
         #include <windows.h>
@@ -50,9 +49,6 @@
 #ifndef AMARA_SDL
 #define AMARA_SDL
     #include <SDL.h>
-    #include <SDL_image.h>
-    #include <SDL_ttf.h>
-    #include <SDL_mixer.h>
     #ifdef __EMSCRIPTEN__
         #include <emscripten/fetch.h>
     #endif

@@ -3,7 +3,7 @@ namespace Amara {
     public:
         float fps = 0;
         float targetFPS = -1;
-        double deltaTime = 1;
+        double deltaTime = 0;
 
         std::string platform;
 

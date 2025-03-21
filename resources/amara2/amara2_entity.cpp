@@ -78,6 +78,12 @@ namespace Amara {
             configurables["x"] = [this](nlohmann::json val) { this->pos.x = val; };
             configurables["y"] = [this](nlohmann::json val) { this->pos.y = val; };
             configurables["z"] = [this](nlohmann::json val) { this->pos.z = val; };
+            configurables["props"] = [this] (nlohmann::json data) {
+                if (!data.is_object()) return;
+                for (auto it = data.begin(); it != data.end(); ++it) {
+                    props[it.key()] = json_to_lua(it.value());
+                }
+            };
         }
 
         virtual nlohmann::json toJSON() {
@@ -214,6 +220,7 @@ namespace Amara {
 					++it;
 					continue;
 				}
+                
 				child->run(deltaTime);
 				++it;
 				if (isDestroyed) break;
