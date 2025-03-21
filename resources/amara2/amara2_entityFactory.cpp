@@ -30,7 +30,7 @@ namespace Amara {
             }
             
             if (string_endsWith(script_path, ".lua")) {
-                readScripts[key] = path;
+                readScripts[key] = script_path;
             }
             else {
                 compiledScripts[key] = Props::files->load_script(script_path);
@@ -95,7 +95,7 @@ namespace Amara {
             
             entityRegistry[key] = [](Entity* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
-                    return sol::make_object(Props::lua(), derived);
+                    return sol::object(Props::lua(), sol::in_place_type<T*>, derived);
                 }
                 return sol::lua_nil;
             };

@@ -41,11 +41,8 @@ e.tween:from({
         print("finished")
         self.world:destroy()
     end)
--- e.onUpdate = function(self, deltaTime) 
---     if e.isActing then print("delta", deltaTime) end
--- end
 
--- scripts:run("scripts/testScript")
+-- Scripts:run("scripts/testScript")
 
 -- Return the world if you want Amara to manage it and give you debugging tools.
 return world

@@ -10,6 +10,7 @@ namespace Amara {
 
         GameManager game;
         MessageQueue messages;
+        GarbageCollector garbageCollector;
 
         Uint64 rec_tick = 0;
         Uint64 current_tick = 0;
@@ -22,6 +23,7 @@ namespace Amara {
 
             Props::game = &game;
             Props::messages = &messages;
+            Props::garbageCollector = &garbageCollector;
 
             worlds.clear();
             
@@ -195,6 +197,8 @@ namespace Amara {
                 "createDemiurge", &Creator::createDemiurge
             );
         }
+
+        ~Creator() {}
     };
 
     World* Demiurge::createWorld(std::string key) {

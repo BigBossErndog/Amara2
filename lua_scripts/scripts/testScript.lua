@@ -14,8 +14,8 @@ print(e.id)
 e:hello()
 f:hello()
 
-if game.arguments then
-    log(game.arguments(1))
+if Game.arguments then
+    log(Game.arguments(1))
 end
 
 -- log(game.platform)

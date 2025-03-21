@@ -8,7 +8,6 @@ namespace Amara {
         FileManager files;
         ScriptFactory scripts;
         EntityFactory factory;
-        GarbageCollector garbageCollector;
 
         Demiurge() {}
 
@@ -21,7 +20,6 @@ namespace Amara {
             Props::files = &files;
             Props::factory = &factory;
             Props::scripts = &scripts;
-            Props::garbageCollector = &garbageCollector;
         }
 
         void setup() {
