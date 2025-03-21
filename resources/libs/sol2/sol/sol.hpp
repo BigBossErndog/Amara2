@@ -2947,19 +2947,19 @@ struct pre_main {
 
 // beginning of sol/compatibility/lua_version.hpp
 
-// #if SOL_IS_ON(SOL_USE_CXX_LUA)
-// 	#include <lua.h>
-// 	#include <lualib.h>
-// 	#include <lauxlib.h>
-// #elif SOL_IS_ON(SOL_USE_LUA_HPP)
-// 	#include <lua.hpp>
-// #else
-// 	extern "C" {
-// 		#include <lua.h>
-// 		#include <lauxlib.h>
-// 		#include <lualib.h>
-// 	}
-// #endif // C++ Mangling for Lua vs. Not
+#if SOL_IS_ON(SOL_USE_CXX_LUA)
+	#include <lua.h>
+	#include <lualib.h>
+	#include <lauxlib.h>
+#elif SOL_IS_ON(SOL_USE_LUA_HPP)
+	#include <lua.hpp>
+#else
+	extern "C" {
+		#include <lua.h>
+		#include <lauxlib.h>
+		#include <lualib.h>
+	}
+#endif // C++ Mangling for Lua vs. Not
 
 #if defined(SOL_LUAJIT)
 	#if (SOL_LUAJIT != 0)
@@ -3152,9 +3152,9 @@ struct pre_main {
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 extern "C" {
 #endif
-// #include <lua.h>
-// #include <lauxlib.h>
-// #include <lualib.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 }
 #endif
@@ -4412,9 +4412,9 @@ COMPAT53_API void luaL_requiref(lua_State* L, const char* modname, lua_CFunction
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 extern "C" {
 #endif
-// #include <lua.h>
-// #include <lauxlib.h>
-// #include <lualib.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 }
 #endif
@@ -6752,7 +6752,8 @@ namespace sol {
 			static_assert(std::is_constructible<T, Args&&...>::value, "T must be constructible with Args");
 
 			*this = nullopt;
-			this->construct(std::forward<Args>(args)...);
+			new (static_cast<void*>(this)) optional(std::in_place, std::forward<Args>(args)...);
+ 			return **this;
 		}
 
 		/// Swaps this optional with the other.
@@ -19416,7 +19417,13 @@ namespace sol { namespace function_detail {
 		}
 
 		template <bool is_yielding, bool no_trampoline>
-		static int call(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		static int call(lua_State* L)
+#if SOL_IS_ON(SOL_COMPILER_CLANG)
+		// apparent regression in clang 18 - llvm/llvm-project#91362
+#else
+			noexcept(std::is_nothrow_copy_assignable_v<T>)
+#endif
+		{
 			int nr;
 			if constexpr (no_trampoline) {
 				nr = real_call(L);
@@ -19456,7 +19463,13 @@ namespace sol { namespace function_detail {
 		}
 
 		template <bool is_yielding, bool no_trampoline>
-		static int call(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		static int call(lua_State* L)
+#if SOL_IS_ON(SOL_COMPILER_CLANG)
+		// apparent regression in clang 18 - llvm/llvm-project#91362
+#else
+			noexcept(std::is_nothrow_copy_assignable_v<T>)
+#endif
+		{
 			int nr;
 			if constexpr (no_trampoline) {
 				nr = real_call(L);

@@ -41,10 +41,10 @@ namespace Amara {
 
     SDL_Color ease(SDL_Color startColor, SDL_Color endColor, double progress, Amara::Ease easing) {
         return {
-            ease(startColor.r, endColor.r, progress, easing),
-            ease(startColor.g, endColor.g, progress, easing),
-            ease(startColor.b, endColor.b, progress, easing),
-            ease(startColor.a, endColor.a, progress, easing)
+            static_cast<Uint8>(ease(startColor.r, endColor.r, progress, easing)),
+            static_cast<Uint8>(ease(startColor.g, endColor.g, progress, easing)),
+            static_cast<Uint8>(ease(startColor.b, endColor.b, progress, easing)),
+            static_cast<Uint8>(ease(startColor.a, endColor.a, progress, easing))
         };
     }
     SDL_Color ease(SDL_Color startColor, SDL_Color endColor, double progress) {

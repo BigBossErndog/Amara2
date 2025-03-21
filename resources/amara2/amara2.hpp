@@ -53,7 +53,6 @@
     #include <SDL_image.h>
     #include <SDL_ttf.h>
     #include <SDL_mixer.h>
-    #include <SDL_FontCache.c>
     #ifdef __EMSCRIPTEN__
         #include <emscripten/fetch.h>
     #endif

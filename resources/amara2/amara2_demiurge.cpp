@@ -19,6 +19,11 @@ namespace Amara {
             Properties::lua()["Scripts"] = &scripts;
         }
 
+        void setup() {
+            factory.prepareEntities();
+            factory.registerEntity<World>("World");
+        }
+
         virtual World* createWorld(std::string key);
         virtual World* createWorld();
 

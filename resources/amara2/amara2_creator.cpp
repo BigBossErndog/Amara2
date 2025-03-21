@@ -50,8 +50,7 @@ namespace Amara {
                 return 0;
             });
 
-            factory.prepareEntities();
-            factory.registerEntity<World>("World");
+            setup();
 
             lua["Game"] = &game;
             override_existence();
@@ -119,6 +118,9 @@ namespace Amara {
         void createDemiurge(Amara::World& world) {
             Amara::Demiurge* new_demiurge = new Demiurge();
             world.demiurge = new_demiurge;
+
+            world.demiurge->setup();
+
             new_demiurge->creator = this;
         }
 
