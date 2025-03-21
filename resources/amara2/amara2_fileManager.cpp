@@ -187,11 +187,10 @@ namespace Amara {
 
         std::string getBasePath() {
             if (basePath.empty()) {
-                char* c_basePath = SDL_GetBasePath();
+                const char* c_basePath = SDL_GetBasePath();
                 std::filesystem::path exeDir = c_basePath;
                 std::filesystem::path contextPath = Props::context_path;
                 std::filesystem::path finalContext = exeDir / contextPath;
-                SDL_free(c_basePath);
                 basePath = finalContext.string();
             }
             return basePath;

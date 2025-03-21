@@ -48,7 +48,7 @@
 
 #ifndef AMARA_SDL
 #define AMARA_SDL
-    #include <SDL.h>
+    #include <SDL3/SDL.h>
     #ifdef __EMSCRIPTEN__
         #include <emscripten/fetch.h>
     #endif
