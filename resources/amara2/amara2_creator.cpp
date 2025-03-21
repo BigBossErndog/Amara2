@@ -1,5 +1,5 @@
 namespace Amara {    
-    class Creator {
+    class Creator: public Demiurge {
     public:
         sol::state lua;
 
@@ -10,18 +10,13 @@ namespace Amara {
 
         GameManager game;
 
-        FileManager files;
-        ScriptFactory scripts;
-        EntityFactory factory;
-        MessageQueue messages;
-
         Uint64 rec_tick = 0;
         Uint64 current_tick = 0;
         double frameTarget = 0;
 
         World* currentWorld = nullptr;
 
-        Creator() {
+        Creator(): Demiurge() {
             Properties::set_lua(lua);
             Properties::game = &game;
             Properties::files = &files;
@@ -58,11 +53,8 @@ namespace Amara {
             factory.prepareEntities();
             factory.registerEntity<World>("World");
 
-            lua["Creator"] = this;
             lua["Game"] = &game;
-            lua["Files"] = &files;
-            lua["Factory"] = &factory;
-            lua["Scripts"] = &scripts;
+            override_existence();
         }
 
         Creator(int argv, char** args): Creator() {
@@ -78,34 +70,7 @@ namespace Amara {
             }
         }
 
-        void bindLua() {
-            bindLua_UtilityFunctions(lua);
-            bindLua_Vectors(lua);
-            bindLua_Shapes(lua);
-            bindLua_Easing(lua);
-            
-            GameManager::bindLua(lua);
-
-            FileManager::bindLua(lua);
-
-            World::bindLua(lua);
-
-            lua.new_usertype<Creator>("Creator",
-                "createWorld", [this](Amara::Creator& c, sol::object key) -> sol::object {
-                    World* world = nullptr;
-                    if (key.is<std::string>()) {
-                        world = c.createWorld(key.as<std::string>());
-                    }
-                    else world = c.createWorld();
-                    if (world) return world->get_lua_object();
-                    return sol::nil;
-                },
-                "worlds", sol::readonly(&Creator::worlds),
-                "new_worlds", sol::readonly(&Creator::new_worlds)
-            );
-        }
-
-        World* createWorld(std::string key) {
+        virtual World* createWorld(std::string key) override {
             World* new_world = factory.create(key)->as<World*>();
 
             if (new_world == nullptr) {
@@ -120,7 +85,7 @@ namespace Amara {
 
             return new_world;
         }
-        World* createWorld() {
+        virtual World* createWorld() override {
             return createWorld("World");
         }
 
@@ -129,6 +94,13 @@ namespace Amara {
             for (auto it = worlds.begin(); it != worlds.end();) {
                 world = *it;
                 if (world->isDestroyed) {
+                    if (world->demiurge) {
+                        Amara::Demiurge* demiurge = world->demiurge;
+                        delete demiurge;
+                        world->demiurge = nullptr;
+                    }
+                    // TODO: Garbage queue world here.
+
                     it = worlds.erase(it);
                     continue;
                 }
@@ -137,21 +109,37 @@ namespace Amara {
             new_worlds.clear();
         }
 
+        void update_properties() {
+            if (currentWorld && currentWorld->demiurge) {
+                currentWorld->demiurge->override_existence();
+            }
+            else override_existence();
+        }
+
+        void createDemiurge(Amara::World& world) {
+            Amara::Demiurge* new_demiurge = new Demiurge();
+            world.demiurge = new_demiurge;
+            new_demiurge->creator = this;
+        }
+
         void startCreation(std::string path) {
             SDL_Init(SDL_INIT_VIDEO);
 
-            scripts.run(path);
-
             rec_tick = SDL_GetPerformanceCounter();
             Uint64 freq = SDL_GetPerformanceFrequency();
+            double frameTarget = 0;
+            double elapsedTime = 0;
+
+            scripts.run(path);
             
             while (worlds.size() != 0) { // Creation cannot exist without any worlds.
-                
                 std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
                 
                 copy_worlds_list = worlds;
                 for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
                     currentWorld = *it;
+                    update_properties();
+
                     currentWorld->run(game.deltaTime);
                     currentWorld->draw();
                 }
@@ -159,18 +147,61 @@ namespace Amara {
                 currentWorld = nullptr;
 
                 if (game.targetFPS != -1) {
-                    double frameTarget = 1.0 / (double)game.targetFPS;
-                    while ((double)(SDL_GetPerformanceCounter() - rec_tick) / (double)freq < frameTarget) {
-                        SDL_Delay(1);
+                    frameTarget = 1.0 / (double)game.targetFPS;
+                    elapsedTime = (double)(SDL_GetPerformanceCounter() - rec_tick) / (double)freq;
+                    if (elapsedTime < frameTarget) {
+                        SDL_Delay((frameTarget - elapsedTime)*1000);
                     }
                 }
                 current_tick = SDL_GetPerformanceCounter();
                 Properties::deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
-                game.fps = 1 / ((double)(current_tick - rec_tick) / (double)freq);
+                game.fps = 1 / game.deltaTime;
                 rec_tick = current_tick;
             }
 
             SDL_Quit();
         }
+
+        void bindLua() {
+            bindLua_UtilityFunctions(lua);
+            bindLua_Vectors(lua);
+            bindLua_Shapes(lua);
+            bindLua_Easing(lua);
+            
+            GameManager::bindLua(lua);
+
+            FileManager::bindLua(lua);
+            EntityFactory::bindLua(lua);
+            ScriptFactory::bindLua(lua);
+
+            World::bindLua(lua);
+
+            Demiurge::bindLua(lua);
+
+            lua.new_usertype<Creator>("Creator",
+                sol::base_classes, sol::bases<Demiurge>(),
+                "createWorld", [](Amara::Creator& c, sol::object key) -> sol::object {
+                    World* world = nullptr;
+                    if (key.is<std::string>()) {
+                        world = c.createWorld(key.as<std::string>());
+                    }
+                    else world = c.createWorld();
+                    if (world) return world->get_lua_object();
+                    return sol::nil;
+                },
+                "worlds", sol::readonly(&Creator::worlds),
+                "new_worlds", sol::readonly(&Creator::new_worlds),
+                "createDemiurge", &Creator::createDemiurge
+            );
+        }
+    };
+
+    World* Demiurge::createWorld(std::string key) {
+        if (creator) return creator->createWorld(key);
+        return nullptr;
+    };
+    World* Demiurge::createWorld() {
+        if (creator) return creator->createWorld();
+        return nullptr;
     };
 }

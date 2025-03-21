@@ -8,7 +8,7 @@ namespace Amara {
         std::string jumpFlag;
     };
 
-    class StateManager {
+    class StateMachine: public Amara::Action {
     public:
         std::string currentState;
         std::string lastState;
@@ -28,24 +28,32 @@ namespace Amara {
 
         std::string jumpFlag;
 
-        StateManager* stateCopy = nullptr;
+        std::unordered_map<std::string, sol::function> state_map;
 
-        StateManager() {
+        StateMachine(): Amara::Action() {
+            set_base_entity_id("StateMachine");
             reset();
         }
 
-        void copy(StateManager* other) {
-            stateCopy = other;
+        virtual void act(double deltaTime) {
+            Amara::Action::act(deltaTime);
+
+            if (hasStarted) {
+                if (state_map.find(currentState) != state_map.end()) {
+                    sol::function& func = state_map[currentState];
+                    eventLooker = 0;
+
+                    func(actor->get_lua_object(), get_lua_object(), deltaTime);
+                }
+            }
         }
-        void copy(StateManager& other) {
-            copy(&other);
+
+        sol::object addState(std::string key, sol::function func) {
+            state_map[key] = func;
+            return get_lua_object();
         }
 
         void reset() {
-            if (stateCopy) {
-                stateCopy->reset();
-                return;
-            }
             currentState.clear();
             lastState.clear();
             currentEvent = 1;
@@ -57,60 +65,26 @@ namespace Amara {
             stateRecords.clear();
         }
 
-        bool resetEvt() {
-            if (stateCopy) return stateCopy->resetEvt();
-
-            if (evt()) {
+        bool resetEvent() {
+            if (event()) {
                 reset();
                 return true;
             }
             return false;
         }
 
-        bool state(std::string key) {
-            if (stateCopy) return stateCopy->state(key);
-
-            if (currentState.empty()) {
-                currentState = key;
-
-                if (debug) {
-                    debug_log("StateManager: start state \"", key, "\".");
-                }
-            }
-
-            if (currentState.compare(key) == 0) {
-                eventLooker = 0;
-                return true;
-            }
-
-            return false;
-        }
-
         bool inState(std::string key) {
-            if (stateCopy) return stateCopy->inState(key);
-
             if (currentState.compare(key) == 0) {
                 return true;
             }
             return false;
         }
 
-        bool start() {
-            if (stateCopy) return stateCopy->start();
-
-            if (currentState.empty()) {
-                eventLooker = 0;
-                return true;
-            }
-            return false;
+        void start(std::string) {
+            
         }
 
         void switchState(std::string key) {
-            if (stateCopy) {
-                stateCopy->switchState(key);
-                return;
-            }
-
             if (!currentState.empty()) {
                 lastState = currentState;
                 Amara::StateRecord record = {currentState, data, currentEvent, jumpFlag};
@@ -122,13 +96,11 @@ namespace Amara {
             data.clear();
 
             if (debug) {
-                debug_log("StateManager: switch state \"", key, "\".");
+                debug_log(*this, ": switch state \"", key, "\".");
             }
         }
 
-        bool switchStateEvt(std::string key) {
-            if (stateCopy) return stateCopy->switchStateEvt(key);
-
+        bool switchStateEvent(std::string key) {
             if (once()) {
                 switchState(key);
                 return true;
@@ -137,11 +109,6 @@ namespace Amara {
         }
 
         void returnState() {
-            if (stateCopy) {
-                stateCopy->returnState();
-                return;
-            }
-
             if (stateRecords.empty()) {
                 reset();
             }
@@ -156,49 +123,37 @@ namespace Amara {
                 stateRecords.pop_back();
 
                 if (debug) {
-                    debug_log("StateManager: return state \"", currentState, "\".");
+                    debug_log(*this, ": return state \"", currentState, "\".");
                 }
             }
         }
 
-        bool returnStateEvt() {
-            if (stateCopy) return stateCopy->returnStateEvt();
-
-            if (evt()) {
+        bool returnStateEvent() {
+            if (event()) {
                 returnState();
                 return true;
             }
             return false;
         }
-
+        
         void restartState() {
-            if (stateCopy) {
-                stateCopy->returnState();
-                return;
-            }
-
             currentEvent = 1;
             if (debug) {
-                debug_log("StateManager: restart state \"", currentState, "\".");
+                debug_log(*this, ": restart state \"", currentState, "\".");
             }
         }
 
-        bool restartStateEvt() {
-            if (stateCopy) return stateCopy->returnStateEvt();
-
-            if (evt()) {
+        bool restartStateEvent() {
+            if (event()) {
                 restartState();
                 return true;
             }
             return false;
         }
 
-        bool evt() {
-            if (stateCopy) return stateCopy->evt();
-
+        bool event() {
             eventLooker += 1;
             if (currentEvent == eventLooker) {
-
                 if (skipEvent) {
                     skipEvent = false;
                     return false;
@@ -210,38 +165,27 @@ namespace Amara {
         }
 
         bool once() {
-            if (stateCopy) return stateCopy->once();
-
-            if (evt()) {
-                nextEvt();
+            if (event()) {
+                nextEvent();
                 return true;
             }
             return false;
         }
 
-        void nextEvt() {
-            if (stateCopy) {
-                stateCopy->nextEvt();
-                return;
-            }
-
+        void nextEvent() {
             currentEvent += 1;
             skipEvent = true;
         }
 
-        bool nextEvtOn(bool cond) {
-            if (stateCopy) return stateCopy->nextEvtOn(cond);
-
+        bool nextEventOn(bool cond) {
             if (cond) {
-                nextEvt();
+                nextEvent();
                 return true;
             }
             return false;
         }
 
         bool wait(double time, bool skip) {
-            if (stateCopy) return stateCopy->wait(time, skip);
-            
             bool ret = false;
 
             if (once()) {
@@ -250,13 +194,13 @@ namespace Amara {
                 ret = true;
             }
 
-            if (evt()) {
+            if (event()) {
                 double t = time / Properties::deltaTime;
 
                 waitCounter += 1;
                 if (waitCounter >= t || skip) {
                     waitCounter = 0;
-                    nextEvt();
+                    nextEvent();
                 }
 
                 ret = true;
@@ -269,18 +213,14 @@ namespace Amara {
         }
 
         bool waitUntil(bool condition) {
-            if (stateCopy) return stateCopy->waitUntil(condition);
-
-            if (evt()) {
-                if (condition) nextEvt();
+            if (event()) {
+                if (condition) nextEvent();
                 return true;
             }
             return false;
         }
 
         bool repeat(int num) {
-            if (stateCopy) return stateCopy->repeat(num);
-
             bool ret = false;
             for (int i = 0; i < num; i++) {
                 if (once()) {
@@ -291,8 +231,6 @@ namespace Amara {
         }
 
         bool bookmark(std::string flag) {
-            if (stateCopy) return stateCopy->bookmark(flag);
-
             bool toReturn = false;
 
             if (once()) {}
@@ -300,7 +238,7 @@ namespace Amara {
                 if (jumpFlag.compare(flag) == 0) {
                     jumpFlag.clear();
                     currentEvent = eventLooker;
-                    nextEvt();
+                    nextEvent();
                     toReturn = true;
                 }
             }
@@ -309,18 +247,11 @@ namespace Amara {
         }
 
         void jump(std::string flag) {
-            if (stateCopy) {
-                stateCopy->jump(flag);
-                return;
-            }
-
             jumpFlag = flag;
         }
 
-        bool jumpEvt(std::string flag) {
-            if (stateCopy) return stateCopy->jumpEvt(flag);
-
-            if (evt()) {
+        bool jumpEvent(std::string flag) {
+            if (event()) {
                 jump(flag);
                 return true;
             }
@@ -328,8 +259,9 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
-            lua.new_usertype<StateManager>("StateManager",
-                sol::constructors<StateManager()>()
+            lua.new_usertype<StateMachine>("StateMachine",
+                sol::constructors<StateMachine()>(),
+                sol::base_classes, sol::bases<Amara::Action>()
             );
         }
     };

@@ -1,7 +1,11 @@
 namespace Amara {
+    class Demiurge;
+
     class World: public Entity {
     public:
-        std::string base_dir_path;    
+        Amara::Demiurge* demiurge = nullptr;
+
+        std::string base_dir_path;
 
         World(): Entity() {
             set_base_entity_id("World");
@@ -20,10 +24,7 @@ namespace Amara {
             Amara::Entity::run(deltaTime);
         }
         
-        static void bindLua(sol::state& lua) {
-            EntityFactory::bindLua(lua);
-            ScriptFactory::bindLua(lua);
-            
+        static void bindLua(sol::state& lua) {    
             lua.new_usertype<World>("World",
                 sol::constructors<World()>(),
                 sol::base_classes, sol::bases<Amara::Entity>(),

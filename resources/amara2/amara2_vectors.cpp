@@ -38,7 +38,8 @@ namespace Amara {
 
     struct Vector3: public Vector2 {
         Vector3() = default;
-        Vector3(float x_, float y_, float z_) : Vector2(x_, y_), z(z_) {}
+        Vector3(float _x, float _y, float _z) : Vector2(_x, _y), z(_z) {}
+        Vector3(const Vector2& v2, float _z): Vector2(v2.x, v2.y), z(_z) {}
 
         public: float z = 0;
 

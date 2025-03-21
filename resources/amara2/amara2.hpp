@@ -75,8 +75,6 @@
     #include "amara2_properties.cpp"
     #include "amara2_luaUtlity.cpp"
 
-    #include "amara2_stateManager.cpp"
-
     #include "amara2_gameManager.cpp"
 
     #include "amara2_fileManager.cpp"
@@ -99,9 +97,12 @@
 
     #include "amara2_action.cpp"
     #include "amara2_tween.cpp"
+    #include "amara2_stateMachine.cpp"
 
     #include "amara2_entityFactory.cpp"
 
     #include "amara2_world.cpp"
+
+    #include "amara2_demiurge.cpp"
     #include "amara2_creator.cpp"
 #endif

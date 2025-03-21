@@ -111,6 +111,18 @@ namespace Amara {
         }
         return ss.str();
     }
+
+    std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args) {
+        std::ostringstream ss;
+        bool first = true;
+        
+        for (auto arg : args) {
+            ss << (first ? "" : separator) << lua_to_string(arg);
+            first = false;
+        }
+    
+        return ss.str();
+    }
     
     template<typename... Args>
     void debug_log(Args... args) {
@@ -155,5 +167,11 @@ namespace Amara {
             return string_endsWith(self, check);
         });
         string_metatable.set_function("concat", &Amara::lua_string_concat);
+        string_metatable.set_function("sep_concat", &Amara::lua_string_sep_concat);
+
+        sol::table math_metatable = lua["math"];
+        math_metatable.set_function("round", [](double num) -> int {
+            return std::round(num);
+        });
     }
 }

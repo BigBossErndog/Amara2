@@ -110,13 +110,12 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
-            Amara::StateManager::bindLua(lua);
-
             Amara::Entity::bindLua(lua);
             Amara::Camera::bindLua(lua);
             Amara::Scene::bindLua(lua);
             Amara::Action::bindLua(lua);
             Amara::Tween::bindLua(lua);
+            Amara::StateMachine::bindLua(lua);
 
             lua.new_usertype<EntityFactory>("EntityFactory",
                 "load", &EntityFactory::load,

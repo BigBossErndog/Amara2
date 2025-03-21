@@ -103,6 +103,8 @@ namespace Amara {
         }
 
         virtual void act(double deltaTime) override {
+            Amara::Action::act(deltaTime);
+            
             if (hasStarted) {
                 progress += deltaTime/tween_duration;
                 if (progress >= 1) {
@@ -126,7 +128,6 @@ namespace Amara {
 
                 if (progress == 1) complete();
             }
-            Amara::Action::act(deltaTime);
         }
 
         static void bindLua(sol::state& lua) {

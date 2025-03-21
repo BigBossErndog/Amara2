@@ -295,7 +295,7 @@ namespace Amara {
 				++it;
 			}
 
-            // NOTE: ADD TO GARBAGE QUEUE
+            // TODO: ADD TO GARBAGE QUEUE
         }
 
         sol::object bringToFront() {

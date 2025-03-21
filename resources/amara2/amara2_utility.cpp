@@ -32,6 +32,14 @@ namespace Amara {
         return ss.str();
     }
 
+    template<typename... Args>
+    std::string string_sep_concat(const std::string& separator, Args ... args) {
+        std::ostringstream ss;
+        bool first = true;
+        ((ss << (first ? "" : separator) << args, first = false), ...);
+        return ss.str();
+    }
+
     bool string_endsWith(std::string str, std::string suffix) {
         if (suffix.size() > str.size()) {
             return false;
