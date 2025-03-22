@@ -9,6 +9,8 @@ namespace Amara {
 
         std::vector<nlohmann::json> arguments;
 
+        bool hasQuit = false;
+
         GameManager() {
             #if defined(__EMSCRIPTEN__)
                 platform = "web";
@@ -45,6 +47,10 @@ namespace Amara {
             return lua_gettop(Props::lua().lua_state());
         }
 
+        void quit() {
+            hasQuit = true;
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<GameManager>("GameManager",
                 "fps", sol::readonly(&GameManager::fps),
@@ -54,6 +60,7 @@ namespace Amara {
                 "deltaTime", sol::readonly(&GameManager::deltaTime),
                 "platform", sol::readonly(&GameManager::platform),
                 "get_lua_stack_size", &GameManager::get_lua_stack_size,
+                "quit", &GameManager::quit,
                 "arguments", sol::property([](const GameManager& g) -> sol::object {
                     if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.arguments);

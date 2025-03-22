@@ -22,7 +22,12 @@ namespace Amara {
 
         static double deltaTime;
 
+        static Amara::Graphics graphics;
+        static Amara::World* render_origin;
+
         static SDL_GPUDevice* gpuDevice;
+        static SDL_GLContext glContext;
+        static SDL_Renderer* renderer;
         static SDL_Window* current_window;
 
         static GameManager* game;
@@ -65,7 +70,12 @@ namespace Amara {
 
     double Props::deltaTime = 1;
 
+    Amara::Graphics Props::graphics = Graphics::None;
+    Amara::World* Props::render_origin = nullptr;
+
+    SDL_GLContext Props::glContext = NULL;
     SDL_GPUDevice* Props::gpuDevice = nullptr;
+    SDL_Renderer* Props::renderer = nullptr;
     SDL_Window* Props::current_window = nullptr;
 
     int Props::lua_stack_size = 1000000;
@@ -82,5 +92,4 @@ namespace Amara {
     sol::state* Props::lua_state = nullptr;
 
     Rectangle Props::viewport;
-
 }

@@ -108,6 +108,13 @@ namespace Amara {
             new_worlds.clear();
         }
 
+        void destroyAllWorlds() {
+            for (auto w: worlds) {
+                w->destroy();
+            }
+            worlds.clear();
+        }
+
         void update_properties() {
             if (currentWorld && currentWorld->demiurge) {
                 currentWorld->demiurge->override_existence();
@@ -122,13 +129,12 @@ namespace Amara {
             world.demiurge = new_demiurge;
 
             world.demiurge->setup();
-
             new_demiurge->creator = this;
         }
 
         void startCreation(std::string path) {
             if (!SDL_Init(SDL_INIT_VIDEO)) {
-                printf("Error: SDL_Init failed: %s\n", SDL_GetError());
+                debug_log("Error: SDL_Init failed: ", SDL_GetError());
             }
 
             rec_tick = SDL_GetPerformanceCounter();
@@ -138,11 +144,11 @@ namespace Amara {
 
             scripts.run(path);
 
-            bool quit = false;
+            game.hasQuit = false;
             
-            while (!quit && worlds.size() != 0) { // Creation cannot exist without any worlds.
-                inputManager.handleEvents(worlds, quit);
-                if (quit) break;
+            while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
+                inputManager.handleEvents(worlds, game.hasQuit);
+                if (game.hasQuit) break;
 
                 if (!inputManager.logicBlocking) {
                     std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
@@ -172,12 +178,16 @@ namespace Amara {
                 }
             }
 
+            destroyAllWorlds();
+            garbageCollector.clearImmediately();
+
             if (Props::gpuDevice) SDL_DestroyGPUDevice(Props::gpuDevice);
             SDL_Quit();
         }
 
         void bindLua() {
             bindLua_UtilityFunctions(lua);
+            bindLua_LuaUtilityFunctions(lua);
             bindLua_Vectors(lua);
             bindLua_Shapes(lua);
             bindLua_Easing(lua);

@@ -8,7 +8,19 @@ world:configure({
     window = {
         windowTitle = "Amara2",
         width = 1280,
-        height = 720
+        height = 720,
+        graphics = Graphics.Render2D
+    }
+})
+
+local world = Creator:createWorld()
+
+world:configure({
+    window = {
+        windowTitle = "Amara2_B",
+        width = 1280,
+        height = 720,
+        graphics = Graphics.Render2D
     }
 })
 -- Every window is represented with a World.

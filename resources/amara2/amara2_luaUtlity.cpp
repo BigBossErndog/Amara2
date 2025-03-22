@@ -155,7 +155,7 @@ namespace Amara {
         debug_log(std::string(buffer.data()));
     }
 
-    void bindLua_UtilityFunctions(sol::state& lua) {
+    void bindLua_LuaUtilityFunctions(sol::state& lua) {
         lua.set_function("debug_log", &Amara::lua_debug_log);
         lua.set_function("print", [](sol::variadic_args args) {
             debug_log(lua_string_sep_concat(" ", args));
