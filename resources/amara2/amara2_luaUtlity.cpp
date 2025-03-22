@@ -83,6 +83,7 @@ namespace Amara {
             if (floor(val) == val) return std::to_string((int)val);
             else return std::to_string(val);
         }
+        if (obj.is<sol::nil_t>()) return "nil";
         if (obj.is<std::string>()) return obj.as<std::string>();
         if (is_entity(obj)) return entity_to_string(obj);
         if (obj.is<Vector3>()) return std::string(obj.as<Vector3>());

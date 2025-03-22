@@ -11,6 +11,9 @@ namespace Amara {
         Uint32 windowID = 0;
         std::string windowTitle;
 
+        SDL_Renderer* renderer = nullptr;
+        Rectangle display;
+
         Vector2 rec_pos = pos;
 
         float windowWidth = 640;
@@ -24,7 +27,7 @@ namespace Amara {
 
         bool headless = true;
 
-        SDL_Renderer* renderer = nullptr;
+        std::string fml = "FUCK MY LIFE";
 
         std::vector<Amara::GraphicsEnum> graphics_priority = {
             GraphicsEnum::OpenGL,
@@ -40,6 +43,22 @@ namespace Amara {
             Props::world = this;
 
             if (window != nullptr) {
+                SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+                if (displayID != Props::displayID) {
+                    Props::displayID = displayID;
+
+                    SDL_Rect displayBounds;
+                    if (SDL_GetDisplayUsableBounds(displayID, &displayBounds)) {
+                        display = {
+                            static_cast<float>(displayBounds.x), 
+                            static_cast<float>(displayBounds.y),
+                            static_cast<float>(displayBounds.w), 
+                            static_cast<float>(displayBounds.w)
+                        };
+                        Props::display = display;
+                    }
+                }
+                
                 Props::current_window = window;
                 Props::viewport = { 0, 0, windowWidth, windowHeight };
                 Props::master_viewport = Props::viewport;
@@ -142,8 +161,6 @@ namespace Amara {
 
             windowID = SDL_GetWindowID(window);
             Props::current_window = window;
-
-            Props::displayID = SDL_GetDisplayForWindow(window);
         }
 
         void create_graphics_window(int flags) {
@@ -278,9 +295,12 @@ namespace Amara {
         
         static void bindLua(sol::state& lua) {    
             lua.new_usertype<World>("World",
-                sol::constructors<World()>(),
-                sol::base_classes, sol::bases<Amara::Entity>(),
-                "base_dir_path", &World::base_dir_path
+                sol::base_classes, sol::bases<Entity>(),
+                "fml", &World::fml,
+                "w", sol::readonly(&World::windowWidth),
+                "h", sol::readonly(&World::windowHeight),
+                "base_dir_path", &World::base_dir_path,
+                "display", sol::readonly(&World::display)
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];

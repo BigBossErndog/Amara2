@@ -29,7 +29,7 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
-            lua.new_usertype<Scene>("Camera",
+            lua.new_usertype<Camera>("Camera",
                 sol::base_classes, sol::bases<Amara::Entity>()
             );
         }

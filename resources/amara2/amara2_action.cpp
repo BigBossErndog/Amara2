@@ -13,6 +13,8 @@ namespace Amara {
 
         bool locked = false;
 
+        std::string fml = "FUCK MY LIFE";
+
         Action(): Entity() {
             set_base_entity_id("Action");
             depthSortEnabled = true;
@@ -157,8 +159,8 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
-            lua.new_usertype<Action>("Action",
-                sol::base_classes, sol::bases<Entity>(),
+            lua.new_usertype<Amara::Action>("Action",
+                sol::base_classes, sol::bases<Amara::Entity>(),
                 "onPrepare", &Action::onPrepare,
                 "onAct", &Action::onAct,
                 "onComplete", &Action::onComplete,
@@ -174,7 +176,8 @@ namespace Amara {
                     if (e.parent) action = e.parent->createChild(key)->as<Amara::Action*>();
                     else action = e.createChild(key)->as<Amara::Action*>();
                     return action->get_lua_object();
-                }
+                },
+                "fml", &Action::fml
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];

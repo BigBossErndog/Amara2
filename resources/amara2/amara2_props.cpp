@@ -26,6 +26,7 @@ namespace Amara {
         static Amara::World* render_origin;
         static Rectangle viewport;
         static Rectangle master_viewport;
+        static Rectangle display;
 
         static SDL_GPUDevice* gpuDevice;
         static SDL_GLContext glContext;
@@ -76,6 +77,7 @@ namespace Amara {
     Amara::World* Props::render_origin = nullptr;
     Rectangle Props::viewport;
     Rectangle Props::master_viewport;
+    Rectangle Props::display;
 
     SDL_Window* Props::current_window = nullptr;
     SDL_DisplayID Props::displayID = 0;
@@ -84,7 +86,7 @@ namespace Amara {
     SDL_GPUDevice* Props::gpuDevice = nullptr;
     SDL_Renderer* Props::renderer = nullptr;
 
-    int Props::lua_stack_size = 1000000;
+    int Props::lua_stack_size = 5000000;
     
     GameManager* Props::game = nullptr;
     World* Props::world = nullptr;

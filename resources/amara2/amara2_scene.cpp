@@ -4,7 +4,7 @@ namespace Amara {
         Amara::Camera* mainCamera = nullptr;
         std::vector<Amara::Entity*> cameras;
 
-        Scene() {
+        Scene(): Entity() {
             set_base_entity_id("Scene");
             scene = this;
             is_scene = true;
@@ -17,9 +17,10 @@ namespace Amara {
 
         virtual void create() override {
             setMainCamera(createChild("Camera")->as<Amara::Camera*>());
+            Amara::Entity::create();
         }
 
-        virtual void run(double deltaTime) {
+        virtual void run(double deltaTime) override {
             Amara::Entity::run(deltaTime);
             if (
                 mainCamera != nullptr &&
@@ -60,16 +61,12 @@ namespace Amara {
             }
             return Amara::Entity::addChild(entity);
         }
-        
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Scene>("Scene",
-                sol::base_classes, sol::bases<Entity>(),
-                "setMainCamera", sol::overload(
-                    sol::resolve<Amara::Camera*(Amara::Camera*, bool)>(&Scene::setMainCamera),
-                    sol::resolve<Amara::Camera*(Amara::Camera*)>(&Scene::setMainCamera)
-                )
+                sol::base_classes, sol::bases<Amara::Entity>()
             );
-
+            
             sol::usertype<Entity> entity_type = lua["Entity"];
             entity_type["scene"] = sol::readonly(&Entity::scene);
         }

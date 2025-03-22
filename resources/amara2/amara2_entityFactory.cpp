@@ -95,18 +95,19 @@ namespace Amara {
             
             entityRegistry[key] = [](Entity* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
-                    return sol::object(Props::lua(), sol::in_place_type<T*>, derived);
+                    return sol::make_object(Props::lua(), derived);
                 }
                 return sol::lua_nil;
             };
         }
 
         void prepareEntities() {
-            registerEntity<Entity>("Entity");
-            registerEntity<Camera>("Camera");
-            registerEntity<Scene>("Scene");
-            registerEntity<Action>("Action");
-            registerEntity<Tween>("Tween");
+            registerEntity<Amara::Entity>("Entity");
+            registerEntity<Amara::Camera>("Camera");
+            registerEntity<Amara::Scene>("Scene");
+            registerEntity<Amara::Action>("Action");
+            registerEntity<Amara::Tween>("Tween");
+            registerEntity<Amara::StateMachine>("StateMachine");
         }
 
         static void bindLua(sol::state& lua) {
@@ -149,6 +150,7 @@ namespace Amara {
         props = Props::lua().create_table();
 
         sol::table props_meta = Props::lua().create_table();
+        
         props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
             if (value.is<sol::function>()) {
                 sol::function callback = value.as<sol::function>();
