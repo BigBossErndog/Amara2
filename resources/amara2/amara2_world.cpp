@@ -11,8 +11,10 @@ namespace Amara {
         Uint32 windowID = 0;
         std::string windowTitle;
 
-        int windowWidth = 640;
-        int windowHeight = 360;
+        Vector2 rec_pos = pos;
+
+        float windowWidth = 640;
+        float windowHeight = 360;
 
         int resizable = 0;
         int vsync = 0;
@@ -34,12 +36,31 @@ namespace Amara {
 
         virtual void update_properties() override {
             Props::world = this;
+
             if (window != nullptr) {
                 Props::current_window = window;
+                Props::viewport = { 0, 0, windowWidth, windowHeight };
+                Props::master_viewport = Props::viewport;
+
+                int wx, wy;
+                SDL_GetWindowPosition(window, &wx, &wy);
+                float fwx = static_cast<int>(wx), fwy = static_cast<int>(wy);
+                if (rec_pos.x != pos.x || rec_pos.y != pos.y) {
+                    fwx += pos.x - rec_pos.x;
+                    fwy += pos.y - rec_pos.y;
+                    SDL_SetWindowPosition(window, fwx, fwy);
+                }
+                pos.x = fwx;
+                pos.y = fwy;
+                rec_pos = pos;
+            }
+            else {
+                Props::viewport = { pos.x, pos.y, windowWidth, windowHeight };
             }
             if (renderer != nullptr) {
                 Props::renderer = renderer;
             }
+
             Entity::update_properties();
         }
 

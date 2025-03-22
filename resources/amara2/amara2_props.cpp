@@ -25,6 +25,7 @@ namespace Amara {
         static Amara::Graphics graphics;
         static Amara::World* render_origin;
         static Rectangle viewport;
+        static Rectangle master_viewport;
 
         static SDL_GPUDevice* gpuDevice;
         static SDL_GLContext glContext;
@@ -74,6 +75,7 @@ namespace Amara {
     Amara::Graphics Props::graphics = Graphics::None;
     Amara::World* Props::render_origin = nullptr;
     Rectangle Props::viewport;
+    Rectangle Props::master_viewport;
 
     SDL_Window* Props::current_window = nullptr;
     SDL_DisplayID Props::displayID = 0;

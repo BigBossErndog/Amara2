@@ -47,29 +47,30 @@ local e = world:createChild("Entity")
 
 local s = world:createChild("Scene")
 
-e.tween:from({
-        x = 10
+world.tween:from({
+        x = 0
     }):to({
-        x = 0,
+        x = 1920-640,
         duration = 1,
+        ease = Ease.SineInOut,
         onUpdate = function(self)
-            print(e.x)
-        end
-    }):to({
-        x = 10,
-        duration = 1,
-        onUpdate = function(self)
-            print(e.x)
+            print(self.x)
         end
     }):to({
         x = 0,
         duration = 1,
+        ease = Ease.SineInOut,
         onUpdate = function(self)
-            print(e.x)
+            print(self.x)
         end
-    }):whenDone(function (self)
-        self.world:destroy()
-    end)
+    }):to({
+        x = (1920-640)/2,
+        duration = 1,
+        ease = Ease.SineInOut,
+        onUpdate = function(self)
+            print(self.x)
+        end
+    })
 
 -- Scripts:run("scripts/testScript")
 
