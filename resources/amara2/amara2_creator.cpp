@@ -127,10 +127,8 @@ namespace Amara {
         }
 
         void startCreation(std::string path) {
-            SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
             if (!SDL_Init(SDL_INIT_VIDEO)) {
                 printf("Error: SDL_Init failed: %s\n", SDL_GetError());
-                debug_log(SDL_GetError());
             }
 
             rec_tick = SDL_GetPerformanceCounter();
