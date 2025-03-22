@@ -94,12 +94,12 @@
     #include "amara2_action.cpp"
     #include "amara2_tween.cpp"
     #include "amara2_stateMachine.cpp"
+    
+    #include "amara2_world.cpp"
 
     #include "amara2_entityFactory.cpp"
 
     #include "amara2_garbage.cpp"
-
-    #include "amara2_world.cpp"
 
     #include "amara2_inputManager.cpp"
 

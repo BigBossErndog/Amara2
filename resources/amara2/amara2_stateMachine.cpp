@@ -84,8 +84,8 @@ namespace Amara {
             return false;
         }
 
-        void start(std::string) {
-            
+        void start(std::string key) {
+            switchState(key);
         }
 
         void switchState(std::string key) {
@@ -272,6 +272,7 @@ namespace Amara {
             entity_type["state"] = [](Amara::Entity& entity) -> sol::object {
                 if (entity.stateMachine == nullptr) {
                     entity.stateMachine = entity.createChild("StateMachine")->as<Amara::StateMachine*>();
+                    entity.stateMachine->is_action = false;
                 }
                 return entity.stateMachine->get_lua_object();
             };

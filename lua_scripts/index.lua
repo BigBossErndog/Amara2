@@ -34,52 +34,53 @@ local g = world:createChild("Scene")
 
 local a = world:createChild("Action")
 
-print(e)
-print(s)
-print(g)
-print(a)
-print(#world.children)
 
--- world.tween:from({
---         x = (1920-640)/2
---     }):to({
---         x = 1920-640,
---         duration = 1,
---         ease = Ease.SineInOut,
---         onUpdate = function(self)
---             print(world.x)
---         end
---     }):to({
---         x = 0,
---         duration = 1,
---         ease = Ease.SineInOut,
---         onUpdate = function(self)
---             print(self.x)
---         end
---     }):to({
---         x = (1920-640)/2,
---         duration = 1,
---         ease = Ease.SineInOut,
---         onUpdate = function(self)
---             print(self.x)
---         end
---     }):to({
---         y = -360/2,
---         duration = 1,
---         ease = Ease.SineInOut,
---         onUpdate = function(self)
---             print(self.x)
---         end
---     }):to({
---         y = (1080-360)/2,
---         duration = 1,
---         ease = Ease.SineInOut,
---         onUpdate = function(self)
---             print(self.x)
---         end
---     }):whenDone(function(self)  
---         print("finished")
---     end)
+-- for key, value in pairs(getmetatable(world)) do
+--     print(key, value)
+-- end
+world.onCreate = function(world)
+    world.tween:from({
+            x = (world.display.w - world.w)/2
+        }):to({
+            duration = 1
+        }):to({
+            x = world.display.w - world.w,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = 0,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = (world.display.w - world.w)/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            y = -world.h/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            y = (world.display.h - world.h)/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = (world.display.w - 640*2)/2,
+            y = (world.display.h - 360*2)/2,
+            w = 640*2,
+            h = 360*2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = (world.display.w - 640)/2,
+            y = (world.display.h - 360)/2,
+            w = 640,
+            h = 360,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):whenDone(function(self)  
+            print("finished")
+        end)
+    end
 
 -- Scripts:run("scripts/testScript")
 

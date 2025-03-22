@@ -108,6 +108,7 @@ namespace Amara {
             registerEntity<Amara::Action>("Action");
             registerEntity<Amara::Tween>("Tween");
             registerEntity<Amara::StateMachine>("StateMachine");
+            registerEntity<Amara::World>("World");
         }
 
         static void bindLua(sol::state& lua) {
@@ -117,6 +118,7 @@ namespace Amara {
             Amara::Action::bindLua(lua);
             Amara::Tween::bindLua(lua);
             Amara::StateMachine::bindLua(lua);
+            Amara::World::bindLua(lua);
 
             lua.new_usertype<EntityFactory>("EntityFactory",
                 "load", &EntityFactory::load,
@@ -166,22 +168,22 @@ namespace Amara {
         sol::userdata entityData = luaobject.as<sol::userdata>();
         sol::table metatable = entityData[sol::metatable_key];
 
-        if (!metatable["__indexing_overridden"].valid()) {
-            metatable["__indexing_overridden"] = true;
+        // if (!metatable["__indexing_overridden"].valid()) {
+        //     metatable["__indexing_overridden"] = true;
 
-            sol::function old_indexer = metatable["__index"];
-            metatable["__index_rec"] = old_indexer;
-            metatable["__index"] = [old_indexer](Amara::Entity& e, sol::object key) -> sol::object {
-                sol::object val = old_indexer(e, key);
-                if (val != sol::nil) return val;
+        //     sol::function old_indexer = metatable["__index"];
+        //     metatable["__index_rec"] = old_indexer;
+        //     metatable["__index"] = [old_indexer](Amara::Entity& e, sol::object key) -> sol::object {
+        //         sol::object val = old_indexer(e, key);
+        //         if (val != sol::nil) return val;
 
-                if (e.props[key].valid()) {
-                    return e.props[key];
-                }
+        //         if (e.props[key].valid()) {
+        //             return e.props[key];
+        //         }
                 
-                return sol::nil;
-            };
-        }
+        //         return sol::nil;
+        //     };
+        // }
 
         return luaobject;
     }

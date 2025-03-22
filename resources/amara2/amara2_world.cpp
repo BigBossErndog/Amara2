@@ -18,6 +18,7 @@ namespace Amara {
 
         float windowWidth = 640;
         float windowHeight = 360;
+        Rectangle window_dim = { pos.x, pos.y, windowWidth, windowHeight };
 
         int resizable = 0;
         int vsync = 0;
@@ -26,8 +27,6 @@ namespace Amara {
         int fullscreen_mode = 0;
 
         bool headless = true;
-
-        std::string fml = "FUCK MY LIFE";
 
         std::vector<Amara::GraphicsEnum> graphics_priority = {
             GraphicsEnum::OpenGL,
@@ -53,7 +52,7 @@ namespace Amara {
                             static_cast<float>(displayBounds.x), 
                             static_cast<float>(displayBounds.y),
                             static_cast<float>(displayBounds.w), 
-                            static_cast<float>(displayBounds.w)
+                            static_cast<float>(displayBounds.h)
                         };
                         Props::display = display;
                     }
@@ -74,6 +73,18 @@ namespace Amara {
                 pos.x = fwx;
                 pos.y = fwy;
                 rec_pos = pos;
+
+                int ww, wh;
+                SDL_GetWindowSize(window, &ww, &wh);
+                float fww = static_cast<int>(ww), fwh = static_cast<int>(wh);
+                if (window_dim.w != windowWidth || window_dim.h != windowHeight) {
+                    fww += windowWidth - window_dim.w;
+                    fwh += windowHeight - window_dim.h;
+                    SDL_SetWindowSize(window, fww, fwh);
+                }
+                windowWidth = fww;
+                windowHeight = fwh;
+                window_dim = { pos.x, pos.y, windowWidth, windowHeight };
             }
             else {
                 Props::viewport = { pos.x, pos.y, windowWidth, windowHeight };
@@ -276,6 +287,8 @@ namespace Amara {
                 }
             }
             update_properties();
+
+            Amara::Entity::create();
         }
 
         virtual void run(double deltaTime) override {
@@ -293,13 +306,18 @@ namespace Amara {
             Amara::Entity::destroy();
         }
         
-        static void bindLua(sol::state& lua) {    
+        static void bindLua(sol::state& lua) {
             lua.new_usertype<World>("World",
                 sol::base_classes, sol::bases<Entity>(),
-                "fml", &World::fml,
-                "w", sol::readonly(&World::windowWidth),
-                "h", sol::readonly(&World::windowHeight),
-                "base_dir_path", &World::base_dir_path,
+                "w", sol::property(
+                    [](World& w, float _w) { w.windowWidth = _w; },
+                    [](World& w) { return w.windowWidth; }
+                ),
+                "h", sol::property(
+                    [](World& w, float _h) { w.windowHeight = _h; },
+                    [](World& w) { return w.windowHeight; }
+                ),
+                "base_dir_path", sol::readonly(&World::base_dir_path),
                 "display", sol::readonly(&World::display)
             );
 

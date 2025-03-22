@@ -25,7 +25,7 @@ namespace Amara {
 
             Props::messages = &messages;
             Props::garbageCollector = &garbageCollector;
-
+            
             worlds.clear();
             
             lua_checkstack(lua.lua_state(), Props::lua_stack_size);
@@ -136,7 +136,7 @@ namespace Amara {
         Amara::Demiurge* createDemiurge() {
             Amara::Demiurge* new_demiurge = new Demiurge();
             new_demiurge->setup();
-            new_demiurge->creator = this;
+            new_demiurge->true_creator = this;
             return new_demiurge;
         }
 
@@ -211,21 +211,10 @@ namespace Amara {
             EntityFactory::bindLua(lua);
             ScriptFactory::bindLua(lua);
 
-            World::bindLua(lua);
-
             Demiurge::bindLua(lua);
 
             lua.new_usertype<Creator>("Creator",
                 sol::base_classes, sol::bases<Demiurge>(),
-                "createWorld", [](Amara::Creator& c, sol::object key) -> sol::object {
-                    World* world = nullptr;
-                    if (key.is<std::string>()) {
-                        world = c.createWorld(key.as<std::string>());
-                    }
-                    else world = c.createWorld();
-                    if (world) return world->get_lua_object();
-                    return sol::nil;
-                },
                 "worlds", sol::readonly(&Creator::worlds),
                 "new_worlds", sol::readonly(&Creator::new_worlds),
                 "makeDemiurgic", sol::overload(
@@ -240,11 +229,11 @@ namespace Amara {
     };
 
     World* Demiurge::createWorld(std::string key) {
-        if (creator) return creator->createWorld(key);
+        if (true_creator) return true_creator->createWorld(key);
         return nullptr;
     };
     World* Demiurge::createWorld() {
-        if (creator) return creator->createWorld();
+        if (true_creator) return true_creator->createWorld();
         return nullptr;
     };
 }

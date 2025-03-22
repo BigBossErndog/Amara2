@@ -1,9 +1,9 @@
 namespace Amara {
     class Creator;
-
+    
     class Demiurge {
     public:
-        Creator* creator = nullptr;
+        Creator* true_creator = nullptr;
 
         GameManager game;
         FileManager files;
