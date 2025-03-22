@@ -22,7 +22,7 @@ namespace Amara {
 
         static double deltaTime;
 
-        static Amara::Graphics graphics;
+        static Amara::GraphicsEnum graphics;
         static Amara::World* render_origin;
         static Rectangle viewport;
         static Rectangle master_viewport;
@@ -72,7 +72,7 @@ namespace Amara {
 
     double Props::deltaTime = 1;
 
-    Amara::Graphics Props::graphics = Graphics::None;
+    Amara::GraphicsEnum Props::graphics = GraphicsEnum::None;
     Amara::World* Props::render_origin = nullptr;
     Rectangle Props::viewport;
     Rectangle Props::master_viewport;

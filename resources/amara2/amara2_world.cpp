@@ -22,11 +22,13 @@ namespace Amara {
         bool create_window_on_start = false;
         int fullscreen_mode = 0;
 
+        bool headless = true;
+
         SDL_Renderer* renderer = nullptr;
 
-        std::vector<Amara::Graphics> graphics_priority = {
-            Graphics::OpenGL,
-            Graphics::Render2D
+        std::vector<Amara::GraphicsEnum> graphics_priority = {
+            GraphicsEnum::OpenGL,
+            GraphicsEnum::Render2D
         };
 
         World(): Entity() {
@@ -68,7 +70,10 @@ namespace Amara {
             Amara::Entity::make_configurables();
             configurables["window"] = [this](nlohmann::json val) {
                 bool resizeWindow = false;
+                headless = false;
+
                 create_window_on_start = !Props::integrate_new_windows;
+
                 for (auto it = val.begin(); it != val.end(); it++) {
                     if (string_equal(it.key(), "width")) {
                         windowWidth = it.value();
@@ -155,10 +160,18 @@ namespace Amara {
             create_graphics_window(0);
         }
 
-        bool create_gpu_device(Amara::Graphics g) {
+        bool create_gpu_device(Amara::GraphicsEnum g) {
             create_graphics_window();
+            int shaderFlags = 0;
+
+            switch (g) {
+                case GraphicsEnum::Vulkan:
+                    shaderFlags |= SDL_GPU_SHADERFORMAT_SPIRV;
+                    break;
+            }
+
             Props::gpuDevice = SDL_CreateGPUDevice(
-                SDL_GPU_SHADERFORMAT_SPIRV,
+                shaderFlags,
                 false, 
                 NULL
             );
@@ -174,10 +187,10 @@ namespace Amara {
         virtual void create() override {
             if (create_window_on_start && window == nullptr) {
                 bool renderer_created = false;
-                for (Graphics g: graphics_priority) {
+                for (GraphicsEnum g: graphics_priority) {
                     if (renderer_created) break;
                     switch (g) {
-                        case Amara::Graphics::Render2D:
+                        case Amara::GraphicsEnum::Render2D:
                             if (window == nullptr) {
                                 if (!SDL_CreateWindowAndRenderer(
                                     windowTitle.c_str(),
@@ -200,13 +213,13 @@ namespace Amara {
                             }
                             else {
                                 Props::renderer = renderer;
-                                if (Props::graphics == Graphics::None) {
+                                if (Props::graphics == GraphicsEnum::None) {
                                     Props::graphics = g;
                                 }
                                 renderer_created = true;
                             }
                             break;
-                        case Amara::Graphics::OpenGL:
+                        case Amara::GraphicsEnum::OpenGL:
                             if (Props::graphics == g) {
                                 renderer_created = true;
                             }
@@ -223,7 +236,7 @@ namespace Amara {
                                 }
                             }
                             break;
-                        case Amara::Graphics::None:
+                        case Amara::GraphicsEnum::None:
                             break;
                         default:
                             if (Props::graphics == g || create_gpu_device(g)) {
@@ -237,7 +250,15 @@ namespace Amara {
                 if (window == nullptr) {
                     create_graphics_window();
                 }
+                if (window) {
+                    int wx, wy;
+                    SDL_GetWindowPosition(window, &wx, &wy);
+                    pos.x = static_cast<int>(wx);
+                    pos.y = static_cast<int>(wy);
+                    rec_pos = pos;
+                }
             }
+            update_properties();
         }
 
         virtual void run(double deltaTime) override {

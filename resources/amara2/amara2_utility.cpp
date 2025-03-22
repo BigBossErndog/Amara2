@@ -78,7 +78,7 @@ namespace Amara {
 
     bool is_entity(sol::object);
 
-    enum class Graphics {
+    enum class GraphicsEnum {
         None,
         Render2D,
         OpenGL,
@@ -87,10 +87,10 @@ namespace Amara {
 
     void bindLua_UtilityFunctions(sol::state& lua) {
         lua.new_enum("Graphics",
-            "None", Amara::Graphics::None,
-            "Render2D", Amara::Graphics::Render2D,
-            "OpenGL", Amara::Graphics::OpenGL,
-            "Vulkan", Amara::Graphics::Vulkan
+            "None", Amara::GraphicsEnum::None,
+            "Render2D", Amara::GraphicsEnum::Render2D,
+            "OpenGL", Amara::GraphicsEnum::OpenGL,
+            "Vulkan", Amara::GraphicsEnum::Vulkan
         );
     }
 }
