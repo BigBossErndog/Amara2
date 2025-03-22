@@ -3,11 +3,19 @@
 -- local e = factory:create("Entity");
 -- e.props.hello = function() log("hi") end
 local world = Creator:createWorld()
+
+world:configure({
+    window = {
+        windowTitle = "Amara2",
+        width = 1280,
+        height = 720
+    }
+})
 -- Every window is represented with a World.
 -- You can create multiple worlds.
 -- Calling world:destroy() will close the window.
 
-Game:setTargetFPS(60)
+Game:setTargetFPS(30)
 
 local e = world:createChild("Entity")
 
@@ -22,25 +30,24 @@ local e = world:createChild("Entity")
 
 local s = world:createChild("Scene")
 
-e.tween:from({
-        x = 10
-    }):to({
-        x = 0,
-        duration = 1,
-        onUpdate = function(self)
-            print(e.x)
-        end,
-        ease = Ease.SineOut
-    }):to({
-        x = 10,
-        duration = 1,
-        onUpdate = function(self)
-            print(e.x)
-        end
-    }):whenDone(function(self)
-        print("finished")
-        self.world:destroy()
-    end)
+-- e.tween:from({
+--         x = 10
+--     }):to({
+--         x = 0,
+--         duration = 1,
+--         onUpdate = function(self)
+--             print(e.x)
+--         end,
+--         ease = Ease.SineOut
+--     }):to({
+--         x = 10,
+--         duration = 1,
+--         onUpdate = function(self)
+--             print(e.x)
+--         end
+--     }):whenDone(function(self)
+--         print("finished")
+--     end)
 
 -- Scripts:run("scripts/testScript")
 

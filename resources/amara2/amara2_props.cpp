@@ -18,7 +18,12 @@ namespace Amara {
 
         static std::string platform;
 
+        static bool integrate_new_windows;
+
         static double deltaTime;
+
+        static SDL_GPUDevice* gpuDevice;
+        static SDL_Window* current_window;
 
         static GameManager* game;
         static World* world;
@@ -55,7 +60,13 @@ namespace Amara {
     std::string Props::lua_script_path = "./lua_scripts";
     std::string Props::assets_path = "./assets";
     std::string Props::platform = "unknown";
+
+    bool Props::integrate_new_windows = false;
+
     double Props::deltaTime = 1;
+
+    SDL_GPUDevice* Props::gpuDevice = nullptr;
+    SDL_Window* Props::current_window = nullptr;
 
     int Props::lua_stack_size = 1000000;
     

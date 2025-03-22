@@ -11,6 +11,7 @@ namespace Amara {
         GameManager game;
         MessageQueue messages;
         GarbageCollector garbageCollector;
+        InputManager inputManager;
 
         Uint64 rec_tick = 0;
         Uint64 current_tick = 0;
@@ -126,7 +127,11 @@ namespace Amara {
         }
 
         void startCreation(std::string path) {
-            SDL_Init(SDL_INIT_VIDEO);
+            SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
+            if (!SDL_Init(SDL_INIT_VIDEO)) {
+                printf("Error: SDL_Init failed: %s\n", SDL_GetError());
+                debug_log(SDL_GetError());
+            }
 
             rec_tick = SDL_GetPerformanceCounter();
             Uint64 freq = SDL_GetPerformanceFrequency();
@@ -134,34 +139,42 @@ namespace Amara {
             double elapsedTime = 0;
 
             scripts.run(path);
+
+            bool quit = false;
             
-            while (worlds.size() != 0) { // Creation cannot exist without any worlds.
-                std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
-                
-                copy_worlds_list = worlds;
-                for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
-                    currentWorld = *it;
-                    update_properties();
+            while (!quit && worlds.size() != 0) { // Creation cannot exist without any worlds.
+                inputManager.handleEvents(worlds, quit);
+                if (quit) break;
 
-                    currentWorld->run(game.deltaTime);
-                    currentWorld->draw();
-                }
-                cleanDestroyedWorlds();
-                currentWorld = nullptr;
+                if (!inputManager.logicBlocking) {
+                    std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
+                    
+                    copy_worlds_list = worlds;
+                    for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
+                        currentWorld = *it;
+                        update_properties();
 
-                if (game.targetFPS != -1) {
-                    frameTarget = 1.0 / (double)game.targetFPS;
-                    elapsedTime = (double)(SDL_GetPerformanceCounter() - rec_tick) / (double)freq;
-                    if (elapsedTime < frameTarget) {
-                        SDL_Delay((frameTarget - elapsedTime)*1000);
+                        currentWorld->run(game.deltaTime);
+                        currentWorld->draw();
                     }
+                    cleanDestroyedWorlds();
+                    currentWorld = nullptr;
+
+                    if (game.targetFPS != -1) {
+                        frameTarget = 1.0 / (double)game.targetFPS;
+                        elapsedTime = (double)(SDL_GetPerformanceCounter() - rec_tick) / (double)freq;
+                        if (elapsedTime < frameTarget) {
+                            SDL_Delay((frameTarget - elapsedTime)*1000);
+                        }
+                    }
+                    current_tick = SDL_GetPerformanceCounter();
+                    Props::deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
+                    game.fps = 1 / game.deltaTime;
+                    rec_tick = current_tick;
                 }
-                current_tick = SDL_GetPerformanceCounter();
-                Props::deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
-                game.fps = 1 / game.deltaTime;
-                rec_tick = current_tick;
             }
 
+            if (Props::gpuDevice) SDL_DestroyGPUDevice(Props::gpuDevice);
             SDL_Quit();
         }
 

@@ -281,7 +281,7 @@ namespace Amara {
 			}
         }
 
-        void destroy() {
+        virtual void destroy() {
             if (isDestroyed) return;
             isDestroyed = true;
 

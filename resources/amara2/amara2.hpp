@@ -101,6 +101,8 @@
 
     #include "amara2_world.cpp"
 
+    #include "amara2_inputManager.cpp"
+
     #include "amara2_demiurge.cpp"
     #include "amara2_creator.cpp"
 #endif
