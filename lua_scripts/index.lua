@@ -3,24 +3,29 @@
 -- local e = factory:create("Entity");
 -- e.props.hello = function() log("hi") end
 local world = Creator:createWorld()
-
 world:configure({
     window = {
         windowTitle = "Amara2",
-        width = 1280,
-        height = 720,
-        graphics = Graphics.Render2D
+        -- width = 1280,
+        -- height = 720
     }
 })
 
-local world = Creator:createWorld()
-
+world = Creator:createWorld()
 world:configure({
     window = {
         windowTitle = "Amara2_B",
-        width = 1280,
-        height = 720,
-        graphics = Graphics.Render2D
+        -- width = 1280,
+        -- height = 720
+    }
+})
+
+world = Creator:createWorld()
+world:configure({
+    window = {
+        windowTitle = "Amara2_B",
+        -- width = 1280,
+        -- height = 720
     }
 })
 -- Every window is represented with a World.
@@ -42,24 +47,29 @@ local e = world:createChild("Entity")
 
 local s = world:createChild("Scene")
 
--- e.tween:from({
---         x = 10
---     }):to({
---         x = 0,
---         duration = 1,
---         onUpdate = function(self)
---             print(e.x)
---         end,
---         ease = Ease.SineOut
---     }):to({
---         x = 10,
---         duration = 1,
---         onUpdate = function(self)
---             print(e.x)
---         end
---     }):whenDone(function(self)
---         print("finished")
---     end)
+e.tween:from({
+        x = 10
+    }):to({
+        x = 0,
+        duration = 1,
+        onUpdate = function(self)
+            print(e.x)
+        end
+    }):to({
+        x = 10,
+        duration = 1,
+        onUpdate = function(self)
+            print(e.x)
+        end
+    }):to({
+        x = 0,
+        duration = 1,
+        onUpdate = function(self)
+            print(e.x)
+        end
+    }):whenDone(function (self)
+        self.world:destroy()
+    end)
 
 -- Scripts:run("scripts/testScript")
 

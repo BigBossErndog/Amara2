@@ -17,11 +17,6 @@ namespace Amara {
             set_base_entity_id("Tween");
         }
 
-        sol::object on(sol::table _t) {
-            lua_actor_table = _t;
-            return get_lua_object();
-        }
-
         sol::object from(sol::table lua_data) {
             if (!target_data.is_null()) {
                 Amara::Tween* tween = addChild(new Tween())->as<Amara::Tween*>();
@@ -79,6 +74,8 @@ namespace Amara {
 
         virtual void prepare() override {
             if (!target_data.is_null()) {
+                progress = 0;
+                
                 if (!lua_actor_table.valid()) {
                     lua_actor_table = actor->get_lua_object().as<sol::table>();
                 }
@@ -136,8 +133,7 @@ namespace Amara {
                 "progress", sol::readonly(&Tween::progress),
                 "from", &Tween::from,
                 "to", &Tween::to,
-                "set", &Tween::from,
-                "on", &Tween::on
+                "set", &Tween::from
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];

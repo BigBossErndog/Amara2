@@ -17,8 +17,8 @@ namespace Amara {
         int resizable = 0;
         int vsync = 0;
 
-        bool initiated = false;
         bool create_window_on_start = false;
+        int fullscreen_mode = 0;
 
         SDL_Renderer* renderer = nullptr;
 
@@ -110,6 +110,15 @@ namespace Amara {
                 }
             };
         }
+        
+        void setup_new_window() {
+            if (window == nullptr) return;
+
+            windowID = SDL_GetWindowID(window);
+            Props::current_window = window;
+
+            Props::displayID = SDL_GetDisplayForWindow(window);
+        }
 
         void create_graphics_window(int flags) {
             if (window != nullptr) return;
@@ -118,8 +127,7 @@ namespace Amara {
                 windowWidth, windowHeight,
                 resizable | flags
             );
-            windowID = SDL_GetWindowID(window);
-            Props::current_window = window;
+            setup_new_window();
         }
 
         void create_graphics_window() {
@@ -212,10 +220,6 @@ namespace Amara {
         }
 
         virtual void run(double deltaTime) override {
-            if (!initiated) {
-                create();
-                initiated = true;
-            }
             if (!base_dir_path.empty()) {
                 Props::files->setBasePath(base_dir_path);
             }
@@ -228,11 +232,6 @@ namespace Amara {
                 window = nullptr;
             }
             Amara::Entity::destroy();
-        }
-
-        virtual void draw() override {
-            if (!initiated) return;
-            Amara::Entity::draw();
         }
         
         static void bindLua(sol::state& lua) {    

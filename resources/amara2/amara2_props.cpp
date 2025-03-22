@@ -24,11 +24,14 @@ namespace Amara {
 
         static Amara::Graphics graphics;
         static Amara::World* render_origin;
+        static Rectangle viewport;
 
         static SDL_GPUDevice* gpuDevice;
         static SDL_GLContext glContext;
         static SDL_Renderer* renderer;
+
         static SDL_Window* current_window;
+        static SDL_DisplayID displayID;
 
         static GameManager* game;
         static World* world;
@@ -46,8 +49,6 @@ namespace Amara {
         }
 
         static sol::state* lua_state;
-
-        static Rectangle viewport;
 
         static sol::state& lua() {
             return *lua_state;
@@ -72,11 +73,14 @@ namespace Amara {
 
     Amara::Graphics Props::graphics = Graphics::None;
     Amara::World* Props::render_origin = nullptr;
+    Rectangle Props::viewport;
+
+    SDL_Window* Props::current_window = nullptr;
+    SDL_DisplayID Props::displayID = 0;
 
     SDL_GLContext Props::glContext = NULL;
     SDL_GPUDevice* Props::gpuDevice = nullptr;
     SDL_Renderer* Props::renderer = nullptr;
-    SDL_Window* Props::current_window = nullptr;
 
     int Props::lua_stack_size = 1000000;
     
@@ -90,6 +94,4 @@ namespace Amara {
     GarbageCollector* Props::garbageCollector = nullptr;
     
     sol::state* Props::lua_state = nullptr;
-
-    Rectangle Props::viewport;
 }

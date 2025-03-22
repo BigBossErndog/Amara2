@@ -5,14 +5,18 @@ namespace Amara {
     public:
         Creator* creator = nullptr;
 
+        GameManager game;
         FileManager files;
         ScriptFactory scripts;
         EntityFactory factory;
+
+        bool demiurgic = true;
 
         Demiurge() {}
 
         void override_existence() {
             Props::lua()["Creator"] = this;
+            Props::lua()["Game"] = &game;
             Props::lua()["Files"] = &files;
             Props::lua()["Factory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
@@ -25,6 +29,12 @@ namespace Amara {
         void setup() {
             factory.prepareEntities();
             factory.registerEntity<World>("World");
+
+            game.demiurgic = demiurgic;
+        }
+
+        void makePresenceKnown() {
+            override_existence();
         }
 
         virtual World* createWorld(std::string key);

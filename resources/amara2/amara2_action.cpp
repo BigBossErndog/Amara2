@@ -67,10 +67,16 @@ namespace Amara {
         Amara::Entity* addChild(Amara::Entity* entity) {
             Amara::Action* action = entity->as<Amara::Action*>();
             if (action) {
+                if (actor == nullptr) actor = parent;
                 action->actor = actor;
                 if (!isCompleted) action->locked = true;
             }
             return Amara::Entity::addChild(entity);
+        }
+
+        sol::object on(Amara::Entity* entity) {
+            actor = entity;
+            return get_lua_object();
         }
 
         sol::object complete() {
@@ -162,6 +168,7 @@ namespace Amara {
                 "addChild", &Action::addChild,
                 "chain", &Action::chain,
                 "whenDone", &Action::whenDone,
+                "on", &Action::on,
                 "alongside", [](Amara::Entity& e, std::string key) -> sol::object {
                     Amara::Action* action = nullptr;
                     if (e.parent) action = e.parent->createChild(key)->as<Amara::Action*>();

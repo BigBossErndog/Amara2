@@ -1,6 +1,8 @@
 namespace Amara {
     class GameManager {
     public:
+        bool demiurgic = false;
+
         float fps = 0;
         float targetFPS = -1;
         double deltaTime = 0;
@@ -37,18 +39,22 @@ namespace Amara {
                 debug_log("Error: Target FPS cannot be 0 or less.");
                 return;
             }
+            if (demiurgic) {
+                debug_log("Note: Demiurgic presence. FPS Overridden.");
+                debug_log("Control will be handed over in target builds.");
+            }
             targetFPS = _fps;
         }
         void uncapFPS() {
+            if (demiurgic) {
+                debug_log("Note: Demiurgic presence. FPS Overridden.");
+                debug_log("Control will be handed over in target builds.");
+            }
             targetFPS = -1;
         }
 
         int get_lua_stack_size() {
             return lua_gettop(Props::lua().lua_state());
-        }
-
-        void quit() {
-            hasQuit = true;
         }
 
         static void bindLua(sol::state& lua) {
@@ -60,7 +66,6 @@ namespace Amara {
                 "deltaTime", sol::readonly(&GameManager::deltaTime),
                 "platform", sol::readonly(&GameManager::platform),
                 "get_lua_stack_size", &GameManager::get_lua_stack_size,
-                "quit", &GameManager::quit,
                 "arguments", sol::property([](const GameManager& g) -> sol::object {
                     if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.arguments);

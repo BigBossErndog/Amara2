@@ -8,7 +8,6 @@ namespace Amara {
 
         std::vector<World*> new_worlds;
 
-        GameManager game;
         MessageQueue messages;
         GarbageCollector garbageCollector;
         InputManager inputManager;
@@ -20,9 +19,10 @@ namespace Amara {
         World* currentWorld = nullptr;
 
         Creator(): Demiurge() {
+            demiurgic = false;
+
             Props::set_lua(lua);
 
-            Props::game = &game;
             Props::messages = &messages;
             Props::garbageCollector = &garbageCollector;
 
@@ -124,12 +124,20 @@ namespace Amara {
             }
         }
 
-        void createDemiurge(Amara::World& world) {
-            Amara::Demiurge* new_demiurge = new Demiurge();
-            world.demiurge = new_demiurge;
+        void makeDemiurgic(Amara::World* world, Amara::Demiurge* demiurge) {
+            world->demiurge = demiurge;
+        }
 
-            world.demiurge->setup();
+        void makeDemiurgic(Amara::World* world) {
+            if (world->demiurge) return;
+            makeDemiurgic(world, createDemiurge());
+        }
+
+        Amara::Demiurge* createDemiurge() {
+            Amara::Demiurge* new_demiurge = new Demiurge();
+            new_demiurge->setup();
             new_demiurge->creator = this;
+            return new_demiurge;
         }
 
         void startCreation(std::string path) {
@@ -148,7 +156,9 @@ namespace Amara {
             
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
                 inputManager.handleEvents(worlds, game.hasQuit);
-                if (game.hasQuit) break;
+                if (game.hasQuit) {
+                    break;
+                }
 
                 if (!inputManager.logicBlocking) {
                     std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
@@ -159,7 +169,10 @@ namespace Amara {
                         update_properties();
 
                         currentWorld->run(game.deltaTime);
-                        currentWorld->draw();
+
+                        if (currentWorld->window) {
+                            currentWorld->draw();
+                        }
                     }
                     cleanDestroyedWorlds();
                     currentWorld = nullptr;
@@ -215,6 +228,10 @@ namespace Amara {
                 },
                 "worlds", sol::readonly(&Creator::worlds),
                 "new_worlds", sol::readonly(&Creator::new_worlds),
+                "makeDemiurgic", sol::overload(
+                    sol::resolve<void(Amara::World*, Amara::Demiurge*)>(&Creator::makeDemiurgic),
+                    sol::resolve<void(Amara::World*, Amara::Demiurge*)>(&Creator::makeDemiurgic)
+                ),
                 "createDemiurge", &Creator::createDemiurge
             );
         }

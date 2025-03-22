@@ -177,5 +177,7 @@ namespace Amara {
         math_metatable.set_function("round", [](double num) -> int {
             return std::round(num);
         });
+
+        sol::table table_metatable = lua["table"];
     }
 }

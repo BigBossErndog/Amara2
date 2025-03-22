@@ -39,6 +39,7 @@ namespace Amara {
         bool isDestroyed = false;
         bool isPaused = false;
         bool isVisible = true;
+        bool isActuated = false;
 
         bool is_camera = false;
         bool is_scene = false;
@@ -190,6 +191,12 @@ namespace Amara {
         virtual void update_properties() {}
 
         virtual void run(double deltaTime) {
+            if (!isActuated) {
+                preload();
+                create();
+                isActuated = true;
+            }
+
             update_properties();
             messages.run();
 
@@ -209,6 +216,7 @@ namespace Amara {
             if (!isDestroyed) runChildren(deltaTime);
             clean_entity_list(children);
         }
+
         void runChildren(double deltaTime) {
             children_copy_list = children;
 
@@ -260,8 +268,6 @@ namespace Amara {
             entity->scene = scene;
             entity->parent = this;
             children.push_back(entity);
-            
-            entity->create();
 
             return entity;
         }
