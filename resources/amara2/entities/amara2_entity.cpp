@@ -201,7 +201,7 @@ namespace Amara {
             messages.run();
 
             update(deltaTime);
-            if (luaUpdate.valid()) {
+            if (!isDestroyed && luaUpdate.valid()) {
                 try {
                     luaUpdate(get_lua_object(), deltaTime);
                 }
@@ -222,7 +222,8 @@ namespace Amara {
 
             Amara::Entity* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
-				update_properties();
+				if (isDestroyed) break;
+                update_properties();
 
                 child = *it;
 				if (child == nullptr || child->isDestroyed || child->parent != this || child->isPaused) {

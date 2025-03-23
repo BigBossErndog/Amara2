@@ -74,7 +74,7 @@ namespace Amara {
                 return std::get<T>(shape);
             throw std::bad_cast();
         }
-
+        
         template <typename T>
         Shape& operator=(const T& newShape) {
             shape = newShape;

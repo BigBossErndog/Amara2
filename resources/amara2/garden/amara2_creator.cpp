@@ -168,12 +168,17 @@ namespace Amara {
                         currentWorld->run(game.deltaTime);
                         if (currentWorld->exception_thrown) {
                             currentWorld->destroy();
-                        } 
-                        else if (currentWorld->window) {
-                            currentWorld->draw();
                         }
                     }
+
                     cleanDestroyedWorlds();
+
+                    for (auto it = worlds.begin(); it != worlds.end(); it++) {
+                        currentWorld = *it;
+                        update_properties();
+                        
+                        currentWorld->draw();
+                    }
                     currentWorld = nullptr;
 
                     if (game.targetFPS != -1) {

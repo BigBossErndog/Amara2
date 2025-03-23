@@ -11,6 +11,11 @@ namespace Amara {
 
         Amara::Ease easing = Amara::Ease::Linear;
 
+        bool yoyo = false;
+        bool waitingYoyo = false;
+
+        int repeats = 0;
+
         sol::function onUpdate;
 
         Tween(): Amara::Action() {
@@ -47,6 +52,13 @@ namespace Amara {
             if (lua_data["ease"].valid()) {
                 easing = lua_data["ease"].get<Amara::Ease>();
                 lua_data["ease"] = sol::nil;
+            }
+            if (lua_data["yoyo"].valid()) {
+                yoyo = lua_data["yoyo"].get<bool>();
+                waitingYoyo = yoyo;
+            }
+            if (lua_data["repeats"].valid()) {
+                repeats = lua_data["repeats"].get<int>();
             }
 
             nlohmann::json data = lua_to_json(lua_data);
@@ -123,7 +135,27 @@ namespace Amara {
                     }
                 }
 
-                if (progress == 1) complete();
+                if (progress == 1) {
+                    if (waitingYoyo) {
+                        progress = 0;
+                        waitingYoyo = false;
+
+                        nlohmann::json rec_target = target_data;
+                        target_data = start_data;
+                        start_data = rec_target;
+                    }
+                    else if (repeats != 0) {
+                        repeats -= 1;
+                        progress = 0;
+                        if (yoyo) {
+                            nlohmann::json rec_target = target_data;
+                            target_data = start_data;
+                            start_data = rec_target;
+                        }
+                        waitingYoyo = yoyo;
+                    }
+                    else complete();
+                }
             }
         }
 

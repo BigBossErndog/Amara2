@@ -215,7 +215,7 @@ namespace Amara {
             }
         }
 
-        virtual void create() override {
+        virtual void preload() override {
             if (create_window_on_start && window == nullptr) {
                 bool renderer_created = false;
                 for (GraphicsEnum g: graphics_priority) {
@@ -291,7 +291,7 @@ namespace Amara {
             }
             update_properties();
 
-            Amara::Entity::create();
+            Amara::Entity::preload();
         }
 
         virtual void run(double deltaTime) override {

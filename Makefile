@@ -15,7 +15,9 @@ SDL_LINKER_FLAGS_WIN64 = -lSDL3
 
 SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags`
 
-LINKER_FLAGS_WIN64 = -Wl,-Bstatic -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread -lopengl32 $(SDL_LINKER_FLAGS_WIN64) -static
+RENDERING_FLAGS = -lopengl32
+
+LINKER_FLAGS_WIN64 = -Wl,-Bstatic -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
 
 OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb
 

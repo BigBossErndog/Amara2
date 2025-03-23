@@ -41,10 +41,11 @@ namespace Amara {
         virtual World* createWorld();
 
         static void bindLua(sol::state& lua) {
-            "files", &Demiurge::files,
-            "factory", &Demiurge::factory,
-            "scripts", &Demiurge::scripts,
             lua.new_usertype<Demiurge>("Demiurge",
+                "game", &Demiurge::game,
+                "files", &Demiurge::files,
+                "factory", &Demiurge::factory,
+                "scripts", &Demiurge::scripts,
                 "createWorld", [](Amara::Demiurge& d, sol::object key) -> sol::object {
                     World* world = nullptr;
                     if (key.is<std::string>()) {
