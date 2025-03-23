@@ -20,6 +20,8 @@ namespace Amara {
         float windowHeight = 360;
         Rectangle window_dim = { pos.x, pos.y, windowWidth, windowHeight };
 
+        Rectangle viewport;
+
         int resizable = 0;
         int vsync = 0;
 
@@ -40,10 +42,7 @@ namespace Amara {
             world = this;
         }
 
-        virtual void update_properties() override {
-            Props::world = this;
-            Props::lua()["World"] = get_lua_object();
-
+        void update_window() {
             if (window != nullptr) {
                 SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
                 if (displayID != Props::displayID) {
@@ -62,8 +61,8 @@ namespace Amara {
                 }
                 
                 Props::current_window = window;
-                Props::viewport = { 0, 0, windowWidth, windowHeight };
-                Props::master_viewport = Props::viewport;
+                viewport = { 0, 0, windowWidth, windowHeight };
+                Props::master_viewport = viewport;
 
                 int wx, wy;
                 SDL_GetWindowPosition(window, &wx, &wy);
@@ -90,9 +89,16 @@ namespace Amara {
                 window_dim = { pos.x, pos.y, windowWidth, windowHeight };
             }
             else {
-                Props::viewport = { pos.x, pos.y, windowWidth, windowHeight };
+                viewport = { pos.x, pos.y, windowWidth, windowHeight };
                 display = Props::display;
             }
+        }
+
+        virtual void update_properties() override {
+            Props::world = this;
+            Props::lua()["World"] = get_lua_object();
+
+            
             if (renderer != nullptr) {
                 Props::renderer = renderer;
             }
@@ -285,6 +291,7 @@ namespace Amara {
                 }
             }
             update_properties();
+            update_window();
 
             Amara::Entity::preload();
         }
@@ -293,12 +300,19 @@ namespace Amara {
             if (!base_dir_path.empty()) {
                 Props::files->setBasePath(base_dir_path);
             }
+            update_window();
             Amara::Entity::run(deltaTime);
-            Props::display = Props::viewport;
+            if (window) Props::display = viewport;
             
             if (Props::lua_exception_thrown) {
                 exception_thrown = true;
             }
+        }
+
+        virtual void draw(const Rectangle& v) {
+            update_window();
+            if (window == nullptr) viewport = v;
+            Entity::draw(viewport);
         }
 
         virtual void destroy() override {
@@ -312,14 +326,8 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<World>("World",
                 sol::base_classes, sol::bases<Entity>(),
-                "w", sol::property(
-                    [](World& w, float _w) { w.windowWidth = _w; },
-                    [](World& w) { return w.windowWidth; }
-                ),
-                "h", sol::property(
-                    [](World& w, float _h) { w.windowHeight = _h; },
-                    [](World& w) { return w.windowHeight; }
-                ),
+                "w", &World::windowWidth,
+                "h", &World::windowHeight,
                 "base_dir_path", sol::readonly(&World::base_dir_path),
                 "display", sol::readonly(&World::display)
             );

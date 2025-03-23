@@ -29,7 +29,7 @@ namespace Amara {
             clean_entity_list(cameras);
         }
 
-        virtual void drawChildren() override {
+        virtual void drawChildren(const Rectangle& v) override {
             children_copy_list = cameras;
 
             Amara::Entity* child;
@@ -40,7 +40,7 @@ namespace Amara {
 					continue;
 				}
                 update_properties();
-				child->draw();
+				child->draw(v);
 				++it;
 			}
         }

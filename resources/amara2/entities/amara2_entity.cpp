@@ -237,13 +237,13 @@ namespace Amara {
 			}
         }
 
-        virtual void draw() {
+        virtual void draw(const Rectangle& v) {
             if (isDestroyed) return;
 
             sortChildren();
-            drawChildren();
+            drawChildren(v);
         }
-        virtual void drawChildren() {
+        virtual void drawChildren(const Rectangle& v) {
             children_copy_list = children;
 
             Amara::Entity* child;
@@ -254,7 +254,7 @@ namespace Amara {
 					continue;
 				}
                 update_properties();
-				child->draw();
+				child->draw(v);
 				++it;
 			}
         }

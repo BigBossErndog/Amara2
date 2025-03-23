@@ -177,7 +177,7 @@ namespace Amara {
                         currentWorld = *it;
                         update_properties();
                         
-                        currentWorld->draw();
+                        currentWorld->draw(Props::master_viewport);
                     }
                     currentWorld = nullptr;
 

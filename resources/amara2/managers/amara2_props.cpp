@@ -15,7 +15,7 @@ namespace Amara {
         static std::string lua_script_path;
         static std::string assets_path;
         static int lua_stack_size;
-        
+
         static std::string platform;
 
         static bool integrate_new_windows;
@@ -24,9 +24,12 @@ namespace Amara {
 
         static Amara::GraphicsEnum graphics;
         static Amara::World* render_origin;
-        static Rectangle viewport;
         static Rectangle master_viewport;
         static Rectangle display;
+
+        static Vector2 anchor;
+        static Vector2 scroll;
+        static Vector2 zoom;
 
         static SDL_GPUDevice* gpuDevice;
         static SDL_GLContext glContext;
@@ -77,9 +80,12 @@ namespace Amara {
 
     Amara::GraphicsEnum Props::graphics = GraphicsEnum::None;
     Amara::World* Props::render_origin = nullptr;
-    Rectangle Props::viewport;
     Rectangle Props::master_viewport;
     Rectangle Props::display;
+
+    Vector2 Props::anchor;
+    Vector2 Props::scroll;
+    Vector2 Props::zoom;
 
     SDL_Window* Props::current_window = nullptr;
     SDL_DisplayID Props::displayID = 0;
