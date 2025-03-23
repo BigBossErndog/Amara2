@@ -17,10 +17,10 @@ namespace Amara {
 
         Action(): Entity() {
             set_base_entity_id("Action");
-            depthSortEnabled = true;
+            depthSortEnabled = false;
             is_action = true;
         }
-
+        
         virtual void create() override {
             if (actor == nullptr) actor = parent;
             Action::Entity::create();

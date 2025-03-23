@@ -105,9 +105,14 @@ namespace Amara {
             registerEntity<Amara::Entity>("Entity");
             registerEntity<Amara::Camera>("Camera");
             registerEntity<Amara::Scene>("Scene");
+
             registerEntity<Amara::Action>("Action");
             registerEntity<Amara::Tween>("Tween");
             registerEntity<Amara::StateMachine>("StateMachine");
+
+            registerEntity<Amara::Sprite>("Sprite");
+            registerEntity<Amara::Animation>("Animation");
+            
             registerEntity<Amara::World>("World");
         }
 

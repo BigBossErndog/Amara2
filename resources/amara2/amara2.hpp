@@ -104,9 +104,12 @@
     
     #include "entities/amara2_scene.cpp"
 
-    #include "entities/amara2_action.cpp"
-    #include "entities/amara2_tween.cpp"
-    #include "entities/amara2_stateMachine.cpp"
+    #include "actions/amara2_action.cpp"
+    #include "actions/amara2_tween.cpp"
+    #include "actions/amara2_stateMachine.cpp"
+
+    #include "entities/amara2_sprite.cpp"
+    #include "actions/amara2_animation.cpp"
     
     #include "entities/amara2_world.cpp"
 
