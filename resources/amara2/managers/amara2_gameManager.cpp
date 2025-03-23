@@ -58,8 +58,21 @@ namespace Amara {
         }
 
         Uint32 getDisplayIDForPoint(Vector2 p) {
-            SDL_Point sp = { p.x, p.y };
+            SDL_Point sp = { static_cast<int>(p.x), static_cast<int>(p.y) };
             return SDL_GetDisplayForPoint(&sp);
+        }
+
+        Rectangle getDisplayBounds(Uint32 dispID) {
+            SDL_Rect rect;
+            if (SDL_GetDisplayBounds(dispID, &rect)) {
+                return { 
+                    static_cast<float>(rect.x),
+                    static_cast<float>(rect.y), 
+                    static_cast<float>(rect.w), 
+                    static_cast<float>(rect.h)
+                };
+            }
+            return { 0, 0, 0, 0 };
         }
 
         static void bindLua(sol::state& lua) {

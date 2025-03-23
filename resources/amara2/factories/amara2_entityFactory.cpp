@@ -110,6 +110,8 @@ namespace Amara {
             registerEntity<Amara::Tween>("Tween");
             registerEntity<Amara::StateMachine>("StateMachine");
 
+            registerEntity<Amara::Loader>("Loader");
+
             registerEntity<Amara::Sprite>("Sprite");
             registerEntity<Amara::Animation>("Animation");
             
@@ -120,9 +122,14 @@ namespace Amara {
             Amara::Entity::bindLua(lua);
             Amara::Camera::bindLua(lua);
             Amara::Scene::bindLua(lua);
+            
             Amara::Action::bindLua(lua);
             Amara::Tween::bindLua(lua);
             Amara::StateMachine::bindLua(lua);
+
+            Amara::Loader::bindLua(lua);
+            Amara::Sprite::bindLua(lua);
+
             Amara::World::bindLua(lua);
 
             lua.new_usertype<EntityFactory>("EntityFactory",

@@ -7,6 +7,7 @@ namespace Amara {
 
         GameManager game;
         FileManager files;
+        AssetManager assets;
         ScriptFactory scripts;
         EntityFactory factory;
 
@@ -18,6 +19,7 @@ namespace Amara {
             Props::lua()["Creator"] = this;
             Props::lua()["Game"] = &game;
             Props::lua()["Files"] = &files;
+            Props::lua()["Assets"] = &assets;
             Props::lua()["Factory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
             
@@ -44,6 +46,7 @@ namespace Amara {
             lua.new_usertype<Demiurge>("Demiurge",
                 "game", &Demiurge::game,
                 "files", &Demiurge::files,
+                "assets", &Demiurge::assets,
                 "factory", &Demiurge::factory,
                 "scripts", &Demiurge::scripts,
                 "createWorld", [](Amara::Demiurge& d, sol::object key) -> sol::object {

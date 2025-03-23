@@ -89,6 +89,9 @@
 
     #include "managers/amara2_fileManager.cpp"
     
+    #include "assets/amara2_asset.cpp"
+    #include "managers/amara2_assetManager.cpp"
+
     #include "managers/amara2_messages.cpp"
     #include "managers/amara2_messageBox.cpp"
     
@@ -107,7 +110,8 @@
     #include "actions/amara2_action.cpp"
     #include "actions/amara2_tween.cpp"
     #include "actions/amara2_stateMachine.cpp"
-
+    #include "actions/amara2_loader.cpp"
+    
     #include "entities/amara2_sprite.cpp"
     #include "actions/amara2_animation.cpp"
     

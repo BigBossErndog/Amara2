@@ -12,5 +12,11 @@ namespace Amara {
                 sprite = actor->as<Amara::Sprite*>();
             }
         }
+
+        static void bindLua(sol::state& lua) {
+            lua.new_usertype<Animation>("Animation"
+                
+            );
+        }
     };
 }

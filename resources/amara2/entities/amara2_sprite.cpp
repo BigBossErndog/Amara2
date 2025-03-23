@@ -9,5 +9,11 @@ namespace Amara {
         Sprite(): Amara::Entity() {
             set_base_entity_id("Sprite");
         }
+
+        static void bindLua(sol::state& lua) {
+            lua.new_usertype<Sprite>("Sprite"
+            
+            );
+        }
     };
 }
