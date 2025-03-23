@@ -9,6 +9,7 @@ local world = Creator:createWorld()
 world:configure({
     window = {
         windowTitle = "Amara2",
+        resizable = true
         -- width = 1280,
         -- height = 720
     }

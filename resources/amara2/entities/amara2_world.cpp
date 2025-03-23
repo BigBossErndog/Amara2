@@ -26,7 +26,7 @@ namespace Amara {
         int vsync = 0;
 
         bool create_window_on_start = false;
-        int fullscreen_mode = 0;
+        WindowEnum fullscreen_mode = Amara::WindowEnum::Windowed;
 
         bool headless = true;
 
@@ -288,6 +288,10 @@ namespace Amara {
                     pos.x = static_cast<int>(wx);
                     pos.y = static_cast<int>(wy);
                     rec_pos = pos;
+                }
+                else {
+                    pos.x = (Props::master_viewport.w - windowWidth) / 2.0f;
+                    pos.y = (Props::master_viewport.h - windowHeight) / 2.0f;
                 }
             }
             update_properties();
