@@ -42,6 +42,7 @@ namespace Amara {
 
         virtual void update_properties() override {
             Props::world = this;
+            Props::lua()["World"] = get_lua_object();
 
             if (window != nullptr) {
                 SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);

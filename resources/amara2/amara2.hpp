@@ -27,7 +27,14 @@
     #include <cstdarg>
     #include <atomic>
     #include <thread>
+#endif
+
+#ifndef AMARA_EXTLIBS
+#define AMARA_EXTLIBS
     #include <nlohmann/json.hpp>
+
+    #define STB_IMAGE_IMPLEMENTATION
+    #include <stb_image.h>
 
     #if defined(_WIN32)
         #include <windows.h>
@@ -49,6 +56,9 @@
 #ifndef AMARA_SDL
 #define AMARA_SDL
     #include <SDL3/SDL.h>
+
+    #include <SDL3/SDL_opengl.h>
+
     #ifdef __EMSCRIPTEN__
         #include <emscripten/fetch.h>
     #endif
@@ -64,6 +74,8 @@
 #define AMARA_DEF
     #include "utility/amara2_utility.cpp"
     #include "utility/amara2_easing.cpp"
+
+    #include "rendering/amara2_openGL.cpp"
 
     #include "geometry/amara2_vectors.cpp"
     #include "geometry/amara2_shapes.cpp"

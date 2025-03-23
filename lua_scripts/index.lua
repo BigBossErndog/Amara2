@@ -36,19 +36,22 @@ local a = world:createChild("Action")
 
 -- assert(false, "IT FAILED!!!")
 
+Scripts:load("test","scripts/testScript")
+Scripts:run("test")
+
+
 world.onCreate = function(world)
-    print("hello")
     world.tween:from({
             x = (world.display.w - world.w)/2
         }):to({
-            duration = 2
+            duration = 1
         }):to({
             x = world.display.w - world.w,
-            duration = 2,
+            duration = 1,
             ease = Ease.SineInOut
         }):to({
             x = 0,
-            duration = 2,
+            duration = 1,
             ease = Ease.SineInOut
         }):to({
             x = (world.display.w - world.w)/2,
@@ -80,9 +83,6 @@ world.onCreate = function(world)
             print("finished")
         end)
     end
-
-
-Scripts:run("scripts/testScript")
 
 -- Return the world if you want Amara to manage it and give you debugging tools.
 return world
