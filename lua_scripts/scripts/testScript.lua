@@ -11,8 +11,8 @@ e.id = "entity 1"
 
 e.pos.x = e.pos.x + 1
 print(e.id)
-e.prop.hello()
-f.prop.hello()
+e.call.hello()
+f.call.hello()
 
 if Game.arguments then
     log(Game.arguments.get(1))
@@ -59,7 +59,7 @@ print(string.concat(
     "1", "2", "3"
 ))
 
-d.prop.hi = "hi"
+d.props.hi = "hi"
 
 -- files:execute("start ms-settings:defaultapps")
 -- local c = e:createChild("Scene")

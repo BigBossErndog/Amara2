@@ -3,7 +3,8 @@ local e = Factory:create("Entity")
 e.onCreate = function(self)
     print(self, "was created!")
 end
-e.prop.hello = function(self, msg)
+e.bind.hello = function(self, msg)
+    e.call.onCreate()
     print("Hello from", self, "!")
 end
 

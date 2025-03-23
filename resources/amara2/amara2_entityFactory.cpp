@@ -6,7 +6,7 @@ namespace Amara {
         std::unordered_map<std::string, sol::function> compiledScripts;
         static inline std::unordered_map<std::string, std::function<sol::object(Entity*)>> entityRegistry;
 
-        sol::table prop;
+        sol::table props;
 
         bool exists(std::string key) {
             if (factory.find(key) != factory.end()) return true;
@@ -122,7 +122,7 @@ namespace Amara {
 
             lua.new_usertype<EntityFactory>("EntityFactory",
                 "load", &EntityFactory::load,
-                "prop", &EntityFactory::prop,
+                "props", &EntityFactory::props,
                 "create", &EntityFactory::luaCreate
             );
         }
@@ -149,11 +149,11 @@ namespace Amara {
 
         luaobject = Props::factory->castLuaEntity(this, baseEntityID);
         
-        prop = Props::lua().create_table();
+        props = Props::lua().create_table();
 
-        sol::table prop_meta = Props::lua().create_table();
+        sol::table props_meta = Props::lua().create_table();
         
-        prop_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+        props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
             if (value.is<sol::function>()) {
                 sol::function callback = value.as<sol::function>();
                 sol::function func = sol::make_object(Props::lua(), [this, callback](sol::variadic_args va)->sol::object {
@@ -163,10 +163,21 @@ namespace Amara {
             }
             else tbl.raw_set(key, value);
         };
-        prop[sol::metatable_key] = prop_meta;
-
-        sol::userdata entityData = luaobject.as<sol::userdata>();
-        sol::table metatable = entityData[sol::metatable_key];
+        props_meta["__index"] = [this](sol::table props, sol::object key) -> sol::object {
+            sol::object val = this->luaobject.as<sol::table>()[key];
+            if (val.is<sol::function>()) {
+                sol::function callback = val.as<sol::function>();
+                return sol::make_object(Props::lua(), [this, callback](sol::variadic_args va)->sol::object {
+                    return callback(this->get_lua_object(), sol::as_args(va));
+                });
+            }
+            if (!val.is<sol::nil_t>()) {
+                return val;
+            }
+            sol::object propval = props[key];
+            return propval;
+        };
+        props[sol::metatable_key] = props_meta;
 
         return luaobject;
     }

@@ -19,7 +19,7 @@ namespace Amara {
         GarbageCollector() {}
 
         void deleteEntity(Amara::Entity* entity) {
-            entity->prop = sol::nil;
+            entity->props = sol::nil;
             entity->luaobject = sol::object(sol::nil);
             delete entity;
         }
