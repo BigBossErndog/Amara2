@@ -11,8 +11,8 @@ e.id = "entity 1"
 
 e.pos.x = e.pos.x + 1
 print(e.id)
-e.call.hello()
-f.call.hello()
+e.call:hello()
+f.call:hello()
 
 if Game.arguments then
     log(Game.arguments.get(1))

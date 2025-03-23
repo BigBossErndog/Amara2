@@ -15,7 +15,7 @@ namespace Amara {
         static std::string lua_script_path;
         static std::string assets_path;
         static int lua_stack_size;
-
+        
         static std::string platform;
 
         static bool integrate_new_windows;

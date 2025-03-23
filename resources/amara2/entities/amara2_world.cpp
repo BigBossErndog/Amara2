@@ -91,6 +91,7 @@ namespace Amara {
             }
             else {
                 Props::viewport = { pos.x, pos.y, windowWidth, windowHeight };
+                display = Props::display;
             }
             if (renderer != nullptr) {
                 Props::renderer = renderer;
@@ -101,68 +102,62 @@ namespace Amara {
 
         virtual void make_configurables() override {
             Amara::Entity::make_configurables();
-            configurables["window"] = [this](nlohmann::json val) {
+            configurables["window"] = [this](nlohmann::json config) {
                 bool resizeWindow = false;
                 headless = false;
 
                 create_window_on_start = !Props::integrate_new_windows;
 
-                for (auto it = val.begin(); it != val.end(); it++) {
-                    if (string_equal(it.key(), "width")) {
-                        windowWidth = it.value();
-                        resizeWindow = true;
-                        continue;
-                    }
-                    if (string_equal(it.key(), "height")) {
-                        windowHeight = it.value();
-                        resizeWindow = true;
-                        continue;
-                    }
-                    if (string_equal(it.key(), "resizable")) {
-                        bool r = it.value();
-                        if (r) resizable = SDL_WINDOW_RESIZABLE;
-                        else resizable = 0;
-                        if (window) SDL_SetWindowResizable(window, r); 
-                        continue;
-                    }
-                    if (string_equal(it.key(), "singleWindowApplication")) {
-                        Props::integrate_new_windows = true;
-                        continue;
-                    }
-                    if (string_equal(it.key(), "headless")) {
-                        create_window_on_start = !it.value().get<bool>();
-                        continue;
-                    }
-                    if (string_equal(it.key(), "windowTitle")) {
-                        windowTitle = it.value();
-                        if (window) SDL_SetWindowTitle(window, windowTitle.c_str());
-                    }
-                    if (string_equal(it.key(), "graphics")) {
-                        if (it.value().is_array()) {
-                            nlohmann::json list = it.value();
-                            graphics_priority.clear();
-                            for (int i = 0; i < list.size(); i++) {
-                                graphics_priority.push_back(it.value());
-                            }
-                        }
-                        else if (it.value().is_number()) {
-                            graphics_priority = { it.value() };
+                if (json_has(config, "width")) {
+                    windowWidth = config["width"];
+                    resizeWindow = true;
+                }
+                if (json_has(config, "height")) {
+                    windowHeight = config["height"];
+                    resizeWindow = true;
+                }
+                if (json_has(config, "resizable")) {
+                    bool r = config["resizable"];
+                    if (r) resizable = SDL_WINDOW_RESIZABLE;
+                    else resizable = 0;
+                    if (window) SDL_SetWindowResizable(window, r);
+                }
+                if (json_has(config, "singleWindowApplication")) {
+                    Props::integrate_new_windows = config["singleWindowApplication"];
+                }
+                if (json_has(config, "headless")) {
+                    create_window_on_start = !config["headless"].get<bool>();
+                }
+                if (json_has(config, "windowTitle")) {
+                    windowTitle = config["windowTitle"];
+                    if (window) SDL_SetWindowTitle(window, windowTitle.c_str());
+                }
+                if (json_has(config, "graphics")) {
+                    if (config["graphics"].is_array()) {
+                        nlohmann::json list = config["graphics"];
+                        graphics_priority.clear();
+                        for (int i = 0; i < list.size(); i++) {
+                            graphics_priority.push_back(list[i]);
                         }
                     }
-                    if (string_equal(it.key(), "vsync")) {
-                        if (it.value().is_boolean()) {
-                            vsync = (it.value()) ? 1 : 0;
-                        }
-                        else if (it.value().is_number()) {
-                            vsync = it.value();
-                        }
-                        else if (it.value().is_string()) {
-                            if (string_equal(it.value(), "adaptive")) {
-                                vsync = -1;
-                            }
-                        }
-                        if (renderer) SDL_SetRenderVSync(renderer, vsync);
+                    else if (config["graphics"].is_number()) {
+                        graphics_priority = { config["graphics"] };
                     }
+                }
+                if (json_has(config, "vsync")) {
+                    nlohmann::json val = config["vsync"];
+                    if (val.is_boolean()) {
+                        vsync = val.get<bool>() ? 1 : 0;
+                    }
+                    else if (val.is_number()) {
+                        vsync = val;
+                    }
+                    else if (val.is_string()) {
+                        if (string_equal(val, "adaptive")) {
+                            vsync = -1;
+                        }
+                    }
+                    if (renderer) SDL_SetRenderVSync(renderer, vsync);
                 }
                 if (resizeWindow && window != nullptr) {
                     SDL_SetWindowSize(window, windowWidth, windowHeight);
@@ -299,6 +294,8 @@ namespace Amara {
                 Props::files->setBasePath(base_dir_path);
             }
             Amara::Entity::run(deltaTime);
+            Props::display = Props::viewport;
+            
             if (Props::lua_exception_thrown) {
                 exception_thrown = true;
             }

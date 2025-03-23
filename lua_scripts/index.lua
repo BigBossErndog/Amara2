@@ -39,63 +39,63 @@ local a = world:createChild("Action")
 Scripts:load("test","scripts/testScript")
 Scripts:run("test")
 
-world.onCreate = function(self)
-    world.tween:to({
-        x = (world.display.w - 640*2)/2,
-        y = (world.display.h - 360*2)/2,
-        w = 640*2,
-        h = 360*2,
-        duration = 1,
-        yoyo = true,
-        ease = Ease.SineInOut,
-        repeats = -1
-    })
-end
+-- world.onCreate = function(self)
+--     world.tween:to({
+--         x = (world.display.w - 640*2)/2,
+--         y = (world.display.h - 360*2)/2,
+--         w = 640*2,
+--         h = 360*2,
+--         duration = 1,
+--         yoyo = true,
+--         ease = Ease.SineInOut,
+--         repeats = -1
+--     })
+-- end
 
 
--- world.onCreate = function(world)
---     world.tween:from({
---             x = (world.display.w - world.w)/2
---         }):to({
---             duration = 1
---         }):to({
---             x = world.display.w - world.w,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             x = 0,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             x = (world.display.w - world.w)/2,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             y = -world.h/2,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             y = (world.display.h - world.h)/2,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             x = (world.display.w - 640*2)/2,
---             y = (world.display.h - 360*2)/2,
---             w = 640*2,
---             h = 360*2,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             x = (world.display.w - 640)/2,
---             y = (world.display.h - 360)/2,
---             w = 640,
---             h = 360,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):whenDone(function(self)  
---             print("finished")
---         end)
---     end
+world.onCreate = function(world)
+    world.tween:from({
+            x = (world.display.w - world.w)/2
+        }):to({
+            duration = 1
+        }):to({
+            x = world.display.w - world.w,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = 0,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = (world.display.w - world.w)/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            y = -world.h/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            y = (world.display.h - world.h)/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = (world.display.w - 640*2)/2,
+            y = (world.display.h - 360*2)/2,
+            w = 640*2,
+            h = 360*2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = (world.display.w - 640)/2,
+            y = (world.display.h - 360)/2,
+            w = 640,
+            h = 360,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):whenDone(function(self)  
+            print("finished")
+        end)
+    end
 
 -- Return the world if you want Amara to manage it and give you debugging tools.
 return world
