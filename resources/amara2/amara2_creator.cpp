@@ -25,7 +25,7 @@ namespace Amara {
 
             Props::messages = &messages;
             Props::garbageCollector = &garbageCollector;
-            
+
             worlds.clear();
             
             lua_checkstack(lua.lua_state(), Props::lua_stack_size);
@@ -47,10 +47,6 @@ namespace Amara {
             );
 
             bindLua();
-
-            lua.set_panic([](lua_State* L) -> int {
-                return 0;
-            });
 
             setup();
 
@@ -151,8 +147,8 @@ namespace Amara {
             double elapsedTime = 0;
 
             scripts.run(path);
-
-            game.hasQuit = false;
+            game.hasQuit = Props::lua_exception_thrown;
+            
             
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
                 inputManager.handleEvents(worlds, game.hasQuit);
@@ -168,9 +164,12 @@ namespace Amara {
                         currentWorld = *it;
                         update_properties();
 
+                        Props::lua_exception_thrown = false;
                         currentWorld->run(game.deltaTime);
-
-                        if (currentWorld->window) {
+                        if (currentWorld->exception_thrown) {
+                            currentWorld->destroy();
+                        } 
+                        else if (currentWorld->window) {
                             currentWorld->draw();
                         }
                     }

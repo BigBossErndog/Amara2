@@ -11,7 +11,7 @@ namespace Amara {
         virtual void update_properties() override {
             Props::viewport = viewport;
         }
-
+        
         virtual void drawChildren() override {
             children_copy_list = parent->children;
 

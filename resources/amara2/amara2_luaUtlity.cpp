@@ -79,7 +79,7 @@ namespace Amara {
     std::string lua_to_string(sol::object obj) {
         if (obj.is<sol::nil_t>()) return "nil";
         if (obj.is<std::string>()) return obj.as<std::string>();
-        
+
         if (obj.is<int>()) return std::to_string(obj.as<int>());
         if (obj.is<double>()) {
             double val = obj.as<double>();
@@ -100,7 +100,7 @@ namespace Amara {
 
         if (obj.is<sol::function>()) return "function";
 
-        return "(...)";
+        return lua_to_json(obj).dump();
     }
 
     template <typename T>

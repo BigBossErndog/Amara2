@@ -9,6 +9,7 @@ namespace Amara {
             std::string script_path = Props::files->getScriptPath(path);
             if (!Props::files->fileExists(script_path)) {
                 debug_log("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
+                Props::lua_exception_thrown = true;
                 return false;
             }
             if (string_endsWith(script_path, ".lua")) {
@@ -31,6 +32,7 @@ namespace Amara {
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create script \"", key, "\".");
+                    Props::lua_exception_thrown = true;
                 }
             }
             else if (readScripts.find(key) != readScripts.end()) {
@@ -40,6 +42,7 @@ namespace Amara {
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create script \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
+                    Props::lua_exception_thrown = true;
                 }
             }
             else debug_log("Script \"", key, "\" was not found.");
@@ -54,6 +57,7 @@ namespace Amara {
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to run cached script \"", path, "\".");
+                    Props::lua_exception_thrown = true;
                     return sol::nil;
                 }
             }
@@ -64,6 +68,7 @@ namespace Amara {
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to run script \"", path, "\" from file \"", Props::files->getScriptPath(readScripts[path]), "\".");
+                    Props::lua_exception_thrown = true;
                     return sol::nil;
                 }
             }

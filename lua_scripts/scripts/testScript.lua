@@ -11,11 +11,11 @@ e.id = "entity 1"
 
 e.pos.x = e.pos.x + 1
 print(e.id)
-e:hello()
-f:hello()
+e.prop.hello()
+f.prop.hello()
 
 if Game.arguments then
-    log(Game.arguments(1))
+    log(Game.arguments.get(1))
 end
 
 -- log(game.platform)
@@ -49,17 +49,17 @@ end
 -- files:copy("Makefile", "MakeFile.txt")
 
 local p = "hello world"
-print(p:starts_with("hello"))
+local b = p:starts_with("jfk")
+print(b)
 
 local d = e.children:find("entity 2");
-print(w)
 -- w:start()
 
 print(string.concat(
     "1", "2", "3"
 ))
 
-d.props.hi = "hi"
+d.prop.hi = "hi"
 
 -- files:execute("start ms-settings:defaultapps")
 -- local c = e:createChild("Scene")

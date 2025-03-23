@@ -28,6 +28,8 @@ namespace Amara {
 
         bool headless = true;
 
+        bool exception_thrown = false;
+
         std::vector<Amara::GraphicsEnum> graphics_priority = {
             GraphicsEnum::OpenGL,
             GraphicsEnum::Render2D
@@ -200,7 +202,7 @@ namespace Amara {
 
             Props::gpuDevice = SDL_CreateGPUDevice(
                 shaderFlags,
-                false, 
+                false,
                 NULL
             );
             if (!Props::gpuDevice) {
@@ -296,6 +298,9 @@ namespace Amara {
                 Props::files->setBasePath(base_dir_path);
             }
             Amara::Entity::run(deltaTime);
+            if (Props::lua_exception_thrown) {
+                exception_thrown = true;
+            }
         }
 
         virtual void destroy() override {

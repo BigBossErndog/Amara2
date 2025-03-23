@@ -34,22 +34,21 @@ local g = world:createChild("Scene")
 
 local a = world:createChild("Action")
 
+-- assert(false, "IT FAILED!!!")
 
--- for key, value in pairs(getmetatable(world)) do
---     print(key, value)
--- end
 world.onCreate = function(world)
+    print("hello")
     world.tween:from({
             x = (world.display.w - world.w)/2
         }):to({
-            duration = 1
+            duration = 2
         }):to({
             x = world.display.w - world.w,
-            duration = 1,
+            duration = 2,
             ease = Ease.SineInOut
         }):to({
             x = 0,
-            duration = 1,
+            duration = 2,
             ease = Ease.SineInOut
         }):to({
             x = (world.display.w - world.w)/2,
@@ -82,7 +81,8 @@ world.onCreate = function(world)
         end)
     end
 
--- Scripts:run("scripts/testScript")
+
+Scripts:run("scripts/testScript")
 
 -- Return the world if you want Amara to manage it and give you debugging tools.
 return world

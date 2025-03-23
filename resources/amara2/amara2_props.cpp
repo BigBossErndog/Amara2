@@ -45,6 +45,8 @@ namespace Amara {
         static MessageQueue* messages;
         static GarbageCollector* garbageCollector;
 
+        static bool lua_exception_thrown;
+
         static void queue_garbage(Amara::Entity*, double);
         static void queue_garbage(Amara::Entity* entity) {
             Props::queue_garbage(entity, 1);
@@ -96,6 +98,8 @@ namespace Amara {
     FileManager* Props::files = nullptr;
     MessageQueue* Props::messages = nullptr;
     GarbageCollector* Props::garbageCollector = nullptr;
+
+    bool Props::lua_exception_thrown = false;
     
     sol::state* Props::lua_state = nullptr;
 }

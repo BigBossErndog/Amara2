@@ -291,8 +291,7 @@ namespace Amara {
                 return Props::lua().script_file(filePath.string());
             }
             catch (const sol::error& e) {
-                debug_log(e.what());
-                throw e;
+                Props::lua_exception_thrown = true;
             }
             return sol::nil;
         }
@@ -311,7 +310,7 @@ namespace Amara {
 
             if (!script.valid()) {
                 sol::error err = script;
-                std::cerr << "Error: Failed to load script: " << err.what() << std::endl;
+                debug_log("Error: Failed to load script: ", err.what());
             } else {
                 sol::function func = script;
 

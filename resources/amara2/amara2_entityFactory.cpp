@@ -6,7 +6,7 @@ namespace Amara {
         std::unordered_map<std::string, sol::function> compiledScripts;
         static inline std::unordered_map<std::string, std::function<sol::object(Entity*)>> entityRegistry;
 
-        sol::table props;
+        sol::table prop;
 
         bool exists(std::string key) {
             if (factory.find(key) != factory.end()) return true;
@@ -122,7 +122,7 @@ namespace Amara {
 
             lua.new_usertype<EntityFactory>("EntityFactory",
                 "load", &EntityFactory::load,
-                "props", &EntityFactory::props,
+                "prop", &EntityFactory::prop,
                 "create", &EntityFactory::luaCreate
             );
         }
@@ -148,12 +148,12 @@ namespace Amara {
         if (luaobject.valid()) return luaobject;
 
         luaobject = Props::factory->castLuaEntity(this, baseEntityID);
-
-        props = Props::lua().create_table();
-
-        sol::table props_meta = Props::lua().create_table();
         
-        props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+        prop = Props::lua().create_table();
+
+        sol::table prop_meta = Props::lua().create_table();
+        
+        prop_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
             if (value.is<sol::function>()) {
                 sol::function callback = value.as<sol::function>();
                 sol::function func = sol::make_object(Props::lua(), [this, callback](sol::variadic_args va)->sol::object {
@@ -163,27 +163,10 @@ namespace Amara {
             }
             else tbl.raw_set(key, value);
         };
-        props[sol::metatable_key] = props_meta;
+        prop[sol::metatable_key] = prop_meta;
 
         sol::userdata entityData = luaobject.as<sol::userdata>();
         sol::table metatable = entityData[sol::metatable_key];
-
-        // if (!metatable["__indexing_overridden"].valid()) {
-        //     metatable["__indexing_overridden"] = true;
-
-        //     sol::function old_indexer = metatable["__index"];
-        //     metatable["__index_rec"] = old_indexer;
-        //     metatable["__index"] = [old_indexer](Amara::Entity& e, sol::object key) -> sol::object {
-        //         sol::object val = old_indexer(e, key);
-        //         if (val != sol::nil) return val;
-
-        //         if (e.props[key].valid()) {
-        //             return e.props[key];
-        //         }
-                
-        //         return sol::nil;
-        //     };
-        // }
 
         return luaobject;
     }

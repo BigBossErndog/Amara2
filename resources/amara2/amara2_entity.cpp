@@ -18,7 +18,7 @@ namespace Amara {
 
         std::unordered_map<std::string, std::function<void(nlohmann::json)>> configurables;
         
-        sol::table props;
+        sol::table prop;
         sol::object luaobject;
 
         sol::function luaPreload;
@@ -80,10 +80,10 @@ namespace Amara {
             configurables["x"] = [this](nlohmann::json val) { this->pos.x = val; };
             configurables["y"] = [this](nlohmann::json val) { this->pos.y = val; };
             configurables["z"] = [this](nlohmann::json val) { this->pos.z = val; };
-            configurables["props"] = [this] (nlohmann::json data) {
+            configurables["prop"] = [this] (nlohmann::json data) {
                 if (!data.is_object()) return;
                 for (auto it = data.begin(); it != data.end(); ++it) {
-                    props[it.key()] = json_to_lua(it.value());
+                    prop[it.key()] = json_to_lua(it.value());
                 }
             };
         }
@@ -398,7 +398,7 @@ namespace Amara {
                 "baseEntityID", sol::readonly(&Entity::baseEntityID),
                 "entityID", sol::readonly(&Entity::entityID),
                 "parent", sol::readonly(&Entity::parent),
-                "props", &Entity::props,
+                "prop", &Entity::prop,
                 "x", sol::property([](Entity& e, float val) { e.pos.x = val; }, [](Entity& e) { return e.pos.x; }),
                 "y", sol::property([](Entity& e, float val) { e.pos.y = val; }, [](Entity& e) { return e.pos.y; }),
                 "z", sol::property([](Entity& e, float val) { e.pos.z = val; }, [](Entity& e) { return e.pos.z; }),
