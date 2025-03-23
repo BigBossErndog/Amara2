@@ -1,7 +1,6 @@
 namespace Amara {
     class ScriptFactory {
     public:
-        std::unordered_map<std::string, std::function<Script*()>> factory;
         std::unordered_map<std::string, std::string> readScripts;
         std::unordered_map<std::string, sol::function> compiledScripts;
 
@@ -21,14 +20,10 @@ namespace Amara {
             return true;
         }
 
-        Amara::Script* get(std::string key) {
-            auto it = factory.find(key);
-            if (it != factory.end() && it->second) return (it->second());
-
+        sol::object get(std::string key) {
             if (compiledScripts.find(key) != compiledScripts.end()) {
                 try {
-                    sol::object result = compiledScripts[key]();
-                    return result.as<Amara::Script*>();
+                    return compiledScripts[key];
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create script \"", key, "\".");
@@ -37,8 +32,7 @@ namespace Amara {
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
-                    sol::object result = Props::files->run(readScripts[key]);
-                    return result.as<Amara::Script*>();
+                    return Props::files->load_script(readScripts[key]);
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create script \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
@@ -46,7 +40,7 @@ namespace Amara {
                 }
             }
             else debug_log("Script \"", key, "\" was not found.");
-            return nullptr;
+            return sol::nil;
         }
 
         sol::object run(std::string path) {
@@ -77,8 +71,6 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
-            Script::bindLua(lua);
-
             lua.new_usertype<ScriptFactory>("ScriptFactory",
                 "load", &ScriptFactory::load,
                 "get", &ScriptFactory::get,

@@ -62,47 +62,48 @@
 
 #ifndef AMARA_DEF
 #define AMARA_DEF
-    #include "amara2_utility.cpp"
-    #include "amara2_easing.cpp"
-    #include "amara2_vectors.cpp"
-    #include "amara2_shapes.cpp"
-    #include "amara2_geometry.cpp"
+    #include "utility/amara2_utility.cpp"
+    #include "utility/amara2_easing.cpp"
 
-    #include "amara2_props.cpp"
-    #include "amara2_luaUtlity.cpp"
+    #include "geometry/amara2_vectors.cpp"
+    #include "geometry/amara2_shapes.cpp"
+    #include "geometry/amara2_geometry.cpp"
 
-    #include "amara2_gameManager.cpp"
+    #include "managers/amara2_props.cpp"
 
-    #include "amara2_fileManager.cpp"
+    #include "utility/amara2_luaUtlity.cpp"
+
+    #include "managers/amara2_gameManager.cpp"
+
+    #include "managers/amara2_fileManager.cpp"
     
-    #include "amara2_messages.cpp"
-    #include "amara2_messageBox.cpp"
+    #include "managers/amara2_messages.cpp"
+    #include "managers/amara2_messageBox.cpp"
     
-    #include "amara2_script.cpp"
-    #include "amara2_scriptFactory.cpp"
+    #include "factories/amara2_scriptFactory.cpp"
 
-    #include "amara2_entity.cpp"
+    #include "entities/amara2_entity.cpp"
 
     #ifdef AMARA_WEB_SERVER
-        #include "amara2_webServer.cpp"
+        #include "entities/amara2_webServer.cpp"
     #endif
 
-    #include "amara2_camera.cpp"
+    #include "entities/amara2_camera.cpp"
     
-    #include "amara2_scene.cpp"
+    #include "entities/amara2_scene.cpp"
 
-    #include "amara2_action.cpp"
-    #include "amara2_tween.cpp"
-    #include "amara2_stateMachine.cpp"
+    #include "entities/amara2_action.cpp"
+    #include "entities/amara2_tween.cpp"
+    #include "entities/amara2_stateMachine.cpp"
     
-    #include "amara2_world.cpp"
+    #include "entities/amara2_world.cpp"
 
-    #include "amara2_entityFactory.cpp"
+    #include "factories/amara2_entityFactory.cpp"
 
-    #include "amara2_garbage.cpp"
+    #include "managers/amara2_garbage.cpp"
 
-    #include "amara2_inputManager.cpp"
+    #include "managers/amara2_inputManager.cpp"
 
-    #include "amara2_demiurge.cpp"
-    #include "amara2_creator.cpp"
+    #include "garden/amara2_demiurge.cpp"
+    #include "garden/amara2_creator.cpp"
 #endif
