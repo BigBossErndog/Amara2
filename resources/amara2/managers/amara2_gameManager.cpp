@@ -57,6 +57,11 @@ namespace Amara {
             return lua_gettop(Props::lua().lua_state());
         }
 
+        Uint32 getDisplayIDForPoint(Vector2 p) {
+            SDL_Point sp = { p.x, p.y };
+            return SDL_GetDisplayForPoint(&sp);
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<GameManager>("GameManager",
                 "fps", sol::readonly(&GameManager::fps),
@@ -69,7 +74,8 @@ namespace Amara {
                 "arguments", sol::property([](const GameManager& g) -> sol::object {
                     if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.arguments);
-                })
+                }),
+                "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint
             );
         }
     };

@@ -13,6 +13,7 @@ namespace Amara {
 
         SDL_Renderer* renderer = nullptr;
         Rectangle display;
+        Uint32 displayID = 0;
 
         Vector2 rec_pos = pos;
 
@@ -44,7 +45,7 @@ namespace Amara {
 
         void update_window() {
             if (window != nullptr) {
-                SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+                displayID = SDL_GetDisplayForWindow(window);
                 if (displayID != Props::displayID) {
                     Props::displayID = displayID;
 
@@ -333,7 +334,8 @@ namespace Amara {
                 "w", &World::windowWidth,
                 "h", &World::windowHeight,
                 "base_dir_path", sol::readonly(&World::base_dir_path),
-                "display", sol::readonly(&World::display)
+                "display", sol::readonly(&World::display),
+                "displayID", sol::readonly(&World::displayID)
             );
 
             sol::usertype<Entity> entity_type = lua["Entity"];

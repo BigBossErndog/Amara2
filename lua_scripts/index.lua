@@ -38,7 +38,7 @@ local a = world:createChild("Action")
 -- assert(false, "IT FAILED!!!")
 
 Scripts:load("test","scripts/testScript")
-Scripts:run("test")
+-- Scripts:run("test")
 
 -- world.onCreate = function(self)
 --     world.tween:to({
