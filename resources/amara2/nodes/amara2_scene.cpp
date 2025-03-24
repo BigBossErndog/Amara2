@@ -1,10 +1,10 @@
 namespace Amara {
-    class Scene: public Amara::Entity {
+    class Scene: public Amara::Node {
     public:
         Amara::Camera* mainCamera = nullptr;
-        std::vector<Amara::Entity*> cameras;
+        std::vector<Amara::Node*> cameras;
 
-        Scene(): Entity() {
+        Scene(): Node() {
             set_base_entity_id("Scene");
             scene = this;
             is_scene = true;
@@ -12,16 +12,16 @@ namespace Amara {
 
         virtual void update_properties() override {
             Props::scene = this;
-            Amara::Entity::update_properties();
+            Amara::Node::update_properties();
         }
 
         virtual void create() override {
             setMainCamera(createChild("Camera")->as<Amara::Camera*>());
-            Amara::Entity::create();
+            Amara::Node::create();
         }
 
         virtual void run(double deltaTime) override {
-            Amara::Entity::run(deltaTime);
+            Amara::Node::run(deltaTime);
             if (
                 mainCamera != nullptr &&
                 mainCamera->isDestroyed
@@ -32,7 +32,7 @@ namespace Amara {
         virtual void drawChildren(const Rectangle& v) override {
             children_copy_list = cameras;
 
-            Amara::Entity* child;
+            Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
 				if (child == nullptr || child->isDestroyed || child->parent != this) {
@@ -54,25 +54,25 @@ namespace Amara {
             return setMainCamera(cam, true);
         }
 
-        Amara::Entity* addChild(Amara::Entity* entity) {
-            Amara::Camera* cam = entity->as<Amara::Camera*>();
+        Amara::Node* addChild(Amara::Node* node) {
+            Amara::Camera* cam = node->as<Amara::Camera*>();
             if (cam) {
                 cameras.push_back(cam);
             }
-            return Amara::Entity::addChild(entity);
+            return Amara::Node::addChild(node);
         }
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Scene>("Scene",
-                sol::base_classes, sol::bases<Amara::Entity>(),
+                sol::base_classes, sol::bases<Amara::Node>(),
                 "setMainCamera", sol::overload(
                     sol::resolve<Amara::Camera*(Amara::Camera*, bool)>(&Scene::setMainCamera),
                     sol::resolve<Amara::Camera*(Amara::Camera*)>(&Scene::setMainCamera)
                 )
             );
             
-            sol::usertype<Entity> entity_type = lua["Entity"];
-            entity_type["scene"] = sol::readonly(&Entity::scene);
+            sol::usertype<Node> entity_type = lua["Node"];
+            entity_type["scene"] = sol::readonly(&Node::scene);
         }
     };
 }

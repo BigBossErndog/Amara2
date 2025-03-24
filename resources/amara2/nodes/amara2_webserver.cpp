@@ -17,7 +17,7 @@
 #endif
 
 namespace Amara {
-    class WebServer: public Entity {
+    class WebServer: public Node {
     public:
         std::atomic<bool> server_running{false};
         SDL_Thread* server_thread = nullptr;
@@ -42,7 +42,7 @@ namespace Amara {
         };
 
         WebServer(const std::string& base_folder, int port_number)
-            : Entity(), base_path(base_folder), port(port_number) {}
+            : Node(), base_path(base_folder), port(port_number) {}
 
         std::string get_requested_file(const std::string& request) {
             std::istringstream stream(request);

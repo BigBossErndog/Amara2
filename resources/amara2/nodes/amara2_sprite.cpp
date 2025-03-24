@@ -2,11 +2,11 @@ namespace Amara {
     /**
      * This is used for 2D sprites.
      */
-    class Sprite: public Amara::Entity {
+    class Sprite: public Amara::Node {
     public:
         int frame = 0;
 
-        Sprite(): Amara::Entity() {
+        Sprite(): Amara::Node() {
             set_base_entity_id("Sprite");
         }
 

@@ -1,16 +1,16 @@
 namespace Amara {
-    Amara::Entity;
+    Amara::Node;
 
     struct GarbageTask {
-        Amara::Entity* target = nullptr;
+        Amara::Node* target = nullptr;
         double expiration = 0;
     };
 
     class GarbageCollector {
     public:
         std::vector<GarbageTask> collection;
-        std::vector<Amara::Entity*> batch_queue;
-        std::deque<Amara::Entity*> batch_overflow;
+        std::vector<Amara::Node*> batch_queue;
+        std::deque<Amara::Node*> batch_overflow;
         
         int batch_size = 100;
 
@@ -18,10 +18,10 @@ namespace Amara {
 
         GarbageCollector() {}
 
-        void deleteEntity(Amara::Entity* entity) {
-            entity->props = sol::nil;
-            entity->luaobject = sol::object(sol::nil);
-            delete entity;
+        void deleteEntity(Amara::Node* node) {
+            node->props = sol::nil;
+            node->luaobject = sol::object(sol::nil);
+            delete node;
         }
         
         void clearImmediately() {
@@ -32,11 +32,11 @@ namespace Amara {
             for (GarbageTask& task: collection) {
                 deleteEntity(task.target);
             }
-            for (Amara::Entity* entity: batch_queue) {
-                deleteEntity(entity);
+            for (Amara::Node* node: batch_queue) {
+                deleteEntity(node);
             }
-            for (Amara::Entity* entity: batch_overflow) {
-                deleteEntity(entity);
+            for (Amara::Node* node: batch_overflow) {
+                deleteEntity(node);
             }
             collection.clear();
             batch_queue.clear();
@@ -56,12 +56,12 @@ namespace Amara {
             }
 
             if (batch_queue.size() >= batch_size) {
-                if (debug) debug_log("GarbageCollector: Deleting ", batch_queue.size(), " entities.");
+                if (debug) debug_log("GarbageCollector: Deleting ", batch_queue.size(), " nodes.");
                 
                 lua_gc(Props::lua().lua_state(), LUA_GCCOLLECT, 0);
 
-                for (Amara::Entity* entity: batch_queue) {
-                    deleteEntity(entity);
+                for (Amara::Node* node: batch_queue) {
+                    deleteEntity(node);
                 }
                 batch_queue.clear();
 
@@ -72,16 +72,16 @@ namespace Amara {
             }
         }
 
-        void batch(Amara::Entity* entity) {
+        void batch(Amara::Node* node) {
             if (batch_queue.size() > batch_size) {
-                batch_overflow.push_back(entity);
+                batch_overflow.push_back(node);
             }
-            else batch_queue.push_back(entity);
+            else batch_queue.push_back(node);
         }
 
-        void queue(Amara::Entity* entity, double expiration) {
-            if (debug) debug_log("GarbageCollector: deleting entity ", *entity);
-            collection.push_back({ entity, expiration });
+        void queue(Amara::Node* node, double expiration) {
+            if (debug) debug_log("GarbageCollector: deleting node ", *node);
+            collection.push_back({ node, expiration });
         }
 
         ~GarbageCollector() {
@@ -89,8 +89,8 @@ namespace Amara {
         }
     };
 
-    void Props::queue_garbage(Amara::Entity* entity, double expiration) {
-        if (Props::garbageCollector) Props::garbageCollector->queue(entity, expiration);
-        else debug_log("Error: Garbage Collector has not been set up. Attempting to delete: ", *entity);
+    void Props::queue_garbage(Amara::Node* node, double expiration) {
+        if (Props::garbageCollector) Props::garbageCollector->queue(node, expiration);
+        else debug_log("Error: Garbage Collector has not been set up. Attempting to delete: ", *node);
     }
 }

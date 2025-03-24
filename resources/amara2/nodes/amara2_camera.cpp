@@ -1,5 +1,5 @@
 namespace Amara {
-    class Camera: public Entity {
+    class Camera: public Node {
     public:
         Rectangle viewport;
         bool isSizeTethered = true;
@@ -10,7 +10,7 @@ namespace Amara {
         Vector2 scroll;
         Vector2 zoom;
 
-        Camera(): Entity() {
+        Camera(): Node() {
             set_base_entity_id("Camera");
             is_camera = true;
         }
@@ -25,7 +25,7 @@ namespace Amara {
 
             }
 
-            Amara::Entity* child;
+            Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
 				if (child == nullptr || child->isDestroyed || child->parent != parent) {
@@ -40,7 +40,7 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Camera>("Camera",
-                sol::base_classes, sol::bases<Amara::Entity>(),
+                sol::base_classes, sol::bases<Amara::Node>(),
                 "w", &Camera::width,
                 "h", &Camera::height
             );

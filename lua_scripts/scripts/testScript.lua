@@ -1,4 +1,4 @@
-Factory:load("TestEntity", "entities/testEntity")
+Factory:load("TestEntity", "node/testEntity")
 
 local e = Factory:create("TestEntity")
 print(e)

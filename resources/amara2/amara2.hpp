@@ -97,25 +97,25 @@
     
     #include "factories/amara2_scriptFactory.cpp"
 
-    #include "entities/amara2_entity.cpp"
+    #include "nodes/amara2_entity.cpp"
 
     #ifdef AMARA_WEB_SERVER
-        #include "entities/amara2_webServer.cpp"
+        #include "nodes/amara2_webServer.cpp"
     #endif
 
-    #include "entities/amara2_camera.cpp"
+    #include "nodes/amara2_camera.cpp"
     
-    #include "entities/amara2_scene.cpp"
+    #include "nodes/amara2_scene.cpp"
 
     #include "actions/amara2_action.cpp"
     #include "actions/amara2_tween.cpp"
     #include "actions/amara2_stateMachine.cpp"
     #include "actions/amara2_loader.cpp"
     
-    #include "entities/amara2_sprite.cpp"
+    #include "nodes/amara2_sprite.cpp"
     #include "actions/amara2_animation.cpp"
     
-    #include "entities/amara2_world.cpp"
+    #include "nodes/amara2_world.cpp"
 
     #include "factories/amara2_entityFactory.cpp"
 

@@ -1,7 +1,7 @@
 namespace Amara {
     class Demiurge;
 
-    class World: public Entity {
+    class World: public Node {
     public:
         Amara::Demiurge* demiurge = nullptr;
 
@@ -38,7 +38,7 @@ namespace Amara {
             GraphicsEnum::Render2D
         };
 
-        World(): Entity() {
+        World(): Node() {
             set_base_entity_id("World");
             world = this;
         }
@@ -104,11 +104,11 @@ namespace Amara {
                 Props::renderer = renderer;
             }
 
-            Entity::update_properties();
+            Node::update_properties();
         }
 
         virtual void make_configurables() override {
-            Amara::Entity::make_configurables();
+            Amara::Node::make_configurables();
             configurables["window"] = [this](nlohmann::json config) {
                 bool resizeWindow = false;
                 headless = false;
@@ -298,7 +298,7 @@ namespace Amara {
             update_properties();
             update_window();
 
-            Amara::Entity::preload();
+            Amara::Node::preload();
         }
 
         virtual void run(double deltaTime) override {
@@ -306,7 +306,7 @@ namespace Amara {
                 Props::files->setBasePath(base_dir_path);
             }
             update_window();
-            Amara::Entity::run(deltaTime);
+            Amara::Node::run(deltaTime);
             if (window) Props::display = viewport;
             
             if (Props::lua_exception_thrown) {
@@ -317,7 +317,7 @@ namespace Amara {
         virtual void draw(const Rectangle& v) {
             update_window();
             if (window == nullptr) viewport = v;
-            Entity::draw(viewport);
+            Node::draw(viewport);
         }
 
         virtual void destroy() override {
@@ -325,12 +325,12 @@ namespace Amara {
                 SDL_DestroyWindow(window);
                 window = nullptr;
             }
-            Amara::Entity::destroy();
+            Amara::Node::destroy();
         }
         
         static void bindLua(sol::state& lua) {
             lua.new_usertype<World>("World",
-                sol::base_classes, sol::bases<Entity>(),
+                sol::base_classes, sol::bases<Node>(),
                 "w", &World::windowWidth,
                 "h", &World::windowHeight,
                 "base_dir_path", sol::readonly(&World::base_dir_path),
@@ -338,8 +338,8 @@ namespace Amara {
                 "displayID", sol::readonly(&World::displayID)
             );
 
-            sol::usertype<Entity> entity_type = lua["Entity"];
-            entity_type["world"] = sol::readonly(&Entity::world);
+            sol::usertype<Node> entity_type = lua["Node"];
+            entity_type["world"] = sol::readonly(&Node::world);
         }
     };
 }

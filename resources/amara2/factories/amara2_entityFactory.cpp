@@ -1,10 +1,10 @@
 namespace Amara {
     class EntityFactory {
     public:
-        std::unordered_map<std::string, std::function<Entity*()>> factory;
+        std::unordered_map<std::string, std::function<Node*()>> factory;
         std::unordered_map<std::string, std::string> readScripts;
         std::unordered_map<std::string, sol::function> compiledScripts;
-        static inline std::unordered_map<std::string, std::function<sol::object(Entity*)>> entityRegistry;
+        static inline std::unordered_map<std::string, std::function<sol::object(Node*)>> entityRegistry;
 
         sol::table props;
 
@@ -18,14 +18,14 @@ namespace Amara {
 
         bool load(std::string key, std::string path) {
             if (factory.find(key) != factory.end()) {
-                debug_log("Error: \"", key, "\" is a reserved entity name.");
+                debug_log("Error: \"", key, "\" is a reserved node name.");
                 return false;
             }
 
             std::string script_path = Props::files->getScriptPath(path);
 
             if (!Props::files->fileExists(script_path)) {
-                debug_log("Error: Failed to load Entity \"", key, "\" from \"", path, "\". File not found.");
+                debug_log("Error: Failed to load Node \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
             
@@ -39,13 +39,13 @@ namespace Amara {
             return true;
         }
 
-        Amara::Entity* prepEntity(Amara::Entity* entity, std::string key) {
-            entity->entityID = key;
-            entity->init();
-            return entity;
+        Amara::Node* prepEntity(Amara::Node* node, std::string key) {
+            node->entityID = key;
+            node->init();
+            return node;
         }
 
-        Amara::Entity* create(std::string key) {
+        Amara::Node* create(std::string key) {
             auto it = factory.find(key);
             if (it != factory.end() && it->second) {
                 return prepEntity(it->second(), key);
@@ -54,37 +54,37 @@ namespace Amara {
             if (compiledScripts.find(key) != compiledScripts.end()) {
                 try {
                     sol::object result = compiledScripts[key]();
-                    return prepEntity(result.as<Amara::Entity*>(), key);
+                    return prepEntity(result.as<Amara::Node*>(), key);
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to create Entity \"", key, "\".");
+                    debug_log("Failed to create Node \"", key, "\".");
                 }
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
                     sol::object result = Props::files->run(readScripts[key]);
-                    return prepEntity(result.as<Amara::Entity*>(), key);
+                    return prepEntity(result.as<Amara::Node*>(), key);
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to create Entity \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
+                    debug_log("Failed to create Node \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
                 }
             }
-            else debug_log("Entity \"", key, "\" was not found.");
+            else debug_log("Node \"", key, "\" was not found.");
             return nullptr;
         }
         
         sol::object luaCreate(std::string key) {
-            Amara::Entity* entity = create(key);
-            return entity->get_lua_object();
+            Amara::Node* node = create(key);
+            return node->get_lua_object();
         }
 
-        sol::object castLuaEntity(Amara::Entity* entity, std::string key) {
+        sol::object castLuaEntity(Amara::Node* node, std::string key) {
             auto it = entityRegistry.find(key);
             if (it != entityRegistry.end()) {
-                return it->second(entity);
+                return it->second(node);
             }
             else {
-                debug_log("Error: Entity type with key \"", entity->baseEntityID, "\" was not registered.");
+                debug_log("Error: Node type with key \"", node->baseEntityID, "\" was not registered.");
             }
             return sol::lua_nil;
         }
@@ -93,7 +93,7 @@ namespace Amara {
         void registerEntity(std::string key) {
             factory[key] = []() -> T* { return new T(); };
             
-            entityRegistry[key] = [](Entity* e) -> sol::object {
+            entityRegistry[key] = [](Node* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
                     return sol::make_object(Props::lua(), derived);
                 }
@@ -102,7 +102,7 @@ namespace Amara {
         }
 
         void prepareEntities() {
-            registerEntity<Amara::Entity>("Entity");
+            registerEntity<Amara::Node>("Node");
             registerEntity<Amara::Camera>("Camera");
             registerEntity<Amara::Scene>("Scene");
 
@@ -119,7 +119,7 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
-            Amara::Entity::bindLua(lua);
+            Amara::Node::bindLua(lua);
             Amara::Camera::bindLua(lua);
             Amara::Scene::bindLua(lua);
             
@@ -140,23 +140,23 @@ namespace Amara {
         }
     };
 
-    Amara::Entity* Entity::createChild(std::string key) {
-        Amara::Entity* entity = Props::factory->create(key);
-        if (entity) addChild(entity);
-        return entity;
+    Amara::Node* Node::createChild(std::string key) {
+        Amara::Node* node = Props::factory->create(key);
+        if (node) addChild(node);
+        return node;
     }
 
-    sol::object Entity::luaCreateChild(std::string key) {
-        Amara::Entity* entity = createChild(key);
-        if (entity) return entity->get_lua_object();
+    sol::object Node::luaCreateChild(std::string key) {
+        Amara::Node* node = createChild(key);
+        if (node) return node->get_lua_object();
         return sol::nil;
     }
 
     template <typename T>
-    T Entity::as() {
+    T Node::as() {
         return dynamic_cast<T>(this);
     }
-    sol::object Entity::get_lua_object() {
+    sol::object Node::get_lua_object() {
         if (luaobject.valid()) return luaobject;
 
         luaobject = Props::factory->castLuaEntity(this, baseEntityID);

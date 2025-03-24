@@ -268,13 +268,13 @@ namespace Amara {
                 sol::base_classes, sol::bases<Amara::Action>()
             );
 
-            sol::usertype<Entity> entity_type = lua["Entity"];
-            entity_type["state"] = [](Amara::Entity& entity) -> sol::object {
-                if (entity.stateMachine == nullptr) {
-                    entity.stateMachine = entity.createChild("StateMachine")->as<Amara::StateMachine*>();
-                    entity.stateMachine->is_action = false;
+            sol::usertype<Node> entity_type = lua["Node"];
+            entity_type["state"] = [](Amara::Node& node) -> sol::object {
+                if (node.stateMachine == nullptr) {
+                    node.stateMachine = node.createChild("StateMachine")->as<Amara::StateMachine*>();
+                    node.stateMachine->is_action = false;
                 }
-                return entity.stateMachine->get_lua_object();
+                return node.stateMachine->get_lua_object();
             };
         }
     };

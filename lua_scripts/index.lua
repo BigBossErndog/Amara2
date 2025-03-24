@@ -1,9 +1,9 @@
 -- game:uncapFPS()
 
--- local e = factory:create("Entity");
+-- local e = factory:create("Node");
 -- e.props.hello = function() log("hi") end
 
-Factory:create("Entity")
+Factory:create("Node")
 
 local world = Creator:createWorld()
 world:configure({
@@ -19,7 +19,7 @@ world:configure({
 -- You can create multiple worlds.
 -- Calling world:destroy() will close the window.
 
-local e = world:createChild("Entity")
+local e = world:createChild("Node")
 
 -- -- e.id = "acting entity"
 -- world.onUpdate = function(self, deltaTime)

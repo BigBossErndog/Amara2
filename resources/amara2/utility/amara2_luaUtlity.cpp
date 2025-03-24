@@ -1,5 +1,5 @@
 namespace Amara {
-    class Entity;
+    class Node;
 
     sol::object json_to_lua(nlohmann::json json) {
         sol::state& lua = Props::lua();

@@ -1,5 +1,5 @@
 namespace Amara {
-    class Entity;
+    class Node;
     class World;
     class Scene;
     class GameManager;
@@ -50,9 +50,9 @@ namespace Amara {
 
         static bool lua_exception_thrown;
 
-        static void queue_garbage(Amara::Entity*, double);
-        static void queue_garbage(Amara::Entity* entity) {
-            Props::queue_garbage(entity, 1);
+        static void queue_garbage(Amara::Node*, double);
+        static void queue_garbage(Amara::Node* node) {
+            Props::queue_garbage(node, 1);
         }
 
         static sol::state* lua_state;
@@ -82,7 +82,7 @@ namespace Amara {
     Amara::World* Props::render_origin = nullptr;
     Rectangle Props::master_viewport;
     Rectangle Props::display;
-
+    
     Vector2 Props::anchor;
     Vector2 Props::scroll;
     Vector2 Props::zoom;

@@ -161,15 +161,15 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Tween>("Tween",
-                sol::base_classes, sol::bases<Amara::Action, Amara::Entity>(),
+                sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "progress", sol::readonly(&Tween::progress),
                 "from", &Tween::from,
                 "to", &Tween::to,
                 "set", &Tween::from
             );
 
-            sol::usertype<Entity> entity_type = lua["Entity"];
-            entity_type["tween"] = sol::property([](Amara::Entity& e) -> sol::object {
+            sol::usertype<Node> entity_type = lua["Node"];
+            entity_type["tween"] = sol::property([](Amara::Node& e) -> sol::object {
                 Amara::Tween* tween = e.addChild(new Tween())->as<Amara::Tween*>();
                 return tween->get_lua_object();
             });

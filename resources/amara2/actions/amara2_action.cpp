@@ -1,7 +1,7 @@
 namespace Amara {
-    class Action: public Entity {
+    class Action: public Node {
     public:
-        Amara::Entity* actor = nullptr;
+        Amara::Node* actor = nullptr;
 
         sol::function onPrepare;
         sol::function onAct;
@@ -15,7 +15,7 @@ namespace Amara {
 
         std::string fml = "FUCK MY LIFE";
 
-        Action(): Entity() {
+        Action(): Node() {
             set_base_entity_id("Action");
             depthSortEnabled = false;
             is_action = true;
@@ -23,7 +23,7 @@ namespace Amara {
         
         virtual void create() override {
             if (actor == nullptr) actor = parent;
-            Action::Entity::create();
+            Action::Node::create();
         }
 
         virtual void prepare() {
@@ -58,7 +58,7 @@ namespace Amara {
         }
 
         virtual void run(double deltaTime) override {
-            Amara::Entity::run(deltaTime);
+            Amara::Node::run(deltaTime);
             if (isCompleted && !isDestroyed && !has_running_child_actions()) {
                 isWaitingForChildren = false;
                 // Destroy self when done and children are done.
@@ -66,18 +66,18 @@ namespace Amara {
             }
         }
 
-        Amara::Entity* addChild(Amara::Entity* entity) {
-            Amara::Action* action = entity->as<Amara::Action*>();
+        Amara::Node* addChild(Amara::Node* node) {
+            Amara::Action* action = node->as<Amara::Action*>();
             if (action) {
                 if (actor == nullptr) actor = parent;
                 action->actor = actor;
                 if (!isCompleted) action->locked = true;
             }
-            return Amara::Entity::addChild(entity);
+            return Amara::Node::addChild(node);
         }
 
-        sol::object on(Amara::Entity* entity) {
-            actor = entity;
+        sol::object on(Amara::Node* node) {
+            actor = node;
             return get_lua_object();
         }
 
@@ -117,13 +117,13 @@ namespace Amara {
         void start_child_actions() {
             children_copy_list = children;
 
-            Amara::Entity* entity;
+            Amara::Node* node;
             Amara::Action* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
-                entity = *it; 
-                child = dynamic_cast<Amara::Action*>(entity);
+                node = *it; 
+                child = dynamic_cast<Amara::Action*>(node);
 
-                if (entity != nullptr && child == nullptr) entity->destroy();
+                if (node != nullptr && child == nullptr) node->destroy();
 				
                 if (child == nullptr || child->isDestroyed || child->parent != this) {
 					++it;
@@ -160,7 +160,7 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Amara::Action>("Action",
-                sol::base_classes, sol::bases<Amara::Entity>(),
+                sol::base_classes, sol::bases<Amara::Node>(),
                 "onPrepare", &Action::onPrepare,
                 "onAct", &Action::onAct,
                 "onComplete", &Action::onComplete,
@@ -171,7 +171,7 @@ namespace Amara {
                 "chain", &Action::chain,
                 "whenDone", &Action::whenDone,
                 "on", &Action::on,
-                "alongside", [](Amara::Entity& e, std::string key) -> sol::object {
+                "alongside", [](Amara::Node& e, std::string key) -> sol::object {
                     Amara::Action* action = nullptr;
                     if (e.parent) action = e.parent->createChild(key)->as<Amara::Action*>();
                     else action = e.createChild(key)->as<Amara::Action*>();
@@ -180,15 +180,15 @@ namespace Amara {
                 "fml", &Action::fml
             );
 
-            sol::usertype<Entity> entity_type = lua["Entity"];
-            entity_type["act"] = [](Amara::Entity& e, std::string key) -> sol::object {
+            sol::usertype<Node> entity_type = lua["Node"];
+            entity_type["act"] = [](Amara::Node& e, std::string key) -> sol::object {
                 Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
                 return action->get_lua_object();
             };
-            entity_type["then"] = [](Amara::Entity& e, std::string key) -> sol::object {
+            entity_type["then"] = [](Amara::Node& e, std::string key) -> sol::object {
                 // Chain to child actions.
                 Amara::Action* action = nullptr;
-                Amara::Entity* child = nullptr;
+                Amara::Node* child = nullptr;
                 for (int i = e.children.size()-1; i >= 0; i++) {
                     child = e.children[i];
                     if (!child->isDestroyed && child->is_action) {
@@ -200,16 +200,16 @@ namespace Amara {
 
                 return action->get_lua_object();
             };
-            entity_type["isActing"] = sol::property([](Amara::Entity& e) -> bool {
+            entity_type["isActing"] = sol::property([](Amara::Node& e) -> bool {
                 if (e.is_action) return !e.isDestroyed;
-                for (Amara::Entity* child: e.children) {
+                for (Amara::Node* child: e.children) {
                     if (!child->isDestroyed && child->is_action) return true;
                 }
                 return false;
             });
-            entity_type["finishedActing"] = sol::property([](Amara::Entity& e) -> bool {
+            entity_type["finishedActing"] = sol::property([](Amara::Node& e) -> bool {
                 if (e.is_action) return e.isDestroyed;
-                for (Amara::Entity* child: e.children) {
+                for (Amara::Node* child: e.children) {
                     if (!child->isDestroyed && child->is_action) return false;
                 }
                 return true;
