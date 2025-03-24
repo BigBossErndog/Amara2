@@ -84,6 +84,14 @@ namespace Amara {
         OpenGL,
         Vulkan
     };
+    std::string graphics_to_string(GraphicsEnum g) {
+        switch (g) {
+            case GraphicsEnum::Render2D: return "Render2D";
+            case GraphicsEnum::OpenGL: return "OpenGL";
+            case GraphicsEnum::Vulkan: return "Vulkan";
+            default: return "None";
+        }
+    }
 
     std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
         GraphicsEnum::OpenGL,

@@ -323,7 +323,7 @@ namespace Amara {
         virtual void preload() override {
             if (create_window_on_start && window == nullptr) {
                 if (demiurge) {
-                    debug_log("Note: Demiurgic presence. Rendering Mode Overridden.");
+                    debug_log("Note: Demiurgic presence. Rendering Mode Overridden: ", graphics_to_string(Props::graphics));
                     debug_log("Control will be handed over in target builds.");
                 }
                 else {
@@ -348,6 +348,9 @@ namespace Amara {
         }
 
         virtual void draw(const Rectangle& v) {
+            if (isDestroyed) return;
+            update_properties();
+
             update_properties();
             if (virtualWidth == -1 || virtualHeight == -1) {
                 float viewport_factor = viewport.w / viewport.h;
@@ -359,13 +362,22 @@ namespace Amara {
                 else {
                     float zoom = viewport.w / virtualWidth;
                 }
-                Props::zoom = { 
-                    Props::zoom.x * zoom, 
-                    Props::zoom.y * zoom
+                Props::passOn.zoom = { 
+                    Props::passOn.zoom.x * zoom, 
+                    Props::passOn.zoom.y * zoom
                 };
             }
+            Props::passOn.anchor = { 
+                static_cast<float>(viewport.w/2.0), 
+                static_cast<float>(viewport.h/2.0), 
+                0 
+            };
+            Props::passOn.rotation = 0;
+            Props::passOn.scroll = { 0, 0 };
+            Props::passOn.zoom = { 1, 1 };
+            Props::passOn.scale = { 1, 1 };
 
-            Node::draw(viewport);
+            drawObjects(viewport);
         }
 
         virtual void destroy() override {

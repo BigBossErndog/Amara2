@@ -22,6 +22,8 @@ namespace Amara {
         sol::table props;
         sol::object luaobject;
 
+        PassOnProps passOn;
+
         sol::function luaPreload;
         sol::function luaCreate;
         sol::function luaUpdate;
@@ -33,6 +35,9 @@ namespace Amara {
         Amara::Loader* loader = nullptr;
 
         Vector3 pos = { 0, 0, 0 };
+        Vector2 scale = { 1, 1 };
+
+        float rotation = 0;
         
         float depth = 0;
         bool yDepthLocked = false;
@@ -245,16 +250,30 @@ namespace Amara {
             if (isDestroyed) return;
             update_properties();
 
-            sortChildren();
+            passOn = Props::passOn;
+            passOn.anchor = Vector3(
+                rotateAroundAnchor(Props::passOn.anchor, pos, Props::passOn.rotation),
+                passOn.anchor.z + pos.z
+            );
+            passOn.rotation += rotation;
+            passOn.scale = {
+                Props::passOn.scale.x * scale.x,
+                Props::passOn.scale.y * scale.y
+            };
+
             drawObjects(v);
         }
         virtual void drawObjects(const Rectangle& v) {
             drawSelf(v);
+
+            sortChildren();
             drawChildren(v);
         }
         virtual void drawSelf(const Rectangle& v) {}
         virtual void drawChildren(const Rectangle& v) {
             children_copy_list = children;
+
+            Props::passOn = passOn;
 
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
@@ -263,8 +282,11 @@ namespace Amara {
 					++it;
 					continue;
 				}
+
                 update_properties();
 				child->draw(v);
+
+                Props::passOn = passOn;
 				++it;
 			}
         }
@@ -402,7 +424,6 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             sol::usertype<Node> node_type = lua.new_usertype<Node>("Node",
-                "pos", &Node::pos,
                 "id", &Node::id,
                 "baseNodeID", sol::readonly(&Node::baseNodeID),
                 "nodeID", sol::readonly(&Node::nodeID),
@@ -410,9 +431,14 @@ namespace Amara {
                 "props", &Node::props,
                 "bind", &Node::props,
                 "call", &Node::props,
+                "pos", &Node::pos,
                 "x", sol::property([](Node& e, float val) { e.pos.x = val; }, [](Node& e) { return e.pos.x; }),
                 "y", sol::property([](Node& e, float val) { e.pos.y = val; }, [](Node& e) { return e.pos.y; }),
                 "z", sol::property([](Node& e, float val) { e.pos.z = val; }, [](Node& e) { return e.pos.z; }),
+                "scale", &Node::scale,
+                "scaleX", sol::property([](Node& e, float val) { e.scale.x = val; }, [](Node& e) { return e.scale.x; }),
+                "scaleY", sol::property([](Node& e, float val) { e.scale.y = val; }, [](Node& e) { return e.scale.y; }),
+                "rotation", &Node::rotation,
                 "configure", sol::overload(
                     sol::resolve<sol::object(sol::object)>(&Node::luaConfigure),
                     sol::resolve<sol::object(std::string, sol::object)>(&Node::luaConfigure)

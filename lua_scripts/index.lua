@@ -9,9 +9,10 @@ local firstworld = Creator:createWorld()
 firstworld:configure({
     window = {
         windowTitle = "Amara2",
-        resizable = true
+        -- resizable = true,
         -- width = 1280,
-        -- height = 720
+        -- height = 720,
+        graphics = Graphics.Render2D
     }
 })
 
@@ -76,7 +77,7 @@ function tweenWorld(w)
                 duration = 1,
                 ease = Ease.SineInOut
             }):to({
-                y = -world.h/2,
+                y = 0,
                 duration = 1,
                 ease = Ease.SineInOut
             }):to({
@@ -100,16 +101,16 @@ function tweenWorld(w)
             }):whenDone(function(self)  
                 -- print("finished")
                 -- self.world:destroy()
-                local newworld = Creator:createWorld()
-                newworld:configure({
-                    window = {
-                        windowTitle = "Amara2",
-                        resizable = true
-                        -- width = 1280,
-                        -- height = 720
-                    }
-                })
-                tweenWorld(newworld)
+                -- local newworld = Creator:createWorld()
+                -- newworld:configure({
+                --     window = {
+                --         windowTitle = "Amara2",
+                --         -- resizable = true
+                --         -- width = 1280,
+                --         -- height = 720
+                --     }
+                -- })
+                -- tweenWorld(newworld)
             end)
         end
     end

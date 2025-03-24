@@ -11,6 +11,27 @@ namespace Amara {
     class GarbageCollector;
     class Asset;
 
+    struct PassOnProps {
+        float rotation = 0;
+        Vector3 anchor = { 0, 0, 0 };
+        Vector2 scale = { 1, 1 };
+
+        Vector2 scroll = { 0, 0 };
+        Vector2 zoom = { 1, 1 };
+
+        PassOnProps& operator=(const PassOnProps& other) {
+            if (this != &other) {
+                rotation = other.rotation;
+                anchor = other.anchor; 
+                scale = other.scale;
+
+                scroll = other.scroll;
+                zoom = other.zoom;
+            }
+            return *this;
+        }
+    };
+
     class Props {
     public:
         static std::string context_path;
@@ -28,9 +49,9 @@ namespace Amara {
         static Rectangle master_viewport;
         static Rectangle display;
 
-        static Vector2 anchor;
-        static Vector2 scroll;
-        static Vector2 zoom;
+        static PassOnProps passOn;
+
+        static GraphicsEnum graphics;
 
         static SDL_GPUDevice* gpuDevice;
         static SDL_GLContext glContext;
@@ -94,12 +115,12 @@ namespace Amara {
     Rectangle Props::master_viewport;
     Rectangle Props::display;
     
-    Vector2 Props::anchor;
-    Vector2 Props::scroll;
-    Vector2 Props::zoom;
+    PassOnProps Props::passOn;
 
     SDL_Window* Props::current_window = nullptr;
     SDL_DisplayID Props::displayID = 0;
+
+    GraphicsEnum Props::graphics = GraphicsEnum::None;
 
     SDL_GLContext Props::glContext = NULL;
     SDL_Renderer* Props::renderer = nullptr;

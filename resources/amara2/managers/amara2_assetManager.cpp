@@ -15,7 +15,9 @@ namespace Amara {
         }
 
         void add(std::string key, Amara::Asset* asset) {
-            if (has(key)) destroyAsset(assets[key]);
+            if (has(key) && get(key) != asset) {
+                destroyAsset(get(key));
+            }
             asset->key = key;
             assets[key] = asset;
         }
