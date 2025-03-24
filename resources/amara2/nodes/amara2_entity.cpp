@@ -239,10 +239,16 @@ namespace Amara {
 
         virtual void draw(const Rectangle& v) {
             if (isDestroyed) return;
+            update_properties();
 
             sortChildren();
+            drawObjects(v);
+        }
+        virtual void drawObjects(const Rectangle& v) {
+            drawSelf(v);
             drawChildren(v);
         }
+        virtual void drawSelf(const Rectangle& v) {}
         virtual void drawChildren(const Rectangle& v) {
             children_copy_list = children;
 

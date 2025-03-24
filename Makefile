@@ -15,7 +15,7 @@ SDL_LINKER_FLAGS_WIN64 = -lSDL3
 
 SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags`
 
-RENDERING_FLAGS = -lopengl32
+RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
 LINKER_FLAGS_WIN64 = -Wl,-Bstatic -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
 

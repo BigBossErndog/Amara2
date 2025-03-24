@@ -21,8 +21,7 @@ namespace Amara {
         static bool integrate_new_windows;
 
         static double deltaTime;
-
-        static Amara::GraphicsEnum graphics;
+        
         static Amara::World* render_origin;
         static Rectangle master_viewport;
         static Rectangle display;
@@ -78,7 +77,6 @@ namespace Amara {
 
     double Props::deltaTime = 1;
 
-    Amara::GraphicsEnum Props::graphics = GraphicsEnum::None;
     Amara::World* Props::render_origin = nullptr;
     Rectangle Props::master_viewport;
     Rectangle Props::display;
@@ -91,8 +89,8 @@ namespace Amara {
     SDL_DisplayID Props::displayID = 0;
 
     SDL_GLContext Props::glContext = NULL;
-    SDL_GPUDevice* Props::gpuDevice = nullptr;
     SDL_Renderer* Props::renderer = nullptr;
+    SDL_GPUDevice* Props::gpuDevice = nullptr;
 
     int Props::lua_stack_size = 5000000;
     

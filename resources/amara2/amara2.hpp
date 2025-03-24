@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef AMARA_STD
 #define AMARA_STD
     #include <stdio.h>
@@ -57,8 +59,6 @@
 #define AMARA_SDL
     #include <SDL3/SDL.h>
 
-    #include <SDL3/SDL_opengl.h>
-
     #ifdef __EMSCRIPTEN__
         #include <emscripten/fetch.h>
     #endif
@@ -75,8 +75,10 @@
     #include "utility/amara2_utility.cpp"
     #include "utility/amara2_easing.cpp"
 
-    #include "rendering/amara2_openGL.cpp"
-
+    #ifdef AMARA_OPENGL
+        #include "rendering/amara2_openGL.cpp"
+    #endif 
+    
     #include "geometry/amara2_vectors.cpp"
     #include "geometry/amara2_shapes.cpp"
     #include "geometry/amara2_geometry.cpp"

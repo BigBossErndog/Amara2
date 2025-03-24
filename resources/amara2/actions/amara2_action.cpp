@@ -13,8 +13,6 @@ namespace Amara {
 
         bool locked = false;
 
-        std::string fml = "FUCK MY LIFE";
-
         Action(): Node() {
             set_base_entity_id("Action");
             depthSortEnabled = false;
@@ -176,8 +174,7 @@ namespace Amara {
                     if (e.parent) action = e.parent->createChild(key)->as<Amara::Action*>();
                     else action = e.createChild(key)->as<Amara::Action*>();
                     return action->get_lua_object();
-                },
-                "fml", &Action::fml
+                }
             );
 
             sol::usertype<Node> entity_type = lua["Node"];

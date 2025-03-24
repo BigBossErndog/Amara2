@@ -149,7 +149,6 @@ namespace Amara {
             scripts.run(path);
             game.hasQuit = Props::lua_exception_thrown;
             
-            
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
                 inputManager.handleEvents(worlds, game.hasQuit);
                 if (game.hasQuit) {
@@ -175,6 +174,7 @@ namespace Amara {
 
                     for (auto it = worlds.begin(); it != worlds.end(); it++) {
                         currentWorld = *it;
+                        if (currentWorld->headless) continue;
                         update_properties();
                         
                         currentWorld->draw(Props::master_viewport);
@@ -197,8 +197,7 @@ namespace Amara {
 
             destroyAllWorlds();
             garbageCollector.clearImmediately();
-
-            if (Props::gpuDevice) SDL_DestroyGPUDevice(Props::gpuDevice);
+            
             SDL_Quit();
         }
 

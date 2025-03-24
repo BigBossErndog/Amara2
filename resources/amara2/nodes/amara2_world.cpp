@@ -11,11 +11,15 @@ namespace Amara {
         Uint32 windowID = 0;
         std::string windowTitle;
 
+        SDL_GLContext glContext;
         SDL_Renderer* renderer = nullptr;
+        SDL_GPUDevice* gpuDevice = nullptr;
+
         Rectangle display;
         Uint32 displayID = 0;
+        Uint32 rec_displayID = 0;
 
-        Vector2 rec_pos = pos;
+        Vector2 rec_pos = { -1, -1 };
 
         float windowWidth = 640;
         float windowHeight = 360;
@@ -46,9 +50,7 @@ namespace Amara {
         void update_window() {
             if (window != nullptr) {
                 displayID = SDL_GetDisplayForWindow(window);
-                if (displayID != Props::displayID) {
-                    Props::displayID = displayID;
-
+                if (displayID != rec_displayID) {
                     SDL_Rect displayBounds;
                     if (SDL_GetDisplayUsableBounds(displayID, &displayBounds)) {
                         display = {
@@ -57,9 +59,10 @@ namespace Amara {
                             static_cast<float>(displayBounds.w), 
                             static_cast<float>(displayBounds.h)
                         };
-                        Props::display = display;
                     }
                 }
+                Props::display = display;
+                Props::displayID = displayID;
                 
                 Props::current_window = window;
                 viewport = { 0, 0, windowWidth, windowHeight };
@@ -99,11 +102,22 @@ namespace Amara {
             Props::world = this;
             Props::lua()["World"] = get_lua_object();
 
-            
-            if (renderer != nullptr) {
-                Props::renderer = renderer;
+            if (window) {
+                Props::glContext = NULL;
+                Props::renderer = nullptr;
+                Props::gpuDevice = nullptr;
+                if (glContext != NULL) {
+                    Props::glContext = glContext;
+                }
+                if (renderer != nullptr) {
+                    Props::renderer = renderer;
+                }
+                if (gpuDevice != nullptr) {
+                    Props::gpuDevice = gpuDevice;
+                }
             }
-
+            update_window();
+            
             Node::update_properties();
         }
 
@@ -203,17 +217,18 @@ namespace Amara {
                     break;
             }
 
-            Props::gpuDevice = SDL_CreateGPUDevice(
+            gpuDevice = SDL_CreateGPUDevice(
                 shaderFlags,
                 false,
                 NULL
             );
-            if (!Props::gpuDevice) {
+            if (!gpuDevice) {
                 printf("Error: SDL_CreatedGPUDevice failed: %s\n", SDL_GetError());
             }
-            else if (SDL_ClaimWindowForGPUDevice(Props::gpuDevice, window) != 0) {
+            else if (SDL_ClaimWindowForGPUDevice(gpuDevice, window) != 0) {
                 debug_log("Error: Unable to associate window with gpu device.");
-                Props::gpuDevice = NULL;
+                SDL_DestroyGPUDevice(gpuDevice);
+                gpuDevice = NULL;
             }
         }
 
@@ -232,6 +247,8 @@ namespace Amara {
                                     &window,
                                     &renderer
                                 )) {
+                                    if (renderer) SDL_DestroyRenderer(renderer);
+                                    if (window) SDL_DestroyWindow(window);
                                     window = nullptr;
                                     renderer = nullptr;
                                 }
@@ -246,36 +263,28 @@ namespace Amara {
                             }
                             else {
                                 Props::renderer = renderer;
-                                if (Props::graphics == GraphicsEnum::None) {
-                                    Props::graphics = g;
-                                }
                                 renderer_created = true;
                             }
                             break;
                         case Amara::GraphicsEnum::OpenGL:
-                            if (Props::graphics == g) {
-                                renderer_created = true;
+                            create_graphics_window(SDL_WINDOW_OPENGL);
+                            glContext = SDL_GL_CreateContext(window);
+                            if (glContext == NULL) {
+                                debug_log("Error: Failed to create GL Context. ", SDL_GetError());
                             }
                             else {
-                                create_graphics_window(SDL_WINDOW_OPENGL);
-                                Props::glContext = SDL_GL_CreateContext(window);
-                                if (Props::glContext == NULL) {
-                                    debug_log("Error: Failed to create GL Context. ", SDL_GetError());
-                                }
-                                else {
-                                    Props::graphics = g;
-                                    renderer_created = true;
-                                    Props::render_origin = this;
-                                }
+                                renderer_created = true;
+                                Props::render_origin = this;
+                                Props::glContext = glContext;
                             }
                             break;
                         case Amara::GraphicsEnum::None:
                             break;
                         default:
-                            if (Props::graphics == g || create_gpu_device(g)) {
-                                Props::graphics = g;
+                            if (create_gpu_device(g)) {
                                 renderer_created = true;
                                 Props::render_origin = this;
+                                Props::gpuDevice = gpuDevice;
                             }
                             break;
                     }
@@ -296,7 +305,6 @@ namespace Amara {
                 }
             }
             update_properties();
-            update_window();
 
             Amara::Node::preload();
         }
@@ -305,7 +313,6 @@ namespace Amara {
             if (!base_dir_path.empty()) {
                 Props::files->setBasePath(base_dir_path);
             }
-            update_window();
             Amara::Node::run(deltaTime);
             if (window) Props::display = viewport;
             
@@ -315,7 +322,6 @@ namespace Amara {
         }
 
         virtual void draw(const Rectangle& v) {
-            update_window();
             if (window == nullptr) viewport = v;
             Node::draw(viewport);
         }
