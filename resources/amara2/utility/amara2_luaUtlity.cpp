@@ -75,7 +75,7 @@ namespace Amara {
         return nullptr;
     }
     
-    std::string entity_to_string(sol::object);
+    std::string node_to_string(sol::object);
     std::string lua_to_string(sol::object obj) {
         if (obj.is<sol::nil_t>()) return "nil";
         if (obj.is<std::string>()) return obj.as<std::string>();
@@ -87,7 +87,7 @@ namespace Amara {
             else return std::to_string(val);
         }
         
-        if (is_entity(obj)) return entity_to_string(obj);
+        if (is_node(obj)) return node_to_string(obj);
 
         if (obj.is<Rectangle>()) return std::string(obj.as<Rectangle>());
         if (obj.is<Vector3>()) return std::string(obj.as<Vector3>());

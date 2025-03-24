@@ -2,12 +2,13 @@ namespace Amara {
     class Scene;
     class World;
     class StateMachine;
+    class Loader;
 
     class Node {
     public:
         std::string id;
-        std::string entityID;
-        std::string baseEntityID;
+        std::string nodeID;
+        std::string baseNodeID;
 
         Amara::World* world = nullptr;
         Amara::Node* parent = nullptr;
@@ -27,6 +28,9 @@ namespace Amara {
         sol::function luaDestroy;
         
         MessageBox messages;
+
+        Amara::StateMachine* stateMachine = nullptr;
+        Amara::Loader* loader = nullptr;
 
         Vector3 pos = { 0, 0, 0 };
         
@@ -48,14 +52,14 @@ namespace Amara {
         std::deque<std::string> inheritanceChain;
 
         Node() {
-            set_base_entity_id("Node");
+            set_base_node_id("Node");
         }
 
-        void set_base_entity_id(std::string key) {
-            if (!baseEntityID.empty()) {
-                inheritanceChain.push_front(baseEntityID);
+        void set_base_node_id(std::string key) {
+            if (!baseNodeID.empty()) {
+                inheritanceChain.push_front(baseNodeID);
             }
-            baseEntityID = key;
+            baseNodeID = key;
         }
 
         virtual void create() {
@@ -214,7 +218,7 @@ namespace Amara {
             else if (zDepthLocked) depth = pos.z;
             
             if (!isDestroyed) runChildren(deltaTime);
-            clean_entity_list(children);
+            clean_node_list(children);
         }
 
         void runChildren(double deltaTime) {
@@ -370,12 +374,11 @@ namespace Amara {
         T as();
 
         sol::object get_lua_object();
-
-        sol::function to_string_override;
+        
         explicit operator std::string() const {
             return string_concat(
-                "(", baseEntityID, ", ", 
-                entityID, ": \"",
+                "(", baseNodeID, ", ", 
+                nodeID, ": \"",
                 id, "\")"
             );
         }
@@ -383,7 +386,7 @@ namespace Amara {
             return os << static_cast<std::string>(e);
         }
         
-        static void clean_entity_list(std::vector<Amara::Node*>& list) {
+        static void clean_node_list(std::vector<Amara::Node*>& list) {
             Amara::Node* node;
 			for (auto it = list.begin(); it != list.end();) {
 				node = *it;
@@ -395,16 +398,14 @@ namespace Amara {
 			}
         }
 
-        Amara::StateMachine* stateMachine = nullptr;
-
         virtual ~Node() {}
 
         static void bindLua(sol::state& lua) {
-            sol::usertype<Node> entity_type = lua.new_usertype<Node>("Node",
+            sol::usertype<Node> node_type = lua.new_usertype<Node>("Node",
                 "pos", &Node::pos,
                 "id", &Node::id,
-                "baseEntityID", sol::readonly(&Node::baseEntityID),
-                "entityID", sol::readonly(&Node::entityID),
+                "baseNodeID", sol::readonly(&Node::baseNodeID),
+                "nodeID", sol::readonly(&Node::nodeID),
                 "parent", sol::readonly(&Node::parent),
                 "props", &Node::props,
                 "bind", &Node::props,
@@ -435,14 +436,14 @@ namespace Amara {
                 }
             );
 
-            lua.new_usertype<std::vector<Amara::Node*>>("EntityVector",
+            lua.new_usertype<std::vector<Amara::Node*>>("NodeVector",
                 "size", &std::vector<Amara::Node*>::size,
                 sol::meta_function::length, &std::vector<Amara::Node*>::size,
                 sol::meta_function::index, [](std::vector<Amara::Node*>& vec, sol::object getter) -> sol::object {
                     if (getter.is<size_t>()) {
                         size_t index = getter.as<size_t>();
                         std::vector<Amara::Node*> copylist = vec;
-                        clean_entity_list(copylist);
+                        clean_node_list(copylist);
                         if (index > 0 && index <= vec.size()) {
                             return copylist[index-1]->get_lua_object();
                         }
@@ -463,7 +464,7 @@ namespace Amara {
                 },
                 "get", [](std::vector<Amara::Node*>& vec, size_t index) -> sol::object {
                     std::vector<Amara::Node*> copylist = vec;
-                    clean_entity_list(copylist);
+                    clean_node_list(copylist);
                     if (index > 0 && index <= vec.size()) {
                         return copylist[index-1]->get_lua_object();
                     }
@@ -499,24 +500,24 @@ namespace Amara {
                 }
             );
 
-            entity_type["children"] = sol::readonly(&Node::children);
+            node_type["children"] = sol::readonly(&Node::children);
         }
     };
 
-    bool is_entity(sol::object obj) {
+    bool is_node(sol::object obj) {
         return obj.is<Amara::Node>();
     }
-    std::string entity_to_string(sol::object obj) {
+    std::string node_to_string(sol::object obj) {
         return std::string(obj.as<Amara::Node>());
     }
 
     struct sort_entities_by_depth {
-		inline bool operator() (Amara::Node* entity1, Amara::Node* entity2) {
-			if (entity1 == nullptr) return true;
-			if (entity2 == nullptr) return true;
-            if (entity1->isDestroyed || !entity1->depthSortEnabled) return true;
-			if (entity2->isDestroyed || !entity2->depthSortEnabled) return true;
-            return (entity1->depth < entity2->depth);
+		inline bool operator() (Amara::Node* node1, Amara::Node* node2) {
+			if (node1 == nullptr) return true;
+			if (node2 == nullptr) return true;
+            if (node1->isDestroyed || !node1->depthSortEnabled) return true;
+			if (node2->isDestroyed || !node2->depthSortEnabled) return true;
+            return (node1->depth < node2->depth);
 		}
 	};
 

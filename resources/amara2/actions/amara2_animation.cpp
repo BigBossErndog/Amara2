@@ -4,7 +4,7 @@ namespace Amara {
         Amara::Sprite* sprite = nullptr;
 
         Animation(): Amara::Action() {
-            set_base_entity_id("Animation");
+            set_base_node_id("Animation");
         }
 
         virtual void prepare() override {

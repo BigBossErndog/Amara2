@@ -3,6 +3,7 @@ namespace Amara {
     public:
         ImageAsset(): Asset() {
             type = AssetEnum::Image;
+            typeKey = "ImageAsset";
         }
 
         int width = 0;
@@ -13,18 +14,26 @@ namespace Amara {
         SDL_Texture* texture = nullptr;
         GLuint glTextureID = 0;
 
-        bool loadImage(std::string path) {
+        bool loadImage(std::string _p) {
+            path = Props::files->getAssetPath(_p);
+            clearTexture();
+
             unsigned char *imageData = stbi_load(path.c_str(), &width, &height, &channels, 4);
             if (!imageData) {
-                debug_log("Error: Failed to load image: ", path);
+                debug_log("Error: Failed to load image data: ", path);
                 return false;
             }
 
             if (Props::glContext != NULL) {
                 GLuint textureID;
                 glGenTextures(1, &textureID);
+
+                if (texture == 0) {
+                    debug_log("Error: Texture generation failed. ", path);
+                }
+
                 glBindTexture(GL_TEXTURE_2D, textureID);
-                
+
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -52,22 +61,39 @@ namespace Amara {
             }
             return false;
         }
+
+        virtual void clearTexture() {
+            if (texture) {
+                SDL_DestroyTexture(texture);
+                texture = nullptr;
+            }
+            if (glTextureID != 0) {
+                Props::queue_texture_garbage(glTextureID);
+                glTextureID = 0;
+            }
+        }
+
+        virtual void destroy() override {
+            clearTexture();
+            Amara::Asset::destroy();
+        }
     };
 
     class SpritesheetAsset: public ImageAsset {
     public:
         SpritesheetAsset(): ImageAsset() {
             type = AssetEnum::Spritesheet;
+            typeKey = "SpritesheetAsset";
         }
 
         float frameWidth = 0;
         float frameHeight = 0;
 
-        bool loadSpritesheet(std::string path, int _fw, int _fh) {
+        bool loadSpritesheet(std::string _p, int _fw, int _fh) {
             frameWidth = _fw;
             frameHeight = _fh;
 
-            return ImageAsset::loadImage(path);
+            return ImageAsset::loadImage(_p);
         }
     };
 }

@@ -1,6 +1,6 @@
-Factory:load("TestEntity", "node/testEntity")
+NodeFactory:load("TestNode", "nodes/testNode")
 
-local e = Factory:create("TestEntity")
+local e = NodeFactory:create("TestNode")
 print(e)
 -- e.props.name = "hi"
 

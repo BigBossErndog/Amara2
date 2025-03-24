@@ -20,6 +20,7 @@ namespace Amara {
     X(void, glClearColor, GLfloat, GLfloat, GLfloat, GLfloat) \
     X(void, glClear, GLbitfield) \
     X(void, glViewport, GLint, GLint, GLsizei, GLsizei) \
+    X(void, glDeleteTextures, GLsizei, const GLuint*) \
     X(void, glDeleteProgram, GLuint) \
     X(void, glDeleteShader, GLuint) \
     X(void, glDeleteBuffers, GLsizei, const GLuint*) \

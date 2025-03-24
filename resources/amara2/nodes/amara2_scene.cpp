@@ -5,7 +5,7 @@ namespace Amara {
         std::vector<Amara::Node*> cameras;
 
         Scene(): Node() {
-            set_base_entity_id("Scene");
+            set_base_node_id("Scene");
             scene = this;
             is_scene = true;
         }
@@ -26,7 +26,7 @@ namespace Amara {
                 mainCamera != nullptr &&
                 mainCamera->isDestroyed
             ) mainCamera = nullptr;
-            clean_entity_list(cameras);
+            clean_node_list(cameras);
         }
 
         virtual void drawChildren(const Rectangle& v) override {
@@ -71,8 +71,8 @@ namespace Amara {
                 )
             );
             
-            sol::usertype<Node> entity_type = lua["Node"];
-            entity_type["scene"] = sol::readonly(&Node::scene);
+            sol::usertype<Node> node_type = lua["Node"];
+            node_type["scene"] = sol::readonly(&Node::scene);
         }
     };
 }

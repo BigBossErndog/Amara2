@@ -7,7 +7,7 @@ namespace Amara {
         int frame = 0;
 
         Sprite(): Amara::Node() {
-            set_base_entity_id("Sprite");
+            set_base_node_id("Sprite");
         }
 
         static void bindLua(sol::state& lua) {

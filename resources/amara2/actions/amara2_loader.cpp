@@ -3,23 +3,93 @@ namespace Amara {
         AssetEnum type = AssetEnum::None;
         std::string key;
         std::string path;
+
         bool replace = false;
-
         int failAttempts = 0;
-    };
 
+        int frameWidth = 0;
+        int frameHeight = 0;
+    };
+    
     class Loader: public Action {
     public:
         std::vector<LoadTask> tasks;
 
         int loadRate = -1;
+        int maxFailAttempts = 2;
+
+        bool replaceExisting = true;
+
+        template <typename T>
+        T* createAsset(std::string key) {
+            if (Props::assets->has(key)) {
+                T* asset = Props::assets->get(key)->as<T*>();
+                if (asset) return asset;
+            }
+            return new T();
+        }
 
         bool processTask(const LoadTask& task) {
-            switch (task.type) {
-                case AssetEnum::Image:
-                    break;
+            bool existing = Props::assets->has(task.key);
+            if (existing) {
+                if (replaceExisting) {
+                    debug_log("Note: Asset \"", task.key, "\" already exists. Overwriting Asset.");
+                    debug_log("(Use node.load:setReplaceExisting(false) to disable overwriting of assets.)");
+                }
+                else {
+                    debug_log("Note: Asset \"", task.key, "\" already exists. Ignoring load task.");
+                    debug_log("(Use node.load:setReplaceExisting(true) to enable overwriting of assets.)");
+                    return true;
+                }
             }
-            return true;
+
+            bool success = false;
+
+            switch (task.type) {
+                case AssetEnum::Image: {
+                    ImageAsset* imgAsset = createAsset<ImageAsset>(task.key);
+                    success = imgAsset->loadImage(task.path);
+                    if (success) Props::assets->add(task.key, imgAsset);
+                    break;
+                }
+                case AssetEnum::Spritesheet: {
+                    SpritesheetAsset* sprAsset = createAsset<SpritesheetAsset>(task.key);
+                    success = sprAsset->loadSpritesheet(task.path, task.frameWidth, task.frameHeight);
+                    if (success) Props::assets->add(task.key, sprAsset);
+                    break;
+                }
+            }
+            return success;
+        }
+
+        sol::object image(std::string key, std::string path) {
+            LoadTask task;
+            task.key = key;
+            task.path = path;
+            queueTask(task);
+            return get_lua_object();
+        }
+
+        sol::object spritesheet(std::string key, std::string path) {
+            LoadTask task;
+            task.path = path;
+            queueTask(task);
+            return get_lua_object();
+        }
+
+        sol::object setReplaceExisting(bool _r) {
+            replaceExisting = _r;
+            return get_lua_object();
+        }
+
+        sol::object setLoadRate(int _r) {
+            loadRate = _r;
+            return get_lua_object();
+        }
+
+        void queueTask(const LoadTask& task) {
+            if (loadRate > 0) tasks.push_back(task);
+            else processTask(task);
         }
 
         virtual void act(double deltaTime) override {
@@ -30,10 +100,18 @@ namespace Amara {
 
                 for (auto it = tasks.begin(); it != tasks.end();) {
                     if (processTask(*it)) {
-                        ++it;
+                        it = tasks.erase(it);
                     }
                     else {
-                        it = tasks.erase(it);
+                        LoadTask& task = *it;
+                        task.failAttempts += 1;
+                        if (task.failAttempts >= maxFailAttempts) {
+                            debug_log("Error: Failed to load \"", task.key, "\" ", task.path);
+                            it = tasks.erase(it);
+                        }
+                        else {
+                            ++it;
+                        }
                     }
 
                     processedTasks += 1;
@@ -41,21 +119,35 @@ namespace Amara {
                         break;
                     }
                 }
-
-                if (tasks.size() == 0) complete();
             }
+            if (tasks.size() == 0) complete();
         }
-        
-        sol::object queueTask(const LoadTask& task) {
-            if (loadRate > 0) tasks.push_back(task);
-            else processTask(task);
-            return get_lua_object();
+
+        virtual sol::object complete() {
+            if (parent && parent->loader == this) {
+                parent->loader = nullptr;
+            }
+            if (actor && actor->loader == this) {
+                actor->loader = nullptr;
+            }
+
+            return Amara::Action::complete();
         }
 
         static void bindLua(sol::state& lua) {
-            lua.new_usertype<Loader>("Loader"
-                
+            lua.new_usertype<Loader>("Loader",
+                "setReplaceExisting", &Loader::setReplaceExisting,
+                "image", &Loader::image,
+                "spritesheet", &Loader::spritesheet
             );
+
+            sol::usertype<Node> node_type = lua["Node"];
+            node_type["load"] = [](Amara::Node& node) -> sol::object {
+                if (node.loader == nullptr) {
+                    node.loader = node.createChild("Loader")->as<Amara::Loader*>();
+                }
+                return node.loader->get_lua_object();
+            };
         }
     };
 }

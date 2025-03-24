@@ -9,7 +9,7 @@ namespace Amara {
         FileManager files;
         AssetManager assets;
         ScriptFactory scripts;
-        EntityFactory factory;
+        NodeFactory factory;
 
         bool demiurgic = true;
 
@@ -20,17 +20,18 @@ namespace Amara {
             Props::lua()["Game"] = &game;
             Props::lua()["Files"] = &files;
             Props::lua()["Assets"] = &assets;
-            Props::lua()["Factory"] = &factory;
+            Props::lua()["NodeFactory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
             
             Props::files = &files;
+            Props::assets = &assets;
             Props::factory = &factory;
             Props::scripts = &scripts;
         }
 
         void setup() {
             factory.prepareEntities();
-            factory.registerEntity<World>("World");
+            factory.registerNode<World>("World");
 
             game.demiurgic = demiurgic;
         }

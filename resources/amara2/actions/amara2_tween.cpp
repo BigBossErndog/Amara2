@@ -19,7 +19,7 @@ namespace Amara {
         sol::function onUpdate;
 
         Tween(): Amara::Action() {
-            set_base_entity_id("Tween");
+            set_base_node_id("Tween");
         }
 
         sol::object from(sol::table lua_data) {
@@ -168,8 +168,8 @@ namespace Amara {
                 "set", &Tween::from
             );
 
-            sol::usertype<Node> entity_type = lua["Node"];
-            entity_type["tween"] = sol::property([](Amara::Node& e) -> sol::object {
+            sol::usertype<Node> node_type = lua["Node"];
+            node_type["tween"] = sol::property([](Amara::Node& e) -> sol::object {
                 Amara::Tween* tween = e.addChild(new Tween())->as<Amara::Tween*>();
                 return tween->get_lua_object();
             });

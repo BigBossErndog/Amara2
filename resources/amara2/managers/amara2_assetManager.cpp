@@ -16,6 +16,7 @@ namespace Amara {
 
         void add(std::string key, Amara::Asset* asset) {
             if (has(key)) destroyAsset(assets[key]);
+            asset->key = key;
             assets[key] = asset;
         }
 
@@ -26,7 +27,7 @@ namespace Amara {
 
         void destroyAsset(Amara::Asset* asset) {
             // TODO: Queue Asset for deletion
-            asset->isDestroyed = true;
+            asset->destroy();
         }
 
         static void bindLua(sol::state& lua) {
@@ -35,4 +36,9 @@ namespace Amara {
             );
         }
     };
+
+    template <typename T>
+    T Asset::as() {
+        return dynamic_cast<T>(this);
+    }
 }

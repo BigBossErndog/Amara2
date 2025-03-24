@@ -1,10 +1,10 @@
 namespace Amara {
-    class EntityFactory {
+    class NodeFactory {
     public:
         std::unordered_map<std::string, std::function<Node*()>> factory;
         std::unordered_map<std::string, std::string> readScripts;
         std::unordered_map<std::string, sol::function> compiledScripts;
-        static inline std::unordered_map<std::string, std::function<sol::object(Node*)>> entityRegistry;
+        static inline std::unordered_map<std::string, std::function<sol::object(Node*)>> nodeRegistry;
 
         sol::table props;
 
@@ -39,8 +39,8 @@ namespace Amara {
             return true;
         }
 
-        Amara::Node* prepEntity(Amara::Node* node, std::string key) {
-            node->entityID = key;
+        Amara::Node* prepNode(Amara::Node* node, std::string key) {
+            node->nodeID = key;
             node->init();
             return node;
         }
@@ -48,13 +48,13 @@ namespace Amara {
         Amara::Node* create(std::string key) {
             auto it = factory.find(key);
             if (it != factory.end() && it->second) {
-                return prepEntity(it->second(), key);
+                return prepNode(it->second(), key);
             }
             
             if (compiledScripts.find(key) != compiledScripts.end()) {
                 try {
                     sol::object result = compiledScripts[key]();
-                    return prepEntity(result.as<Amara::Node*>(), key);
+                    return prepNode(result.as<Amara::Node*>(), key);
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create Node \"", key, "\".");
@@ -63,7 +63,7 @@ namespace Amara {
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
                     sol::object result = Props::files->run(readScripts[key]);
-                    return prepEntity(result.as<Amara::Node*>(), key);
+                    return prepNode(result.as<Amara::Node*>(), key);
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create Node \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
@@ -78,22 +78,22 @@ namespace Amara {
             return node->get_lua_object();
         }
 
-        sol::object castLuaEntity(Amara::Node* node, std::string key) {
-            auto it = entityRegistry.find(key);
-            if (it != entityRegistry.end()) {
+        sol::object castLuaNode(Amara::Node* node, std::string key) {
+            auto it = nodeRegistry.find(key);
+            if (it != nodeRegistry.end()) {
                 return it->second(node);
             }
             else {
-                debug_log("Error: Node type with key \"", node->baseEntityID, "\" was not registered.");
+                debug_log("Error: Node type with key \"", node->baseNodeID, "\" was not registered.");
             }
             return sol::lua_nil;
         }
 
         template <typename T>
-        void registerEntity(std::string key) {
+        void registerNode(std::string key) {
             factory[key] = []() -> T* { return new T(); };
             
-            entityRegistry[key] = [](Node* e) -> sol::object {
+            nodeRegistry[key] = [](Node* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
                     return sol::make_object(Props::lua(), derived);
                 }
@@ -102,20 +102,20 @@ namespace Amara {
         }
 
         void prepareEntities() {
-            registerEntity<Amara::Node>("Node");
-            registerEntity<Amara::Camera>("Camera");
-            registerEntity<Amara::Scene>("Scene");
+            registerNode<Amara::Node>("Node");
+            registerNode<Amara::Camera>("Camera");
+            registerNode<Amara::Scene>("Scene");
 
-            registerEntity<Amara::Action>("Action");
-            registerEntity<Amara::Tween>("Tween");
-            registerEntity<Amara::StateMachine>("StateMachine");
-
-            registerEntity<Amara::Loader>("Loader");
-
-            registerEntity<Amara::Sprite>("Sprite");
-            registerEntity<Amara::Animation>("Animation");
+            registerNode<Amara::Action>("Action");
+            registerNode<Amara::Tween>("Tween");
+            registerNode<Amara::StateMachine>("StateMachine");
             
-            registerEntity<Amara::World>("World");
+            registerNode<Amara::Loader>("Loader");
+
+            registerNode<Amara::Sprite>("Sprite");
+            registerNode<Amara::Animation>("Animation");
+            
+            registerNode<Amara::World>("World");
         }
 
         static void bindLua(sol::state& lua) {
@@ -132,10 +132,10 @@ namespace Amara {
 
             Amara::World::bindLua(lua);
 
-            lua.new_usertype<EntityFactory>("EntityFactory",
-                "load", &EntityFactory::load,
-                "props", &EntityFactory::props,
-                "create", &EntityFactory::luaCreate
+            lua.new_usertype<NodeFactory>("NodeFactory",
+                "load", &NodeFactory::load,
+                "props", &NodeFactory::props,
+                "create", &NodeFactory::luaCreate
             );
         }
     };
@@ -156,10 +156,11 @@ namespace Amara {
     T Node::as() {
         return dynamic_cast<T>(this);
     }
+    
     sol::object Node::get_lua_object() {
         if (luaobject.valid()) return luaobject;
 
-        luaobject = Props::factory->castLuaEntity(this, baseEntityID);
+        luaobject = Props::factory->castLuaNode(this, baseNodeID);
         
         props = Props::lua().create_table();
 

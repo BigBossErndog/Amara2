@@ -93,7 +93,7 @@
     
     #include "assets/amara2_asset.cpp"
     #include "assets/amara2_imageAsset.cpp"
-    
+
     #include "managers/amara2_assetManager.cpp"
 
     #include "managers/amara2_messages.cpp"
@@ -101,7 +101,7 @@
     
     #include "factories/amara2_scriptFactory.cpp"
 
-    #include "nodes/amara2_entity.cpp"
+    #include "nodes/amara2_node.cpp"
 
     #ifdef AMARA_WEB_SERVER
         #include "nodes/amara2_webServer.cpp"
@@ -121,7 +121,7 @@
     
     #include "nodes/amara2_world.cpp"
 
-    #include "factories/amara2_entityFactory.cpp"
+    #include "factories/amara2_nodeFactory.cpp"
 
     #include "managers/amara2_garbage.cpp"
 

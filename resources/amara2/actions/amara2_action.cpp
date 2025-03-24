@@ -14,7 +14,7 @@ namespace Amara {
         bool locked = false;
 
         Action(): Node() {
-            set_base_entity_id("Action");
+            set_base_node_id("Action");
             depthSortEnabled = false;
             is_action = true;
         }
@@ -79,7 +79,7 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::object complete() {
+        virtual sol::object complete() {
             if (isCompleted) return get_lua_object();
             isCompleted = true;
             if (onComplete.valid()) {
@@ -177,12 +177,12 @@ namespace Amara {
                 }
             );
 
-            sol::usertype<Node> entity_type = lua["Node"];
-            entity_type["act"] = [](Amara::Node& e, std::string key) -> sol::object {
+            sol::usertype<Node> node_type = lua["Node"];
+            node_type["act"] = [](Amara::Node& e, std::string key) -> sol::object {
                 Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
                 return action->get_lua_object();
             };
-            entity_type["then"] = [](Amara::Node& e, std::string key) -> sol::object {
+            node_type["then"] = [](Amara::Node& e, std::string key) -> sol::object {
                 // Chain to child actions.
                 Amara::Action* action = nullptr;
                 Amara::Node* child = nullptr;
@@ -197,14 +197,14 @@ namespace Amara {
 
                 return action->get_lua_object();
             };
-            entity_type["isActing"] = sol::property([](Amara::Node& e) -> bool {
+            node_type["isActing"] = sol::property([](Amara::Node& e) -> bool {
                 if (e.is_action) return !e.isDestroyed;
                 for (Amara::Node* child: e.children) {
                     if (!child->isDestroyed && child->is_action) return true;
                 }
                 return false;
             });
-            entity_type["finishedActing"] = sol::property([](Amara::Node& e) -> bool {
+            node_type["finishedActing"] = sol::property([](Amara::Node& e) -> bool {
                 if (e.is_action) return e.isDestroyed;
                 for (Amara::Node* child: e.children) {
                     if (!child->isDestroyed && child->is_action) return false;

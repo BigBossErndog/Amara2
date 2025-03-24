@@ -24,7 +24,7 @@ namespace Amara {
         }
         return false;
     }
-    
+
     template<typename... Args>
     std::string string_concat(Args... args) {
         std::ostringstream ss;
@@ -76,7 +76,7 @@ namespace Amara {
         return result;
     }
 
-    bool is_entity(sol::object);
+    bool is_node(sol::object);
 
     enum class GraphicsEnum {
         None,

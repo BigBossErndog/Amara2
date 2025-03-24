@@ -221,6 +221,11 @@ namespace Amara {
             return filePath.string();
         }
 
+        std::string getAssetPath(std::string path) {
+            std::filesystem::path filePath = getRelativePath(Props::assets_path) / (std::filesystem::path)path;
+            return filePath.string();
+        }
+
         std::string getFileName(std::string path) {
             return std::filesystem::path(path).filename().string();
         }

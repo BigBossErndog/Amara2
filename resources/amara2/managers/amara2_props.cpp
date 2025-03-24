@@ -3,11 +3,13 @@ namespace Amara {
     class World;
     class Scene;
     class GameManager;
-    class EntityFactory;
+    class NodeFactory;
     class ScriptFactory;
     class FileManager;
+    class AssetManager;
     class MessageQueue;
     class GarbageCollector;
+    class Asset;
 
     class Props {
     public:
@@ -43,9 +45,10 @@ namespace Amara {
         static World* world;
         static Scene* scene;
 
-        static EntityFactory* factory;
+        static NodeFactory* factory;
         static ScriptFactory* scripts;
         static FileManager* files;
+        static AssetManager* assets;
         static MessageQueue* messages;
         static GarbageCollector* garbageCollector;
 
@@ -55,6 +58,11 @@ namespace Amara {
         static void queue_garbage(Amara::Node* node) {
             Props::queue_garbage(node, 1);
         }
+        static void queue_asset_garbage(Amara::Asset* asset, double expiration);
+        static void queue_asset_garbage(Amara::Asset* asset) {
+            Props::queue_asset_garbage(asset, 1);
+        }
+        static void queue_texture_garbage(GLuint textureID);
 
         static sol::state* lua_state;
 
@@ -104,9 +112,10 @@ namespace Amara {
     GameManager* Props::game = nullptr;
     World* Props::world = nullptr;
     Scene* Props::scene = nullptr;
-    EntityFactory* Props::factory = nullptr;
+    NodeFactory* Props::factory = nullptr;
     ScriptFactory* Props::scripts = nullptr;
     FileManager* Props::files = nullptr;
+    AssetManager* Props::assets = nullptr;
     MessageQueue* Props::messages = nullptr;
     GarbageCollector* Props::garbageCollector = nullptr;
 

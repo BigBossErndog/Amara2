@@ -31,7 +31,7 @@ namespace Amara {
         std::unordered_map<std::string, sol::function> state_map;
 
         StateMachine(): Amara::Action() {
-            set_base_entity_id("StateMachine");
+            set_base_node_id("StateMachine");
             reset();
         }
 
@@ -262,14 +262,25 @@ namespace Amara {
             return false;
         }
 
+        virtual sol::object complete() {
+            if (parent && parent->stateMachine == this) {
+                parent->stateMachine = nullptr;
+            }
+            if (actor && actor->stateMachine == this) {
+                actor->stateMachine = nullptr;
+            }
+
+            return Amara::Action::complete();
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<StateMachine>("StateMachine",
                 sol::constructors<StateMachine()>(),
                 sol::base_classes, sol::bases<Amara::Action>()
             );
 
-            sol::usertype<Node> entity_type = lua["Node"];
-            entity_type["state"] = [](Amara::Node& node) -> sol::object {
+            sol::usertype<Node> node_type = lua["Node"];
+            node_type["state"] = [](Amara::Node& node) -> sol::object {
                 if (node.stateMachine == nullptr) {
                     node.stateMachine = node.createChild("StateMachine")->as<Amara::StateMachine*>();
                     node.stateMachine->is_action = false;

@@ -11,7 +11,7 @@ namespace Amara {
         Vector2 zoom;
 
         Camera(): Node() {
-            set_base_entity_id("Camera");
+            set_base_node_id("Camera");
             is_camera = true;
         }
         

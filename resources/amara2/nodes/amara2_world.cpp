@@ -44,7 +44,7 @@ namespace Amara {
         std::vector<Amara::GraphicsEnum> graphics_priority = Amara_Default_Graphics_Priority;
 
         World(): Node() {
-            set_base_entity_id("World");
+            set_base_node_id("World");
             world = this;
         }
 
@@ -401,8 +401,8 @@ namespace Amara {
                 "graphics", sol::readonly(&World::graphics)
             );
 
-            sol::usertype<Node> entity_type = lua["Node"];
-            entity_type["world"] = sol::readonly(&Node::world);
+            sol::usertype<Node> node_type = lua["Node"];
+            node_type["world"] = sol::readonly(&Node::world);
         }
     };
 }

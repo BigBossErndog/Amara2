@@ -3,7 +3,7 @@
 -- local e = factory:create("Node");
 -- e.props.hello = function() log("hi") end
 
-Factory:create("Node")
+NodeFactory:create("Node")
 
 local firstworld = Creator:createWorld()
 firstworld:configure({
@@ -53,6 +53,10 @@ Scripts:load("test","scripts/testScript")
 --     })
 -- end
 
+firstworld.onPreload = function(self)
+    self.load:image("goldenFlower", "goldenFlower");
+end
+
 function tweenWorld(w)
     w.onCreate = function(world)
         world.tween:from({
@@ -94,7 +98,7 @@ function tweenWorld(w)
                 duration = 1,
                 ease = Ease.SineInOut
             }):whenDone(function(self)  
-                print("finished")
+                -- print("finished")
                 -- self.world:destroy()
                 local newworld = Creator:createWorld()
                 newworld:configure({
