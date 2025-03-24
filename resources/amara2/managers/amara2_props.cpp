@@ -34,6 +34,8 @@ namespace Amara {
         static SDL_GLContext glContext;
         static SDL_Renderer* renderer;
 
+        static bool glFunctionsLoaded;
+
         static SDL_Window* current_window;
         static SDL_DisplayID displayID;
 
@@ -55,6 +57,9 @@ namespace Amara {
         }
 
         static sol::state* lua_state;
+
+        static std::vector<std::string> debug_log_buffer;
+        static std::vector<std::string> debug_log_queue;
 
         static sol::state& lua() {
             return *lua_state;
@@ -91,6 +96,8 @@ namespace Amara {
     SDL_GLContext Props::glContext = NULL;
     SDL_Renderer* Props::renderer = nullptr;
     SDL_GPUDevice* Props::gpuDevice = nullptr;
+
+    bool Props::glFunctionsLoaded = false;
 
     int Props::lua_stack_size = 5000000;
     

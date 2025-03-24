@@ -92,6 +92,8 @@
     #include "managers/amara2_fileManager.cpp"
     
     #include "assets/amara2_asset.cpp"
+    #include "assets/amara2_imageAsset.cpp"
+    
     #include "managers/amara2_assetManager.cpp"
 
     #include "managers/amara2_messages.cpp"

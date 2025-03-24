@@ -296,6 +296,7 @@ namespace Amara {
 
         virtual void destroy() {
             if (isDestroyed) return;
+            update_properties();
             isDestroyed = true;
 
             if (luaDestroy.valid()) {

@@ -30,10 +30,8 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
-            Asset::bindLua(lua);
-    
             lua.new_usertype<AssetManager>("AssetManager",
-                "get",&AssetManager::get
+                "has", &AssetManager::has
             );
         }
     };

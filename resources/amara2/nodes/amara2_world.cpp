@@ -11,9 +11,18 @@ namespace Amara {
         Uint32 windowID = 0;
         std::string windowTitle;
 
+        bool create_window_on_start = false;
+        WindowEnum fullscreen_mode = Amara::WindowEnum::Windowed;
+
+        float windowWidth = 640;
+        float windowHeight = 360;
+        Rectangle window_dim = { pos.x, pos.y, windowWidth, windowHeight };
+
         SDL_GLContext glContext;
         SDL_Renderer* renderer = nullptr;
         SDL_GPUDevice* gpuDevice = nullptr;
+
+        GraphicsEnum graphics;
 
         Rectangle display;
         Uint32 displayID = 0;
@@ -21,26 +30,18 @@ namespace Amara {
 
         Vector2 rec_pos = { -1, -1 };
 
-        float windowWidth = 640;
-        float windowHeight = 360;
-        Rectangle window_dim = { pos.x, pos.y, windowWidth, windowHeight };
+        float virtualWidth = -1;
+        float virtualHeight = -1;
 
         Rectangle viewport;
 
         int resizable = 0;
         int vsync = 0;
-
-        bool create_window_on_start = false;
-        WindowEnum fullscreen_mode = Amara::WindowEnum::Windowed;
-
         bool headless = true;
 
         bool exception_thrown = false;
 
-        std::vector<Amara::GraphicsEnum> graphics_priority = {
-            GraphicsEnum::OpenGL,
-            GraphicsEnum::Render2D
-        };
+        std::vector<Amara::GraphicsEnum> graphics_priority = Amara_Default_Graphics_Priority;
 
         World(): Node() {
             set_base_entity_id("World");
@@ -232,76 +233,101 @@ namespace Amara {
             }
         }
 
+        void createWindowRenderer() {
+            bool renderer_created = false;
+            for (GraphicsEnum g: graphics_priority) {
+                if (renderer_created) break;
+                switch (g) {
+                    case Amara::GraphicsEnum::Render2D:
+                        if (window == nullptr) {
+                            if (!SDL_CreateWindowAndRenderer(
+                                windowTitle.c_str(),
+                                windowWidth, windowHeight,
+                                resizable,
+                                &window,
+                                &renderer
+                            )) {
+                                if (renderer) SDL_DestroyRenderer(renderer);
+                                if (window) SDL_DestroyWindow(window);
+                                window = nullptr;
+                                renderer = nullptr;
+                            }
+                            windowID = SDL_GetWindowID(window);
+                            Props::current_window = window;
+                        }
+                        else {
+                            renderer = SDL_CreateRenderer(window, NULL);
+                        }
+                        if (window == nullptr || renderer == nullptr) {
+                            debug_log("Error: Failed to create 2D Renderer. ", SDL_GetError());
+                        }
+                        else {
+                            Props::renderer = renderer;
+                            renderer_created = true;
+                            graphics = g;
+                        }
+                        break;
+                    case Amara::GraphicsEnum::OpenGL:
+                        create_graphics_window(SDL_WINDOW_OPENGL);
+                        glContext = SDL_GL_CreateContext(window);
+                        renderer_created = true;
+                        if (glContext == NULL) {
+                            renderer_created = false;
+                            debug_log("Error: Failed to create GL Context. ", SDL_GetError());
+                        }
+                        else {
+                            try {
+                                if (!Props::glFunctionsLoaded) LoadOpenGLFunctions();
+                            }
+                            catch (...) {
+                                debug_log("Error: Failed to load OpenGL API.");
+                                SDL_GL_DestroyContext(glContext);
+                                if (window) SDL_DestroyWindow(window);
+                            }
+                        }
+                        if (renderer_created) {
+                            Props::glFunctionsLoaded = true;
+                            Props::render_origin = this;
+                            Props::glContext = glContext;
+                            graphics = g;
+                        }
+                        break;
+                    case Amara::GraphicsEnum::None:
+                        break;
+                    default:
+                        if (create_gpu_device(g)) {
+                            renderer_created = true;
+                            Props::render_origin = this;
+                            Props::gpuDevice = gpuDevice;
+                            graphics = g;
+                        }
+                        break;
+                }
+            }
+            if (window == nullptr) {
+                create_graphics_window();
+            }
+            if (window) {
+                int wx, wy;
+                SDL_GetWindowPosition(window, &wx, &wy);
+                pos.x = static_cast<int>(wx);
+                pos.y = static_cast<int>(wy);
+                rec_pos = pos;
+            }
+            else {
+                pos.x = (Props::master_viewport.w - windowWidth) / 2.0f;
+                pos.y = (Props::master_viewport.h - windowHeight) / 2.0f;
+            }
+        }
+
         virtual void preload() override {
             if (create_window_on_start && window == nullptr) {
-                bool renderer_created = false;
-                for (GraphicsEnum g: graphics_priority) {
-                    if (renderer_created) break;
-                    switch (g) {
-                        case Amara::GraphicsEnum::Render2D:
-                            if (window == nullptr) {
-                                if (!SDL_CreateWindowAndRenderer(
-                                    windowTitle.c_str(),
-                                    windowWidth, windowHeight,
-                                    resizable,
-                                    &window,
-                                    &renderer
-                                )) {
-                                    if (renderer) SDL_DestroyRenderer(renderer);
-                                    if (window) SDL_DestroyWindow(window);
-                                    window = nullptr;
-                                    renderer = nullptr;
-                                }
-                                windowID = SDL_GetWindowID(window);
-                                Props::current_window = window;
-                            }
-                            else {
-                                renderer = SDL_CreateRenderer(window, NULL);
-                            }
-                            if (window == nullptr || renderer == nullptr) {
-                                debug_log("Error: Failed to create 2D Renderer. ", SDL_GetError());
-                            }
-                            else {
-                                Props::renderer = renderer;
-                                renderer_created = true;
-                            }
-                            break;
-                        case Amara::GraphicsEnum::OpenGL:
-                            create_graphics_window(SDL_WINDOW_OPENGL);
-                            glContext = SDL_GL_CreateContext(window);
-                            if (glContext == NULL) {
-                                debug_log("Error: Failed to create GL Context. ", SDL_GetError());
-                            }
-                            else {
-                                renderer_created = true;
-                                Props::render_origin = this;
-                                Props::glContext = glContext;
-                            }
-                            break;
-                        case Amara::GraphicsEnum::None:
-                            break;
-                        default:
-                            if (create_gpu_device(g)) {
-                                renderer_created = true;
-                                Props::render_origin = this;
-                                Props::gpuDevice = gpuDevice;
-                            }
-                            break;
-                    }
-                }
-                if (window == nullptr) {
-                    create_graphics_window();
-                }
-                if (window) {
-                    int wx, wy;
-                    SDL_GetWindowPosition(window, &wx, &wy);
-                    pos.x = static_cast<int>(wx);
-                    pos.y = static_cast<int>(wy);
-                    rec_pos = pos;
+                if (demiurge) {
+                    debug_log("Note: Demiurgic presence. Rendering Mode Overridden.");
+                    debug_log("Control will be handed over in target builds.");
                 }
                 else {
-                    pos.x = (Props::master_viewport.w - windowWidth) / 2.0f;
-                    pos.y = (Props::master_viewport.h - windowHeight) / 2.0f;
+                    createWindowRenderer();
                 }
             }
             update_properties();
@@ -322,16 +348,44 @@ namespace Amara {
         }
 
         virtual void draw(const Rectangle& v) {
-            if (window == nullptr) viewport = v;
+            update_properties();
+            if (virtualWidth == -1 || virtualHeight == -1) {
+                float viewport_factor = viewport.w / viewport.h;
+                float virtual_factor = virtualWidth / virtualHeight;
+                float zoom;
+                if (viewport_factor > virtual_factor) {
+                    float zoom = viewport.h / virtualHeight;
+                }
+                else {
+                    float zoom = viewport.w / virtualWidth;
+                }
+                Props::zoom = { 
+                    Props::zoom.x * zoom, 
+                    Props::zoom.y * zoom
+                };
+            }
+
             Node::draw(viewport);
         }
 
         virtual void destroy() override {
+            Amara::Node::destroy();
+            if (glContext != NULL) {
+                SDL_GL_DestroyContext(glContext);
+                glContext = NULL;
+            }
+            if (gpuDevice) {
+                SDL_DestroyGPUDevice(gpuDevice);
+                gpuDevice = nullptr;
+            }
+            if (renderer) {
+                SDL_DestroyRenderer(renderer);
+                renderer = nullptr;
+            }
             if (window != nullptr) {
                 SDL_DestroyWindow(window);
                 window = nullptr;
             }
-            Amara::Node::destroy();
         }
         
         static void bindLua(sol::state& lua) {
@@ -339,9 +393,12 @@ namespace Amara {
                 sol::base_classes, sol::bases<Node>(),
                 "w", &World::windowWidth,
                 "h", &World::windowHeight,
+                "vw", &World::virtualWidth,
+                "vh", &World::virtualHeight,
                 "base_dir_path", sol::readonly(&World::base_dir_path),
                 "display", sol::readonly(&World::display),
-                "displayID", sol::readonly(&World::displayID)
+                "displayID", sol::readonly(&World::displayID),
+                "graphics", sol::readonly(&World::graphics)
             );
 
             sol::usertype<Node> entity_type = lua["Node"];

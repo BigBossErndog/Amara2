@@ -55,7 +55,6 @@ Scripts:load("test","scripts/testScript")
 
 function tweenWorld(w)
     w.onCreate = function(world)
-        print(world.display.w, world.w)
         world.tween:from({
                 x = (world.display.w - world.w)/2
             }):to({

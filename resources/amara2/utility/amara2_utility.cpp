@@ -24,7 +24,7 @@ namespace Amara {
         }
         return false;
     }
-
+    
     template<typename... Args>
     std::string string_concat(Args... args) {
         std::ostringstream ss;
@@ -83,6 +83,11 @@ namespace Amara {
         Render2D,
         OpenGL,
         Vulkan
+    };
+
+    std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
+        GraphicsEnum::OpenGL,
+        GraphicsEnum::Render2D
     };
 
     enum class WindowEnum {

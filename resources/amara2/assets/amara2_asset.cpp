@@ -3,21 +3,16 @@ namespace Amara {
         None,
         Surface,
         Image,
-        Spritesheet,
-
+        Spritesheet
     };
 
     class Asset {
     public:
+        Asset() = default;
+        
         AssetEnum type = AssetEnum::None;
         std::string key;
 
         bool isDestroyed = false;
-
-        static void bindLua(sol::state& lua) {
-            lua.new_usertype<Asset>("Asset",
-                "key", &Asset::key
-            );
-        }
     };
 }
