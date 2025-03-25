@@ -20,6 +20,10 @@ namespace Amara {
 
         bool replaceExisting = true;
 
+        Loader() {
+            set_base_node_id("Loader");
+        }
+
         template <typename T>
         T* createAsset(std::string key) {
             if (Props::assets->has(key)) {
@@ -66,6 +70,8 @@ namespace Amara {
             LoadTask task;
             task.key = key;
             task.path = path;
+            task.type = AssetEnum::Image;
+            
             queueTask(task);
             return get_lua_object();
         }
@@ -73,6 +79,7 @@ namespace Amara {
         sol::object spritesheet(std::string key, std::string path) {
             LoadTask task;
             task.path = path;
+            task.type = AssetEnum::Spritesheet;
             queueTask(task);
             return get_lua_object();
         }
@@ -136,18 +143,19 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Loader>("Loader",
+                sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "setReplaceExisting", &Loader::setReplaceExisting,
                 "image", &Loader::image,
                 "spritesheet", &Loader::spritesheet
             );
-
+            
             sol::usertype<Node> node_type = lua["Node"];
-            node_type["load"] = [](Amara::Node& node) -> sol::object {
+            node_type["load"] = sol::property([](Amara::Node& node) -> sol::object {
                 if (node.loader == nullptr) {
-                    node.loader = node.createChild("Loader")->as<Amara::Loader*>();
+                    node.loader = node.addChild(new Loader())->as<Amara::Loader*>();
                 }
                 return node.loader->get_lua_object();
-            };
+            });
         }
     };
 }

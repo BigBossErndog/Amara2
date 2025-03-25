@@ -15,7 +15,7 @@ namespace Amara {
         float rotation = 0;
         Vector3 anchor = { 0, 0, 0 };
         Vector2 scale = { 1, 1 };
-
+        
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
 

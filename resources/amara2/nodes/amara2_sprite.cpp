@@ -4,8 +4,6 @@ namespace Amara {
      */
     class Sprite: public Amara::Node {
     public:
-        int frame = 0;
-
         ImageAsset* image = nullptr;
         SpritesheetAsset* spritesheet = nullptr;
 
@@ -15,6 +13,13 @@ namespace Amara {
         int frameWidth = 0;
         int frameHeight = 0;
 
+        int cropLeft = 0;
+        int cropRight = 0;
+        int cropTop = 0;
+        int cropBottom = 0;
+
+        int frame = 0;
+
         Vector2 origin = { 0.5, 0.5 };
 
         Sprite(): Amara::Node() {
@@ -22,11 +27,16 @@ namespace Amara {
         }
 
         bool loadTexture(std::string key) {
+            image = nullptr;
+            spritesheet = nullptr;
+
             if (!Props::assets->has(key)) {
                 debug_log("Error: Asset\"", key, "\" was not found.");
                 return false;
             }
+
             image = Props::assets->get(key)->as<ImageAsset*>();
+            
             if (image == nullptr) {
                 debug_log("Error: Asset\"", key, "\" is not a valid texture asset.");
                 return false;
@@ -43,6 +53,12 @@ namespace Amara {
                 frameWidth = 0;
                 frameHeight = 0;
             }
+            return true;
+        }
+
+        sol::object setOrigin(float _x, float _y) {
+            origin = { _x, _y };
+            return get_lua_object();
         }
 
         virtual void update_properties() override {
@@ -50,7 +66,74 @@ namespace Amara {
         }
 
         virtual void drawSelf(const Rectangle& v) override {
-            
+            if (image == nullptr) return;
+
+            SDL_Rect setv = Rectangle::makeSDLRect(v);
+            SDL_SetRenderViewport(Props::renderer, &setv);
+
+            if (cropLeft < 0) cropLeft = 0;
+            if (cropRight < 0) cropRight = 0;
+            if (cropTop < 0) cropTop = 0;
+            if (cropBottom < 0) cropBottom = 0;
+
+            if (image->texture && Props::renderer) {
+                // 2D Rendering
+                SDL_FRect srcRect;
+                SDL_FRect destRect;
+
+                Vector2 vcenter = centerOf(v);
+
+                float imgw = (spritesheet ? frameWidth : imageWidth) * passOn.scale.x;
+                float imgh = (spritesheet ? frameHeight : imageHeight) * passOn.scale.y;
+
+                Rectangle dim = {
+                    passOn.anchor.x + (cropLeft - imgw*origin.x)*passOn.scale.x, 
+                    passOn.anchor.y + (cropTop - imgh*origin.y)*passOn.scale.y,
+                    (imgw - cropLeft - cropRight)*passOn.scale.x,
+                    (imgh - cropTop - cropBottom)*passOn.scale.y
+                };
+ 
+                destRect.x = vcenter.x + (dim.x + passOn.scroll.x)*passOn.zoom.x; 
+                destRect.y = vcenter.y + (dim.y + passOn.scroll.y)*passOn.zoom.y;
+                destRect.w = dim.w * passOn.zoom.x;
+                destRect.h = dim.h * passOn.zoom.y;
+
+                SDL_FPoint dorigin = {
+                    (imgw*origin.x - cropLeft)*scale.x*passOn.zoom.x,
+                    (imgh*origin.y - cropTop)*scale.y*passOn.zoom.y
+                };
+
+                if (spritesheet) {
+                    srcRect.x = static_cast<float>((frame % (imageWidth / frameWidth)) * frameWidth + cropLeft);
+                    srcRect.y = static_cast<float>(floor(frame / (imageWidth / frameWidth)) * frameHeight + cropTop);
+                    srcRect.w = static_cast<float>(frameWidth - cropLeft - cropRight);
+                    srcRect.h = static_cast<float>(frameHeight - cropTop - cropBottom);
+                }
+                else {
+                    srcRect = {
+                        static_cast<float>(cropLeft), static_cast<float>(cropTop),
+                        static_cast<float>(imageWidth - cropLeft - cropRight),
+                        static_cast<float>(imageHeight - cropTop - cropBottom)
+                    };
+                }
+
+                SDL_RenderTextureRotated(
+                    Props::renderer, 
+                    image->texture,
+                    &srcRect,
+                    &destRect,
+                    toDegrees(passOn.rotation),
+                    &dorigin,
+                    SDL_FLIP_NONE
+                );
+
+                if (rectRotatedCollision(
+                    Rectangle(destRect), passOn.rotation, origin,
+                    v, 0, { 0, 0 }
+                )) { // Check if within viewport
+                    
+                }
+            }
         }
 
         static void bindLua(sol::state& lua) {
@@ -60,7 +143,12 @@ namespace Amara {
                 "imagew", sol::readonly(&Sprite::imageWidth),
                 "imageh", sol::readonly(&Sprite::imageHeight),
                 "framew", sol::readonly(&Sprite::frameWidth),
-                "frameh", sol::readonly(&Sprite::frameHeight)
+                "frameh", sol::readonly(&Sprite::frameHeight),
+                "cropLeft", &Sprite::cropLeft,
+                "cropRight", &Sprite::cropRight,
+                "cropTop", &Sprite::cropTop,
+                "cropBottom", &Sprite::cropBottom,
+                "setOrigin", &Sprite::setOrigin
             );
         }
     };

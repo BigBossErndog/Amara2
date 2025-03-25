@@ -55,66 +55,80 @@ Scripts:load("test","scripts/testScript")
 -- end
 
 firstworld.onPreload = function(self)
-    self.load:image("goldenFlower", "goldenFlower");
+    self.load:image("goldenFlower", "goldenFlower.png")
+end
+firstworld.onCreate = function(self)
+    self.load:whenDone(function(self)
+        local s = self:createChild("Sprite")
+        s:loadTexture("goldenFlower")
+        s.id = "test"
+
+        local t = s:createChild("Sprite")
+        t:loadTexture("goldenFlower")
+        t.x = t.x + 200;
+        t.id = "test"
+        t.rotation = math.pi / 1000;
+        print("call")
+    end)
 end
 
-function tweenWorld(w)
-    w.onCreate = function(world)
-        world.tween:from({
-                x = (world.display.w - world.w)/2
-            }):to({
-                duration = 1
-            }):to({
-                x = world.display.w - world.w,
-                duration = 1,
-                ease = Ease.SineInOut
-            }):to({
-                x = 0,
-                duration = 1,
-                ease = Ease.SineInOut
-            }):to({
-                x = (world.display.w - world.w)/2,
-                duration = 1,
-                ease = Ease.SineInOut
-            }):to({
-                y = 0,
-                duration = 1,
-                ease = Ease.SineInOut
-            }):to({
-                y = (world.display.h - world.h)/2,
-                duration = 1,
-                ease = Ease.SineInOut
-            }):to({
-                x = (world.display.w - 640*2)/2,
-                y = (world.display.h - 360*2)/2,
-                w = 640*2,
-                h = 360*2,
-                duration = 1,
-                ease = Ease.SineInOut
-            }):to({
-                x = (world.display.w - 640)/2,
-                y = (world.display.h - 360)/2,
-                w = 640,
-                h = 360,
-                duration = 1,
-                ease = Ease.SineInOut
-            }):whenDone(function(self)  
-                -- print("finished")
-                -- self.world:destroy()
-                -- local newworld = Creator:createWorld()
-                -- newworld:configure({
-                --     window = {
-                --         windowTitle = "Amara2",
-                --         -- resizable = true
-                --         -- width = 1280,
-                --         -- height = 720
-                --     }
-                -- })
-                -- tweenWorld(newworld)
-            end)
-        end
-    end
-tweenWorld(firstworld)
+-- function tweenWorld(w)
+--     w.onCreate = function(world
+--         world.tween:from({
+--                 x = (world.display.w - world.w)/2
+--             }):to({
+--                 duration = 1
+--             }):to({
+--                 x = world.display.w - world.w,
+--                 duration = 1,
+--                 ease = Ease.SineInOut
+--             }):to({
+--                 x = 0,
+--                 duration = 1,
+--                 ease = Ease.SineInOut
+--             }):to({
+--                 x = (world.display.w - world.w)/2,
+--                 duration = 1,
+--                 ease = Ease.SineInOut
+--             }):to({
+--                 y = 0,
+--                 duration = 1,
+--                 ease = Ease.SineInOut
+--             }):to({
+--                 y = (world.display.h - world.h)/2,
+--                 duration = 1,
+--                 ease = Ease.SineInOut
+--             }):to({
+--                 x = (world.display.w - 640*2)/2,
+--                 y = (world.display.h - 360*2)/2,
+--                 w = 640*2,
+--                 h = 360*2,
+--                 duration = 1,
+--                 ease = Ease.SineInOut
+--             }):to({
+--                 x = (world.display.w - 640)/2,
+--                 y = (world.display.h - 360)/2,
+--                 w = 640,
+--                 h = 360,
+--                 duration = 1,
+--                 ease = Ease.SineInOut
+--             }):whenDone(function(self)  
+--                 -- print("finished")
+--                 -- self.world:destroy()
+--                 -- local newworld = Creator:createWorld()
+--                 -- newworld:configure({
+--                 --     window = {
+--                 --         windowTitle = "Amara2",
+--                 --         -- resizable = true
+--                 --         -- width = 1280,
+--                 --         -- height = 720
+--                 --     }
+--                 -- })
+--                 -- tweenWorld(newworld)
+--             end)
+--         end
+--     end
+-- tweenWorld(firstworld)
 
 -- Return the world if you want Amara to manage it and give you debugging tools.
 return world

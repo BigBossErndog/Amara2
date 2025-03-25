@@ -13,23 +13,32 @@ namespace Amara {
 
         SDL_Texture* texture = nullptr;
         GLuint glTextureID = 0;
-
+        
         bool loadImage(std::string _p) {
             path = Props::files->getAssetPath(_p);
+
+            if (!Props::files->fileExists(path)) {
+                debug_log("Error: File not found at ", path);
+                return false;
+            }
+
             clearTexture();
 
-            unsigned char *imageData = stbi_load(path.c_str(), &width, &height, &channels, 4);
+            stbi_set_flip_vertically_on_load(0);
+            unsigned char* imageData = stbi_load(path.c_str(), &width, &height, &channels, 4);
             if (!imageData) {
                 debug_log("Error: Failed to load image data: ", path);
                 return false;
             }
 
-            if (Props::glContext != NULL) {
+            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 GLuint textureID;
                 glGenTextures(1, &textureID);
 
                 if (texture == 0) {
                     debug_log("Error: Texture generation failed. ", path);
+                    stbi_image_free(imageData);
+                    return false;
                 }
 
                 glBindTexture(GL_TEXTURE_2D, textureID);
@@ -43,18 +52,17 @@ namespace Amara {
                 
                 return true;
             }
-            else if (Props::renderer) {
+            else if (Props::graphics == GraphicsEnum::Render2D && Props::renderer) {
                 texture = SDL_CreateTexture(Props::renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, width, height);
                 if (!texture) {
                     debug_log("Error: Failed to create texture: ", SDL_GetError());
                     stbi_image_free(imageData);
                     return false;
                 }
-
-                pitch = width * channels;
+                pitch = width * 4;
                 SDL_UpdateTexture(texture, NULL, imageData, pitch);
                 SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-
+                
                 stbi_image_free(imageData);
 
                 return true;

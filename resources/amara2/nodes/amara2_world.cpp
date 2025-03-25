@@ -46,6 +46,7 @@ namespace Amara {
         World(): Node() {
             set_base_node_id("World");
             world = this;
+            passOnPropsEnabled = false;
         }
 
         void update_window() {
@@ -107,10 +108,10 @@ namespace Amara {
                 Props::glContext = NULL;
                 Props::renderer = nullptr;
                 Props::gpuDevice = nullptr;
-                if (glContext != NULL) {
+                if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                     Props::glContext = glContext;
                 }
-                if (renderer != nullptr) {
+                if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
                     Props::renderer = renderer;
                 }
                 if (gpuDevice != nullptr) {
@@ -144,8 +145,8 @@ namespace Amara {
                     else resizable = 0;
                     if (window) SDL_SetWindowResizable(window, r);
                 }
-                if (json_has(config, "singleWindowApplication")) {
-                    Props::integrate_new_windows = config["singleWindowApplication"];
+                if (json_is(config, "singleWindowApplication")) {
+                    Props::integrate_new_windows = true;
                 }
                 if (json_has(config, "headless")) {
                     create_window_on_start = !config["headless"].get<bool>();
@@ -313,6 +314,10 @@ namespace Amara {
                 pos.x = static_cast<int>(wx);
                 pos.y = static_cast<int>(wy);
                 rec_pos = pos;
+
+                Props::graphics = graphics;
+
+                debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
             }
             else {
                 pos.x = (Props::master_viewport.w - windowWidth) / 2.0f;
@@ -321,14 +326,14 @@ namespace Amara {
         }
 
         virtual void preload() override {
-            if (create_window_on_start && window == nullptr) {
-                if (demiurge) {
-                    debug_log("Note: Demiurgic presence. Rendering Mode Overridden: ", graphics_to_string(Props::graphics));
-                    debug_log("Control will be handed over in target builds.");
-                }
-                else {
+            if (create_window_on_start) {
+                if (window == nullptr) {
                     createWindowRenderer();
                 }
+            }
+            else if (demiurge) {
+                debug_log("Note: Demiurgic presence. Rendering Mode Overridden: ", graphics_to_string(Props::graphics));
+                debug_log("Control will be handed over in target builds.");
             }
             update_properties();
 
@@ -348,10 +353,12 @@ namespace Amara {
         }
 
         virtual void draw(const Rectangle& v) {
-            if (isDestroyed) return;
             update_properties();
 
-            update_properties();
+            if (window) {
+                Props::graphics = graphics;
+            }
+
             if (virtualWidth == -1 || virtualHeight == -1) {
                 float viewport_factor = viewport.w / viewport.h;
                 float virtual_factor = virtualWidth / virtualHeight;
@@ -377,7 +384,17 @@ namespace Amara {
             Props::passOn.zoom = { 1, 1 };
             Props::passOn.scale = { 1, 1 };
 
-            drawObjects(viewport);
+            passOn = Props::passOn;
+
+            if (renderer) {
+                SDL_RenderClear(renderer);
+            }    
+            
+            Amara::Node::draw(viewport);
+
+            if (Props::renderer) {
+                SDL_RenderPresent(Props::renderer);
+            }
         }
 
         virtual void destroy() override {

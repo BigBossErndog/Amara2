@@ -276,17 +276,17 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<StateMachine>("StateMachine",
                 sol::constructors<StateMachine()>(),
-                sol::base_classes, sol::bases<Amara::Action>()
+                sol::base_classes, sol::bases<Amara::Action, Amara::Node>()
             );
 
             sol::usertype<Node> node_type = lua["Node"];
-            node_type["state"] = [](Amara::Node& node) -> sol::object {
+            node_type["state"] = sol::property([](Amara::Node& node) -> sol::object {
                 if (node.stateMachine == nullptr) {
-                    node.stateMachine = node.createChild("StateMachine")->as<Amara::StateMachine*>();
+                    node.stateMachine = node.addChild(new StateMachine())->as<Amara::StateMachine*>();
                     node.stateMachine->is_action = false;
                 }
                 return node.stateMachine->get_lua_object();
-            };
+            });
         }
     };
 }

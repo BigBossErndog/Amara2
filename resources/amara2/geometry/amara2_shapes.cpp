@@ -2,7 +2,18 @@ namespace Amara {
     struct Rectangle: public Vector2 {
         Rectangle() = default;
         Rectangle(float x_, float y_, float w_, float h_) : Vector2(x_, y_), w(w_), h(h_) {}
-
+        Rectangle(SDL_FRect r) {
+            x = static_cast<float>(r.x);
+            y = static_cast<float>(r.y);
+            w = static_cast<float>(r.w);
+            h = static_cast<float>(r.h);
+        }
+        Rectangle(SDL_Rect r) {
+            x = static_cast<float>(r.x);
+            y = static_cast<float>(r.y);
+            w = static_cast<float>(r.w);
+            h = static_cast<float>(r.h);
+        }
         float w = 0;
         float h = 0;
 
@@ -16,6 +27,25 @@ namespace Amara {
         friend std::ostream& operator<<(std::ostream& os, const Rectangle& v) {
             return os << static_cast<std::string>(v);
         }
+
+        static SDL_Rect makeSDLRect(const Rectangle& r) {
+            SDL_Rect s = {
+                static_cast<int>(r.x),
+                static_cast<int>(r.y),
+                static_cast<int>(r.w),
+                static_cast<int>(r.h)
+            };
+            return s;
+        }
+    };
+
+    struct Quad {
+        Quad() = default;
+
+        Vector2 p1;
+        Vector2 p2;
+        Vector2 p3;
+        Vector2 p4;
     };
 
     struct Circle: public Vector2 {
@@ -56,7 +86,8 @@ namespace Amara {
         using ShapeVariant = std::variant<
             Vector2, 
             Vector3, 
-            Rectangle, 
+            Rectangle,
+            Quad,
             Circle, 
             Triangle, 
             Line

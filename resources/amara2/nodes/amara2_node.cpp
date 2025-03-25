@@ -23,6 +23,7 @@ namespace Amara {
         sol::object luaobject;
 
         PassOnProps passOn;
+        bool passOnPropsEnabled = true;
 
         sol::function luaPreload;
         sol::function luaCreate;
@@ -36,7 +37,8 @@ namespace Amara {
 
         Vector3 pos = { 0, 0, 0 };
         Vector2 scale = { 1, 1 };
-
+        Vector2 zoomFactor = { 1, 1 };
+        Vector2 scrollFactor = { 1, 1 };
         float rotation = 0;
         
         float depth = 0;
@@ -251,16 +253,28 @@ namespace Amara {
             update_properties();
 
             passOn = Props::passOn;
-            passOn.anchor = Vector3(
-                rotateAroundAnchor(Props::passOn.anchor, pos, Props::passOn.rotation),
-                passOn.anchor.z + pos.z
-            );
-            passOn.rotation += rotation;
-            passOn.scale = {
-                Props::passOn.scale.x * scale.x,
-                Props::passOn.scale.y * scale.y
-            };
+            if (string_equal(id, "test")) debug_log(Props::passOn.rotation, " ", rotation);
+            if (passOnPropsEnabled) {
+                passOn.anchor = Vector3(
+                    rotateAroundAnchor(Props::passOn.anchor, pos, Props::passOn.rotation),
+                    passOn.anchor.z + pos.z
+                );
 
+                passOn.rotation += rotation;
+
+                passOn.scale = {
+                    Props::passOn.scale.x * scale.x,
+                    Props::passOn.scale.y * scale.y
+                };
+                passOn.zoom = {
+                    Props::passOn.zoom.x * zoomFactor.x,
+                    Props::passOn.zoom.y * zoomFactor.y
+                };
+                passOn.scroll = {
+                    Props::passOn.scroll.x * scrollFactor.x,
+                    Props::passOn.scroll.y * scrollFactor.y
+                };
+            }
             drawObjects(v);
         }
         virtual void drawObjects(const Rectangle& v) {
