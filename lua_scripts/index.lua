@@ -146,6 +146,3 @@ end
 --         end
 --     end
 -- tweenWorld(firstworld)
-
--- Return the world if you want Amara to manage it and give you debugging tools.
-return world

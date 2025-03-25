@@ -160,6 +160,7 @@ namespace Amara {
                 if (json_has(config, "windowTitle")) {
                     windowTitle = config["windowTitle"];
                     if (window) SDL_SetWindowTitle(window, windowTitle.c_str());
+                    if (id.empty()) id = windowTitle;
                 }
                 if (json_has(config, "graphics")) {
                     if (config["graphics"].is_array()) {

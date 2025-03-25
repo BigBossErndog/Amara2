@@ -478,6 +478,11 @@ namespace Amara {
         sol::object get_lua_object();
         
         explicit operator std::string() const {
+            if (string_equal(baseNodeID, nodeID)) {
+                return string_concat(
+                    "(", baseNodeID, ": \"", id, "\")"
+                );
+            }
             return string_concat(
                 "(", baseNodeID, ", ", 
                 nodeID, ": \"",
