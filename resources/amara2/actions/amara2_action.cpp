@@ -3,9 +3,9 @@ namespace Amara {
     public:
         Amara::Node* actor = nullptr;
 
-        sol::function onPrepare;
-        sol::function onAct;
-        sol::function onComplete;
+        sol::protected_function onPrepare;
+        sol::protected_function onAct;
+        sol::protected_function onComplete;
 
         bool isCompleted = false;
         bool hasStarted = false;
@@ -29,10 +29,14 @@ namespace Amara {
 
             if (onPrepare.valid()) {
                 try {
-                    onPrepare(actor);
-                }
-                catch (const sol::error& e) {
-                    debug_log("Error: On ", *this, "\" while executing onPrepare().");
+                    sol::protected_function_result result = onPrepare(actor);
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                    }
+                } catch (const std::exception& e) {
+                    debug_log(e.what());
+                    Props::breakWorld();
                 }
             }
         }
@@ -43,10 +47,14 @@ namespace Amara {
             }
             if (hasStarted && onAct.valid()) {
                 try {
-                    onAct(actor, deltaTime);
-                }
-                catch (const sol::error& e) {
-                    debug_log("Error: On ", *this, "\" while executing onAct().");
+                    sol::protected_function_result result = onAct(actor, deltaTime);
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                    }
+                } catch (const std::exception& e) {
+                    debug_log(e.what());
+                    Props::breakWorld();
                 }
             }
         }
@@ -64,7 +72,7 @@ namespace Amara {
             }
         }
 
-        Amara::Node* addChild(Amara::Node* node) {
+        Amara::Node* addChild(Amara::Node* node) override {
             Amara::Action* action = node->as<Amara::Action*>();
             if (action) {
                 if (actor == nullptr) actor = parent;
@@ -84,10 +92,14 @@ namespace Amara {
             isCompleted = true;
             if (onComplete.valid()) {
                 try {
-                    onComplete(actor);
-                }
-                catch (const sol::error& e) {
-                    debug_log("Error: On ", *this, "\" while executing onComplete().");
+                    sol::protected_function_result result = onComplete(actor);
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                    }
+                } catch (const std::exception& e) {
+                    debug_log(e.what());
+                    Props::breakWorld();
                 }
             }
 
@@ -109,7 +121,7 @@ namespace Amara {
                 else if (string_equal("onAct", key)) onAct = func;
                 else if (string_equal("onComplete", key)) onComplete = func;
             }
-            return luaConfigure(key, val);
+            return Amara::Node::luaConfigure(key, val);
         }
 
         void start_child_actions() {

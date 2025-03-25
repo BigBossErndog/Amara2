@@ -3,11 +3,6 @@
 
 #define LUA_IMPLEMENTATION  // Ensures function bodies are included
 
-// Define LUA_API as static to prevent linker errors
-#ifndef LUA_API
-#define LUA_API static
-#endif
-
 // Ensure internal macros are defined
 #define LUA_CORE
 #define LUA_LIB

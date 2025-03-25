@@ -51,6 +51,8 @@
     #endif
 
     #define LUA_IMPLEMENTATION
+    #define SOL_ALL_SAFETIES_ON 1
+    
     #include <lua_single.h>
     #include <sol/sol.hpp>
 #endif

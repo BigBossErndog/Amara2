@@ -1,6 +1,4 @@
 namespace Amara {
-    Amara::Node;
-
     struct GarbageTask {
         Amara::Node* target = nullptr;
         Amara::Asset* asset = nullptr;

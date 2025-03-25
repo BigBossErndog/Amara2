@@ -61,5 +61,7 @@ namespace Amara {
                 }
             );
         }
+
+        virtual ~Demiurge() {}
     };
 }

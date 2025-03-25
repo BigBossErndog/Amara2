@@ -148,14 +148,14 @@ namespace Amara {
         }
         debug_log(ss.str());
     }
-    std::string c_style_log(const char* format, ...) {
+    void c_style_log(const char* format, ...) {
         va_list args;
         va_start(args, format);
 
         int size = vsnprintf(nullptr, 0, format, args);
         va_end(args);
         
-        if (size <= 0) return "";
+        if (size <= 0) return;
 
         std::vector<char> buffer(size + 1);
     
@@ -183,7 +183,7 @@ namespace Amara {
         });
         string_metatable.set_function("concat", &Amara::lua_string_concat);
         string_metatable.set_function("sep_concat", &Amara::lua_string_sep_concat);
-
+        
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("round", [](double num) -> int {
             return std::round(num);

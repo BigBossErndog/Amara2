@@ -54,7 +54,7 @@ namespace Amara {
             return setMainCamera(cam, true);
         }
 
-        Amara::Node* addChild(Amara::Node* node) {
+        Amara::Node* addChild(Amara::Node* node) override {
             Amara::Camera* cam = node->as<Amara::Camera*>();
             if (cam) {
                 cameras.push_back(cam);

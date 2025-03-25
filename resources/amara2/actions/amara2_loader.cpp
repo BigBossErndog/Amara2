@@ -62,6 +62,8 @@ namespace Amara {
                     if (success) Props::assets->add(task.key, sprAsset);
                     break;
                 }
+                default:
+                    break;
             }
             return success;
         }
@@ -130,7 +132,7 @@ namespace Amara {
             if (tasks.size() == 0) complete();
         }
 
-        virtual sol::object complete() {
+        virtual sol::object complete() override {
             if (parent && parent->loader == this) {
                 parent->loader = nullptr;
             }

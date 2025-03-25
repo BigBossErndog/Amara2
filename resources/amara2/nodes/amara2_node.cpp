@@ -25,10 +25,10 @@ namespace Amara {
         PassOnProps passOn;
         bool passOnPropsEnabled = true;
 
-        sol::function luaPreload;
-        sol::function luaCreate;
-        sol::function luaUpdate;
-        sol::function luaDestroy;
+        sol::protected_function luaPreload;
+        sol::protected_function luaCreate;
+        sol::protected_function luaUpdate;
+        sol::protected_function luaDestroy;
         
         MessageBox messages;
 
@@ -72,10 +72,14 @@ namespace Amara {
         virtual void create() {
             if (luaCreate.valid()) {
                 try {
-                    luaCreate(get_lua_object());
-                }
-                catch (const sol::error& e) {
-                    debug_log("Error: On ", *this, "\" while executing onCreate().");
+                    sol::protected_function_result result = luaCreate(get_lua_object());
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                    }
+                } catch (const std::exception& e) {
+                    debug_log(e.what());
+                    Props::breakWorld();
                 }
             }
         }
@@ -156,16 +160,20 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::function configure_override;
+        sol::protected_function configure_override;
         sol::object luaConfigure(sol::object config) {
             update_properties();
 
             if (configure_override.valid()) {
                 try {
-                    configure_override(this, config);
-                }
-                catch (const sol::error& e) {
-                    debug_log("Error: On ", *this, "\" while executing configure().");
+                    sol::protected_function_result result = configure_override(this, config);
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                    }
+                } catch (const std::exception& e) {
+                    debug_log(e.what());
+                    Props::breakWorld();
                 }
             }
             else {
@@ -190,10 +198,14 @@ namespace Amara {
             update_properties();
             if (luaPreload.valid()) {
                 try {
-                    luaPreload(*this);
-                }
-                catch (const sol::error& e) {
-                    debug_log("Error: On ", *this, "\" while executing onPreload().");
+                    sol::protected_function_result result = luaPreload(*this);
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                    }
+                } catch (const std::exception& e) {
+                    debug_log(e.what());
+                    Props::breakWorld();
                 }
             }
         }
@@ -248,10 +260,14 @@ namespace Amara {
             update(deltaTime);
             if (!isDestroyed && luaUpdate.valid()) {
                 try {
-                    luaUpdate(get_lua_object(), deltaTime);
-                }
-                catch (const sol::error& e) {
-                    debug_log("Error: On ", *this, "\" while executing onUpdate().");
+                    sol::protected_function_result result = luaUpdate(get_lua_object(), deltaTime);
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                    }
+                } catch (const std::exception& e) {
+                    debug_log(e.what());
+                    Props::breakWorld();
                 }
             }
 
@@ -289,6 +305,7 @@ namespace Amara {
         }
         virtual void drawObjects(const Rectangle& v) {
             passOn = Props::passOn;
+            
             drawSelf(v);
 
             sortChildren();
@@ -353,10 +370,14 @@ namespace Amara {
 
             if (luaDestroy.valid()) {
                 try {
-                    luaDestroy(get_lua_object());
-                }
-                catch (const sol::error& e) {
-                    debug_log("Error: On ", *this, "\" while executing onDestroy().");
+                    sol::protected_function_result result = luaDestroy(get_lua_object());
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                    }
+                } catch (const std::exception& e) {
+                    debug_log(e.what());
+                    Props::breakWorld();
                 }
             }
 
@@ -418,6 +439,39 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object move(const Vector3& v) {
+            pos += v;
+            return get_lua_object();
+        }
+        sol::object move(const Vector2& v) {
+            return move(Vector3(v, 0));
+        }
+        sol::object move(float _x, float _y, float _z) {
+            return move(Vector3(_x, _y, _z));
+        }
+        sol::object move(float _x, float _y) {
+            return move(Vector2(_x, _y));
+        }
+
+        sol::object goTo(const Vector3& v) {
+            pos = v;
+            return get_lua_object();
+        }
+        sol::object goTo(const Vector2& v) {
+            return goTo(Vector3(v, pos.z));
+        }
+        sol::object goTo(float _x, float _y, float _z) {
+            return goTo(Vector3(_x, _y, _z));
+        }
+        sol::object goTo(float _x, float _y) {
+            return goTo(Vector2(_x, _y));
+        }
+
+        float rotate(float _r) {
+            rotation += _r;
+            return rotation;
+        }
+
         template <typename T>
         T as();
 
@@ -461,10 +515,23 @@ namespace Amara {
                 "x", sol::property([](Node& e, float val) { e.pos.x = val; }, [](Node& e) { return e.pos.x; }),
                 "y", sol::property([](Node& e, float val) { e.pos.y = val; }, [](Node& e) { return e.pos.y; }),
                 "z", sol::property([](Node& e, float val) { e.pos.z = val; }, [](Node& e) { return e.pos.z; }),
+                "move", sol::overload(
+                    sol::resolve<sol::object(const Vector3&)>(&Node::move),
+                    sol::resolve<sol::object(const Vector2&)>(&Node::move),
+                    sol::resolve<sol::object(float, float, float)>(&Node::move),
+                    sol::resolve<sol::object(float, float)>(&Node::move)
+                ),
+                "goTo", sol::overload(
+                    sol::resolve<sol::object(const Vector3&)>(&Node::goTo),
+                    sol::resolve<sol::object(const Vector2&)>(&Node::goTo),
+                    sol::resolve<sol::object(float, float, float)>(&Node::goTo),
+                    sol::resolve<sol::object(float, float)>(&Node::goTo)
+                ),
                 "scale", &Node::scale,
                 "scaleX", sol::property([](Node& e, float val) { e.scale.x = val; }, [](Node& e) { return e.scale.x; }),
                 "scaleY", sol::property([](Node& e, float val) { e.scale.y = val; }, [](Node& e) { return e.scale.y; }),
                 "rotation", &Node::rotation,
+                "rotate", &Node::rotate,
                 "configure", sol::overload(
                     sol::resolve<sol::object(sol::object)>(&Node::luaConfigure),
                     sol::resolve<sol::object(std::string, sol::object)>(&Node::luaConfigure)

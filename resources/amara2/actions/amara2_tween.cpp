@@ -16,7 +16,7 @@ namespace Amara {
 
         int repeats = 0;
 
-        sol::function onUpdate;
+        sol::protected_function onUpdate;
 
         Tween(): Amara::Action() {
             set_base_node_id("Tween");
@@ -128,10 +128,14 @@ namespace Amara {
 
                 if (onUpdate.valid()) {
                     try {
-                        onUpdate(actor);
-                    }
-                    catch (const sol::error& e) {
-                        debug_log("Error: On ", *this, "\" while executing onUpdate().");
+                        sol::protected_function_result result = onUpdate(actor);
+                        if (!result.valid()) {
+                            sol::error err = result;
+                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                        }
+                    } catch (const std::exception& e) {
+                        debug_log(e.what());
+                        Props::breakWorld();
                     }
                 }
 

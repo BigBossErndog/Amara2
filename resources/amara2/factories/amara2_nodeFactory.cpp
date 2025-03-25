@@ -58,6 +58,7 @@ namespace Amara {
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create Node \"", key, "\".");
+                    Props::breakWorld();
                 }
             }
             else if (readScripts.find(key) != readScripts.end()) {
@@ -67,6 +68,7 @@ namespace Amara {
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create Node \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
+                    Props::breakWorld();
                 }
             }
             else debug_log("Node \"", key, "\" was not found.");

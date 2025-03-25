@@ -12,6 +12,8 @@ firstworld:configure({
         resizable = true,
         -- width = 1280,
         -- height = 720,
+        virtualWidth = 640,
+        virtualHeight = 360,
         graphics = Graphics.Render2D
     }
 })
@@ -53,7 +55,7 @@ Scripts:run("test")
 --         repeats = -1
 --     })
 -- end
-
+-- Game:setTargetFPS(30)
 firstworld.onPreload = function(self)
     self.load:image("goldenFlower", "goldenFlower.png")
 end
@@ -63,8 +65,8 @@ firstworld.onCreate = function(self)
         s:loadTexture("goldenFlower")
         s.id = "test"
 
-        s.scale.x = 2
-        s.scale.y = 2
+        s.scale.x = 1
+        s.scale.y = 1
 
         -- s.cropLeft = 70
 
@@ -84,8 +86,7 @@ firstworld.onCreate = function(self)
 end
 
 firstworld.onUpdate = function (self, deltaTime)
-    local s = self.props.s
-    if s then s.rotation = s.rotation + 0.2*deltaTime end
+    if self.props.s then self.props.s:rotate(2 * math.pi * deltaTime * 0.25) end
 end
 
 -- function tweenWorld(w)

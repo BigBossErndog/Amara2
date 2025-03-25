@@ -33,5 +33,7 @@ namespace Amara {
         virtual void destroy() {
             isDestroyed = true;
         }
+
+        virtual ~Asset() {}
     };
 }

@@ -40,10 +40,18 @@ namespace Amara {
 
             if (hasStarted) {
                 if (state_map.find(currentState) != state_map.end()) {
-                    sol::function& func = state_map[currentState];
+                    sol::protected_function func = state_map[currentState];
                     eventLooker = 0;
-
-                    func(actor->get_lua_object(), get_lua_object(), deltaTime);
+                    try {
+                        sol::protected_function_result result = func(actor->get_lua_object(), get_lua_object(), deltaTime);
+                        if (!result.valid()) {
+                            sol::error err = result;
+                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                        }
+                    } catch (const std::exception& e) {
+                        debug_log(e.what());
+                        Props::breakWorld();
+                    }
                 }
             }
         }
@@ -262,7 +270,7 @@ namespace Amara {
             return false;
         }
 
-        virtual sol::object complete() {
+        virtual sol::object complete() override {
             if (parent && parent->stateMachine == this) {
                 parent->stateMachine = nullptr;
             }

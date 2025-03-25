@@ -33,7 +33,8 @@ namespace Amara {
         }
 
         nlohmann::json readJSON(std::string path) {
-            if (fileExists(path)) nlohmann::json::parse(readFile(path));
+            if (fileExists(path)) return nlohmann::json::parse(readFile(path));
+            return nullptr;
         }
         sol::object luaReadJSON(std::string path) {
             return json_to_lua(readJSON(path));

@@ -81,7 +81,7 @@ namespace Amara {
 
                 float imgw = (spritesheet ? frameWidth : imageWidth);
                 float imgh = (spritesheet ? frameHeight : imageHeight);
-
+                
                 Vector3 anchoredPos = Vector3(
                     rotateAroundAnchor(
                         passOn.anchor, 
@@ -125,6 +125,8 @@ namespace Amara {
                         static_cast<float>(imageHeight - cropTop - cropBottom)
                     };
                 }
+
+                SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
 
                 SDL_RenderTextureRotated(
                     Props::renderer, 

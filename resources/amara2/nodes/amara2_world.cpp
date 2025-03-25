@@ -139,6 +139,12 @@ namespace Amara {
                     windowHeight = config["height"];
                     resizeWindow = true;
                 }
+                if (json_has(config, "virtualWidth")) {
+                    virtualWidth = config["virtualWidth"];
+                }
+                if (json_has(config, "virtualHeight")) {
+                    virtualHeight = config["virtualHeight"];
+                }
                 if (json_has(config, "resizable")) {
                     bool r = config["resizable"];
                     if (r) resizable = SDL_WINDOW_RESIZABLE;
@@ -217,6 +223,8 @@ namespace Amara {
                 case GraphicsEnum::Vulkan:
                     shaderFlags |= SDL_GPU_SHADERFORMAT_SPIRV;
                     break;
+                default:
+                    break;
             }
 
             gpuDevice = SDL_CreateGPUDevice(
@@ -226,12 +234,15 @@ namespace Amara {
             );
             if (!gpuDevice) {
                 printf("Error: SDL_CreatedGPUDevice failed: %s\n", SDL_GetError());
+                return false;
             }
             else if (SDL_ClaimWindowForGPUDevice(gpuDevice, window) != 0) {
                 debug_log("Error: Unable to associate window with gpu device.");
                 SDL_DestroyGPUDevice(gpuDevice);
                 gpuDevice = NULL;
+                return false;
             }
+            return true;
         }
 
         void createWindowRenderer() {
@@ -352,30 +363,32 @@ namespace Amara {
             }
         }
 
-        virtual void draw(const Rectangle& v) {
+        virtual void draw(const Rectangle& v) override {
             update_properties();
 
             if (window) {
                 Props::graphics = graphics;
             }
 
-            if (virtualWidth == -1 || virtualHeight == -1) {
+            Props::passOn.anchor = { 0, 0, 0 };
+            Props::passOn.rotation = 0;
+            Props::passOn.scroll = { 0, 0 };
+            Props::passOn.scale = { 1, 1 };
+            Props::passOn.zoom = { 1, 1 };
+            if (virtualWidth > 0 || virtualHeight > 0) {
+                if (virtualWidth <= 0) virtualWidth = windowWidth;
+                if (virtualHeight <= 0) virtualHeight = windowHeight;
                 float viewport_factor = viewport.w / viewport.h;
                 float virtual_factor = virtualWidth / virtualHeight;
                 float zoom;
                 if (viewport_factor > virtual_factor) {
-                    float zoom = viewport.h / virtualHeight;
+                    zoom = viewport.h / virtualHeight;
                 }
                 else {
-                    float zoom = viewport.w / virtualWidth;
+                    zoom = viewport.w / virtualWidth;
                 }
                 Props::passOn.zoom = { zoom, zoom };
             }
-            Props::passOn.anchor = { 0, 0, 0 };
-            Props::passOn.rotation = 0;
-            Props::passOn.scroll = { 0, 0 };
-            Props::passOn.zoom = { 1, 1 };
-            Props::passOn.scale = { 1, 1 };
 
             passOn = Props::passOn;
             passOnPropsEnabled = false;
@@ -428,4 +441,10 @@ namespace Amara {
             node_type["world"] = sol::readonly(&Node::world);
         }
     };
+
+    void Props::breakWorld() {
+        if (Props::world) {
+            Props::world->destroy();
+        }
+    }
 }

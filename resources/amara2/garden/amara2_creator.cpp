@@ -1,4 +1,4 @@
-namespace Amara {    
+namespace Amara {
     class Creator: public Demiurge {
     public:
         sol::state lua;
@@ -45,7 +45,7 @@ namespace Amara {
                 sol::lib::jit,
                 sol::lib::utf8
             );
-
+            
             bindLua();
 
             setup();

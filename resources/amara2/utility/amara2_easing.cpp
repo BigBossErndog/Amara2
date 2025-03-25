@@ -21,7 +21,7 @@ namespace Amara {
     }
 
     double ease(double startVal, double endVal, double progress, Amara::Ease easing) {
-        double eased_progress = progress;
+        double eased_progress = 0;
         switch (easing) {
             case Ease::SineIn:
                 eased_progress = ease_sineIn(progress);
@@ -31,6 +31,9 @@ namespace Amara {
                 break;
             case Ease::SineInOut:
                 eased_progress = ease_sineInOut(progress);
+                break;
+            default:
+                eased_progress = progress;
                 break;
         }
         return (endVal - startVal)*eased_progress + startVal;

@@ -1,7 +1,6 @@
 NodeFactory:load("TestNode", "nodes/testNode")
 
 local e = NodeFactory:create("TestNode")
-print(e)
 -- e.props.name = "hi"
 
 

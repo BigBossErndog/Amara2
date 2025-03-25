@@ -18,7 +18,7 @@ namespace Amara {
         
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
-        
+
         float cameraRotation = 0;
     };
 
@@ -55,6 +55,8 @@ namespace Amara {
         static GameManager* game;
         static World* world;
         static Scene* scene;
+
+        static void breakWorld();
 
         static NodeFactory* factory;
         static ScriptFactory* scripts;
