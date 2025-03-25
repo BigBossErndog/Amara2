@@ -9,7 +9,7 @@ local firstworld = Creator:createWorld()
 firstworld:configure({
     window = {
         windowTitle = "Amara2",
-        -- resizable = true,
+        resizable = true,
         -- width = 1280,
         -- height = 720,
         graphics = Graphics.Render2D
@@ -39,7 +39,7 @@ local e = firstworld:createChild("Node")
 -- assert(false, "IT FAILED!!!")
 
 Scripts:load("test","scripts/testScript")
--- Scripts:run("test")
+Scripts:run("test")
 
 -- world.onCreate = function(self)
 --     world.tween:to({
@@ -63,13 +63,29 @@ firstworld.onCreate = function(self)
         s:loadTexture("goldenFlower")
         s.id = "test"
 
+        s.scale.x = 2
+        s.scale.y = 2
+
+        -- s.cropLeft = 70
+
         local t = s:createChild("Sprite")
         t:loadTexture("goldenFlower")
-        t.x = t.x + 200;
-        t.id = "test"
-        t.rotation = math.pi / 1000;
-        print("call")
+        t.x = t.x + 140
+        t.rotation = math.rad(90)
+        -- t.cropLeft = 70
+
+        local u = t:createChild("Sprite")
+        u:loadTexture("goldenFlower")
+        u.x = u.x + 140
+        -- u.cropLeft = 70
+
+        self.props.s = s;
     end)
+end
+
+firstworld.onUpdate = function (self, deltaTime)
+    local s = self.props.s
+    if s then s.rotation = s.rotation + 0.2*deltaTime end
 end
 
 -- function tweenWorld(w)

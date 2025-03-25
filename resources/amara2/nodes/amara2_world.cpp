@@ -369,22 +369,16 @@ namespace Amara {
                 else {
                     float zoom = viewport.w / virtualWidth;
                 }
-                Props::passOn.zoom = { 
-                    Props::passOn.zoom.x * zoom, 
-                    Props::passOn.zoom.y * zoom
-                };
+                Props::passOn.zoom = { zoom, zoom };
             }
-            Props::passOn.anchor = { 
-                static_cast<float>(viewport.w/2.0), 
-                static_cast<float>(viewport.h/2.0), 
-                0 
-            };
+            Props::passOn.anchor = { 0, 0, 0 };
             Props::passOn.rotation = 0;
             Props::passOn.scroll = { 0, 0 };
             Props::passOn.zoom = { 1, 1 };
             Props::passOn.scale = { 1, 1 };
 
             passOn = Props::passOn;
+            passOnPropsEnabled = false;
 
             if (renderer) {
                 SDL_RenderClear(renderer);

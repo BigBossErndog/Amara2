@@ -180,20 +180,6 @@ namespace Amara {
             }
             else tbl.raw_set(key, value);
         };
-        props_meta["__index"] = [this](sol::table props, sol::object key) -> sol::object {
-            sol::object val = this->luaobject.as<sol::table>()[key];
-            if (val.is<sol::function>()) {
-                sol::function callback = val.as<sol::function>();
-                return sol::make_object(Props::lua(), [this, callback](sol::variadic_args va)->sol::object {
-                    return callback(this->get_lua_object(), sol::as_args(va));
-                });
-            }
-            if (!val.is<sol::nil_t>()) {
-                return val;
-            }
-            sol::object propval = props[key];
-            return propval;
-        };
         props[sol::metatable_key] = props_meta;
 
         return luaobject;

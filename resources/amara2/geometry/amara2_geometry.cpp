@@ -1,8 +1,8 @@
 namespace Amara {
-    float toDegrees(float radians) {
+    float getDegrees(float radians) {
         return radians*180/M_PI;
     }
-    float toRadians(float degrees) {
+    float getRadians(float degrees) {
         return degrees*M_PI/180;
     }
 
@@ -30,13 +30,16 @@ namespace Amara {
     }
 
     Vector2 rotateAroundAnchor(const Vector2& v1, const Vector2& v2, float rotation) {
-        float startAngle = angleBetween(v1, v2);
-        float dist = distanceBetween(v1, v2);
-        float endAngle = startAngle + rotation;
-        return {
-            v1.x + sin(endAngle)*dist,
-            v1.y + cos(endAngle)*dist
-        };
+        float s = sin(rotation);
+        float c = cos(rotation);
+
+        float dx = v2.x - v1.x;
+        float dy = v2.y - v1.y;
+
+        float newX = dx * c - dy * s;
+        float newY = dx * s + dy * c;
+        
+        return { v1.x + newX, v1.y + newY };
     }
 
     Vector2 centerOf(const Rectangle& rect) {

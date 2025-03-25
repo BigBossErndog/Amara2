@@ -18,18 +18,8 @@ namespace Amara {
         
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
-
-        PassOnProps& operator=(const PassOnProps& other) {
-            if (this != &other) {
-                rotation = other.rotation;
-                anchor = other.anchor; 
-                scale = other.scale;
-
-                scroll = other.scroll;
-                zoom = other.zoom;
-            }
-            return *this;
-        }
+        
+        float cameraRotation = 0;
     };
 
     class Props {

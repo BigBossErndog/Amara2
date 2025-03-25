@@ -200,7 +200,41 @@ namespace Amara {
         
         virtual void update(double deltaTime) {}
         virtual void update_properties() {}
+        virtual void pass_on_properties() {
+            passOn = Props::passOn;
+            
+            if (passOnPropsEnabled) {
+                passOn.anchor = Vector3(
+                    rotateAroundAnchor(
+                        Props::passOn.anchor, 
+                        Vector2( 
+                            (Props::passOn.anchor.x + pos.x*Props::passOn.scale.x), 
+                            (Props::passOn.anchor.y + pos.y*Props::passOn.scale.y)
+                        ), 
+                        Props::passOn.rotation
+                    ),
+                    passOn.anchor.z + pos.z
+                );
 
+                passOn.rotation += rotation;
+
+                passOn.scale = {
+                    Props::passOn.scale.x * scale.x,
+                    Props::passOn.scale.y * scale.y
+                };
+                passOn.zoom = {
+                    Props::passOn.zoom.x * zoomFactor.x,
+                    Props::passOn.zoom.y * zoomFactor.y
+                };
+                passOn.scroll = {
+                    Props::passOn.scroll.x * scrollFactor.x,
+                    Props::passOn.scroll.y * scrollFactor.y
+                };
+
+                Props::passOn = passOn;
+            }
+        }
+ 
         virtual void run(double deltaTime) {
             if (!isActuated) {
                 preload();
@@ -251,33 +285,10 @@ namespace Amara {
         virtual void draw(const Rectangle& v) {
             if (isDestroyed) return;
             update_properties();
-
-            passOn = Props::passOn;
-            if (string_equal(id, "test")) debug_log(Props::passOn.rotation, " ", rotation);
-            if (passOnPropsEnabled) {
-                passOn.anchor = Vector3(
-                    rotateAroundAnchor(Props::passOn.anchor, pos, Props::passOn.rotation),
-                    passOn.anchor.z + pos.z
-                );
-
-                passOn.rotation += rotation;
-
-                passOn.scale = {
-                    Props::passOn.scale.x * scale.x,
-                    Props::passOn.scale.y * scale.y
-                };
-                passOn.zoom = {
-                    Props::passOn.zoom.x * zoomFactor.x,
-                    Props::passOn.zoom.y * zoomFactor.y
-                };
-                passOn.scroll = {
-                    Props::passOn.scroll.x * scrollFactor.x,
-                    Props::passOn.scroll.y * scrollFactor.y
-                };
-            }
             drawObjects(v);
         }
         virtual void drawObjects(const Rectangle& v) {
+            passOn = Props::passOn;
             drawSelf(v);
 
             sortChildren();
@@ -287,7 +298,7 @@ namespace Amara {
         virtual void drawChildren(const Rectangle& v) {
             children_copy_list = children;
 
-            Props::passOn = passOn;
+            pass_on_properties();
 
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
@@ -303,6 +314,7 @@ namespace Amara {
                 Props::passOn = passOn;
 				++it;
 			}
+            
         }
 
         void sortChildren();

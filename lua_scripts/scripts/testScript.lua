@@ -5,7 +5,7 @@ print(e)
 -- e.props.name = "hi"
 
 
-local f = e:createChild("TestEntity")
+local f = e:createChild("TestNode")
 f.id = "entity 2"
 e.id = "entity 1"
 

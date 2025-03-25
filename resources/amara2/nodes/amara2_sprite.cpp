@@ -61,10 +61,6 @@ namespace Amara {
             return get_lua_object();
         }
 
-        virtual void update_properties() override {
-            Props::passOn = passOn;
-        }
-
         virtual void drawSelf(const Rectangle& v) override {
             if (image == nullptr) return;
 
@@ -83,14 +79,26 @@ namespace Amara {
 
                 Vector2 vcenter = centerOf(v);
 
-                float imgw = (spritesheet ? frameWidth : imageWidth) * passOn.scale.x;
-                float imgh = (spritesheet ? frameHeight : imageHeight) * passOn.scale.y;
+                float imgw = (spritesheet ? frameWidth : imageWidth);
+                float imgh = (spritesheet ? frameHeight : imageHeight);
+
+                Vector3 anchoredPos = Vector3(
+                    rotateAroundAnchor(
+                        passOn.anchor, 
+                        Vector2( 
+                            (passOn.anchor.x + pos.x*passOn.scale.x), 
+                            (passOn.anchor.y + pos.y*passOn.scale.y)
+                        ),
+                        passOn.rotation
+                    ),
+                    passOn.anchor.z + pos.z
+                );
 
                 Rectangle dim = {
-                    passOn.anchor.x + (cropLeft - imgw*origin.x)*passOn.scale.x, 
-                    passOn.anchor.y + (cropTop - imgh*origin.y)*passOn.scale.y,
-                    (imgw - cropLeft - cropRight)*passOn.scale.x,
-                    (imgh - cropTop - cropBottom)*passOn.scale.y
+                    anchoredPos.x + (cropLeft - imgw*origin.x)*scale.x*passOn.scale.x, 
+                    anchoredPos.y - anchoredPos.z + (cropTop - imgh*origin.y)*scale.y*passOn.scale.y,
+                    (imgw - cropLeft - cropRight)*scale.x*passOn.scale.x,
+                    (imgh - cropTop - cropBottom)*scale.y*passOn.scale.y
                 };
  
                 destRect.x = vcenter.x + (dim.x + passOn.scroll.x)*passOn.zoom.x; 
@@ -99,8 +107,8 @@ namespace Amara {
                 destRect.h = dim.h * passOn.zoom.y;
 
                 SDL_FPoint dorigin = {
-                    (imgw*origin.x - cropLeft)*scale.x*passOn.zoom.x,
-                    (imgh*origin.y - cropTop)*scale.y*passOn.zoom.y
+                    (imgw*origin.x - cropLeft)*scale.x*passOn.scale.x*passOn.zoom.x,
+                    (imgh*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
                 };
 
                 if (spritesheet) {
@@ -111,7 +119,8 @@ namespace Amara {
                 }
                 else {
                     srcRect = {
-                        static_cast<float>(cropLeft), static_cast<float>(cropTop),
+                        static_cast<float>(cropLeft),
+                        static_cast<float>(cropTop),
                         static_cast<float>(imageWidth - cropLeft - cropRight),
                         static_cast<float>(imageHeight - cropTop - cropBottom)
                     };
@@ -122,17 +131,10 @@ namespace Amara {
                     image->texture,
                     &srcRect,
                     &destRect,
-                    toDegrees(passOn.rotation),
+                    getDegrees(passOn.rotation + rotation),
                     &dorigin,
                     SDL_FLIP_NONE
                 );
-
-                if (rectRotatedCollision(
-                    Rectangle(destRect), passOn.rotation, origin,
-                    v, 0, { 0, 0 }
-                )) { // Check if within viewport
-                    
-                }
             }
         }
 
