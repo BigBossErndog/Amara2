@@ -115,7 +115,6 @@ namespace Amara {
             registerNode<Amara::Loader>("Loader");
 
             registerNode<Amara::Sprite>("Sprite");
-
             registerNode<Amara::Animation>("Animation");
             
             registerNode<Amara::World>("World");
@@ -133,7 +132,6 @@ namespace Amara {
             Amara::Loader::bindLua(lua);
 
             Amara::Sprite::bindLua(lua);
-
             Amara::Animation::bindLua(lua);
 
             Amara::World::bindLua(lua);

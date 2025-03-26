@@ -172,6 +172,8 @@ namespace Amara {
 
                     cleanDestroyedWorlds();
 
+                    for (Amara::World* w: worlds) w->prepareRenderer();
+
                     for (auto it = worlds.begin(); it != worlds.end(); it++) {
                         currentWorld = *it;
                         if (currentWorld->headless) continue;
@@ -179,6 +181,9 @@ namespace Amara {
                         
                         currentWorld->draw(Props::master_viewport);
                     }
+
+                    for (Amara::World* w: worlds) w->presentRenderer();
+
                     currentWorld = nullptr;
 
                     if (game.targetFPS != -1) {

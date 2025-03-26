@@ -392,15 +392,19 @@ namespace Amara {
             }
 
             passOn = Props::passOn;
-            passOnPropsEnabled = false;
-
-            if (renderer) {
-                SDL_RenderClear(renderer);
-            }    
+            passOnPropsEnabled = false;  
             
             Amara::Node::draw(viewport);
+        }
 
-            if (Props::renderer) {
+        void prepareRenderer() {
+            if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
+                SDL_RenderClear(renderer);
+            }
+        }
+
+        void presentRenderer() {
+            if (graphics == GraphicsEnum::Render2D && Props::renderer) {
                 SDL_RenderPresent(Props::renderer);
             }
         }
