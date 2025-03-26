@@ -46,11 +46,12 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            width = 1920,
-            height = 1080,
+            width = 1280,
+            height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
-            graphics = Graphics.Render2D
+            graphics = Graphics.Render2D,
+            screenMode = ScreenMode.Windowed
         }
     })
 
@@ -64,7 +65,7 @@
             startFrame = 3,
             numFrames = 6,
             frameRate = 12,
-            repeats = -1
+            repeats = 5
         })
     end
     firstworld.onCreate = function(self)
@@ -95,7 +96,9 @@
 
         local f = self:createChild("Sprite")
         f:setTexture("freaker")
-        f:animate("running")
+        f:animate("running"):whenDone(function (self)
+            self.world:setScreenMode(ScreenMode.Fullscreen)
+        end)
         self.props.f = f;
         f.frame = 3
     end

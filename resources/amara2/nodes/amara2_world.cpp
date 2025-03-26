@@ -12,11 +12,12 @@ namespace Amara {
         std::string windowTitle;
 
         bool create_window_on_start = false;
-        WindowEnum fullscreen_mode = Amara::WindowEnum::Windowed;
 
         float windowW = 640;
         float windowH = 360;
         Rectangle window_dim = { pos.x, pos.y, windowW, windowH };
+
+        ScreenModeEnum screenMode = ScreenModeEnum::Windowed;
 
         SDL_GLContext glContext;
         SDL_Renderer* renderer = nullptr;
@@ -173,6 +174,10 @@ namespace Amara {
                     else if (config["graphics"].is_number()) {
                         graphics_priority = { config["graphics"] };
                     }
+                    else {
+                        debug_log("Error: Invalid graphics setting.");
+                        Props::breakWorld();
+                    }
                 }
                 if (json_has(config, "vsync")) {
                     nlohmann::json val = config["vsync"];
@@ -192,6 +197,19 @@ namespace Amara {
                 if (resizeWindow && window != nullptr) {
                     SDL_SetWindowSize(window, windowW, windowH);
                 }
+                if (json_has(config, "screenMode")) {
+                    if (demiurge) {
+                        debug_log("Note: Demiurgic presence. Screen Mode Overridden: ", graphics_to_string(Props::graphics));
+                        debug_log("Control will be handed over in target builds.");
+                    }
+                    else if (config["screenMode"].is_null()) {
+                        debug_log("Error: Invalid screen mode setting.");
+                        Props::breakWorld();
+                    }
+                    else {
+                        setScreenMode(config["screenMode"]);
+                    }
+                }
             };
         }
        
@@ -209,6 +227,35 @@ namespace Amara {
             resizeWindow(display.w, display.h);
             centerWindow();
         }
+
+        void setScreenMode(ScreenModeEnum _sm) {
+            screenMode = _sm;
+
+            if (window) {
+                switch (screenMode) {
+                    case ScreenModeEnum::Windowed: {
+                        SDL_SetWindowFullscreen(window, false);
+                        SDL_SetWindowBordered(window, true);
+                        break;
+                    }
+                    case ScreenModeEnum::Borderless: {
+                        SDL_SetWindowFullscreen(window, false);
+                        SDL_SetWindowBordered(window, false);
+                        break;
+                    }
+                    case ScreenModeEnum::Fullscreen: {
+                        SDL_SetWindowBordered(window, true);
+                        SDL_SetWindowFullscreen(window, true);
+
+                        const SDL_DisplayMode* displayMode = SDL_GetCurrentDisplayMode(displayID);
+                        if (displayMode) SDL_SetWindowFullscreenMode(window, displayMode);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
         
         void setup_new_window() {
             if (window == nullptr) return;
@@ -217,6 +264,8 @@ namespace Amara {
             Props::current_window = window;
 
             window_dim = { pos.x, pos.y, windowW, windowH };
+
+            setScreenMode(screenMode);
         }
 
         void create_graphics_window(int flags) {
@@ -293,6 +342,8 @@ namespace Amara {
                         }
                         else {
                             Props::renderer = renderer;
+                            if (vsync != 0) SDL_SetRenderVSync(renderer, vsync);
+
                             renderer_created = true;
                             graphics = g;
                         }
@@ -459,7 +510,9 @@ namespace Amara {
                 "graphics", sol::readonly(&World::graphics),
                 "centerWindow", &World::centerWindow,
                 "resizeWindow", &World::resizeWindow,
-                "fitToDisplay", &World::fitToDisplay
+                "fitToDisplay", &World::fitToDisplay,
+                "screenMode", sol::readonly(&World::screenMode),
+                "setScreenMode", &World::setScreenMode
             );
 
             sol::usertype<Node> node_type = lua["Node"];

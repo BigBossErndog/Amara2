@@ -98,11 +98,10 @@ namespace Amara {
         GraphicsEnum::Render2D
     };
 
-    enum class WindowEnum {
+    enum class ScreenModeEnum {
         Windowed,
-        WindowBorderless,
-        Fullscreen,
-        WindowFullscreen
+        Borderless,
+        Fullscreen
     };
 
     void bindLua_UtilityFunctions(sol::state& lua) {
@@ -112,11 +111,11 @@ namespace Amara {
             "OpenGL", Amara::GraphicsEnum::OpenGL,
             "Vulkan", Amara::GraphicsEnum::Vulkan
         );
-        lua.new_enum("Window",
-            "Windowed", Amara::WindowEnum::Windowed,
-            "WindowedBorderless", Amara::WindowEnum::WindowBorderless,
-            "Fullscreen", Amara::WindowEnum::Fullscreen,
-            "WindowFullscreen", Amara::WindowEnum::WindowFullscreen
+
+        lua.new_enum("ScreenMode",
+            "Windowed", Amara::ScreenModeEnum::Windowed,
+            "Borderless", Amara::ScreenModeEnum::Borderless,
+            "Fullscreen", Amara::ScreenModeEnum::Fullscreen
         );
     }
 }
