@@ -63,7 +63,7 @@
             texture = "freaker",
             startFrame = 3,
             numFrames = 6,
-            frameRate = 1,
+            frameRate = 12,
             repeats = -1
         });
     end

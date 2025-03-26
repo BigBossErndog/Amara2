@@ -95,8 +95,8 @@ namespace Amara {
             }
 
             if (json_has(config, "frameRate")) {
-                int frameRate = config["frameRate"];
-                if (frameRate <= 0) {
+                anim.frameRate = config["frameRate"];
+                if (anim.frameRate <= 0) {
                     debug_log("Error: Animation couldn't be created from ", config.dump());
                     debug_log("Note: frameRate must be more than 0.");
                     return false;

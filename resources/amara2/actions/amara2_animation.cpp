@@ -42,6 +42,7 @@ namespace Amara {
                     frames = animData->frames;
                     repeats = animData->repeats;
                     frameRate = animData->frameRate;
+                    yoyo = animData->yoyo;
                     
                     ready = true;
                 }
@@ -65,14 +66,15 @@ namespace Amara {
                     complete();
                 }
                 else {
-                    progress += deltaTime*frameRate;
-                    if (progress > frames.size()) progress = frames.size();
+                    progress += frameRate*deltaTime/frames.size();
+                    if (progress > 1) progress = 1;
 
                     if (sprite) {
-                        sprite->frame = frames[floor(progress)];
+                        index  = floor(progress * (float)frames.size());
+                        sprite->frame = frames[index];
                     }
 
-                    if (progress == frames.size()) {
+                    if (progress == 1) {
                         if (waitingYoyo) {
                             progress = 0;
                             waitingYoyo = false;
