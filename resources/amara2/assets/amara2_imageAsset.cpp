@@ -24,8 +24,21 @@ namespace Amara {
 
             clearTexture();
 
+            SDL_IOStream *rw = SDL_IOFromFile(path.c_str(), "rb");
+            if (!rw) {
+                debug_log("Failed to open file: ", SDL_GetError());
+                return false;
+            }
+
+            Sint64 fileSize = SDL_GetIOSize(rw);
+            unsigned char *buffer = (unsigned char*)SDL_malloc(fileSize);
+            SDL_ReadIO(rw, buffer, fileSize);
+            SDL_CloseIO(rw);
+
             stbi_set_flip_vertically_on_load(0);
-            unsigned char* imageData = stbi_load(path.c_str(), &width, &height, &channels, 4);
+            unsigned char *imageData = stbi_load_from_memory(buffer, fileSize, &width, &height, &channels, 4);
+            SDL_free(buffer);
+
             if (!imageData) {
                 debug_log("Error: Failed to load image data: ", path);
                 return false;
@@ -34,7 +47,7 @@ namespace Amara {
             if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 GLuint textureID;
                 glGenTextures(1, &textureID);
-
+                
                 if (texture == 0) {
                     debug_log("Error: Texture generation failed. ", path);
                     stbi_image_free(imageData);

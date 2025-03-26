@@ -14,7 +14,7 @@ namespace Amara {
 
         std::string readFile(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
-
+            
             std::ifstream in(filePath, std::ios::in | std::ios::binary);
             if (in) {
                 std::string contents;
