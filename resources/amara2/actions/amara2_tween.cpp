@@ -172,7 +172,7 @@ namespace Amara {
                 "set", &Tween::from
             );
 
-            sol::usertype<Node> node_type = lua["Node"];
+            sol::usertype<Amara::Node> node_type = lua["Node"];
             node_type["tween"] = sol::property([](Amara::Node& e) -> sol::object {
                 Amara::Tween* tween = e.addChild(new Tween())->as<Amara::Tween*>();
                 return tween->get_lua_object();

@@ -45,7 +45,7 @@ namespace Amara {
             if (!hasStarted) {
                 prepare();
             }
-            if (hasStarted && onAct.valid()) {
+            if (hasStarted && !isCompleted && onAct.valid()) {
                 try {
                     sol::protected_function_result result = onAct(actor, deltaTime);
                     if (!result.valid()) {

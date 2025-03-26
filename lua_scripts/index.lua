@@ -56,10 +56,20 @@
 
     firstworld.onPreload = function(self)
         self.load:image("goldenFlower", "goldenFlower.png")
+        self.load:spritesheet("freaker", "freaker.png", 32, 64);
+
+        Animations:add({
+            key = "running",
+            texture = "freaker",
+            startFrame = 3,
+            numFrames = 6,
+            frameRate = 1,
+            repeats = -1
+        });
     end
     firstworld.onCreate = function(self)
         local s = self:createChild("Sprite")
-        s:loadTexture("goldenFlower")
+        s:setTexture("goldenFlower")
         s.id = "test"
 
         s.scale.x = 1
@@ -68,21 +78,28 @@
         -- s.cropLeft = 70
 
         local t = s:createChild("Sprite")
-        t:loadTexture("goldenFlower")
+        t:setTexture("goldenFlower")
         t.x = t.x + 140
         t.rotation = math.rad(90)
         -- t.cropLeft = 70
 
         local u = t:createChild("Sprite")
-        u:loadTexture("goldenFlower")
+        u:setTexture("goldenFlower")
         u.x = u.x + 140
         -- u.cropLeft = 70
 
         self.props.s = s;
+
+        local f = self:createChild("Sprite")
+        f:setTexture("freaker")
+        f:animate("running")
+        self.props.f = f;
+        f.frame = 3
     end
 
     firstworld.onUpdate = function (self, deltaTime)
         self.props.s:rotate(2 * math.pi * deltaTime * 0.25)
+        -- self.props.f.frame = self.props.f.frame + 1
     end
 
 -- function tweenWorld(w)

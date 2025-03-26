@@ -65,6 +65,8 @@ namespace Amara {
                 default:
                     break;
             }
+
+            if (!success) debug_log("Error: Failed to load asset \"", task.key, "\" from ", task.path);
             return success;
         }
 
@@ -78,10 +80,15 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::object spritesheet(std::string key, std::string path) {
+        sol::object spritesheet(std::string key, std::string path, int frameWidth, int frameHeight) {
             LoadTask task;
+            task.key = key;
             task.path = path;
             task.type = AssetEnum::Spritesheet;
+
+            task.frameWidth = frameWidth;
+            task.frameHeight = frameHeight;
+
             queueTask(task);
             return get_lua_object();
         }

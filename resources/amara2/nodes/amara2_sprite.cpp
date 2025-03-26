@@ -26,19 +26,19 @@ namespace Amara {
             set_base_node_id("Sprite");
         }
 
-        bool loadTexture(std::string key) {
+        bool setTexture(std::string key) {
             image = nullptr;
             spritesheet = nullptr;
 
             if (!Props::assets->has(key)) {
-                debug_log("Error: Asset\"", key, "\" was not found.");
+                debug_log("Error: Asset \"", key, "\" was not found.");
                 return false;
             }
 
             image = Props::assets->get(key)->as<ImageAsset*>();
             
             if (image == nullptr) {
-                debug_log("Error: Asset\"", key, "\" is not a valid texture asset.");
+                debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
                 return false;
             }
             imageWidth = image->width;
@@ -73,7 +73,7 @@ namespace Amara {
             if (cropBottom < 0) cropBottom = 0;
 
             Vector2 vcenter = centerOf(v);
-            
+
             float imgw = (spritesheet ? frameWidth : imageWidth);
             float imgh = (spritesheet ? frameHeight : imageHeight);
 
@@ -112,8 +112,9 @@ namespace Amara {
                 };
 
                 if (spritesheet) {
-                    srcRect.x = static_cast<float>((frame % (imageWidth / frameWidth)) * frameWidth + cropLeft);
-                    srcRect.y = static_cast<float>(floor(frame / (imageWidth / frameWidth)) * frameHeight + cropTop);
+                    int fixedFrame = frame % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
+                    srcRect.x = static_cast<float>((fixedFrame % (imageWidth / frameWidth)) * frameWidth + cropLeft);
+                    srcRect.y = static_cast<float>(floor(fixedFrame / (imageWidth / frameWidth)) * frameHeight + cropTop);
                     srcRect.w = static_cast<float>(frameWidth - cropLeft - cropRight);
                     srcRect.h = static_cast<float>(frameHeight - cropTop - cropBottom);
                 }
@@ -143,7 +144,8 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Sprite>("Sprite",
                 sol::base_classes, sol::bases<Node>(),
-                "loadTexture", &Sprite::loadTexture,
+                "setTexture", &Sprite::setTexture,
+                "frame", &Sprite::frame,
                 "imagew", sol::readonly(&Sprite::imageWidth),
                 "imageh", sol::readonly(&Sprite::imageHeight),
                 "framew", sol::readonly(&Sprite::frameWidth),

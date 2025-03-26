@@ -5,7 +5,8 @@ namespace Amara {
         std::string key;
         std::vector<int> frames;
         float frameRate = 60;
-        bool loop = false;
+        int repeats = 0;
+        bool yoyo = false;
 
         int numFrames = 0;
     };
@@ -102,8 +103,12 @@ namespace Amara {
                 }
             }
 
-            if (json_has(config, "loop")) {
-                anim.loop = config["loop"];
+            if (json_has(config, "repeats")) {
+                anim.repeats = config["repeats"];
+            }
+
+            if (json_has(config, "yoyo")) {
+                anim.yoyo = config["yoyo"];
             }
 
             if (textureMap.find(textureKey) != textureMap.end()) textureMap[textureKey] = TextureAnimations();
@@ -111,6 +116,17 @@ namespace Amara {
             texAnims.animations[animKey] = anim;
 
             return true;
+        }
+
+        AnimationData* get(std::string textureKey, std::string animKey) {
+            if (textureMap.find(textureKey) == textureMap.end()) {
+                return nullptr;
+            }
+            TextureAnimations& texAnims = textureMap[textureKey];
+            if (texAnims.animations.find(animKey) == texAnims.animations.end()) {
+                return nullptr;
+            }
+            return &(texAnims.animations[animKey]);
         }
 
         bool lua_add(sol::object config) {
