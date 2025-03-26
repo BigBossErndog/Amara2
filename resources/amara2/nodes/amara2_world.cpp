@@ -14,9 +14,9 @@ namespace Amara {
         bool create_window_on_start = false;
         WindowEnum fullscreen_mode = Amara::WindowEnum::Windowed;
 
-        float windowWidth = 640;
-        float windowHeight = 360;
-        Rectangle window_dim = { pos.x, pos.y, windowWidth, windowHeight };
+        float windowW = 640;
+        float windowH = 360;
+        Rectangle window_dim = { pos.x, pos.y, windowW, windowH };
 
         SDL_GLContext glContext;
         SDL_Renderer* renderer = nullptr;
@@ -67,7 +67,7 @@ namespace Amara {
                 Props::displayID = displayID;
                 
                 Props::current_window = window;
-                viewport = { 0, 0, windowWidth, windowHeight };
+                viewport = { 0, 0, windowW, windowH };
                 Props::master_viewport = viewport;
 
                 int wx, wy;
@@ -85,17 +85,17 @@ namespace Amara {
                 int ww, wh;
                 SDL_GetWindowSize(window, &ww, &wh);
                 float fww = static_cast<int>(ww), fwh = static_cast<int>(wh);
-                if (window_dim.w != windowWidth || window_dim.h != windowHeight) {
-                    fww += windowWidth - window_dim.w;
-                    fwh += windowHeight - window_dim.h;
+                if (window_dim.w != windowW || window_dim.h != windowH) {
+                    fww += windowW - window_dim.w;
+                    fwh += windowH - window_dim.h;
                     SDL_SetWindowSize(window, fww, fwh);
                 }
-                windowWidth = fww;
-                windowHeight = fwh;
-                window_dim = { pos.x, pos.y, windowWidth, windowHeight };
+                windowW = fww;
+                windowH = fwh;
+                window_dim = { pos.x, pos.y, windowW, windowH };
             }
             else {
-                viewport = { pos.x, pos.y, windowWidth, windowHeight };
+                viewport = { pos.x, pos.y, windowW, windowH };
                 display = Props::display;
             }
         }
@@ -132,11 +132,11 @@ namespace Amara {
                 create_window_on_start = !Props::integrate_new_windows;
 
                 if (json_has(config, "width")) {
-                    windowWidth = config["width"];
+                    windowW = config["width"];
                     resizeWindow = true;
                 }
                 if (json_has(config, "height")) {
-                    windowHeight = config["height"];
+                    windowH = config["height"];
                     resizeWindow = true;
                 }
                 if (json_has(config, "virtualWidth")) {
@@ -190,9 +190,24 @@ namespace Amara {
                     if (renderer) SDL_SetRenderVSync(renderer, vsync);
                 }
                 if (resizeWindow && window != nullptr) {
-                    SDL_SetWindowSize(window, windowWidth, windowHeight);
+                    SDL_SetWindowSize(window, windowW, windowH);
                 }
             };
+        }
+       
+        void centerWindow() {
+            pos.x = display.x + (display.w-windowW)/2;
+            pos.y = display.y + (display.h-windowH)/2;
+        }
+
+        void resizeWindow(float _w, float _h) {
+            windowW = _w;
+            windowH = _h;
+        }
+
+        void fitToDisplay() {
+            resizeWindow(display.w, display.h);
+            centerWindow();
         }
         
         void setup_new_window() {
@@ -200,13 +215,15 @@ namespace Amara {
 
             windowID = SDL_GetWindowID(window);
             Props::current_window = window;
+
+            window_dim = { pos.x, pos.y, windowW, windowH };
         }
 
         void create_graphics_window(int flags) {
             if (window != nullptr) return;
             window = SDL_CreateWindow(
                 windowTitle.c_str(),
-                windowWidth, windowHeight,
+                windowW, windowH,
                 resizable | flags
             );
             setup_new_window();
@@ -246,8 +263,9 @@ namespace Amara {
             return true;
         }
 
-        void createWindowRenderer() {
+        void createWindowAndRenderer() {
             bool renderer_created = false;
+
             for (GraphicsEnum g: graphics_priority) {
                 if (renderer_created) break;
                 switch (g) {
@@ -255,7 +273,7 @@ namespace Amara {
                         if (window == nullptr) {
                             if (!SDL_CreateWindowAndRenderer(
                                 windowTitle.c_str(),
-                                windowWidth, windowHeight,
+                                windowW, windowH,
                                 resizable,
                                 &window,
                                 &renderer
@@ -265,8 +283,7 @@ namespace Amara {
                                 window = nullptr;
                                 renderer = nullptr;
                             }
-                            windowID = SDL_GetWindowID(window);
-                            Props::current_window = window;
+                            setup_new_window();
                         }
                         else {
                             renderer = SDL_CreateRenderer(window, NULL);
@@ -332,15 +349,15 @@ namespace Amara {
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
             }
             else {
-                pos.x = (Props::master_viewport.w - windowWidth) / 2.0f;
-                pos.y = (Props::master_viewport.h - windowHeight) / 2.0f;
+                pos.x = (Props::master_viewport.w - windowW) / 2.0f;
+                pos.y = (Props::master_viewport.h - windowH) / 2.0f;
             }
         }
 
         virtual void preload() override {
             if (create_window_on_start) {
                 if (window == nullptr) {
-                    createWindowRenderer();
+                    createWindowAndRenderer();
                 }
             }
             else if (demiurge) {
@@ -377,8 +394,8 @@ namespace Amara {
             Props::passOn.scale = { 1, 1 };
             Props::passOn.zoom = { 1, 1 };
             if (virtualWidth > 0 || virtualHeight > 0) {
-                if (virtualWidth <= 0) virtualWidth = windowWidth;
-                if (virtualHeight <= 0) virtualHeight = windowHeight;
+                if (virtualWidth <= 0) virtualWidth = windowW;
+                if (virtualHeight <= 0) virtualHeight = windowH;
                 float viewport_factor = viewport.w / viewport.h;
                 float virtual_factor = virtualWidth / virtualHeight;
                 float zoom;
@@ -432,14 +449,17 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<World>("World",
                 sol::base_classes, sol::bases<Node>(),
-                "w", &World::windowWidth,
-                "h", &World::windowHeight,
+                "w", &World::windowW,
+                "h", &World::windowH,
                 "vw", &World::virtualWidth,
                 "vh", &World::virtualHeight,
                 "base_dir_path", sol::readonly(&World::base_dir_path),
                 "display", sol::readonly(&World::display),
                 "displayID", sol::readonly(&World::displayID),
-                "graphics", sol::readonly(&World::graphics)
+                "graphics", sol::readonly(&World::graphics),
+                "centerWindow", &World::centerWindow,
+                "resizeWindow", &World::resizeWindow,
+                "fitToDisplay", &World::fitToDisplay
             );
 
             sol::usertype<Node> node_type = lua["Node"];

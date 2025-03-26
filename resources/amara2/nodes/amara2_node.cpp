@@ -166,7 +166,7 @@ namespace Amara {
 
             if (configure_override.valid()) {
                 try {
-                    sol::protected_function_result result = configure_override(this, config);
+                    sol::protected_function_result result = configure_override(get_lua_object(), config);
                     if (!result.valid()) {
                         sol::error err = result;
                         throw std::runtime_error("Lua Error: " + std::string(err.what()));  
@@ -198,7 +198,7 @@ namespace Amara {
             update_properties();
             if (luaPreload.valid()) {
                 try {
-                    sol::protected_function_result result = luaPreload(*this);
+                    sol::protected_function_result result = luaPreload(get_lua_object());
                     if (!result.valid()) {
                         sol::error err = result;
                         throw std::runtime_error("Lua Error: " + std::string(err.what()));  

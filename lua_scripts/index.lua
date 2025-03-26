@@ -45,9 +45,9 @@
     firstworld:configure({
         window = {
             windowTitle = "Amara2",
-            resizable = true,
-            -- width = 1280,
-            -- height = 720,
+            -- resizable = true,
+            width = 1920,
+            height = 1080,
             virtualWidth = 640,
             virtualHeight = 360,
             graphics = Graphics.Render2D
@@ -57,7 +57,7 @@
     firstworld.onPreload = function(self)
         self.load:image("goldenFlower", "goldenFlower.png")
         self.load:spritesheet("freaker", "freaker.png", 32, 64);
-
+        
         Animations:add({
             key = "running",
             texture = "freaker",
@@ -68,6 +68,9 @@
         })
     end
     firstworld.onCreate = function(self)
+        -- print(self.w, self.h)
+        -- print(self.display.w, self.display.h)
+
         local s = self:createChild("Sprite")
         s:setTexture("goldenFlower")
         s.id = "test"
