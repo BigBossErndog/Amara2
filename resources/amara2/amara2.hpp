@@ -93,6 +93,11 @@
 
     #include "utility/amara2_luaUtlity.cpp"
 
+    #include "input/button.cpp"
+    #include "input/keyboard.cpp"
+    #include "input/controlScheme.cpp"
+    #include "input/controlManager.cpp"
+
     #include "managers/amara2_gameManager.cpp"
 
     #include "managers/amara2_fileManager.cpp"

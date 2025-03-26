@@ -202,7 +202,7 @@ namespace Amara {
             
             factory.clear();
             garbageCollector.clearImmediately();
-            
+
             SDL_Quit();
         }
 
@@ -214,6 +214,7 @@ namespace Amara {
             bindLua_Easing(lua);
             
             GameManager::bindLua(lua);
+            ControlManager::bindLua(lua);
 
             FileManager::bindLua(lua);
             AssetManager::bindLua(lua);
@@ -234,7 +235,7 @@ namespace Amara {
                 "createDemiurge", &Creator::createDemiurge
             );
         }
-
+        
         ~Creator() {}
     };
 

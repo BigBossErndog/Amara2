@@ -27,7 +27,7 @@
 -- Scripts:load("test","scripts/testScript")
 -- Scripts:run("test")
 
-    local firstworld = Creator:createWorld()
+    firstworld = Creator:createWorld()
     firstworld:configure({
         window = {
             windowTitle = "Amara2",

@@ -11,6 +11,7 @@ namespace Amara {
         ScriptFactory scripts;
         NodeFactory factory;
         AnimationFactory animations;
+        ControlManager controls;
 
         bool demiurgic = true;
 
@@ -24,6 +25,8 @@ namespace Amara {
             Props::lua()["NodeFactory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
             Props::lua()["Animations"] = &animations;
+            Props::lua()["Controls"] = &controls;
+            Props::lua()["Keyboard"] = &controls.keyboard;
             
             Props::files = &files;
             Props::assets = &assets;
