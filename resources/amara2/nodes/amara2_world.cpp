@@ -5,7 +5,7 @@ namespace Amara {
     public:
         Amara::Demiurge* demiurge = nullptr;
 
-        std::string base_dir_path;
+        std::string base_dir_path = Props::files->getBasePath();
 
         SDL_Window* window = nullptr;
         Uint32 windowID = 0;
@@ -109,6 +109,7 @@ namespace Amara {
                 Props::glContext = NULL;
                 Props::renderer = nullptr;
                 Props::gpuDevice = nullptr;
+
                 if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                     Props::glContext = glContext;
                 }
@@ -118,6 +119,7 @@ namespace Amara {
                 if (gpuDevice != nullptr) {
                     Props::gpuDevice = gpuDevice;
                 }
+                Props::graphics = graphics;
             }
             update_window();
             
@@ -434,10 +436,6 @@ namespace Amara {
 
         virtual void draw(const Rectangle& v) override {
             update_properties();
-
-            if (window) {
-                Props::graphics = graphics;
-            }
 
             Props::passOn.anchor = { 0, 0, 0 };
             Props::passOn.rotation = 0;

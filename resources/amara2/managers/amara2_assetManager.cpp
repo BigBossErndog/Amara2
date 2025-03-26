@@ -28,8 +28,17 @@ namespace Amara {
         }
 
         void destroyAsset(Amara::Asset* asset) {
-            // TODO: Queue Asset for deletion
+            if (asset->isDestroyed) return;
             asset->destroy();
+            Props::queue_asset_garbage(asset);
+        }
+
+        void clear() {
+            for (auto it = assets.begin(); it != assets.end(); it++) {
+                Amara::Asset* a = it->second;
+                destroyAsset(a);
+            }
+            assets.clear();
         }
 
         static void bindLua(sol::state& lua) {

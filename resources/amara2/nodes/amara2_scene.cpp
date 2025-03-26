@@ -1,7 +1,7 @@
 namespace Amara {
     class Scene: public Amara::Node {
     public:
-        Amara::Camera* mainCamera = nullptr;
+        Amara::Camera* camera = nullptr;
         std::vector<Amara::Node*> cameras;
 
         Scene(): Node() {
@@ -23,9 +23,9 @@ namespace Amara {
         virtual void run(double deltaTime) override {
             Amara::Node::run(deltaTime);
             if (
-                mainCamera != nullptr &&
-                mainCamera->isDestroyed
-            ) mainCamera = nullptr;
+                camera != nullptr &&
+                camera->isDestroyed
+            ) camera = nullptr;
             clean_node_list(cameras);
         }
 
@@ -46,8 +46,8 @@ namespace Amara {
         }
 
         Amara::Camera* setMainCamera(Amara::Camera* cam, bool destroyExisting) {
-            if (destroyExisting && mainCamera != nullptr) mainCamera->destroy();
-            mainCamera = cam;
+            if (destroyExisting && camera != nullptr) camera->destroy();
+            camera = cam;
             return cam;
         }
         Amara::Camera* setMainCamera(Amara::Camera* cam) {

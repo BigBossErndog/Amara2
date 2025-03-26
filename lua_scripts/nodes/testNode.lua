@@ -7,4 +7,4 @@ e.bind.hello = function(self, msg)
     print("Hello from", self, "!")
 end
 
-return e
+return e -- Make sure to return the entity back to the game

@@ -77,5 +77,10 @@ namespace Amara {
                 "run", &ScriptFactory::run
             );
         }
+
+        void clear() {
+            readScripts.clear();
+            compiledScripts.clear();
+        }
     };
 }

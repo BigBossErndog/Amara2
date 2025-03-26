@@ -105,10 +105,7 @@ namespace Amara {
         }
 
         void destroyAllWorlds() {
-            for (auto w: worlds) {
-                w->destroy();
-            }
-            worlds.clear();
+            for (Amara::World* world: worlds) world->destroy();
         }
 
         void update_properties() {
@@ -201,6 +198,9 @@ namespace Amara {
             }
 
             destroyAllWorlds();
+            cleanDestroyedWorlds();
+            
+            factory.clear();
             garbageCollector.clearImmediately();
             
             SDL_Quit();

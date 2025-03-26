@@ -14,7 +14,11 @@ namespace Amara {
             if (readScripts.find(key) != readScripts.end()) return true;
 
             return false;
-        } 
+        }
+
+        void add(std::string key, sol::function func) {
+            compiledScripts[key] = func;
+        }
 
         bool load(std::string key, std::string path) {
             if (factory.find(key) != factory.end()) {
@@ -59,6 +63,7 @@ namespace Amara {
                 catch (const sol::error& e) {
                     debug_log("Failed to create Node \"", key, "\".");
                     Props::breakWorld();
+                    return nullptr;
                 }
             }
             else if (readScripts.find(key) != readScripts.end()) {
@@ -69,9 +74,19 @@ namespace Amara {
                 catch (const sol::error& e) {
                     debug_log("Failed to create Node \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
                     Props::breakWorld();
+                    return nullptr;
                 }
             }
-            else debug_log("Node \"", key, "\" was not found.");
+            
+            std::string script_path = Props::files->getScriptPath(key);
+            if (Props::files->fileExists(script_path)) {
+                sol::object result = Props::files->run(script_path);
+                Amara::Node* node = result.as<Amara::Node*>();
+                return prepNode(node, node->baseNodeID);
+            }
+            
+            debug_log("Error: Node \"", key, "\" was not found.");
+            Props::breakWorld();
             return nullptr;
         }
         
@@ -120,6 +135,15 @@ namespace Amara {
             registerNode<Amara::World>("World");
         }
 
+        void clear() {
+            readScripts.clear();
+            compiledScripts.clear();
+        }
+
+        ~NodeFactory() {
+            clear();
+        }
+
         static void bindLua(sol::state& lua) {
             Amara::Node::bindLua(lua);
             Amara::Camera::bindLua(lua);
@@ -139,6 +163,7 @@ namespace Amara {
             lua.new_usertype<NodeFactory>("NodeFactory",
                 "load", &NodeFactory::load,
                 "props", &NodeFactory::props,
+                "add", &NodeFactory::add,
                 "create", &NodeFactory::luaCreate
             );
         }

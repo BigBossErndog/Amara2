@@ -45,6 +45,13 @@ namespace Amara {
             batch_queue.clear();
             batch_overflow.clear();
 
+            for (auto it = asset_collection.begin(); it != asset_collection.end();) {
+                GarbageTask& task = *it;
+                delete task.asset;
+                ++it;
+            }
+            asset_collection.clear();
+
             if (!glTextures.empty()) {
                 glDeleteTextures(static_cast<GLsizei>(glTextures.size()), glTextures.data());
                 glTextures.clear();

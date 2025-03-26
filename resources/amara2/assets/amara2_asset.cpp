@@ -26,7 +26,7 @@ namespace Amara {
         friend std::ostream& operator<<(std::ostream& os, const Asset& e) {
             return os << static_cast<std::string>(e);
         }
-
+        
         template <typename T>
         T as();
 

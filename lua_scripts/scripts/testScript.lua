@@ -1,10 +1,22 @@
-NodeFactory:load("TestNode", "nodes/testNode")
+NodeFactory:add("Test", function()
+    local e = NodeFactory:create("Node")
 
-local e = NodeFactory:create("TestNode")
+    e.onCreate = function(self)
+        print(self, "was created!")
+    end
+    e.bind.hello = function(self, msg)
+        print("Hello from", self, "!")
+    end
+
+    return e
+end)
+
+
+local e = NodeFactory:create("Test")
 -- e.props.name = "hi"
 
 
-local f = e:createChild("TestNode")
+local f = e:createChild("Test")
 f.id = "entity 2"
 e.id = "entity 1"
 
@@ -58,7 +70,7 @@ print(string.concat(
     "1", "2", "3"
 ))
 
-d.props.hi = "hi"
+print(d)
 
 -- files:execute("start ms-settings:defaultapps")
 -- local c = e:createChild("Scene")

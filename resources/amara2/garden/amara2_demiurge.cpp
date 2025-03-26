@@ -65,6 +65,10 @@ namespace Amara {
             );
         }
 
-        virtual ~Demiurge() {}
+        virtual ~Demiurge() {
+            factory.clear();
+            scripts.clear();
+            assets.clear();
+        }
     };
 }
