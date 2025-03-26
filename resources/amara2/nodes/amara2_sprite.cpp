@@ -101,8 +101,8 @@ namespace Amara {
                     (imgh - cropTop - cropBottom)*scale.y*passOn.scale.y
                 };
  
-                destRect.x = vcenter.x + (dim.x + passOn.scroll.x)*passOn.zoom.x; 
-                destRect.y = vcenter.y + (dim.y + passOn.scroll.y)*passOn.zoom.y;
+                destRect.x = vcenter.x + (dim.x - passOn.scroll.x*scrollFactor.x)*passOn.zoom.x; 
+                destRect.y = vcenter.y + (dim.y - passOn.scroll.y*scrollFactor.y)*passOn.zoom.y;
                 destRect.w = dim.w * passOn.zoom.x;
                 destRect.h = dim.h * passOn.zoom.y;
 

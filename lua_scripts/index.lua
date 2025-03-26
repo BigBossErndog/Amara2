@@ -65,7 +65,7 @@
             numFrames = 6,
             frameRate = 12,
             repeats = -1
-        });
+        })
     end
     firstworld.onCreate = function(self)
         local s = self:createChild("Sprite")

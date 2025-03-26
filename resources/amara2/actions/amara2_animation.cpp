@@ -70,7 +70,7 @@ namespace Amara {
                     if (progress > 1) progress = 1;
 
                     if (sprite) {
-                        index  = floor(progress * (float)frames.size());
+                        index = progress == 1 ? (frames.size()-1): floor(progress * (float)frames.size());
                         sprite->frame = frames[index];
                     }
 
