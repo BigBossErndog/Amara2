@@ -26,7 +26,7 @@ AMARA_PATH = -I ./resources/amara2
 # INCLUDE_DEPTH = 1000
 # EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)
 
-COMPILER_FLAGS = -w -Wall
+COMPILER_FLAGS = -w -Wall -std=c++17
 # COMPILER_FLAGS = -w -Wl,-subsystem,windows
 
 # Define required dependencies
