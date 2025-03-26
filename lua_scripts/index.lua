@@ -24,8 +24,8 @@
 
 -- assert(false, "IT FAILED!!!")
 
-Scripts:load("test","scripts/testScript")
-Scripts:run("test")
+-- Scripts:load("test","scripts/testScript")
+-- Scripts:run("test")
 
 -- world.onCreate = function(self)
 --     world.tween:to({
@@ -41,125 +41,97 @@ Scripts:run("test")
 -- end
 -- Game:setTargetFPS(30)
 
-    -- local firstworld = Creator:createWorld()
-    -- firstworld:configure({
-    --     window = {
-    --         windowTitle = "Amara2",
-    --         -- resizable = true,
-    --         width = 1280,
-    --         height = 720,
-    --         virtualWidth = 640,
-    --         virtualHeight = 360,
-    --         graphics = Graphics.Render2D,
-    --         screenMode = ScreenMode.Windowed
-    --     }
-    -- })
+    local firstworld = Creator:createWorld()
+    firstworld:configure({
+        window = {
+            windowTitle = "Amara2",
+            -- resizable = true,
+            width = 1280,
+            height = 720,
+            virtualWidth = 640,
+            virtualHeight = 360,
+            graphics = Graphics.Render2D,
+            screenMode = ScreenMode.Windowed
+        }
+    })
 
-    -- firstworld.onPreload = function(self)
-    --     self.load:image("goldenFlower", "goldenFlower.png")
-    --     self.load:spritesheet("freaker", "freaker.png", 32, 64);
+    firstworld.onPreload = function(self)
+        self.load:image("goldenFlower", "goldenFlower.png")
+        self.load:spritesheet("freaker", "freaker.png", 32, 64);
         
-    --     Animations:add({
-    --         key = "running",
-    --         texture = "freaker",
-    --         startFrame = 3,
-    --         numFrames = 6,
-    --         frameRate = 12,
-    --         repeats = -1
-    --     })
-    -- end
-    -- firstworld.onCreate = function(self)
-    --     -- print(self.w, self.h)
-    --     -- print(self.display.w, self.display.h)
+        Animations:add({
+            key = "running",
+            texture = "freaker",
+            startFrame = 3,
+            numFrames = 6,
+            frameRate = 12,
+            repeats = -1
+        })
+    end
+    firstworld.onCreate = function(self)
+        -- print(self.w, self.h)
+        -- print(self.display.w, self.display.h)
 
-    --     local s = self:createChild("Sprite")
-    --     s:setTexture("goldenFlower")
-    --     s.id = "test"
+        local s = self:createChild("Sprite")
+        s:setTexture("goldenFlower")
+        s.id = "test"
 
-    --     s.scale.x = 1
-    --     s.scale.y = 1
+        s.scale.x = 1
+        s.scale.y = 1
 
-    --     -- s.cropLeft = 70
+        -- s.cropLeft = 70
 
-    --     local t = s:createChild("Sprite")
-    --     t:setTexture("goldenFlower")
-    --     t.x = t.x + 140
-    --     t.rotation = math.rad(90)
-    --     -- t.cropLeft = 70
+        local t = s:createChild("Sprite")
+        t:setTexture("goldenFlower")
+        t.x = t.x + 140
+        t.rotation = math.rad(90)
+        -- t.cropLeft = 70
 
-    --     local u = t:createChild("Sprite")
-    --     u:setTexture("goldenFlower")
-    --     u.x = u.x + 140
-    --     -- u.cropLeft = 70
+        local u = t:createChild("Sprite")
+        u:setTexture("goldenFlower")
+        u.x = u.x + 140
+        -- u.cropLeft = 70
 
-    --     self.props.s = s;
+        self.props.s = s;
 
-    --     local f = self:createChild("Sprite")
-    --     f:setTexture("freaker")
-    --     f:animate("running")
-    --     self.props.f = f;
-    --     f.frame = 3
-    -- end
+        local f = self:createChild("Sprite")
+        f:setTexture("freaker")
+        f:animate("running")
+        self.props.f = f;
+        f.frame = 3
 
-    -- firstworld.onUpdate = function (self, deltaTime)
-    --     self.props.s:rotate(2 * math.pi * deltaTime * 0.25)
-    --     -- self.props.f.frame = self.props.f.frame + 1
-    -- end
+        tweenWorld(self)
+    end
 
--- function tweenWorld(w)
---     w.onCreate = function(world
---         world.tween:from({
---                 x = (world.display.w - world.w)/2
---             }):to({
---                 duration = 1
---             }):to({
---                 x = world.display.w - world.w,
---                 duration = 1,
---                 ease = Ease.SineInOut
---             }):to({
---                 x = 0,
---                 duration = 1,
---                 ease = Ease.SineInOut
---             }):to({
---                 x = (world.display.w - world.w)/2,
---                 duration = 1,
---                 ease = Ease.SineInOut
---             }):to({
---                 y = 0,
---                 duration = 1,
---                 ease = Ease.SineInOut
---             }):to({
---                 y = (world.display.h - world.h)/2,
---                 duration = 1,
---                 ease = Ease.SineInOut
---             }):to({
---                 x = (world.display.w - 640*2)/2,
---                 y = (world.display.h - 360*2)/2,
---                 w = 640*2,
---                 h = 360*2,
---                 duration = 1,
---                 ease = Ease.SineInOut
---             }):to({
---                 x = (world.display.w - 640)/2,
---                 y = (world.display.h - 360)/2,
---                 w = 640,
---                 h = 360,
---                 duration = 1,
---                 ease = Ease.SineInOut
---             }):whenDone(function(self)  
---                 -- print("finished")
---                 -- self.world:destroy()
---                 -- local newworld = Creator:createWorld()
---                 -- newworld:configure({
---                 --     window = {
---                 --         windowTitle = "Amara2",
---                 --         -- resizable = true
---                 --         -- width = 1280,
---                 --         -- height = 720
---                 --     }
---                 -- })
---                 -- tweenWorld(newworld)
---             end)
---         end
---     end
--- tweenWorld(firstworld)
+    firstworld.onUpdate = function (self, deltaTime)
+        self.props.s:rotate(2 * math.pi * deltaTime * 0.25)
+        -- self.props.f.frame = self.props.f.frame + 1
+    end
+
+function tweenWorld(world)
+    world.tween:from({
+            x = (world.display.w - world.w)/2
+        }):to({
+            duration = 1
+        }):to({
+            x = world.display.w - world.w,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = 0,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = (world.display.w - world.w)/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            y = 0,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            y = (world.display.h - world.h)/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        })
+end
