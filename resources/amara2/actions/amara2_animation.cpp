@@ -3,6 +3,8 @@ namespace Amara {
     public:
         Amara::Sprite* sprite = nullptr;
 
+        std::vector<int> frames;
+
         Animation(): Amara::Action() {
             set_base_node_id("Animation");
         }

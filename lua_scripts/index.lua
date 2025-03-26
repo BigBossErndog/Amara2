@@ -3,26 +3,10 @@
 -- local e = factory:create("Node");
 -- e.props.hello = function() log("hi") end
 
-NodeFactory:create("Node")
-
-local firstworld = Creator:createWorld()
-firstworld:configure({
-    window = {
-        windowTitle = "Amara2",
-        resizable = true,
-        -- width = 1280,
-        -- height = 720,
-        virtualWidth = 640,
-        virtualHeight = 360,
-        graphics = Graphics.Render2D
-    }
-})
 
 -- Every window is represented with a World.
 -- You can create multiple worlds.
 -- Calling world:destroy() will close the window.
-
-local e = firstworld:createChild("Node")
 
 -- -- e.id = "acting entity"
 -- world.onUpdate = function(self, deltaTime)
@@ -40,8 +24,8 @@ local e = firstworld:createChild("Node")
 
 -- assert(false, "IT FAILED!!!")
 
-Scripts:load("test","scripts/testScript")
-Scripts:run("test")
+-- Scripts:load("test","scripts/testScript")
+-- Scripts:run("test")
 
 -- world.onCreate = function(self)
 --     world.tween:to({
@@ -56,11 +40,24 @@ Scripts:run("test")
 --     })
 -- end
 -- Game:setTargetFPS(30)
-firstworld.onPreload = function(self)
-    self.load:image("goldenFlower", "goldenFlower.png")
-end
-firstworld.onCreate = function(self)
-    self.load:whenDone(function(self)
+
+    local firstworld = Creator:createWorld()
+    firstworld:configure({
+        window = {
+            windowTitle = "Amara2",
+            resizable = true,
+            -- width = 1280,
+            -- height = 720,
+            virtualWidth = 640,
+            virtualHeight = 360,
+            graphics = Graphics.Render2D
+        }
+    })
+
+    firstworld.onPreload = function(self)
+        self.load:image("goldenFlower", "goldenFlower.png")
+    end
+    firstworld.onCreate = function(self)
         local s = self:createChild("Sprite")
         s:loadTexture("goldenFlower")
         s.id = "test"
@@ -82,12 +79,11 @@ firstworld.onCreate = function(self)
         -- u.cropLeft = 70
 
         self.props.s = s;
-    end)
-end
+    end
 
-firstworld.onUpdate = function (self, deltaTime)
-    if self.props.s then self.props.s:rotate(2 * math.pi * deltaTime * 0.25) end
-end
+    firstworld.onUpdate = function (self, deltaTime)
+        self.props.s:rotate(2 * math.pi * deltaTime * 0.25)
+    end
 
 -- function tweenWorld(w)
 --     w.onCreate = function(world

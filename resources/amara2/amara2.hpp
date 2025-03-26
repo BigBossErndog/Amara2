@@ -102,6 +102,7 @@
     #include "managers/amara2_messageBox.cpp"
     
     #include "factories/amara2_scriptFactory.cpp"
+    #include "factories/amara2_animationFactory.cpp"
 
     #include "nodes/amara2_node.cpp"
 

@@ -5,6 +5,7 @@ namespace Amara {
     class GameManager;
     class NodeFactory;
     class ScriptFactory;
+    class AnimationFactory;
     class FileManager;
     class AssetManager;
     class MessageQueue;
@@ -62,6 +63,7 @@ namespace Amara {
         static ScriptFactory* scripts;
         static FileManager* files;
         static AssetManager* assets;
+        static AnimationFactory* animations;
         static MessageQueue* messages;
         static GarbageCollector* garbageCollector;
 
@@ -129,6 +131,7 @@ namespace Amara {
     ScriptFactory* Props::scripts = nullptr;
     FileManager* Props::files = nullptr;
     AssetManager* Props::assets = nullptr;
+    AnimationFactory* Props::animations = nullptr;
     MessageQueue* Props::messages = nullptr;
     GarbageCollector* Props::garbageCollector = nullptr;
 

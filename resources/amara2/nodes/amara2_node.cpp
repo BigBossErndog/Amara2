@@ -278,6 +278,8 @@ namespace Amara {
             clean_node_list(children);
         }
 
+        bool finishedLoading();
+
         void runChildren(double deltaTime) {
             children_copy_list = children;
 
@@ -467,9 +469,18 @@ namespace Amara {
             return goTo(Vector2(_x, _y));
         }
 
-        float rotate(float _r) {
+        sol::object setScale(float _x, float _y) {
+            scale.x = _x;
+            scale.y = _y;
+            return get_lua_object();
+        }
+        sol::object setScale(float _g) {
+            return setScale(_g, _g);
+        }
+
+        sol::object rotate(float _r) {
             rotation += _r;
-            return rotation;
+            return get_lua_object();
         }
 
         template <typename T>
@@ -535,8 +546,14 @@ namespace Amara {
                 "scale", &Node::scale,
                 "scaleX", sol::property([](Node& e, float val) { e.scale.x = val; }, [](Node& e) { return e.scale.x; }),
                 "scaleY", sol::property([](Node& e, float val) { e.scale.y = val; }, [](Node& e) { return e.scale.y; }),
+                "setScale", sol::overload(
+                    sol::resolve<sol::object(float, float)>(&Node::setScale),
+                    sol::resolve<sol::object(float)>(&Node::setScale)
+                ),
                 "rotation", &Node::rotation,
                 "rotate", &Node::rotate,
+                "scrollFactor", &Node::scrollFactor,
+                "zoomFactor", &Node::zoomFactor,
                 "configure", sol::overload(
                     sol::resolve<sol::object(sol::object)>(&Node::luaConfigure),
                     sol::resolve<sol::object(std::string, sol::object)>(&Node::luaConfigure)

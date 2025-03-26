@@ -72,27 +72,27 @@ namespace Amara {
             if (cropTop < 0) cropTop = 0;
             if (cropBottom < 0) cropBottom = 0;
 
+            Vector2 vcenter = centerOf(v);
+            
+            float imgw = (spritesheet ? frameWidth : imageWidth);
+            float imgh = (spritesheet ? frameHeight : imageHeight);
+
+            Vector3 anchoredPos = Vector3(
+                rotateAroundAnchor(
+                    passOn.anchor, 
+                    Vector2( 
+                        (passOn.anchor.x + pos.x*passOn.scale.x), 
+                        (passOn.anchor.y + pos.y*passOn.scale.y)
+                    ),
+                    passOn.rotation
+                ),
+                passOn.anchor.z + pos.z
+            );
+
             if (image->texture && Props::renderer) {
                 // 2D Rendering
                 SDL_FRect srcRect;
                 SDL_FRect destRect;
-
-                Vector2 vcenter = centerOf(v);
-
-                float imgw = (spritesheet ? frameWidth : imageWidth);
-                float imgh = (spritesheet ? frameHeight : imageHeight);
-                
-                Vector3 anchoredPos = Vector3(
-                    rotateAroundAnchor(
-                        passOn.anchor, 
-                        Vector2( 
-                            (passOn.anchor.x + pos.x*passOn.scale.x), 
-                            (passOn.anchor.y + pos.y*passOn.scale.y)
-                        ),
-                        passOn.rotation
-                    ),
-                    passOn.anchor.z + pos.z
-                );
 
                 Rectangle dim = {
                     anchoredPos.x + (cropLeft - imgw*origin.x)*scale.x*passOn.scale.x, 

@@ -10,6 +10,7 @@ namespace Amara {
         AssetManager assets;
         ScriptFactory scripts;
         NodeFactory factory;
+        AnimationFactory animations;
 
         bool demiurgic = true;
 
@@ -22,11 +23,13 @@ namespace Amara {
             Props::lua()["Assets"] = &assets;
             Props::lua()["NodeFactory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
+            Props::lua()["Animations"] = &animations;
             
             Props::files = &files;
             Props::assets = &assets;
             Props::factory = &factory;
             Props::scripts = &scripts;
+            Props::animations = &animations;
         }
 
         void setup() {

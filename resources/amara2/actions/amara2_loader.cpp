@@ -158,6 +158,11 @@ namespace Amara {
                 }
                 return node.loader->get_lua_object();
             });
+            node_type["finishedLoading"] = sol::property(&Amara::Node::finishedLoading);
         }
     };
+
+    bool Amara::Node::finishedLoading() {
+        return loader == nullptr || loader->isCompleted;
+    }
 }

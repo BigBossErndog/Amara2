@@ -214,6 +214,7 @@ namespace Amara {
             AssetManager::bindLua(lua);
             NodeFactory::bindLua(lua);
             ScriptFactory::bindLua(lua);
+            AnimationFactory::bindLua(lua);
 
             Demiurge::bindLua(lua);
 
