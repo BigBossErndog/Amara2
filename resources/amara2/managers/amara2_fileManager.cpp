@@ -322,7 +322,7 @@ namespace Amara {
 
                 try {
                     sol::function dump = (Props::lua())["string"]["dump"];
-                    sol::object bytecode = dump(func);
+                    sol::object bytecode = dump(func, true);
                 
                     if (bytecode.is<std::string>()) {
                         std::filesystem::path destPath = getRelativePath(dest);
