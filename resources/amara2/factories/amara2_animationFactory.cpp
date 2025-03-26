@@ -75,22 +75,26 @@ namespace Amara {
                     for (int i = startFrame; i <= endFrame; i++) {
                         anim.frames.push_back(i);
                     }
+                    anim.numFrames = 1 + endFrame - startFrame;
                 }
                 else if (json_has(config, "numFrames")) {
                     int numFrames = config["numFrames"];
                     for (int i = 0; i < numFrames; i++) {
                         anim.frames.push_back(startFrame + i);
                     }
+                    anim.numFrames = numFrames;
                 }
                 else {
                     debug_log("Error: Animation couldn't be created from ", config.dump());
                     debug_log("Note: endFrame or numFrame must be defined.");
+                    Props::breakWorld();
                     return false;
                 }
             }
             else {
                 debug_log("Error: Animation couldn't be created from ", config.dump());
                 debug_log("Note: Animation frames must be defined.");
+                Props::breakWorld();
                 return false;
             }
 
@@ -99,6 +103,7 @@ namespace Amara {
                 if (anim.frameRate <= 0) {
                     debug_log("Error: Animation couldn't be created from ", config.dump());
                     debug_log("Note: frameRate must be more than 0.");
+                    Props::breakWorld();
                     return false;
                 }
             }

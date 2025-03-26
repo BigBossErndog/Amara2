@@ -56,6 +56,8 @@ namespace Amara {
         bool is_scene = false;
         bool is_action = false;
 
+        bool is_animation = false;
+
         std::deque<std::string> inheritanceChain;
 
         Node() {

@@ -65,7 +65,7 @@
             startFrame = 3,
             numFrames = 6,
             frameRate = 12,
-            repeats = 5
+            repeats = -1
         })
     end
     firstworld.onCreate = function(self)
@@ -96,9 +96,7 @@
 
         local f = self:createChild("Sprite")
         f:setTexture("freaker")
-        f:animate("running"):whenDone(function (self)
-            self.world:setScreenMode(ScreenMode.Fullscreen)
-        end)
+        f:animate("running")
         self.props.f = f;
         f.frame = 3
     end
