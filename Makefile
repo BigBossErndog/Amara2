@@ -26,54 +26,20 @@ AMARA_PATH = -I ./resources/amara2
 # INCLUDE_DEPTH = 1000
 # EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)
 
-COMPILER_FLAGS = -w -Wall -std=c++17
+COMPILER_FLAGS = -w -Wall -m64 -std=c++17
 # COMPILER_FLAGS = -w -Wl,-subsystem,windows
 
-# Define required dependencies
-DEPENDENCIES = $(COMPILER) 
+playwin:
+	$(BUILD_EXECUTABLE_WIN)
 
-# Detect package manager
-PKG_MANAGER := $(shell if command -v apt-get >/dev/null 2>&1; then echo "apt-get"; \
-	else if command -v dnf >/dev/null 2>&1; then echo "dnf"; \
-	else if command -v pacman >/dev/null 2>&1; then echo "pacman"; \
-	else echo "unknown"; fi; fi; fi)
+playlinux:
+	./$(BUILD_EXECUTABLE_LINUX)
 
-# Check if dependencies are installed and install them if missing
-linux_check_deps:
-	@echo "Checking dependencies..."
-	@missing=0; \
-	for dep in $(DEPENDENCIES); do \
-	    if ! command -v $$dep >/dev/null 2>&1; then \
-	        echo "$$dep is not installed."; \
-	        missing=1; \
-	    fi; \
-	done; \
-	if [ $$missing -eq 1 ]; then \
-	    echo "Installing missing dependencies..."; \
-	    $(MAKE) install_deps; \
-	fi
+play:
+	make playwin
 
-# Install missing dependencies based on detected package manager
-linux_install_deps:
-	@if [ "$(PKG_MANAGER)" = "apt-get" ]; then \
-	    sudo apt-get update && sudo apt-get install -y $(DEPENDENCIES); \
-	elif [ "$(PKG_MANAGER)" = "dnf" ]; then \
-	    sudo dnf install -y $(DEPENDENCIES); \
-	elif [ "$(PKG_MANAGER)" = "pacman" ]; then \
-	    sudo pacman -Sy --noconfirm $(DEPENDENCIES); \
-	else \
-	    echo "Unsupported package manager. Install dependencies manually."; \
-	    exit 1; \
-	fi
-
-# Compile the project (Example: main.c)
-main: check_deps
-	gcc -o main main.c
-
-# Clean build files
 clean:
 	rm -f main
-
 
 all:
 	@echo "Usage: make (option)"
@@ -130,15 +96,6 @@ linux:
 	
 	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(SDL_INCLUDE_PATHS_LINUX) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_LINUX)
 	mkdir $(BUILD_PATH)/saves
-
-play:
-	make playwin
-
-playwin:
-	$(BUILD_EXECUTABLE_WIN)
-
-playlinux:
-	./$(BUILD_EXECUTABLE_LINUX)
 
 valgrind:
 	rm -rf build/assets/*

@@ -20,6 +20,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
     delete[] argv;
     LocalFree(argvW);
+
+    return 0;
 }
 #else
 int main(int argc, char** argv) {
