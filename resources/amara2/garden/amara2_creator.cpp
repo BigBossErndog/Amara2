@@ -50,7 +50,9 @@ namespace Amara {
 
             setup();
 
-            lua["Game"] = &game;
+            lua["Keyboard"] = &(inputManager.keyboard);
+            Props::keyboard = &(inputManager.keyboard);
+
             override_existence();
         }
 
@@ -147,7 +149,8 @@ namespace Amara {
             game.hasQuit = Props::lua_exception_thrown;
             
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
-                inputManager.handleEvents(worlds, game.hasQuit);
+                inputManager.handleEvents(worlds, game);
+
                 if (game.hasQuit) {
                     break;
                 }
@@ -161,7 +164,9 @@ namespace Amara {
                         update_properties();
 
                         Props::lua_exception_thrown = false;
+
                         currentWorld->run(game.deltaTime);
+
                         if (currentWorld->exception_thrown) {
                             currentWorld->destroy();
                         }

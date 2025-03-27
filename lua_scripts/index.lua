@@ -32,10 +32,10 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            width = 640,
-            height = 480,
+            width = 1280,
+            height = 720,
             virtualWidth = 640,
-            virtualHeight = 480,
+            virtualHeight = 360,
             -- vsync = true,
             graphics = Graphics.Render2D,
             screenMode = ScreenMode.Windowed
@@ -87,40 +87,62 @@
         self.props.f = f;
         f.frame = 3
 
-        tweenWorld(self)
+        local controlRight = Controls:createScheme("right");
+        controlRight:setKeys({ Key.Right, Key.D });
+
+        local controlLeft = Controls:createScheme("left");
+        controlLeft:setKeys({ Key.Left, Key.A });
+
+        local controlUp = Controls:createScheme("up");
+        controlUp:setKeys({ Key.Up, Key.W });
+
+        local controlDown = Controls:createScheme("down");
+        controlDown:setKeys({ Key.Down, Key.S });
+
+        -- tweenWorld(self)
     end
 
     firstworld.onUpdate = function (self, deltaTime)
         self.props.s:rotate(2 * math.pi * deltaTime * 0.25)
-        -- self.props.f.frame = self.props.f.frame + 1
+
+        if Controls:isDown("right") then
+            self.props.f:move(100*deltaTime, 0)
+        elseif Controls:isDown("left") then
+            self.props.f:move(-100*deltaTime, 0)
+        elseif Controls:isDown("up") then
+            self.props.f:move(0, -100*deltaTime)
+        elseif Controls:isDown("down") then
+            self.props.f:move(0, 100*deltaTime)
+        end
+
     end
 
-function tweenWorld(world)
-    world.tween:from({
-            x = (world.display.w - world.w)/2
-        }):to({
-            duration = 1
-        }):to({
-            x = world.display.w - world.w,
-            duration = 1,
-            ease = Ease.SineInOut
-        }):to({
-            x = 0,
-            duration = 1,
-            ease = Ease.SineInOut
-        }):to({
-            x = (world.display.w - world.w)/2,
-            duration = 1,
-            ease = Ease.SineInOut
-        }):to({
-            y = 0,
-            duration = 1,
-            ease = Ease.SineInOut
-        }):to({
-            y = (world.display.h - world.h)/2,
-            duration = 1,
-            ease = Ease.SineInOut
-        }):whenDone(function(this)
-            this.world:setScreenMode(ScreenMode.Fullscreen)
-        end)
-end
+-- function tweenWorld(world)
+--     world.tween:from({
+--             x = (world.display.w - world.w)/2
+--         }):to({
+--             duration = 1
+--         }):to({
+--             x = world.display.w - world.w,
+--             duration = 1,
+--             ease = Ease.SineInOut
+--         }):to({
+--             x = 0,
+--             duration = 1,
+--             ease = Ease.SineInOut
+--         }):to({
+--             x = (world.display.w - world.w)/2,
+--             duration = 1,
+--             ease = Ease.SineInOut
+--         }):to({
+--             y = 0,
+--             duration = 1,
+--             ease = Ease.SineInOut
+--         }):to({
+--             y = (world.display.h - world.h)/2,
+--             duration = 1,
+--             ease = Ease.SineInOut
+--         }):whenDone(function(this)
+--             this.world:setScreenMode(ScreenMode.Fullscreen)
+--         end)
+-- end

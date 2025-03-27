@@ -10,6 +10,7 @@ namespace Amara {
     class AssetManager;
     class MessageQueue;
     class GarbageCollector;
+    class KeyboardManager;
     class Asset;
 
     struct PassOnProps {
@@ -28,7 +29,6 @@ namespace Amara {
         static std::string context_path;
         static std::string lua_script_path;
         static std::string assets_path;
-        static int lua_stack_size;
 
         static std::string platform;
 
@@ -67,6 +67,9 @@ namespace Amara {
         static MessageQueue* messages;
         static GarbageCollector* garbageCollector;
 
+        static std::vector<SDL_Keycode> key_pressed_buffer;
+        static std::vector<SDL_Keycode> key_released_buffer;
+
         static bool lua_exception_thrown;
 
         static void queue_garbage(Amara::Node*, double);
@@ -80,9 +83,9 @@ namespace Amara {
         static void queue_texture_garbage(GLuint textureID);
 
         static sol::state* lua_state;
+        static int lua_stack_size;
 
-        static std::vector<std::string> debug_log_buffer;
-        static std::vector<std::string> debug_log_queue;
+        static KeyboardManager* keyboard;
 
         static sol::state& lua() {
             return *lua_state;
@@ -121,8 +124,6 @@ namespace Amara {
     SDL_GPUDevice* Props::gpuDevice = nullptr;
 
     bool Props::glFunctionsLoaded = false;
-
-    int Props::lua_stack_size = 5000000;
     
     GameManager* Props::game = nullptr;
     World* Props::world = nullptr;
@@ -138,4 +139,7 @@ namespace Amara {
     bool Props::lua_exception_thrown = false;
     
     sol::state* Props::lua_state = nullptr;
+    int Props::lua_stack_size = 5000000;
+
+    KeyboardManager* Props::keyboard = nullptr;
 }

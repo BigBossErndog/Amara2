@@ -26,7 +26,6 @@ namespace Amara {
             Props::lua()["Scripts"] = &scripts;
             Props::lua()["Animations"] = &animations;
             Props::lua()["Controls"] = &controls;
-            Props::lua()["Keyboard"] = &controls.keyboard;
             
             Props::files = &files;
             Props::assets = &assets;

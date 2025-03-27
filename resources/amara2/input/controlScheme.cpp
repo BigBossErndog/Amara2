@@ -2,17 +2,11 @@ namespace Amara {
     class ControlScheme {
     public:
         std::string id;
-
-        KeyboardManager* keyboard = nullptr;
         std::vector<SDL_Keycode> keys;
 
         ControlScheme() {}
-        ControlScheme(
-            std::string _id,
-            KeyboardManager* _keyboard
-        ) {
+        ControlScheme(std::string _id) {
             id = _id;
-            keyboard = _keyboard;
         }
         
         void addKey(SDL_Keycode _k) {
@@ -57,19 +51,19 @@ namespace Amara {
 
         bool isDown() {
             for (SDL_Keycode k: keys) {
-                if (keyboard->isDown(k)) return true;
+                if (Props::keyboard->isDown(k)) return true;
             }
             return false;
         }
         bool justPressed() {
             for (SDL_Keycode k: keys) {
-                if (keyboard->justPressed(k)) return true;
+                if (Props::keyboard->justPressed(k)) return true;
             }
             return false;
         }
         bool justReleased() {
             for (SDL_Keycode k: keys) {
-                if (keyboard->justReleased(k)) return true;
+                if (Props::keyboard->justReleased(k)) return true;
             }
             return false;
         }
@@ -77,7 +71,7 @@ namespace Amara {
             double t = 0;
             double check;
             for (SDL_Keycode k: keys) {
-                check = keyboard->timeHeld(k);
+                check = Props::keyboard->timeHeld(k);
                 if (check > t) t = check;
             }
             return t;

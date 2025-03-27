@@ -4,16 +4,20 @@ namespace Amara {
         bool logicBlocking = false;
         SDL_Event e;
 
+        KeyboardManager keyboard;
+
         void handleEvents(
             std::vector<Amara::World*>& worlds,
-            bool& quit
+            GameManager& game
         ) {
             logicBlocking = false;
 
+            keyboard.manage(game.deltaTime);
+            
             while (SDL_PollEvent(&e) != 0) {
                 switch (e.type) {
                     case SDL_EVENT_QUIT:
-                        quit = true;
+                        game.hasQuit = true;
                         break;
                     case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
                         for (auto w: worlds) {
@@ -21,6 +25,12 @@ namespace Amara {
                                 w->destroy();
                             }
                         }
+                        break;
+                    case SDL_EVENT_KEY_DOWN:
+                        keyboard.press(e.key.key);
+                        break;
+                    case SDL_EVENT_KEY_UP:
+                        keyboard.release(e.key.key);
                         break;
                 }
             }

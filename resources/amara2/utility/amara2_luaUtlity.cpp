@@ -98,7 +98,7 @@ namespace Amara {
             return j.dump();
         }
 
-        if (obj.is<sol::function>()) return "function";
+        if (obj.is<sol::function>()) return "(function)";
 
         return lua_to_json(obj).dump();
     }
@@ -168,6 +168,7 @@ namespace Amara {
 
     void bindLua_LuaUtilityFunctions(sol::state& lua) {
         lua.set_function("debug_log", &Amara::lua_debug_log);
+        lua["lua_print"] = lua["print"];
         lua.set_function("print", [](sol::variadic_args args) {
             debug_log(lua_string_sep_concat(" ", args));
         });
