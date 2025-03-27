@@ -17,6 +17,13 @@ namespace Amara {
             return nullptr;
         }
 
+        ControlScheme* scheme(std::string key) {
+            if (controls.find(key) != controls.end()) {
+                return &(controls[key]);
+            }
+            return createScheme(key);
+        }
+
         void removeScheme(std::string key) {
             if (controls.find(key) != controls.end()) {
                 controls.erase(key);
@@ -55,10 +62,11 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             KeyboardManager::bindLua(lua);
             ControlScheme::bindLua(lua);
-            
+
             lua.new_usertype<ControlManager>("ControlManager",
                 "createScheme", &ControlManager::createScheme,
                 "getScheme", &ControlManager::getScheme,
+                "scheme", &ControlManager::scheme,
                 "removeScheme", &ControlManager::removeScheme,
                 "clearAllSchemes", &ControlManager::clearAllSchemes,
                 "isDown", &ControlManager::isDown,

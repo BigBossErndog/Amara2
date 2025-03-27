@@ -87,16 +87,16 @@
         self.props.f = f;
         f.frame = 3
 
-        local controlRight = Controls:createScheme("right");
+        local controlRight = Controls:scheme("right");
         controlRight:setKeys({ Key.Right, Key.D });
 
-        local controlLeft = Controls:createScheme("left");
+        local controlLeft = Controls:scheme("left");
         controlLeft:setKeys({ Key.Left, Key.A });
 
-        local controlUp = Controls:createScheme("up");
+        local controlUp = Controls:scheme("up");
         controlUp:setKeys({ Key.Up, Key.W });
 
-        local controlDown = Controls:createScheme("down");
+        local controlDown = Controls:scheme("down");
         controlDown:setKeys({ Key.Down, Key.S });
 
         -- tweenWorld(self)
@@ -117,32 +117,32 @@
 
     end
 
--- function tweenWorld(world)
---     world.tween:from({
---             x = (world.display.w - world.w)/2
---         }):to({
---             duration = 1
---         }):to({
---             x = world.display.w - world.w,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             x = 0,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             x = (world.display.w - world.w)/2,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             y = 0,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):to({
---             y = (world.display.h - world.h)/2,
---             duration = 1,
---             ease = Ease.SineInOut
---         }):whenDone(function(this)
---             this.world:setScreenMode(ScreenMode.Fullscreen)
---         end)
--- end
+function tweenWorld(world)
+    world.tween:from({
+            x = (world.display.w - world.w)/2
+        }):to({
+            duration = 1
+        }):to({
+            x = world.display.w - world.w,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = 0,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            x = (world.display.w - world.w)/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            y = 0,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):to({
+            y = (world.display.h - world.h)/2,
+            duration = 1,
+            ease = Ease.SineInOut
+        }):whenDone(function(this)
+            this.world:setScreenMode(ScreenMode.Fullscreen)
+        end)
+end
