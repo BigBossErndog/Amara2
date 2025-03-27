@@ -32,10 +32,10 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            width = 1280,
+            width = 720,
             height = 720,
-            virtualWidth = 640,
-            virtualHeight = 360,
+            virtualWidth = 720,
+            virtualHeight = 720,
             -- vsync = true,
             graphics = Graphics.Render2D,
             screenMode = ScreenMode.Windowed
@@ -52,7 +52,7 @@
             startFrame = 3,
             numFrames = 6,
             frameRate = 12,
-            repeats = -1
+            repeats = 3
         })
     end
     firstworld.onCreate = function(self)
@@ -63,8 +63,8 @@
         s:setTexture("goldenFlower")
         s.id = "test"
 
-        s.scale.x = 1
-        s.scale.y = 1
+        s.scale.x = 2
+        s.scale.y = 2
 
         -- s.cropLeft = 70
 

@@ -55,6 +55,34 @@ namespace Amara {
             clearKeys();
         }
 
+        bool isDown() {
+            for (SDL_Keycode k: keys) {
+                if (keyboard->isDown(k)) return true;
+            }
+            return false;
+        }
+        bool justPressed() {
+            for (SDL_Keycode k: keys) {
+                if (keyboard->justPressed(k)) return true;
+            }
+            return false;
+        }
+        bool justReleased() {
+            for (SDL_Keycode k: keys) {
+                if (keyboard->justReleased(k)) return true;
+            }
+            return false;
+        }
+        double timeHeld() {
+            double t = 0;
+            double check;
+            for (SDL_Keycode k: keys) {
+                check = keyboard->timeHeld(k);
+                if (check > t) t = check;
+            }
+            return t;
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<ControlScheme>("ControlScheme", 
                 "addKey", &ControlScheme::addKey,
@@ -63,7 +91,11 @@ namespace Amara {
                 "setKeys", &ControlScheme::setKeys,
                 "removeKey", &ControlScheme::removeKey,
                 "clearKeys", &ControlScheme::clearKeys,
-                "clearAll", &ControlScheme::clearAll
+                "clearAll", &ControlScheme::clearAll,
+                "isDown", &ControlScheme::isDown,
+                "justPressed", &ControlScheme::justPressed,
+                "justReleased", &ControlScheme::justReleased,
+                "timeHeld", &ControlScheme::timeHeld
             );
         }
     };

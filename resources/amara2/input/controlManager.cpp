@@ -28,6 +28,31 @@ namespace Amara {
             controls.clear();
         }
 
+        bool isDown(std::string key) {
+            if (controls.find(key) != controls.end()) {
+                return controls[key].isDown();
+            }
+            return false;
+        }
+        bool justPressed(std::string key) {
+            if (controls.find(key) != controls.end()) {
+                return controls[key].justPressed();
+            }
+            return false;
+        }
+        bool justReleased(std::string key) {
+            if (controls.find(key) != controls.end()) {
+                return controls[key].justReleased();
+            }
+            return false;
+        }
+        double timeHeld(std::string key) {
+            if (controls.find(key) != controls.end()) {
+                return controls[key].timeHeld();
+            }
+            return false;
+        }
+
         void manage(double deltaTime) {
             keyboard.manage(deltaTime);
         }
@@ -40,7 +65,11 @@ namespace Amara {
                 "createScheme", &ControlManager::createScheme,
                 "getScheme", &ControlManager::getScheme,
                 "removeScheme", &ControlManager::removeScheme,
-                "clearAllSchemes", &ControlManager::clearAllSchemes
+                "clearAllSchemes", &ControlManager::clearAllSchemes,
+                "isDown", &ControlManager::isDown,
+                "justPressed", &ControlManager::justPressed,
+                "justReleased", &ControlManager::justReleased,
+                "timeHeld", &ControlManager::timeHeld
             );
         }
     };

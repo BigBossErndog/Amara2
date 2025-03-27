@@ -59,61 +59,60 @@ namespace Amara {
                 "justReleased", &KeyboardManager::justReleased,
                 "timeHeld", &KeyboardManager::timeHeld
             );
+
+            sol::table keycode_enum = lua.create_table();
     
-            lua.new_enum("Key",
-                "UNKNOWN", SDLK_UNKNOWN,
-                "RETURN", SDLK_RETURN,
-                "ESCAPE", SDLK_ESCAPE,
-                "BACKSPACE", SDLK_BACKSPACE,
-                "TAB", SDLK_TAB,
-                "SPACE", SDLK_SPACE,
-                "EXCLAIM", SDLK_EXCLAIM,
-                "DBLAPOSTROPHE", SDLK_DBLAPOSTROPHE,
-                "HASH", SDLK_HASH,
-                "PERCENT", SDLK_PERCENT,
-                "DOLLAR", SDLK_DOLLAR,
-                "AMPERSAND", SDLK_AMPERSAND,
-                "APOSTROPHE", SDLK_APOSTROPHE,
-                "LEFTPAREN", SDLK_LEFTPAREN,
-                "RIGHTPAREN", SDLK_RIGHTPAREN,
-                "ASTERISK", SDLK_ASTERISK,
-                "PLUS", SDLK_PLUS,
-                "COMMA", SDLK_COMMA,
-                "MINUS", SDLK_MINUS,
-                "PERIOD", SDLK_PERIOD,
-                "SLASH", SDLK_SLASH,
-                "COLON", SDLK_COLON,
-                "SEMICOLON", SDLK_SEMICOLON,
-                "LESS", SDLK_LESS,
-                "EQUALS", SDLK_EQUALS,
-                "GREATER", SDLK_GREATER,
-                "QUESTION", SDLK_QUESTION,
-                "AT", SDLK_AT,
-                "LEFTBRACKET", SDLK_LEFTBRACKET,
-                "BACKSLASH", SDLK_BACKSLASH,
-                "RIGHTBRACKET", SDLK_RIGHTBRACKET,
-                "CARET", SDLK_CARET,
-                "UNDERSCORE", SDLK_UNDERSCORE,
-                "GRAVE", SDLK_GRAVE,
-                "DELETE", SDLK_DELETE,
-                "CAPSLOCK", SDLK_CAPSLOCK,
-                "NUMLOCK", SDLK_NUMLOCKCLEAR,
-                "SCROLLLOCK", SDLK_SCROLLLOCK,
-                "PAUSE", SDLK_PAUSE,
-                "INSERT", SDLK_INSERT,
-                "HOME", SDLK_HOME,
-                "PAGEUP", SDLK_PAGEUP,
-                "PAGEDOWN", SDLK_PAGEDOWN,
-                "END", SDLK_END,
-                "UP", SDLK_UP,
-                "DOWN", SDLK_DOWN,
-                "LEFT", SDLK_LEFT,
-                "RIGHT", SDLK_RIGHT,
-                "PRINTSCREEN", SDLK_PRINTSCREEN
-            );
-        
+            keycode_enum["UNKNOWN"] = SDLK_UNKNOWN;
+            keycode_enum["RETURN"] = SDLK_RETURN;
+            keycode_enum["ESCAPE"] = SDLK_ESCAPE;
+            keycode_enum["BACKSPACE"] = SDLK_BACKSPACE;
+            keycode_enum["TAB"] = SDLK_TAB;
+            keycode_enum["SPACE"] = SDLK_SPACE;
+            keycode_enum["EXCLAIM"] = SDLK_EXCLAIM;
+            keycode_enum["DBLAPOSTROPHE"] = SDLK_DBLAPOSTROPHE;
+            keycode_enum["HASH"] = SDLK_HASH;
+            keycode_enum["PERCENT"] = SDLK_PERCENT;
+            keycode_enum["DOLLAR"] = SDLK_DOLLAR;
+            keycode_enum["AMPERSAND"] = SDLK_AMPERSAND;
+            keycode_enum["APOSTROPHE"] = SDLK_APOSTROPHE;
+            keycode_enum["LEFTPAREN"] = SDLK_LEFTPAREN;
+            keycode_enum["RIGHTPAREN"] = SDLK_RIGHTPAREN;
+            keycode_enum["ASTERISK"] = SDLK_ASTERISK;
+            keycode_enum["PLUS"] = SDLK_PLUS;
+            keycode_enum["COMMA"] = SDLK_COMMA;
+            keycode_enum["MINUS"] = SDLK_MINUS;
+            keycode_enum["PERIOD"] = SDLK_PERIOD;
+            keycode_enum["SLASH"] = SDLK_SLASH;
+            keycode_enum["COLON"] = SDLK_COLON;
+            keycode_enum["SEMICOLON"] = SDLK_SEMICOLON;
+            keycode_enum["LESS"] = SDLK_LESS;
+            keycode_enum["EQUALS"] = SDLK_EQUALS;
+            keycode_enum["GREATER"] = SDLK_GREATER;
+            keycode_enum["QUESTION"] = SDLK_QUESTION;
+            keycode_enum["AT"] = SDLK_AT;
+            keycode_enum["LEFTBRACKET"] = SDLK_LEFTBRACKET;
+            keycode_enum["BACKSLASH"] = SDLK_BACKSLASH;
+            keycode_enum["RIGHTBRACKET"] = SDLK_RIGHTBRACKET;
+            keycode_enum["CARET"] = SDLK_CARET;
+            keycode_enum["UNDERSCORE"] = SDLK_UNDERSCORE;
+            keycode_enum["GRAVE"] = SDLK_GRAVE;
+            keycode_enum["DELETE"] = SDLK_DELETE;
+            keycode_enum["CAPSLOCK"] = SDLK_CAPSLOCK;
+            keycode_enum["NUMLOCK"] = SDLK_NUMLOCKCLEAR;
+            keycode_enum["SCROLLLOCK"] = SDLK_SCROLLLOCK;
+            keycode_enum["PAUSE"] = SDLK_PAUSE;
+            keycode_enum["INSERT"] = SDLK_INSERT;
+            keycode_enum["HOME"] = SDLK_HOME;
+            keycode_enum["PAGEUP"] = SDLK_PAGEUP;
+            keycode_enum["PAGEDOWN"] = SDLK_PAGEDOWN;
+            keycode_enum["END"] = SDLK_END;
+            keycode_enum["UP"] = SDLK_UP;
+            keycode_enum["DOWN"] = SDLK_DOWN;
+            keycode_enum["LEFT"] = SDLK_LEFT;
+            keycode_enum["RIGHT"] = SDLK_RIGHT;
+            keycode_enum["PRINTSCREEN"] = SDLK_PRINTSCREEN;
+                    
             // Function keys (F1 - F24)
-            sol::table keycode_enum = lua["SDL_Keycode"];
             for (int i = 1; i <= 24; ++i) {
                 keycode_enum["F" + std::to_string(i)] = SDL_Keycode(SDLK_F1 + (i - 1));
             }
@@ -162,6 +161,8 @@ namespace Amara {
             keycode_enum["MUTE"] = SDLK_MUTE;
             keycode_enum["MEDIA_NEXT_TRACK"] = SDLK_MEDIA_NEXT_TRACK;
             keycode_enum["MEDIA_SELECT"] = SDLK_MEDIA_SELECT;
+
+            lua["Key"] = keycode_enum;
         }
      };
 }

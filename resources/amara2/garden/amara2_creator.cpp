@@ -215,7 +215,6 @@ namespace Amara {
             
             GameManager::bindLua(lua);
             ControlManager::bindLua(lua);
-
             FileManager::bindLua(lua);
             AssetManager::bindLua(lua);
             NodeFactory::bindLua(lua);
