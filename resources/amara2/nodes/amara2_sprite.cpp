@@ -87,7 +87,16 @@ namespace Amara {
             if (json_has(config, "cropTop")) cropTop = config["cropTop"];
             if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
 
+            if (json_has(config, "animation")) animate(config["animation"]);
+
             return this;
+        }
+
+        Amara::Action* animate(nlohmann::json config);
+
+        sol::object animate(sol::object config) {
+            Amara::Action* anim = animate(lua_to_json(config));
+            return anim->get_lua_object();
         }
 
         sol::object setOrigin(float _x, float _y) {
@@ -180,6 +189,7 @@ namespace Amara {
                 sol::base_classes, sol::bases<Node>(),
                 "setTexture", &Sprite::setTexture,
                 "frame", &Sprite::frame,
+                "animate",  sol::resolve<sol::object(sol::object)>(&Sprite::animate),
                 "imagew", sol::readonly(&Sprite::imageWidth),
                 "imageh", sol::readonly(&Sprite::imageHeight),
                 "framew", sol::readonly(&Sprite::frameWidth),

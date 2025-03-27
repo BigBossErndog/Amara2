@@ -193,15 +193,6 @@ namespace Amara {
             );
 
             sol::usertype<Amara::Sprite> sprite_type = lua["Sprite"];
-            sprite_type["animate"] = [](Amara::Sprite& s, sol::object config) -> sol::object {
-                for (Amara::Node* node: s.children) {
-                    if (node->is_animation && !node->isDestroyed) node->destroy();
-                }
-                
-                Amara::Animation* anim = s.addChild(new Animation())->as<Amara::Animation*>();
-                anim->setAnimation(lua_to_json(config));
-                return anim->get_lua_object();
-            };
             sprite_type["hasAnimation"] = [](Amara::Sprite& sprite, std::string key) -> bool {
                 if (sprite.spritesheet && !key.empty()) {
                     AnimationData* animData = Props::animations->get(sprite.spritesheet->key, key);
@@ -219,4 +210,14 @@ namespace Amara {
             });
         }
     };
+
+    Amara::Action* Amara::Sprite::animate(nlohmann::json config) {
+        for (Amara::Node* node: children) {
+            if (node->is_animation && !node->isDestroyed) node->destroy();
+        }
+        
+        Amara::Animation* anim = addChild(new Animation())->as<Amara::Animation*>();
+        anim->setAnimation(config);
+        return anim;
+    }
 }

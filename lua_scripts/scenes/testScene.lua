@@ -39,16 +39,11 @@ scene.onCreate = function(self)
 
     self.props.s = s;
 
-    local f = self:createChild("Sprite")
-    f:setTexture("freaker")
-    f:animate({
-        key = "running",
+    local f = self:createChild("Sprite"):configure({
         texture = "freaker",
-        startFrame = 3,
-        numFrames = 6,
-        frameRate = 12,
-        repeats = -1
+        animation = "running"
     })
+    
     self.props.f = f;
     f.frame = 3
 
@@ -69,7 +64,7 @@ end
 
 scene.onUpdate = function(self, deltaTime)
     -- self.props.s:rotate(2 * math.pi * deltaTime * 0.25)
-
+    
     local speed = 200;
 
     if Controls:isDown("right") then
