@@ -1,6 +1,14 @@
 namespace Amara {
+    class NodeDescriptor {
+    public:
+        nlohmann::json data;
+        std::string nodeID;
+        std::string baseNodeID;
+    };
+
     class NodeFactory {
     public:
+        std::unordered_map<std::string, NodeDescriptor> descriptors;
         std::unordered_map<std::string, std::function<Node*()>> factory;
         std::unordered_map<std::string, std::string> readScripts;
         std::unordered_map<std::string, sol::function> compiledScripts;
@@ -12,6 +20,7 @@ namespace Amara {
             if (factory.find(key) != factory.end()) return true;
             if (compiledScripts.find(key) != compiledScripts.end())  return true;
             if (readScripts.find(key) != readScripts.end()) return true;
+            if (descriptors.find(key) != descriptors.end()) return true; 
 
             return false;
         }
@@ -25,7 +34,7 @@ namespace Amara {
                 debug_log("Error: \"", key, "\" is a reserved node name.");
                 return false;
             }
-
+            
             std::string script_path = Props::files->getScriptPath(path);
 
             if (!Props::files->fileExists(script_path)) {
@@ -36,8 +45,18 @@ namespace Amara {
             if (string_endsWith(script_path, ".lua")) {
                 readScripts[key] = script_path;
             }
-            else {
+            else if (string_endsWith(script_path, ".luac")) {
                 compiledScripts[key] = Props::files->load_script(script_path);
+            }
+            else if (string_endsWith(script_path, ".amara")) {
+                NodeDescriptor desc;
+                nlohmann::json data = Props::files->readJSON(script_path);
+                desc.data = data;
+                
+                desc.nodeID = data["nodeID"];
+                desc.baseNodeID = data["baseNodeID"];
+
+                descriptors[desc.nodeID] = desc;
             }
 
             return true;
@@ -77,12 +96,35 @@ namespace Amara {
                     return nullptr;
                 }
             }
+            else if (descriptors.find(key) != descriptors.end()) {
+                NodeDescriptor& desc = descriptors[key];
+
+                Amara::Node* node = create(desc.baseNodeID);
+                if (node) node->configure(desc.data);
+
+                return prepNode(node, key);
+            }
             
             std::string script_path = Props::files->getScriptPath(key);
             if (Props::files->fileExists(script_path)) {
-                sol::object result = Props::files->run(script_path);
-                Amara::Node* node = result.as<Amara::Node*>();
-                return prepNode(node, node->baseNodeID);
+                if (string_endsWith(script_path, ".lua") || string_endsWith(script_path, ".luac")) {
+                    sol::object result = Props::files->run(script_path);
+                    Amara::Node* node = result.as<Amara::Node*>();
+                    return prepNode(node, node->baseNodeID);
+                }
+                else if (string_endsWith(script_path, ".amara")) {
+                    NodeDescriptor desc;
+                    nlohmann::json data = Props::files->readJSON(script_path);
+                    desc.data = data;
+                    
+                    desc.nodeID = data["nodeID"];
+                    desc.baseNodeID = data["baseNodeID"];
+
+                    Amara::Node* node = create(desc.baseNodeID);
+                    if (node) node->configure(desc.data);
+
+                    return prepNode(node, key);
+                }
             }
             
             debug_log("Error: Node \"", key, "\" was not found.");

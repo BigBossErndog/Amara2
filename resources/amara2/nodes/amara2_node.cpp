@@ -108,6 +108,8 @@ namespace Amara {
         virtual nlohmann::json toJSON() {
             return nlohmann::json::object({
                 { "id", id },
+                { "nodeID", nodeID },
+                { "baseNodeID", baseNodeID },
                 { "x", pos.x },
                 { "y", pos.y },
                 { "z", pos.z }

@@ -218,6 +218,8 @@ namespace Amara {
                 if (fileExists(path)) return path;
                 path = filePath.string() + ".lua";
                 if (fileExists(path)) return path;
+                path = filePath.string() + ".amara";
+                if (fileExists(path)) return path;
             }
             return filePath.string();
         }
