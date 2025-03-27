@@ -56,6 +56,40 @@ namespace Amara {
             return true;
         }
 
+        virtual nlohmann::json toJSON() override {
+            nlohmann::json data = Amara::Node::toJSON();
+            
+            if (image) {
+                data["texture"] = image->key;
+            }
+
+            data["originX"] = origin.x;
+            data["originY"] = origin.y;
+
+            data["cropLeft"] = cropLeft;
+            data["cropRight"] = cropRight;
+            data["cropTop"] = cropTop;
+            data["cropBottom"] = cropBottom;
+
+            return data;
+        }
+
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            Amara::Node::configure(config);
+
+            if (json_has(config, "texture")) setTexture(config["texture"]);
+
+            if (json_has(config, "originX")) origin.x = config["originX"];
+            if (json_has(config, "originY")) origin.y = config["originY"];
+
+            if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
+            if (json_has(config, "cropRight")) cropRight = config["cropRight"];
+            if (json_has(config, "cropTop")) cropTop = config["cropTop"];
+            if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
+
+            return this;
+        }
+
         sol::object setOrigin(float _x, float _y) {
             origin = { _x, _y };
             return get_lua_object();

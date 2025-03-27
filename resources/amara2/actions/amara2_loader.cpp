@@ -22,6 +22,7 @@ namespace Amara {
 
         Loader() {
             set_base_node_id("Loader");
+            is_load_task = true;
         }
 
         template <typename T>

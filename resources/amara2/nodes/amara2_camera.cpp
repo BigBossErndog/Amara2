@@ -1,5 +1,5 @@
 namespace Amara {
-    class Camera: public Node {
+    class Camera: public Amara::Node {
     public:
         Rectangle viewport;
         bool isSizeTethered = true;
@@ -19,20 +19,62 @@ namespace Amara {
         float bottomBorder = 0;
 
         Amara::Node* followTarget = nullptr;
+        Vector2 lerp = { 0, 0 };
 
         Camera(): Node() {
             set_base_node_id("Camera");
             is_camera = true;
         }
 
+        virtual nlohmann::json toJSON() {
+            nlohmann::json data = Amara::Node::toJSON();
+            data["scrollX"] = scroll.x;
+            data["scrollY"] = scroll.y;
+
+            data["zoomX"] = zoom.x;
+            data["zoomY"] = zoom.y;
+
+            data["originX"] = origin.x;
+            data["originY"] = origin.y;
+
+            data["lerpX"] = lerp.x;
+            data["lerpY"] = lerp.y;
+
+            return data;
+        }
+
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            Amara::Node::configure(config);
+
+            if (json_has(config, "scrollX")) scroll.x = config["scrollX"];
+            if (json_has(config, "scrollY")) scroll.y = config["scrollY"];
+
+            if (json_has(config, "zoomX")) zoom.x = config["zoomX"];
+            if (json_has(config, "zoomY")) zoom.y = config["zoomY"];
+
+            if (json_has(config, "originX")) origin.x = config["originX"];
+            if (json_has(config, "originY")) origin.y = config["originY"];
+
+            if (json_has(config, "lerpX")) lerp.x = config["lerpX"];
+            if (json_has(config, "lerpY")) lerp.y = config["lerpY"];
+
+            return this;
+        }
+
         virtual void run(double deltaTime) override {
             Amara::Node::run(deltaTime);
 
             if (followTarget) {
-                focusOn(followTarget);
+                float tx = followTarget->pos.x + followTarget->cameraFollowOffset.x;
+                if (lerp.x > 0) scroll.x = scroll.x + (tx - scroll.x)*(1.0f - std::exp(-lerp.x*deltaTime));
+                else scroll.x = tx;
+
+                float ty = followTarget->pos.y + followTarget->cameraFollowOffset.y;
+                if (lerp.y) scroll.y = scroll.y + (ty - scroll.y)*(1.0f - std::exp(-lerp.y*deltaTime));
+                else scroll.y = ty;
             }
 
-            center = { -scroll.x, -scroll.y };
+            center = { scroll.x, scroll.y };
             leftBorder = center.x - (width/zoom.x)/2.0;
             rightBorder = center.x + (width/zoom.x)/2.0;
             topBorder = center.y - (height/zoom.y)/2.0;
@@ -45,13 +87,22 @@ namespace Amara {
         }
 
         sol::object focusOn(Amara::Node* node) {
-            return focusOn(node->x, node->y);
+            return focusOn(node->pos.x, node->pos.y);
         }
 
-        sol::object startFollow(Amara::Node* node) {
+        sol::object startFollow(Amara::Node* node, float _lx, float _ly) {
+            lerp = { _lx, _ly };
             followTarget = node;
             focusOn(node);
             return get_lua_object();
+        }
+
+        sol::object startFollow(Amara::Node* node, float _l) {
+            return startFollow(node, _l, _l);
+        }
+
+        sol::object startFollow(Amara::Node* node) {
+            return startFollow(node, 0);
         }
 
         sol::object stopFollow() {
@@ -60,7 +111,8 @@ namespace Amara {
         }
 
         virtual void pass_on_properties() override {
-            props = Props::passOn;
+            passOn = Props::passOn;
+
             if (passOnPropsEnabled) {
                 passOn.anchor = { 0, 0, 0 };
 
@@ -79,7 +131,7 @@ namespace Amara {
                 passOn.zoom = {
                     Props::passOn.zoom.x * zoom.x,
                     Props::passOn.zoom.y * zoom.y
-                }
+                };
 
                 Props::passOn = passOn;
             }
@@ -92,7 +144,7 @@ namespace Amara {
                 viewport = v;
             }
             else {
-                viewport.x = {
+                viewport = {
                     (pos.x - (width*origin.x)*scale.x*passOn.scale.x)*passOn.zoom.x,
                     (pos.y - (height*origin.y)*scale.y*passOn.scale.y - pos.z)*passOn.zoom.y,
                     width*scale.x*passOn.scale.x*passOn.zoom.x, 
@@ -124,16 +176,25 @@ namespace Amara {
                 "w", &Camera::width,
                 "h", &Camera::height,
                 "scroll", &Camera::scroll,
-                "scrollX", sol::property([](Camera& cam) { return cam.scrollX; }, [](Camera& cam, float val) { cam.scroll.x = val; }),
-                "scrollY", sol::property([](Camera& cam) { return cam.scrollY; }, [](Camera& cam, float val) { cam.scroll.y = val; }),
+                "scrollX", sol::property([](Camera& cam) { return cam.scroll.x; }, [](Camera& cam, float val) { cam.scroll.x = val; }),
+                "scrollY", sol::property([](Camera& cam) { return cam.scroll.x; }, [](Camera& cam, float val) { cam.scroll.y = val; }),
                 "zoom", &Camera::zoom,
-                "zoomX", sol::property([](Camera& cam) { return cam.zoom.x }, [](Camera& cam, float val) { cam.zoom.x = val; }),
-                "zoomY", sol::property([](Camera& cam) { return cam.zoom.y }, [](Camera& cam, float val) { cam.zoom.y = val; }),
+                "zoomX", sol::property([](Camera& cam) { return cam.zoom.x; }, [](Camera& cam, float val) { cam.zoom.x = val; }),
+                "zoomY", sol::property([](Camera& cam) { return cam.zoom.y; }, [](Camera& cam, float val) { cam.zoom.y = val; }),
+                "lerp", &Camera::lerp,
+                "lerpX", sol::property([](Camera& cam) { return cam.lerp.x; }, [](Camera& cam, float val) { cam.lerp.x = val; }),
+                "lerpY", sol::property([](Camera& cam) { return cam.lerp.y; }, [](Camera& cam, float val) { cam.lerp.y = val; }),
                 "center", sol::readonly(&Camera::center),
                 "leftBorder", sol::readonly(&Camera::leftBorder),
                 "rightBorder", sol::readonly(&Camera::rightBorder),
                 "topBorder", sol::readonly(&Camera::topBorder),
-                "bottomBorder", sol::readonly(&Camera::bottomBorder)
+                "bottomBorder", sol::readonly(&Camera::bottomBorder),
+                "startFollow", sol::overload(
+                    sol::resolve<sol::object(Amara::Node*)>(&Camera::startFollow),
+                    sol::resolve<sol::object(Amara::Node*, float, float)>(&Camera::startFollow),
+                    sol::resolve<sol::object(Amara::Node*, float)>(&Camera::startFollow)
+                ),
+                "stopFollow", &Camera::stopFollow
             );
         }
     };

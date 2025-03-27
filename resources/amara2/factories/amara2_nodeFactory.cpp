@@ -127,7 +127,7 @@ namespace Amara {
                 }
             }
             
-            debug_log("Error: Node \"", key, "\" was not found.");
+            debug_log("Error: Node with key \"", key, "\" was not found.");
             Props::breakWorld();
             return nullptr;
         }

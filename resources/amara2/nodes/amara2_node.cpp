@@ -40,6 +40,8 @@ namespace Amara {
         Vector2 zoomFactor = { 1, 1 };
         Vector2 scrollFactor = { 1, 1 };
         float rotation = 0;
+
+        Vector2 cameraFollowOffset = { 0, 0 };
         
         float depth = 0;
         bool yDepthLocked = false;
@@ -55,6 +57,7 @@ namespace Amara {
         bool is_camera = false;
         bool is_scene = false;
         bool is_action = false;
+        bool is_load_task = false;
 
         bool is_animation = false;
 
@@ -92,20 +95,6 @@ namespace Amara {
         virtual void init() {
             update_properties();
             get_lua_object();
-            make_configurables();
-        }
-
-        virtual void make_configurables() {
-            configurables["id"] = [this](nlohmann::json val) { this->id = val; };
-            configurables["x"] = [this](nlohmann::json val) { this->pos.x = val; };
-            configurables["y"] = [this](nlohmann::json val) { this->pos.y = val; };
-            configurables["z"] = [this](nlohmann::json val) { this->pos.z = val; };
-            configurables["props"] = [this] (nlohmann::json data) {
-                if (!data.is_object()) return;
-                for (auto it = data.begin(); it != data.end(); ++it) {
-                    props[it.key()] = json_to_lua(it.value());
-                }
-            };
         }
 
         virtual nlohmann::json toJSON() {
@@ -118,15 +107,12 @@ namespace Amara {
                 { "z", pos.z }
             });
         }
-        
-        Amara::Node* configure(std::string key, nlohmann::json value) {
-            if (configurables.find(key) != configurables.end()) {
-                configurables[key](value);
-            }
-            return this;
+
+        sol::object toData() {
+            return json_to_lua(toJSON());
         }
 
-        Amara::Node* configure(nlohmann::json config) {
+        virtual Amara::Node* configure(nlohmann::json config) {
             update_properties();
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
@@ -138,17 +124,42 @@ namespace Amara {
                 }
                 return this;
             }
+
+            if (json_has(config, "id")) id = config["id"];
+            if (json_has(config, "x")) pos.x = config["x"];
+            if (json_has(config, "y")) pos.y = config["y"];
+            if (json_has(config, "z")) pos.z = config["z"];
+            if (json_has(config, "props")) {
+                nlohmann::json data = config["props"];
+                if (data.is_object()) {
+                    for (auto it = data.begin(); it != data.end(); ++it) {
+                        props[it.key()] = json_to_lua(it.value());
+                    }
+                }
+            }
             
             return this;
+        }
+
+        Amara::Node* configure(std::string key, nlohmann::json value) {
+            nlohmann::json config = nlohmann::json::object();   
+            return configure(config);
         }
         
         sol::object super_configure(sol::object config) {
             if (config.is<sol::table>()) {
                 sol::table tbl = config.as<sol::table>();
                 for (const auto& it: tbl) {
-                    luaConfigure(it.first.as<std::string>(), it.second);
+                    sol::object val = it.second;
+                    if (val.is<sol::function>()) {
+                        std::string key = it.first.as<std::string>();
+                        sol::function func = val.as<sol::function>();
+                        if (string_equal("onPreload", key)) luaPreload = func;
+                        else if (string_equal("onCreate", key)) luaCreate = func;
+                        else if (string_equal("onUpdate", key)) luaUpdate = func;
+                        else if (string_equal("onDestroy", key)) luaDestroy = func;
+                    }
                 }
-                return get_lua_object();
             }
 
             if (config.is<std::string>()) {
@@ -190,14 +201,9 @@ namespace Amara {
             return get_lua_object();
         }
         virtual sol::object luaConfigure(std::string key, sol::object val) {
-            if (val.is<sol::function>()) {
-                sol::function func = val.as<sol::function>();
-                if (string_equal("onPreload", key)) luaPreload = func;
-                else if (string_equal("onCreate", key)) luaCreate = func;
-                else if (string_equal("onUpdate", key)) luaUpdate = func;
-                else if (string_equal("onDestroy", key)) luaDestroy = func;
-            }
-            else configure(key, lua_to_json(val));
+            nlohmann::json config = nlohmann::json::object();
+            config[key] = lua_to_json(val);
+            configure(config);
             return get_lua_object();
         }
 
@@ -561,12 +567,16 @@ namespace Amara {
                 "rotate", &Node::rotate,
                 "scrollFactor", &Node::scrollFactor,
                 "zoomFactor", &Node::zoomFactor,
+                "cameraFollowOffset", &Node::cameraFollowOffset,
+                "cameraFollowOffsetX", sol::property([](Node& e, float val) { e.cameraFollowOffset.x = val; }, [](Node& e) { return e.cameraFollowOffset.x; }),
+                "cameraFollowOffsetY", sol::property([](Node& e, float val) { e.cameraFollowOffset.y = val; }, [](Node& e) { return e.cameraFollowOffset.y; }),
                 "configure", sol::overload(
                     sol::resolve<sol::object(sol::object)>(&Node::luaConfigure),
                     sol::resolve<sol::object(std::string, sol::object)>(&Node::luaConfigure)
                 ),
                 "configure_override", &Node::configure_override,
                 "super_configure", &Node::super_configure,
+                "toData", &Node::toData,
                 "depth", &Node::depth,
                 "yDepthLocked", &Node::yDepthLocked,
                 "zDepthLocked", &Node::zDepthLocked,

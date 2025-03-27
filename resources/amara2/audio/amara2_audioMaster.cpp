@@ -1,5 +1,4 @@
 namespace Amara {
-public:
     class AudioMaster {
     public:
         float volume = 1;

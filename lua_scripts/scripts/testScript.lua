@@ -36,27 +36,6 @@ end
 -- print(e.props.hi)
 -- log(e.pos:subtract(1, 2))
 
--- function buildScripts(currentPath, currentRoute)
---     local subdirs, files;
---     files = files:getFilesInDirectory(currentPath)
---     for i, v in ipairs(files) do
---         if (v:ends_with(".lua")) then
---             local d = files:getRelativePath(currentRoute) .. "/" .. files:removeFileExtension(
---                 files:getFileName(v)
---             ) .. ".luac"
---             files:compileScript(v, d)
---         end
---     end
---     subdirs = files:getSubDirectories(currentPath)
---     if #subdirs > 0  then
---         for i, v in ipairs(subdirs) do
---             buildScripts(v, currentRoute .. "/" .. files:getDirectoryName(v))
---         end
---     end
--- end
-
--- buildScripts("./lua_scripts", "./build/lua_scripts")
-
 -- files:copy("Makefile", "MakeFile.txt")
 
 local p = "hello world"

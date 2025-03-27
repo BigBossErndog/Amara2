@@ -41,6 +41,9 @@ namespace Amara {
         bool headless = true;
 
         bool exception_thrown = false;
+        
+        std::vector<std::string> entryScenes;
+        bool created_entry_scenes = false;
 
         std::vector<Amara::GraphicsEnum> graphics_priority = Amara_Default_Graphics_Priority;
 
@@ -126,93 +129,112 @@ namespace Amara {
             Node::update_properties();
         }
 
-        virtual void make_configurables() override {
-            Amara::Node::make_configurables();
-            configurables["window"] = [this](nlohmann::json config) {
-                bool resizeWindow = false;
-                headless = false;
+        void configure_window(nlohmann::json config) {
+            bool resizeWindow = false;
+            headless = false;
 
-                create_window_on_start = !Props::integrate_new_windows;
+            create_window_on_start = !Props::integrate_new_windows;
 
-                if (json_has(config, "width")) {
-                    windowW = config["width"];
-                    resizeWindow = true;
-                }
-                if (json_has(config, "height")) {
-                    windowH = config["height"];
-                    resizeWindow = true;
-                }
-                if (json_has(config, "virtualWidth")) {
-                    virtualWidth = config["virtualWidth"];
-                }
-                if (json_has(config, "virtualHeight")) {
-                    virtualHeight = config["virtualHeight"];
-                }
-                if (json_has(config, "resizable")) {
-                    bool r = config["resizable"];
-                    if (r) resizable = SDL_WINDOW_RESIZABLE;
-                    else resizable = 0;
-                    if (window) SDL_SetWindowResizable(window, r);
-                }
-                if (json_is(config, "singleWindowApplication")) {
-                    Props::integrate_new_windows = true;
-                }
-                if (json_has(config, "headless")) {
-                    create_window_on_start = !config["headless"].get<bool>();
-                }
-                if (json_has(config, "windowTitle")) {
-                    windowTitle = config["windowTitle"];
-                    if (window) SDL_SetWindowTitle(window, windowTitle.c_str());
-                    if (id.empty()) id = windowTitle;
-                }
-                if (json_has(config, "graphics")) {
-                    if (config["graphics"].is_array()) {
-                        nlohmann::json list = config["graphics"];
-                        graphics_priority.clear();
-                        for (int i = 0; i < list.size(); i++) {
-                            graphics_priority.push_back(list[i]);
-                        }
-                    }
-                    else if (config["graphics"].is_number()) {
-                        graphics_priority = { config["graphics"] };
-                    }
-                    else {
-                        debug_log("Error: Invalid graphics setting.");
-                        Props::breakWorld();
+            if (json_has(config, "width")) {
+                windowW = config["width"];
+                resizeWindow = true;
+            }
+            if (json_has(config, "height")) {
+                windowH = config["height"];
+                resizeWindow = true;
+            }
+            if (json_has(config, "virtualWidth")) {
+                virtualWidth = config["virtualWidth"];
+            }
+            if (json_has(config, "virtualHeight")) {
+                virtualHeight = config["virtualHeight"];
+            }
+            if (json_has(config, "resizable")) {
+                bool r = config["resizable"];
+                if (r) resizable = SDL_WINDOW_RESIZABLE;
+                else resizable = 0;
+                if (window) SDL_SetWindowResizable(window, r);
+            }
+            if (json_is(config, "singleWindowApplication")) {
+                Props::integrate_new_windows = true;
+            }
+            if (json_has(config, "headless")) {
+                create_window_on_start = !config["headless"].get<bool>();
+            }
+            if (json_has(config, "windowTitle")) {
+                windowTitle = config["windowTitle"];
+                if (window) SDL_SetWindowTitle(window, windowTitle.c_str());
+                if (id.empty()) id = windowTitle;
+            }
+            if (json_has(config, "graphics")) {
+                if (config["graphics"].is_array()) {
+                    nlohmann::json list = config["graphics"];
+                    graphics_priority.clear();
+                    for (int i = 0; i < list.size(); i++) {
+                        graphics_priority.push_back(list[i]);
                     }
                 }
-                if (json_has(config, "vsync")) {
-                    nlohmann::json val = config["vsync"];
-                    if (val.is_boolean()) {
-                        vsync = val.get<bool>() ? 1 : 0;
-                    }
-                    else if (val.is_number()) {
-                        vsync = val;
-                    }
-                    else if (val.is_string()) {
-                        if (string_equal(val, "adaptive")) {
-                            vsync = -1;
-                        }
-                    }
-                    if (renderer) SDL_SetRenderVSync(renderer, vsync);
+                else if (config["graphics"].is_number()) {
+                    graphics_priority = { config["graphics"] };
                 }
-                if (resizeWindow && window != nullptr) {
-                    SDL_SetWindowSize(window, windowW, windowH);
+                else {
+                    debug_log("Error: Invalid graphics setting.");
+                    Props::breakWorld();
                 }
-                if (json_has(config, "screenMode")) {
-                    if (demiurge) {
-                        debug_log("Note: Demiurgic presence. Screen Mode Overridden: ", graphics_to_string(Props::graphics));
-                        debug_log("Control will be handed over in target builds.");
-                    }
-                    else if (config["screenMode"].is_null()) {
-                        debug_log("Error: Invalid screen mode setting.");
-                        Props::breakWorld();
-                    }
-                    else {
-                        setScreenMode(config["screenMode"]);
+            }
+            if (json_has(config, "vsync")) {
+                nlohmann::json val = config["vsync"];
+                if (val.is_boolean()) {
+                    vsync = val.get<bool>() ? 1 : 0;
+                }
+                else if (val.is_number()) {
+                    vsync = val;
+                }
+                else if (val.is_string()) {
+                    if (string_equal(val, "adaptive")) {
+                        vsync = -1;
                     }
                 }
-            };
+                if (renderer) SDL_SetRenderVSync(renderer, vsync);
+            }
+            if (resizeWindow && window != nullptr) {
+                SDL_SetWindowSize(window, windowW, windowH);
+            }
+            if (json_has(config, "screenMode")) {
+                if (demiurge) {
+                    debug_log("Note: Demiurgic presence. Screen Mode Overridden: ", graphics_to_string(Props::graphics));
+                    debug_log("Control will be handed over in target builds.");
+                }
+                else if (config["screenMode"].is_null()) {
+                    debug_log("Error: Invalid screen mode setting.");
+                    Props::breakWorld();
+                }
+                else {
+                    setScreenMode(config["screenMode"]);
+                }
+            }
+        }
+
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            Amara::Node::configure(config);
+
+            if (json_has(config, "window")) {
+                configure_window(config["window"]);
+            }
+
+            if (json_has(config, "entryScene")) {
+                entryScenes.push_back(config["entryScene"]);
+            }
+            if (json_has(config, "entryScenes")) {
+                nlohmann::json keys = config["entryScenes"];
+                if (keys.is_string()) {
+                    for (int i = 0; i < keys.size(); i++) {
+                        entryScenes.push_back(keys[i]);
+                    }
+                }
+            }
+
+            return this;
         }
        
         void centerWindow() {
@@ -427,6 +449,14 @@ namespace Amara {
                 Props::files->setBasePath(base_dir_path);
             }
             Amara::Node::run(deltaTime);
+
+            if (isActuated && !created_entry_scenes) {
+                for (std::string key: entryScenes) {
+                    createChild(key);        
+                }
+                created_entry_scenes = true;
+            }
+
             if (window) Props::display = viewport;
             
             if (Props::lua_exception_thrown) {
