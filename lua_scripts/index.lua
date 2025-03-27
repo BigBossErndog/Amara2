@@ -32,10 +32,10 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            width = 720,
-            height = 720,
-            virtualWidth = 720,
-            virtualHeight = 720,
+            width = 640,
+            height = 480,
+            virtualWidth = 640,
+            virtualHeight = 480,
             -- vsync = true,
             graphics = Graphics.Render2D,
             screenMode = ScreenMode.Windowed
@@ -52,7 +52,7 @@
             startFrame = 3,
             numFrames = 6,
             frameRate = 12,
-            repeats = 3
+            repeats = -1
         })
     end
     firstworld.onCreate = function(self)
@@ -120,5 +120,7 @@ function tweenWorld(world)
             y = (world.display.h - world.h)/2,
             duration = 1,
             ease = Ease.SineInOut
-        })
+        }):whenDone(function(this)
+            this.world:setScreenMode(ScreenMode.Fullscreen)
+        end)
 end
