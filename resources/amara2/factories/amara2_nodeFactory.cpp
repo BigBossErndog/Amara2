@@ -173,6 +173,9 @@ namespace Amara {
 
             registerNode<Amara::Sprite>("Sprite");
             registerNode<Amara::Animation>("Animation");
+
+            registerNode<Amara::Audio>("Audio");
+            registerNode<Amara::AudioGroup>("AudioGroup");
             
             registerNode<Amara::World>("World");
         }
@@ -199,6 +202,9 @@ namespace Amara {
 
             Amara::Sprite::bindLua(lua);
             Amara::Animation::bindLua(lua);
+
+            Amara::Audio::bindLua(lua);
+            Amara::AudioGroup::bindLua(lua);
 
             Amara::World::bindLua(lua);
 

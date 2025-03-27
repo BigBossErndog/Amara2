@@ -225,6 +225,7 @@ namespace Amara {
             NodeFactory::bindLua(lua);
             ScriptFactory::bindLua(lua);
             AnimationFactory::bindLua(lua);
+            AudioMaster::bindLua(lua);
 
             Demiurge::bindLua(lua);
 

@@ -3,7 +3,8 @@ namespace Amara {
         None,
         Surface,
         Image,
-        Spritesheet
+        Spritesheet,
+        Audio
     };
 
     class Asset {

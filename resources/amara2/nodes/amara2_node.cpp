@@ -58,6 +58,9 @@ namespace Amara {
 
         bool is_animation = false;
 
+        bool is_audio = false;
+        bool is_audio_group = false;
+
         std::deque<std::string> inheritanceChain;
 
         Node() {

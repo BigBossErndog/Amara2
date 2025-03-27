@@ -12,6 +12,7 @@ namespace Amara {
         NodeFactory factory;
         AnimationFactory animations;
         ControlManager controls;
+        AudioMaster audio;
 
         bool demiurgic = true;
 
@@ -26,12 +27,14 @@ namespace Amara {
             Props::lua()["Scripts"] = &scripts;
             Props::lua()["Animations"] = &animations;
             Props::lua()["Controls"] = &controls;
+            Props::lua()["AudioMaster"] = &audio;
             
             Props::files = &files;
             Props::assets = &assets;
             Props::factory = &factory;
             Props::scripts = &scripts;
             Props::animations = &animations;
+            Props::audio = &audio;
         }
 
         void setup() {

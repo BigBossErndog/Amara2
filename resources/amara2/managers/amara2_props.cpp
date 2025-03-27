@@ -8,6 +8,7 @@ namespace Amara {
     class AnimationFactory;
     class FileManager;
     class AssetManager;
+    class AudioMaster;
     class MessageQueue;
     class GarbageCollector;
     class KeyboardManager;
@@ -22,6 +23,8 @@ namespace Amara {
         Vector2 zoom = { 1, 1 };
 
         float cameraRotation = 0;
+
+        float volume = 1;
     };
 
     class Props {
@@ -64,6 +67,7 @@ namespace Amara {
         static FileManager* files;
         static AssetManager* assets;
         static AnimationFactory* animations;
+        static AudioMaster* audio;
         static MessageQueue* messages;
         static GarbageCollector* garbageCollector;
 
@@ -133,6 +137,7 @@ namespace Amara {
     FileManager* Props::files = nullptr;
     AssetManager* Props::assets = nullptr;
     AnimationFactory* Props::animations = nullptr;
+    AudioMaster* Props::audio = nullptr;
     MessageQueue* Props::messages = nullptr;
     GarbageCollector* Props::garbageCollector = nullptr;
 
