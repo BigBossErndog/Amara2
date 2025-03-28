@@ -63,12 +63,20 @@ scene.onCreate = function(self)
 end
 
 scene.onUpdate = function(self, deltaTime)
+    self.props.s:rotate(math.pi*0.01)
     
     if Keyboard:isDown(Key.X) then
         self.camera:rotate(2 * math.pi * deltaTime * 0.25)
     end
     if Keyboard:isDown(Key.Z) then
         self.camera:rotate(-2 * math.pi * deltaTime * 0.25)
+    end
+
+    if Keyboard:isDown(Key.P) then
+        self.camera:changeZoom(1.1 * deltaTime)
+    end
+    if Keyboard:isDown(Key.O) then
+        self.camera:changeZoom(-1.1 * deltaTime)
     end
 
     self.props.f.rotation = -self.camera.rotation

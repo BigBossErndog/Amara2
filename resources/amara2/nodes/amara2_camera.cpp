@@ -1,4 +1,7 @@
 namespace Amara {
+    /**
+     * Camera for a 2D scene.
+     */
     class Camera: public Amara::Node {
     public:
         Rectangle viewport;
@@ -110,6 +113,26 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object changeScroll(float _sx, float _sy) {
+            scroll.x += _sx;
+            scroll.y += _sy;
+            return get_lua_object();
+        }
+
+        sol::object changeScroll(float _s) {
+            return changeScroll(_s, _s);
+        }
+
+        sol::object changeZoom(float _zx, float _zy) {
+            zoom.x += _zx;
+            zoom.y += _zy;
+            return get_lua_object();
+        }
+
+        sol::object changeZoom(float _z) {
+            return changeZoom(_z, _z);
+        }
+
         virtual void pass_on_properties() override {
             passOn = Props::passOn;
 
@@ -185,9 +208,17 @@ namespace Amara {
                 "scroll", &Camera::scroll,
                 "scrollX", sol::property([](Camera& cam) { return cam.scroll.x; }, [](Camera& cam, float val) { cam.scroll.x = val; }),
                 "scrollY", sol::property([](Camera& cam) { return cam.scroll.x; }, [](Camera& cam, float val) { cam.scroll.y = val; }),
+                "changeScroll", sol::overload(
+                    sol::resolve<sol::object(float, float)>(&Camera::changeScroll),
+                    sol::resolve<sol::object(float)>(&Camera::changeScroll)
+                ),
                 "zoom", &Camera::zoom,
                 "zoomX", sol::property([](Camera& cam) { return cam.zoom.x; }, [](Camera& cam, float val) { cam.zoom.x = val; }),
                 "zoomY", sol::property([](Camera& cam) { return cam.zoom.y; }, [](Camera& cam, float val) { cam.zoom.y = val; }),
+                "changeZoom", sol::overload(
+                    sol::resolve<sol::object(float, float)>(&Camera::changeZoom),
+                    sol::resolve<sol::object(float)>(&Camera::changeZoom)
+                ),
                 "lerp", &Camera::lerp,
                 "lerpX", sol::property([](Camera& cam) { return cam.lerp.x; }, [](Camera& cam, float val) { cam.lerp.x = val; }),
                 "lerpY", sol::property([](Camera& cam) { return cam.lerp.y; }, [](Camera& cam, float val) { cam.lerp.y = val; }),

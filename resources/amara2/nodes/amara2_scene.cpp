@@ -32,6 +32,8 @@ namespace Amara {
         virtual void drawChildren(const Rectangle& v) override {
             children_copy_list = cameras;
 
+            pass_on_properties();
+
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
@@ -41,6 +43,8 @@ namespace Amara {
 				}
                 update_properties();
 				child->draw(v);
+
+                Props::passOn = passOn;
 				++it;
 			}
         }
