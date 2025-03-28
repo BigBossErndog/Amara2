@@ -96,6 +96,14 @@ namespace Amara {
             switchState(key);
         }
 
+        bool start() {
+            if (currentState.empty()) {
+                eventLooker = 0;
+                return true;
+            }
+            return false;
+        }
+
         void switchState(std::string key) {
             if (!currentState.empty()) {
                 lastState = currentState;
@@ -284,7 +292,11 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<StateMachine>("StateMachine",
                 sol::constructors<StateMachine()>(),
-                sol::base_classes, sol::bases<Amara::Action, Amara::Node>()
+                sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
+                "start", sol::overload(
+                    sol::resolve<void(std::string)>(&StateMachine::start),
+                    sol::resolve<bool()>(&StateMachine::start)
+                )
             );
 
             sol::usertype<Node> node_type = lua["Node"];

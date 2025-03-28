@@ -144,8 +144,8 @@ namespace Amara {
                     (imgh - cropTop - cropBottom)*scale.y*passOn.scale.y
                 };
  
-                destRect.x = vcenter.x + (dim.x - passOn.scroll.x*scrollFactor.x)*passOn.zoom.x;
-                destRect.y = vcenter.y + (dim.y - passOn.scroll.y*scrollFactor.y)*passOn.zoom.y;
+                destRect.x = vcenter.x + dim.x*passOn.zoom.x;
+                destRect.y = vcenter.y + dim.y*passOn.zoom.y;
                 destRect.w = dim.w * passOn.zoom.x;
                 destRect.h = dim.h * passOn.zoom.y;
 
@@ -153,7 +153,7 @@ namespace Amara {
                     (imgw*origin.x - cropLeft)*scale.x*passOn.scale.x*passOn.zoom.x,
                     (imgh*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
                 };
-
+                
                 if (spritesheet) {
                     int fixedFrame = frame % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
                     srcRect.x = static_cast<float>((fixedFrame % (imageWidth / frameWidth)) * frameWidth + cropLeft);

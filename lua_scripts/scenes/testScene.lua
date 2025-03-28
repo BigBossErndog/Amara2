@@ -59,23 +59,31 @@ scene.onCreate = function(self)
     local controlDown = Controls:scheme("down");
     controlDown:setKeys({ Key.Down, Key.S });
 
-    self.camera:startFollow(f, 0)
+    self.camera:startFollow(f, 10)
 end
 
 scene.onUpdate = function(self, deltaTime)
-    -- self.props.s:rotate(2 * math.pi * deltaTime * 0.25)
+    
+    if Keyboard:isDown(Key.X) then
+        self.camera:rotate(2 * math.pi * deltaTime * 0.25)
+    end
+    if Keyboard:isDown(Key.Z) then
+        self.camera:rotate(-2 * math.pi * deltaTime * 0.25)
+    end
+
+    self.props.f.rotation = -self.camera.rotation
     
     local speed = 200;
 
     if Controls:isDown("right") then
-        self.props.f:move(speed*deltaTime, 0)
+        self.props.f:move(math.rotateAroundAnchor(Vector2.new(speed*deltaTime, 0), -self.camera.rotation))
     elseif Controls:isDown("left") then
-        self.props.f:move(-speed*deltaTime, 0)
+        self.props.f:move(math.rotateAroundAnchor(Vector2.new(-speed*deltaTime, 0), -self.camera.rotation))
     end
     if Controls:isDown("up") then
-        self.props.f:move(0, -speed*deltaTime)
+        self.props.f:move(math.rotateAroundAnchor(Vector2.new(0, -speed*deltaTime), -self.camera.rotation))
     elseif Controls:isDown("down") then
-        self.props.f:move(0, speed*deltaTime)
+        self.props.f:move(math.rotateAroundAnchor(Vector2.new(0, speed*deltaTime), -self.camera.rotation))
     end
 end
 

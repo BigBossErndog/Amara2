@@ -22,8 +22,6 @@ namespace Amara {
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
 
-        float cameraRotation = 0;
-
         float volume = 1;
     };
 

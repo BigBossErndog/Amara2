@@ -114,7 +114,14 @@ namespace Amara {
             passOn = Props::passOn;
 
             if (passOnPropsEnabled) {
-                passOn.anchor = { 0, 0, 0 };
+                passOn.anchor = { 
+                    rotateAroundAnchor(
+                        Vector2(0, 0),
+                        Vector2(-scroll.x, -scroll.y),
+                        rotation
+                    ),
+                    0
+                };
 
                 passOn.rotation += rotation;
 

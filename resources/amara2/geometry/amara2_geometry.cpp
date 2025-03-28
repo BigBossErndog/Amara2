@@ -41,11 +41,22 @@ namespace Amara {
         
         return { v1.x + newX, v1.y + newY };
     }
+    Vector2 rotateAroundAnchor(const Vector2& v, float rotation) {
+        return rotateAroundAnchor(Vector2(0, 0), v, rotation);
+    }
 
     Vector2 centerOf(const Rectangle& rect) {
         return {
             static_cast<float>(rect.x + rect.w/2.0),
             static_cast<float>(rect.y + rect.h/2.0)
         };
+    }
+
+    void bindLua_Geometry(sol::state& lua) {
+        sol::table math_metatable = lua["math"];
+        math_metatable.set_function("rotateAroundAnchor", sol::overload(
+            sol::resolve<Vector2(const Vector2&, const Vector2&, float)>(&Amara::rotateAroundAnchor),
+            sol::resolve<Vector2(const Vector2&, float)>(&Amara::rotateAroundAnchor)
+        ));
     }
 }
