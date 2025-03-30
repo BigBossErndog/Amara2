@@ -5,7 +5,7 @@ namespace Amara {
         (ss << ... << args);
         std::cout << ss.str().c_str() << std::endl;
     }
-    
+
     template <class T> bool vector_contains(std::vector<T> list, T f) {
         for (T obj: list) 
             if (obj == f) return true;
@@ -91,22 +91,24 @@ namespace Amara {
         OpenGL,
         Vulkan,
         DirectX,
-        DirectX_Legacy
+        DirectX_Legacy,
+        VulkanMetalDirectX
     };
     std::string graphics_to_string(GraphicsEnum g) {
         switch (g) {
             case GraphicsEnum::Render2D: return "Render2D";
             case GraphicsEnum::OpenGL: return "OpenGL";
             case GraphicsEnum::Vulkan: return "Vulkan";
+            case GraphicsEnum::DirectX: return "DirectX";
+            case GraphicsEnum::DirectX_Legacy: return "DirectX_Legacy";
+            case GraphicsEnum::VulkanMetalDirectX: return "GPURenderer";
             default: return "None";
         }
     }
 
     #if defined(_WIN32)
         std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
-            GraphicsEnum::DirectX,
-            GraphicsEnum::DirectX_Legacy,
-            GraphicsEnum::Vulkan,
+            GraphicsEnum::VulkanMetalDirectX,
             GraphicsEnum::OpenGL,
             GraphicsEnum::Render2D
         };
@@ -129,7 +131,10 @@ namespace Amara {
             "None", Amara::GraphicsEnum::None,
             "Render2D", Amara::GraphicsEnum::Render2D,
             "OpenGL", Amara::GraphicsEnum::OpenGL,
-            "Vulkan", Amara::GraphicsEnum::Vulkan
+            "Vulkan", Amara::GraphicsEnum::Vulkan,
+            "DirectX", Amara::GraphicsEnum::DirectX,
+            "DirectX_Legacy", Amara::GraphicsEnum::DirectX_Legacy,
+            "VulkanMetalDirectX", Amara::GraphicsEnum::VulkanMetalDirectX
         );
 
         lua.new_enum("ScreenMode",

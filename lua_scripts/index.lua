@@ -36,9 +36,7 @@
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
-            -- vsync = true,
-            graphics = Graphics.OpenGL,
-            screenMode = ScreenMode.Windowed
+            graphics = Graphics.DirectX
         },
         entryScene = "scenes/TestScene"
     })

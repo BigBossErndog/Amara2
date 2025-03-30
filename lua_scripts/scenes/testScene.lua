@@ -103,7 +103,7 @@ scene.onUpdate = function(self, deltaTime)
         self.camera:changeZoom(-1.1 * deltaTime)
     end
 
-    -- self.props.f.rotation = -self.camera.rotation
+    self.props.f.rotation = -self.camera.rotation
     
     local speed = 200;
 

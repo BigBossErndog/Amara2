@@ -78,13 +78,13 @@ namespace Amara {
                 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
+                
                 stbi_image_free(imageData);
                 
                 return true;
             }
             else if (Props::gpuDevice) {
-                SDL_GPUTextureCreateInfo    textureInfo = {
+                SDL_GPUTextureCreateInfo textureInfo = {
                     .type = SDL_GPU_TEXTURETYPE_2D,
                     .format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
                     .width = (Uint32)width,

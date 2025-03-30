@@ -288,7 +288,6 @@ namespace Amara {
             if (window == nullptr) return;
 
             windowID = SDL_GetWindowID(window);
-            Props::current_window = window;
 
             window_dim = { pos.x, pos.y, windowW, windowH };
 
@@ -314,6 +313,9 @@ namespace Amara {
             int shaderFlags = 0;
 
             switch (g) {
+                case GraphicsEnum::VulkanMetalDirectX:
+                    shaderFlags |= SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL;
+                    break;
                 case GraphicsEnum::Vulkan:
                     shaderFlags |= SDL_GPU_SHADERFORMAT_SPIRV;
                     break;
@@ -326,20 +328,27 @@ namespace Amara {
                 default:
                     break;
             }
-
             gpuDevice = SDL_CreateGPUDevice(
-                shaderFlags,
+                SDL_GPU_SHADERFORMAT_DXIL,
                 false,
                 NULL
             );
             if (!gpuDevice) {
-                printf("Error: SDL_CreatedGPUDevice failed: %s\n", SDL_GetError());
+                debug_log("Error: SDL_CreatedGPUDevice failed: ", SDL_GetError());
+                if (window) {
+                    SDL_DestroyWindow(window);
+                    window = nullptr;
+                }
                 return false;
             }
-            else if (SDL_ClaimWindowForGPUDevice(gpuDevice, window) != 0) {
-                debug_log("Error: Unable to associate window with gpu device.");
+            if (!SDL_ClaimWindowForGPUDevice(gpuDevice, window)) {
+                debug_log("Error: Unable to associate window with gpu device. ", SDL_GetError(), ", Renderer: ", graphics_to_string(g));
                 SDL_DestroyGPUDevice(gpuDevice);
                 gpuDevice = NULL;
+                if (window) {
+                    SDL_DestroyWindow(window);
+                    window = nullptr;
+                }
                 return false;
             }
             return true;
@@ -410,6 +419,8 @@ namespace Amara {
                         }
                         break;
                     case Amara::GraphicsEnum::None:
+                        graphics = g;
+                        renderer_created = true;
                         break;
                     default:
                         if (create_gpu_device(g)) {
@@ -421,9 +432,7 @@ namespace Amara {
                         break;
                 }
             }
-            if (window == nullptr) {
-                create_graphics_window();
-            }
+
             if (window) {
                 int wx, wy;
                 SDL_GetWindowPosition(window, &wx, &wy);
@@ -435,9 +444,30 @@ namespace Amara {
 
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
             }
-            else {
+            else if (graphics == GraphicsEnum::None && Props::current_window != nullptr) {
                 pos.x = (Props::master_viewport.w - windowW) / 2.0f;
                 pos.y = (Props::master_viewport.h - windowH) / 2.0f;
+            }
+            else {
+                debug_log("Error: Failed to create window. ", SDL_GetError());
+                if (window) {
+                    SDL_DestroyWindow(window);
+                    window = nullptr;
+                }
+                if (renderer) {
+                    SDL_DestroyRenderer(renderer);
+                    renderer = nullptr;
+                }
+                if (gpuDevice) {
+                    SDL_DestroyGPUDevice(gpuDevice);
+                    gpuDevice = nullptr;
+                }
+                if (glContext) {
+                    SDL_GL_DestroyContext(glContext);
+                    glContext = NULL;
+                }
+                Props::breakWorld();
+                return;
             }
         }
 
