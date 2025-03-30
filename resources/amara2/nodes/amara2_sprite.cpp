@@ -1,4 +1,5 @@
 namespace Amara {
+    class Animation;
     /**
      * This is used for 2D sprites.
      */
@@ -6,6 +7,8 @@ namespace Amara {
     public:
         ImageAsset* image = nullptr;
         SpritesheetAsset* spritesheet = nullptr;
+
+        Vector2 origin = { 0.5, 0.5 };
 
         int imageWidth = 0;
         int imageHeight = 0;
@@ -20,7 +23,7 @@ namespace Amara {
 
         int frame = 0;
 
-        Vector2 origin = { 0.5, 0.5 };
+        Animation* animation = nullptr;
 
         Sprite(): Amara::Node() {
             set_base_node_id("Sprite");
@@ -132,44 +135,44 @@ namespace Amara {
                 passOn.anchor.z + pos.z
             );
 
+            SDL_FRect srcRect;
+            SDL_FRect destRect;
+
+            if (spritesheet) {
+                int fixedFrame = frame % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
+                srcRect.x = static_cast<float>((fixedFrame % (imageWidth / frameWidth)) * frameWidth + cropLeft);
+                srcRect.y = static_cast<float>(floor(fixedFrame / (imageWidth / frameWidth)) * frameHeight + cropTop);
+                srcRect.w = static_cast<float>(frameWidth - cropLeft - cropRight);
+                srcRect.h = static_cast<float>(frameHeight - cropTop - cropBottom);
+            }
+            else {
+                srcRect = {
+                    static_cast<float>(cropLeft),
+                    static_cast<float>(cropTop),
+                    static_cast<float>(imageWidth - cropLeft - cropRight),
+                    static_cast<float>(imageHeight - cropTop - cropBottom)
+                };
+            }
+
+            Rectangle dim = {
+                anchoredPos.x + (cropLeft - imgw*origin.x)*scale.x*passOn.scale.x, 
+                anchoredPos.y - anchoredPos.z + (cropTop - imgh*origin.y)*scale.y*passOn.scale.y,
+                (imgw - cropLeft - cropRight)*scale.x*passOn.scale.x,
+                (imgh - cropTop - cropBottom)*scale.y*passOn.scale.y
+            };
+
+            destRect.x = vcenter.x + dim.x*passOn.zoom.x;
+            destRect.y = vcenter.y + dim.y*passOn.zoom.y;
+            destRect.w = dim.w * passOn.zoom.x;
+            destRect.h = dim.h * passOn.zoom.y;
+
+            SDL_FPoint dorigin = {
+                (imgw*origin.x - cropLeft)*scale.x*passOn.scale.x*passOn.zoom.x,
+                (imgh*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
+            };
+
             if (image->texture && Props::renderer) {
                 // 2D Rendering
-                SDL_FRect srcRect;
-                SDL_FRect destRect;
-
-                Rectangle dim = {
-                    anchoredPos.x + (cropLeft - imgw*origin.x)*scale.x*passOn.scale.x, 
-                    anchoredPos.y - anchoredPos.z + (cropTop - imgh*origin.y)*scale.y*passOn.scale.y,
-                    (imgw - cropLeft - cropRight)*scale.x*passOn.scale.x,
-                    (imgh - cropTop - cropBottom)*scale.y*passOn.scale.y
-                };
- 
-                destRect.x = vcenter.x + dim.x*passOn.zoom.x;
-                destRect.y = vcenter.y + dim.y*passOn.zoom.y;
-                destRect.w = dim.w * passOn.zoom.x;
-                destRect.h = dim.h * passOn.zoom.y;
-
-                SDL_FPoint dorigin = {
-                    (imgw*origin.x - cropLeft)*scale.x*passOn.scale.x*passOn.zoom.x,
-                    (imgh*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
-                };
-                
-                if (spritesheet) {
-                    int fixedFrame = frame % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
-                    srcRect.x = static_cast<float>((fixedFrame % (imageWidth / frameWidth)) * frameWidth + cropLeft);
-                    srcRect.y = static_cast<float>(floor(fixedFrame / (imageWidth / frameWidth)) * frameHeight + cropTop);
-                    srcRect.w = static_cast<float>(frameWidth - cropLeft - cropRight);
-                    srcRect.h = static_cast<float>(frameHeight - cropTop - cropBottom);
-                }
-                else {
-                    srcRect = {
-                        static_cast<float>(cropLeft),
-                        static_cast<float>(cropTop),
-                        static_cast<float>(imageWidth - cropLeft - cropRight),
-                        static_cast<float>(imageHeight - cropTop - cropBottom)
-                    };
-                }
-
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
 
                 SDL_RenderTextureRotated(
@@ -181,6 +184,32 @@ namespace Amara {
                     &dorigin,
                     SDL_FLIP_NONE
                 );
+            }
+            else if (image->glTextureID != 0 && Props::glContext != NULL) {
+                glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
+                Quad srcQuad = Quad(
+                    { srcRect.x/imageWidth, srcRect.y/imageHeight },
+                    { (srcRect.x+srcRect.w)/imageWidth, srcRect.y/imageHeight },
+                    { (srcRect.x+srcRect.w)/imageWidth, (srcRect.y+srcRect.h)/imageHeight },
+                    { srcRect.x/imageWidth, (srcRect.y+srcRect.h)/imageHeight }
+                );
+                Quad destQuad = glTranslateQuad(v, rotateQuad(
+                    Quad(destRect),
+                    Vector2(
+                        destRect.x + dorigin.x,
+                        destRect.y + dorigin.y
+                    ), 
+                    passOn.rotation + rotation
+                ));
+                
+                glBindTexture(GL_TEXTURE_2D, image->glTextureID);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glBegin(GL_QUADS);
+                glTexCoord2f(srcQuad.p1.x, srcQuad.p1.y); glVertex2f(destQuad.p1.x, destQuad.p1.y);
+                glTexCoord2f(srcQuad.p2.x, srcQuad.p2.y); glVertex2f(destQuad.p2.x, destQuad.p2.y);
+                glTexCoord2f(srcQuad.p3.x, srcQuad.p3.y); glVertex2f(destQuad.p3.x, destQuad.p3.y);
+                glTexCoord2f(srcQuad.p4.x, srcQuad.p4.y); glVertex2f(destQuad.p4.x, destQuad.p4.y);
+                glEnd();
             }
         }
 

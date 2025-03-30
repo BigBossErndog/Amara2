@@ -5,9 +5,33 @@ scene.onPreload = function(self)
     self.load:spritesheet("freaker", "freaker.png", 32, 64);
     
     Animations:add({
-        key = "running",
+        key = "runningDown",
         texture = "freaker",
         startFrame = 3,
+        numFrames = 6,
+        frameRate = 12,
+        repeats = -1
+    })
+    Animations:add({
+        key = "runningUp",
+        texture = "freaker",
+        startFrame = 10 + 3,
+        numFrames = 6,
+        frameRate = 12,
+        repeats = -1
+    })
+    Animations:add({
+        key = "runningLeft",
+        texture = "freaker",
+        startFrame = 20 + 3,
+        numFrames = 6,
+        frameRate = 12,
+        repeats = -1
+    })
+    Animations:add({
+        key = "runningRight",
+        texture = "freaker",
+        startFrame = 30 + 3,
         numFrames = 6,
         frameRate = 12,
         repeats = -1
@@ -29,7 +53,7 @@ scene.onCreate = function(self)
     local t = s:createChild("Sprite")
     t:setTexture("goldenFlower")
     t.x = t.x + 140
-    t.rotation = math.rad(90)
+    -- t.rotation = math.rad(90)
     -- t.cropLeft = 70
 
     local u = t:createChild("Sprite")
@@ -41,7 +65,7 @@ scene.onCreate = function(self)
 
     local f = self:createChild("Sprite"):configure({
         texture = "freaker",
-        animation = "running"
+        animation = "runningDown"
     })
     
     self.props.f = f;
@@ -63,7 +87,7 @@ scene.onCreate = function(self)
 end
 
 scene.onUpdate = function(self, deltaTime)
-    self.props.s:rotate(math.pi*0.01)
+    -- self.props.s:rotate(math.pi*0.01)
     
     if Keyboard:isDown(Key.X) then
         self.camera:rotate(2 * math.pi * deltaTime * 0.25)
@@ -79,18 +103,22 @@ scene.onUpdate = function(self, deltaTime)
         self.camera:changeZoom(-1.1 * deltaTime)
     end
 
-    self.props.f.rotation = -self.camera.rotation
+    -- self.props.f.rotation = -self.camera.rotation
     
     local speed = 200;
 
     if Controls:isDown("right") then
         self.props.f:move(math.rotateAroundAnchor(Vector2.new(speed*deltaTime, 0), -self.camera.rotation))
+        self.props.f:animate("runningRight")
     elseif Controls:isDown("left") then
         self.props.f:move(math.rotateAroundAnchor(Vector2.new(-speed*deltaTime, 0), -self.camera.rotation))
+        self.props.f:animate("runningLeft")
     end
     if Controls:isDown("up") then
         self.props.f:move(math.rotateAroundAnchor(Vector2.new(0, -speed*deltaTime), -self.camera.rotation))
+        self.props.f:animate("runningUp")
     elseif Controls:isDown("down") then
+        self.props.f:animate("runningDown")
         self.props.f:move(math.rotateAroundAnchor(Vector2.new(0, speed*deltaTime), -self.camera.rotation))
     end
 end

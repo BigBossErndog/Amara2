@@ -89,6 +89,8 @@
     #include "geometry/amara2_shapes.cpp"
     #include "geometry/amara2_geometry.cpp"
 
+    #include "utility/amara2_renderUtility.cpp"
+
     #include "managers/amara2_props.cpp"
 
     #include "utility/amara2_luaUtlity.cpp"

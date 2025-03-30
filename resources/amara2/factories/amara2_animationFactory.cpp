@@ -116,8 +116,8 @@ namespace Amara {
                 anim.yoyo = config["yoyo"];
             }
 
-            if (textureMap.find(textureKey) != textureMap.end()) textureMap[textureKey] = TextureAnimations();
-            TextureAnimations& texAnims = textureMap[textureKey]; 
+            if (textureMap.find(textureKey) == textureMap.end()) textureMap[textureKey] = TextureAnimations();
+            TextureAnimations& texAnims = textureMap[textureKey];
             texAnims.animations[animKey] = anim;
 
             return true;

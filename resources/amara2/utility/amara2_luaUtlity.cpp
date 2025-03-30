@@ -102,7 +102,7 @@ namespace Amara {
 
         return lua_to_json(obj).dump();
     }
-
+    
     template <typename T>
     sol::table vector_to_lua(const std::vector<T>& vec) {
         sol::state& lua = Props::lua();
@@ -135,12 +135,6 @@ namespace Amara {
         return ss.str();
     }
     
-    template<typename... Args>
-    void debug_log(Args... args) {
-        std::ostringstream ss;
-        (ss << ... << args);
-        std::cout << ss.str().c_str() << std::endl;
-    }
     void lua_debug_log(sol::variadic_args args) {
         std::ostringstream ss;
         for (auto arg : args) {
@@ -168,6 +162,7 @@ namespace Amara {
 
     void bindLua_LuaUtilityFunctions(sol::state& lua) {
         lua.set_function("debug_log", &Amara::lua_debug_log);
+
         lua["lua_print"] = lua["print"];
         lua.set_function("print", [](sol::variadic_args args) {
             debug_log(lua_string_sep_concat(" ", args));

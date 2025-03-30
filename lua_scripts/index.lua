@@ -37,7 +37,7 @@
             virtualWidth = 640,
             virtualHeight = 360,
             -- vsync = true,
-            graphics = Graphics.Render2D,
+            graphics = Graphics.OpenGL,
             screenMode = ScreenMode.Windowed
         },
         entryScene = "scenes/TestScene"

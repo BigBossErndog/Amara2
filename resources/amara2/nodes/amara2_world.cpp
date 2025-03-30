@@ -97,6 +97,7 @@ namespace Amara {
                 windowW = fww;
                 windowH = fwh;
                 window_dim = { pos.x, pos.y, windowW, windowH };
+                Props::window_dim = window_dim;
             }
             else {
                 viewport = { pos.x, pos.y, windowW, windowH };
@@ -276,6 +277,8 @@ namespace Amara {
                         break;
                     }
                     default:
+                        debug_log("Error: Invalid graphics renderer setting given.");
+                        Props::breakWorld();
                         break;
                 }
             }
@@ -313,6 +316,12 @@ namespace Amara {
             switch (g) {
                 case GraphicsEnum::Vulkan:
                     shaderFlags |= SDL_GPU_SHADERFORMAT_SPIRV;
+                    break;
+                case GraphicsEnum::DirectX:
+                    shaderFlags |= SDL_GPU_SHADERFORMAT_DXIL;
+                    break;
+                case GraphicsEnum::DirectX_Legacy:
+                    shaderFlags |= SDL_GPU_SHADERFORMAT_DXBC;
                     break;
                 default:
                     break;
@@ -395,6 +404,9 @@ namespace Amara {
                             Props::render_origin = this;
                             Props::glContext = glContext;
                             graphics = g;
+
+                            glEnable(GL_BLEND);
+                            glEnable(GL_TEXTURE_2D);
                         }
                         break;
                     case Amara::GraphicsEnum::None:
@@ -497,11 +509,18 @@ namespace Amara {
             if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
                 SDL_RenderClear(renderer);
             }
+            else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
+                SDL_GL_MakeCurrent(window, glContext);
+                glClear(GL_COLOR_BUFFER_BIT);
+            }
         }
 
         void presentRenderer() {
-            if (graphics == GraphicsEnum::Render2D && Props::renderer) {
+            if (graphics == GraphicsEnum::Render2D && renderer) {
                 SDL_RenderPresent(Props::renderer);
+            }
+            else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
+                SDL_GL_SwapWindow(window);
             }
         }
 

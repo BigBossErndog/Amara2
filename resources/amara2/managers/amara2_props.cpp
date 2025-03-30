@@ -52,6 +52,7 @@ namespace Amara {
         static bool glFunctionsLoaded;
 
         static SDL_Window* current_window;
+        static Rectangle window_dim;
         static SDL_DisplayID displayID;
 
         static GameManager* game;
@@ -117,6 +118,7 @@ namespace Amara {
     PassOnProps Props::passOn;
 
     SDL_Window* Props::current_window = nullptr;
+    Rectangle Props::window_dim;
     SDL_DisplayID Props::displayID = 0;
 
     GraphicsEnum Props::graphics = GraphicsEnum::None;

@@ -30,6 +30,8 @@ namespace Amara {
     }
 
     Vector2 rotateAroundAnchor(const Vector2& v1, const Vector2& v2, float rotation) {
+        // Rotate v2 around v1
+
         float s = sin(rotation);
         float c = cos(rotation);
 
@@ -50,6 +52,25 @@ namespace Amara {
             static_cast<float>(rect.x + rect.w/2.0),
             static_cast<float>(rect.y + rect.h/2.0)
         };
+    }
+
+    Quad rotateQuad(const Quad& quad, const Vector2& anchor, float rotation) {
+        return Quad(
+            rotateAroundAnchor(anchor, quad.p1, rotation),
+            rotateAroundAnchor(anchor, quad.p2, rotation),
+            rotateAroundAnchor(anchor, quad.p3, rotation),
+            rotateAroundAnchor(anchor, quad.p4, rotation)
+        );
+    }
+
+    Quad glTranslateQuad(const Rectangle& v, const Quad& q) {
+        Quad t = {
+            { -1.0f + (q.p1.x/v.w)*2, -1.0f + (1.0f - q.p1.y/v.h)*2 },
+            { -1.0f + (q.p2.x/v.w)*2, -1.0f + (1.0f - q.p2.y/v.h)*2 },
+            { -1.0f + (q.p3.x/v.w)*2, -1.0f + (1.0f - q.p3.y/v.h)*2 },
+            { -1.0f + (q.p4.x/v.w)*2, -1.0f + (1.0f - q.p4.y/v.h)*2 }
+        };
+        return t;
     }
 
     void bindLua_Geometry(sol::state& lua) {

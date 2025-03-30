@@ -1,4 +1,11 @@
 namespace Amara {
+    template<typename... Args>
+    void debug_log(Args... args) {
+        std::ostringstream ss;
+        (ss << ... << args);
+        std::cout << ss.str().c_str() << std::endl;
+    }
+    
     template <class T> bool vector_contains(std::vector<T> list, T f) {
         for (T obj: list) 
             if (obj == f) return true;
@@ -82,7 +89,9 @@ namespace Amara {
         None,
         Render2D,
         OpenGL,
-        Vulkan
+        Vulkan,
+        DirectX,
+        DirectX_Legacy
     };
     std::string graphics_to_string(GraphicsEnum g) {
         switch (g) {
@@ -93,10 +102,21 @@ namespace Amara {
         }
     }
 
-    std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
-        GraphicsEnum::OpenGL,
-        GraphicsEnum::Render2D
-    };
+    #if defined(_WIN32)
+        std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
+            GraphicsEnum::DirectX,
+            GraphicsEnum::DirectX_Legacy,
+            GraphicsEnum::Vulkan,
+            GraphicsEnum::OpenGL,
+            GraphicsEnum::Render2D
+        };
+    #else
+        std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
+            GraphicsEnum::Vulkan,
+            GraphicsEnum::OpenGL,
+            GraphicsEnum::Render2D
+        };
+    #endif
 
     enum class ScreenModeEnum {
         Windowed,

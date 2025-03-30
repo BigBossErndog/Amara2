@@ -41,11 +41,42 @@ namespace Amara {
 
     struct Quad {
         Quad() = default;
+        Quad(const Rectangle& rect) {
+            p1 = { rect.x, rect.y };
+            p2 = { rect.x + rect.w, rect.y };
+            p3 = { rect.x + rect.w, rect.y + rect.h };
+            p4 = { rect.x, rect.y + rect.h };
+        }
+        Quad(const SDL_FRect& rect): Quad(Rectangle(rect)) {}
+        Quad(const SDL_Rect& rect): Quad(Rectangle(rect)) {}
+        Quad(
+            const Vector2& _p1,
+            const Vector2& _p2,
+            const Vector2& _p3,
+            const Vector2& _p4
+        ) {
+            p1 = _p1;
+            p2 = _p2;
+            p3 = _p3;
+            p4 = _p4;
+        }
 
         Vector2 p1;
         Vector2 p2;
         Vector2 p3;
         Vector2 p4;
+
+        explicit operator std::string() const {
+            return string_concat(
+                "{ \n\t", std::string(p1), ",\n\t",
+                std::string(p2), ",\n\t",
+                std::string(p3), ",\n\t",
+                std::string(p4), "\n}"
+            );
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Quad& v) {
+            return os << static_cast<std::string>(v);
+        }
     };
 
     struct Circle: public Vector2 {

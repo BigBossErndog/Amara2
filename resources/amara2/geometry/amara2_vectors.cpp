@@ -2,6 +2,7 @@ namespace Amara {
     struct Vector2 {
         Vector2() = default;
         Vector2(float x_, float y_) : x(x_), y(y_) {}
+        Vector2(const SDL_FPoint& p): Vector2(p.x, p.y) {}
 
         float x = 0;
         float y = 0;
@@ -89,6 +90,13 @@ namespace Amara {
         friend std::ostream& operator<<(std::ostream& os, const Vector3& v) {
             return os << static_cast<std::string>(v);
         }
+    };
+
+    struct Matrix4x4 {
+        float m11, m12, m13, m14;
+        float m21, m22, m23, m24;
+        float m31, m32, m33, m34;
+        float m41, m42, m43, m44;
     };
 
     void bindLua_Vectors(sol::state& lua) {
