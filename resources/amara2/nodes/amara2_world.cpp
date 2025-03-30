@@ -47,6 +47,8 @@ namespace Amara {
 
         std::vector<Amara::GraphicsEnum> graphics_priority = Amara_Default_Graphics_Priority;
 
+        GPUHandler gpuHandler;
+
         World(): Node() {
             set_base_node_id("World");
             world = this;
@@ -124,6 +126,7 @@ namespace Amara {
                     Props::gpuDevice = gpuDevice;
                 }
                 Props::graphics = graphics;
+                Props::gpuHandler = &gpuHandler;
             }
             update_window();
             
@@ -294,22 +297,28 @@ namespace Amara {
             setScreenMode(screenMode);
         }
 
-        void create_graphics_window(int flags) {
-            if (window != nullptr) return;
+        bool create_graphics_window(int flags) {
+            if (window != nullptr) return false;
             window = SDL_CreateWindow(
                 windowTitle.c_str(),
                 windowW, windowH,
                 resizable | flags
             );
-            setup_new_window();
+            if (window) {
+                setup_new_window();
+                return true;
+            }
+            debug_log("Error: Failed to create window. ", SDL_GetError());
+            return false;
         }
 
-        void create_graphics_window() {
-            create_graphics_window(0);
+        bool create_graphics_window() {
+            return create_graphics_window(0);
         }
 
         bool create_gpu_device(Amara::GraphicsEnum g) {
-            create_graphics_window();
+            if (!create_graphics_window()) return false;
+
             int shaderFlags = 0;
 
             switch (g) {
@@ -391,31 +400,32 @@ namespace Amara {
                         }
                         break;
                     case Amara::GraphicsEnum::OpenGL:
-                        create_graphics_window(SDL_WINDOW_OPENGL);
-                        glContext = SDL_GL_CreateContext(window);
-                        renderer_created = true;
-                        if (glContext == NULL) {
-                            renderer_created = false;
-                            debug_log("Error: Failed to create GL Context. ", SDL_GetError());
-                        }
-                        else {
-                            try {
-                                if (!Props::glFunctionsLoaded) LoadOpenGLFunctions();
+                        if (create_graphics_window(SDL_WINDOW_OPENGL)) {
+                            glContext = SDL_GL_CreateContext(window);
+                            renderer_created = true;
+                            if (glContext == NULL) {
+                                renderer_created = false;
+                                debug_log("Error: Failed to create GL Context. ", SDL_GetError());
                             }
-                            catch (...) {
-                                debug_log("Error: Failed to load OpenGL API.");
-                                SDL_GL_DestroyContext(glContext);
-                                if (window) SDL_DestroyWindow(window);
+                            else {
+                                try {
+                                    if (!Props::glFunctionsLoaded) LoadOpenGLFunctions();
+                                }
+                                catch (...) {
+                                    debug_log("Error: Failed to load OpenGL API.");
+                                    SDL_GL_DestroyContext(glContext);
+                                    if (window) SDL_DestroyWindow(window);
+                                }
                             }
-                        }
-                        if (renderer_created) {
-                            Props::glFunctionsLoaded = true;
-                            Props::render_origin = this;
-                            Props::glContext = glContext;
-                            graphics = g;
+                            if (renderer_created) {
+                                Props::glFunctionsLoaded = true;
+                                Props::render_origin = this;
+                                Props::glContext = glContext;
+                                graphics = g;
 
-                            glEnable(GL_BLEND);
-                            glEnable(GL_TEXTURE_2D);
+                                glEnable(GL_BLEND);
+                                glEnable(GL_TEXTURE_2D);
+                            }
                         }
                         break;
                     case Amara::GraphicsEnum::None:
@@ -540,17 +550,34 @@ namespace Amara {
                 SDL_RenderClear(renderer);
             }
             else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
+                Props::gpuHandler = &gpuHandler;
                 SDL_GL_MakeCurrent(window, glContext);
                 glClear(GL_COLOR_BUFFER_BIT);
+            }
+            else if (gpuDevice) {
+                Props::gpuHandler = &gpuHandler;
+                gpuHandler.commandBuffer = SDL_AcquireGPUCommandBuffer(Props::gpuDevice);
+                if (gpuHandler.commandBuffer == NULL) {
+                    debug_log("Error: AcquireGPUCommandBuffer failed: ", SDL_GetError());
+                    Props::breakWorld();
+                }
+                if (!SDL_WaitAndAcquireGPUSwapchainTexture(gpuHandler.commandBuffer, Props::current_window, &gpuHandler.swapChainTexture, NULL, NULL)) {
+                    debug_log("Error: WaitAndAcquireGPUSwapchainTexture failed: ", SDL_GetError());
+                    Props::breakWorld();
+                }
             }
         }
 
         void presentRenderer() {
             if (graphics == GraphicsEnum::Render2D && renderer) {
-                SDL_RenderPresent(Props::renderer);
+                SDL_RenderPresent(renderer);
             }
             else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                 SDL_GL_SwapWindow(window);
+            }
+            else if (gpuDevice) {
+                Props::gpuHandler = &gpuHandler;
+                SDL_SubmitGPUCommandBuffer(gpuHandler.commandBuffer);
             }
         }
 

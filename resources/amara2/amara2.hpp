@@ -90,6 +90,7 @@
     #include "geometry/amara2_geometry.cpp"
 
     #include "utility/amara2_renderUtility.cpp"
+    #include "managers/amara2_gpuHandler.cpp"
 
     #include "managers/amara2_props.cpp"
 

@@ -12,6 +12,7 @@ namespace Amara {
     class MessageQueue;
     class GarbageCollector;
     class KeyboardManager;
+    class GPUHandler;
     class Asset;
 
     struct PassOnProps {
@@ -48,6 +49,8 @@ namespace Amara {
         static SDL_GPUDevice* gpuDevice;
         static SDL_GLContext glContext;
         static SDL_Renderer* renderer;
+
+        static GPUHandler* gpuHandler;
 
         static bool glFunctionsLoaded;
 
@@ -126,6 +129,8 @@ namespace Amara {
     SDL_GLContext Props::glContext = NULL;
     SDL_Renderer* Props::renderer = nullptr;
     SDL_GPUDevice* Props::gpuDevice = nullptr;
+
+    GPUHandler* Props::gpuHandler = nullptr;
 
     bool Props::glFunctionsLoaded = false;
     
