@@ -8,10 +8,12 @@ namespace Amara {
     class AnimationFactory;
     class FileManager;
     class AssetManager;
+    class ShaderManager;
     class AudioMaster;
     class MessageQueue;
     class GarbageCollector;
     class KeyboardManager;
+    class ControlManager;
     class GPUHandler;
     class Asset;
 
@@ -45,9 +47,11 @@ namespace Amara {
         static PassOnProps passOn;
 
         static GraphicsEnum graphics;
-
+        
+        #ifdef AMARA_OPENGL
+            static SDL_GLContext glContext;
+        #endif
         static SDL_GPUDevice* gpuDevice;
-        static SDL_GLContext glContext;
         static SDL_Renderer* renderer;
 
         static GPUHandler* gpuHandler;
@@ -69,6 +73,7 @@ namespace Amara {
         static FileManager* files;
         static AssetManager* assets;
         static AnimationFactory* animations;
+        static ShaderManager* shaders;
         static AudioMaster* audio;
         static MessageQueue* messages;
         static GarbageCollector* garbageCollector;
@@ -86,12 +91,15 @@ namespace Amara {
         static void queue_asset_garbage(Amara::Asset* asset) {
             Props::queue_asset_garbage(asset, 1);
         }
+        #ifdef AMARA_OPENGL
         static void queue_texture_garbage(GLuint textureID);
+        #endif
 
         static sol::state* lua_state;
         static int lua_stack_size;
 
         static KeyboardManager* keyboard;
+        static ControlManager* controls;
 
         static sol::state& lua() {
             return *lua_state;
@@ -126,7 +134,9 @@ namespace Amara {
 
     GraphicsEnum Props::graphics = GraphicsEnum::None;
 
-    SDL_GLContext Props::glContext = NULL;
+    #ifdef AMARA_OPENGL
+        SDL_GLContext Props::glContext = NULL;
+    #endif
     SDL_Renderer* Props::renderer = nullptr;
     SDL_GPUDevice* Props::gpuDevice = nullptr;
 
@@ -142,6 +152,7 @@ namespace Amara {
     FileManager* Props::files = nullptr;
     AssetManager* Props::assets = nullptr;
     AnimationFactory* Props::animations = nullptr;
+    ShaderManager* Props::shaders = nullptr;
     AudioMaster* Props::audio = nullptr;
     MessageQueue* Props::messages = nullptr;
     GarbageCollector* Props::garbageCollector = nullptr;
@@ -152,4 +163,5 @@ namespace Amara {
     int Props::lua_stack_size = 5000000;
 
     KeyboardManager* Props::keyboard = nullptr;
+    ControlManager* Props::controls = nullptr;
 }

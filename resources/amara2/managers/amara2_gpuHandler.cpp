@@ -5,5 +5,6 @@ namespace Amara {
         
         SDL_GPUCommandBuffer* commandBuffer = nullptr;
         SDL_GPUTexture* swapChainTexture = nullptr;
+        SDL_GPURenderPass* renderPass = nullptr;
     };
 }

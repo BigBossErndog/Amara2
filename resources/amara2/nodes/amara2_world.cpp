@@ -19,7 +19,9 @@ namespace Amara {
 
         ScreenModeEnum screenMode = ScreenModeEnum::Windowed;
 
-        SDL_GLContext glContext;
+        #ifdef AMARA_OPENGL
+            SDL_GLContext glContext;
+        #endif
         SDL_Renderer* renderer = nullptr;
         SDL_GPUDevice* gpuDevice = nullptr;
 
@@ -112,13 +114,17 @@ namespace Amara {
             Props::lua()["World"] = get_lua_object();
 
             if (window) {
+                #ifdef AMARA_OPENGL
                 Props::glContext = NULL;
+                #endif
                 Props::renderer = nullptr;
                 Props::gpuDevice = nullptr;
 
+                #ifdef AMARA_OPENGL
                 if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                     Props::glContext = glContext;
                 }
+                #endif
                 if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
                     Props::renderer = renderer;
                 }
@@ -286,6 +292,19 @@ namespace Amara {
                 }
             }
         }
+
+        void toggleFullscreen(bool borderless) {
+            if (window == nullptr) return;
+            if (screenMode == ScreenModeEnum::Fullscreen) {
+                setScreenMode((borderless) ? ScreenModeEnum::Borderless : ScreenModeEnum::Windowed);
+            }
+            else {
+                setScreenMode(ScreenModeEnum::Fullscreen);
+            }
+        }
+        void toggleFullscreen() {
+            toggleFullscreen(false);
+        }
         
         void setup_new_window() {
             if (window == nullptr) return;
@@ -400,6 +419,7 @@ namespace Amara {
                         }
                         break;
                     case Amara::GraphicsEnum::OpenGL:
+                        #ifdef AMARA_OPENGL
                         if (create_graphics_window(SDL_WINDOW_OPENGL)) {
                             glContext = SDL_GL_CreateContext(window);
                             renderer_created = true;
@@ -427,6 +447,7 @@ namespace Amara {
                                 glEnable(GL_TEXTURE_2D);
                             }
                         }
+                        #endif
                         break;
                     case Amara::GraphicsEnum::None:
                         graphics = g;
@@ -472,10 +493,12 @@ namespace Amara {
                     SDL_DestroyGPUDevice(gpuDevice);
                     gpuDevice = nullptr;
                 }
+                #ifdef AMARA_OPENGL
                 if (glContext) {
                     SDL_GL_DestroyContext(glContext);
                     glContext = NULL;
                 }
+                #endif
                 Props::breakWorld();
                 return;
             }
@@ -549,11 +572,13 @@ namespace Amara {
             if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
                 SDL_RenderClear(renderer);
             }
+            #ifdef AMARA_OPENGL
             else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                 Props::gpuHandler = &gpuHandler;
                 SDL_GL_MakeCurrent(window, glContext);
                 glClear(GL_COLOR_BUFFER_BIT);
             }
+            #endif
             else if (gpuDevice) {
                 Props::gpuHandler = &gpuHandler;
                 gpuHandler.commandBuffer = SDL_AcquireGPUCommandBuffer(Props::gpuDevice);
@@ -572,9 +597,11 @@ namespace Amara {
             if (graphics == GraphicsEnum::Render2D && renderer) {
                 SDL_RenderPresent(renderer);
             }
+            #ifdef AMARA_OPENGL
             else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                 SDL_GL_SwapWindow(window);
             }
+            #endif
             else if (gpuDevice) {
                 Props::gpuHandler = &gpuHandler;
                 SDL_SubmitGPUCommandBuffer(gpuHandler.commandBuffer);
@@ -583,10 +610,12 @@ namespace Amara {
 
         virtual void destroy() override {
             Amara::Node::destroy();
+            #ifdef AMARA_OPENGL
             if (glContext != NULL) {
                 SDL_GL_DestroyContext(glContext);
                 glContext = NULL;
             }
+            #endif
             if (gpuDevice) {
                 SDL_DestroyGPUDevice(gpuDevice);
                 gpuDevice = nullptr;
@@ -616,7 +645,11 @@ namespace Amara {
                 "resizeWindow", &World::resizeWindow,
                 "fitToDisplay", &World::fitToDisplay,
                 "screenMode", sol::readonly(&World::screenMode),
-                "setScreenMode", &World::setScreenMode
+                "setScreenMode", &World::setScreenMode,
+                "toggleFullscreen", sol::overload(
+                    sol::resolve<void(bool)>(&World::toggleFullscreen),
+                    sol::resolve<void()>(&World::toggleFullscreen)
+                )
             );
 
             sol::usertype<Node> node_type = lua["Node"];

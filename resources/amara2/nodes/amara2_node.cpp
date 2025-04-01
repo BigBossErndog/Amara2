@@ -104,7 +104,19 @@ namespace Amara {
                 { "baseNodeID", baseNodeID },
                 { "x", pos.x },
                 { "y", pos.y },
-                { "z", pos.z }
+                { "z", pos.z },
+                { "depth", depth },
+                { "rotation", rotation },
+                { "anchorX", passOn.anchor.x },
+                { "anchorY", passOn.anchor.y },
+                { "scaleX", scale.x },
+                { "scaleY", scale.y },
+                { "zoomFactorX", zoomFactor.x },
+                { "zoomFactorY", zoomFactor.y },
+                { "scrollFactorX", scrollFactor.x },
+                { "scrollFactorY", scrollFactor.y },
+                { "isPaused", isPaused },
+                { "isVisible", isVisible }
             });
         }
 
@@ -129,6 +141,22 @@ namespace Amara {
             if (json_has(config, "x")) pos.x = config["x"];
             if (json_has(config, "y")) pos.y = config["y"];
             if (json_has(config, "z")) pos.z = config["z"];
+
+            if (json_has(config, "scaleX")) scale.x = config["scaleX"];
+            if (json_has(config, "scaleY")) scale.y = config["scaleY"];
+            
+            if (json_has(config, "zoomFactorX")) zoomFactor.x = config["zoomFactorX"];
+            if (json_has(config, "zoomFactorY")) zoomFactor.y = config["zoomFactorY"];
+
+            if (json_has(config, "scrollFactorX")) scrollFactor.x = config["scrollFactorX"];
+            if (json_has(config, "scrollFactorY")) scrollFactor.y = config["scrollFactorY"];
+            
+            if (json_has(config, "rotation")) rotation = config["rotation"];
+            if (json_has(config, "depth")) depth = config["depth"];
+            
+            if (json_has(config, "isPaused")) isPaused = config["isPaused"];
+            if (json_has(config, "isVisible")) isVisible = config["isVisible"];
+
             if (json_has(config, "props")) {
                 nlohmann::json data = config["props"];
                 if (data.is_object()) {

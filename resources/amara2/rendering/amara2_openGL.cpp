@@ -213,28 +213,27 @@ namespace Amara {
         #undef X
     }
 
-    // Load texture using stb_image
-    GLuint LoadGLTexture(const char *filePath) {
-        int width, height, channels;
-        unsigned char *data = stbi_load(filePath, &width, &height, &channels, 4);  // Force 4 channels (RGBA)
-        if (!data) {
-            printf("Failed to load image: %s\n", filePath);
-            return 0;
+    const char* defaultVertexShader = R"(
+        #version 330 core
+        layout (location = 0) in vec2 aPos;
+        layout (location = 1) in vec2 aTexCoord;
+
+        out vec2 TexCoord;
+        
+        void main() {
+            gl_Position = vec4(aPos, 0.0, 1.0);
+            TexCoord = aTexCoord;
         }
+    )";
+    const char* defaultFragmentShader= R"(
+        #version 330 core
+        out vec4 FragColor;
+        in vec2 TexCoord;
 
-        GLuint textureID;
-        glGenTextures(1, &textureID);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        uniform sampler2D spriteTexture;
 
-        // Upload texture data
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-        // Texture settings
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);  // Free image memory
-        return textureID;
-    }
-
+        void main() {
+            FragColor = texture(spriteTexture, TexCoord);
+        }
+    )";
 }

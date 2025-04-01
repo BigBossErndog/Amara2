@@ -13,7 +13,9 @@ namespace Amara {
 
         SDL_Texture* texture = nullptr;
         SDL_GPUTexture* gpuTexture = nullptr;
-        GLuint glTextureID = 0;
+        #ifdef AMARA_OPENGL
+            GLuint glTextureID = 0;
+        #endif
         
         bool loadImage(std::string _p) {
             path = Props::files->getAssetPath(_p);
@@ -60,6 +62,7 @@ namespace Amara {
 
                 return true;
             }
+            #ifdef AMARA_OPENGL
             else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 glGenTextures(1, &glTextureID);
                 
@@ -72,7 +75,8 @@ namespace Amara {
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
-
+                glGenerateMipmap(GL_TEXTURE_2D);
+                
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 
@@ -83,6 +87,7 @@ namespace Amara {
                 
                 return true;
             }
+            #endif
             else if (Props::gpuDevice) {
                 SDL_GPUTextureCreateInfo textureInfo = {
                     .type = SDL_GPU_TEXTURETYPE_2D,
@@ -168,10 +173,12 @@ namespace Amara {
                 SDL_DestroyTexture(texture);
                 texture = nullptr;
             }
+            #ifdef AMARA_OPENGL
             if (glTextureID != 0) {
                 Props::queue_texture_garbage(glTextureID);
                 glTextureID = 0;
             }
+            #endif
         }
 
         virtual void destroy() override {

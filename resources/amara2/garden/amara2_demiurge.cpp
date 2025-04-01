@@ -12,6 +12,7 @@ namespace Amara {
         NodeFactory factory;
         AnimationFactory animations;
         ControlManager controls;
+        ShaderManager shaders;
         AudioMaster audio;
 
         bool demiurgic = true;
@@ -26,6 +27,7 @@ namespace Amara {
             Props::lua()["NodeFactory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
             Props::lua()["Animations"] = &animations;
+            Props::lua()["Shaders"] = &shaders;
             Props::lua()["Controls"] = &controls;
             Props::lua()["AudioMaster"] = &audio;
             
@@ -34,6 +36,8 @@ namespace Amara {
             Props::factory = &factory;
             Props::scripts = &scripts;
             Props::animations = &animations;
+            Props::controls = &controls;
+            Props::shaders = &shaders;
             Props::audio = &audio;
         }
 

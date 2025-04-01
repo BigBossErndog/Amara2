@@ -13,7 +13,9 @@ namespace Amara {
         std::vector<Amara::Node*> batch_queue;
         std::deque<Amara::Node*> batch_overflow;
 
+        #ifdef AMARA_OPENGL
         std::vector<GLuint> glTextures;
+        #endif
         
         int batch_size = 100;
 
@@ -52,10 +54,12 @@ namespace Amara {
             }
             asset_collection.clear();
 
+            #ifdef AMARA_OPENGL
             if (!glTextures.empty()) {
                 glDeleteTextures(static_cast<GLsizei>(glTextures.size()), glTextures.data());
                 glTextures.clear();
             }
+            #endif
         }
 
         void run(double deltaTime) {
@@ -97,10 +101,12 @@ namespace Amara {
                 }
             }
 
+            #ifdef AMARA_OPENGL
             if (!glTextures.empty()) {
                 glDeleteTextures(static_cast<GLsizei>(glTextures.size()), glTextures.data());
                 glTextures.clear();
             }
+            #endif
         }
 
         void batch(Amara::Node* node) {
@@ -135,12 +141,14 @@ namespace Amara {
         if (Props::garbageCollector) Props::garbageCollector->queue(node, expiration);
         else debug_log("Error: Garbage Collector has not been set up. Attempting to delete: ", *node);
     }
-    void Props::queue_texture_garbage(GLuint textureID) {
-        if (Props::garbageCollector) Props::garbageCollector->glTextures.push_back(textureID);
-        else debug_log("Error: Garbage Collector has not been set up. Attempting to delete GL texture.");
-    }
     void Props::queue_asset_garbage(Amara::Asset* asset, double expiration) {
         if (Props::garbageCollector) Props::garbageCollector->queue_asset(asset, expiration);
         else debug_log("Error: Garbage Collector has not been set up. Attempting to delete Asset: ", *asset);
     }
+    #ifdef AMARA_OPENGL
+    void Props::queue_texture_garbage(GLuint textureID) {
+        if (Props::garbageCollector) Props::garbageCollector->glTextures.push_back(textureID);
+        else debug_log("Error: Garbage Collector has not been set up. Attempting to delete GL texture.");
+    }
+    #endif
 }

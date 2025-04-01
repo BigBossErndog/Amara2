@@ -32,11 +32,12 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
+            screenMode = ScreenMode.Windowed,
             width = 1280,
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
-            graphics = Graphics.DirectX
+            graphics = Graphics.OpenGL
         },
         entryScene = "scenes/TestScene"
     })

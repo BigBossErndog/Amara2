@@ -65,6 +65,7 @@ namespace Amara {
             if (image) {
                 data["texture"] = image->key;
             }
+            data["frame"] = frame;
 
             data["originX"] = origin.x;
             data["originY"] = origin.y;
@@ -81,6 +82,8 @@ namespace Amara {
             Amara::Node::configure(config);
 
             if (json_has(config, "texture")) setTexture(config["texture"]);
+            if (json_has(config, "frame")) frame = config["frame"];
+            if (json_has(config, "animation")) animate(config["animation"]);
 
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
@@ -89,8 +92,6 @@ namespace Amara {
             if (json_has(config, "cropRight")) cropRight = config["cropRight"];
             if (json_has(config, "cropTop")) cropTop = config["cropTop"];
             if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
-
-            if (json_has(config, "animation")) animate(config["animation"]);
 
             return this;
         }
@@ -111,7 +112,6 @@ namespace Amara {
             if (image == nullptr) return;
 
             SDL_Rect setv = Rectangle::makeSDLRect(v);
-            SDL_SetRenderViewport(Props::renderer, &setv);
 
             if (cropLeft < 0) cropLeft = 0;
             if (cropRight < 0) cropRight = 0;
@@ -173,6 +173,7 @@ namespace Amara {
 
             if (image->texture && Props::renderer) {
                 // 2D Rendering
+                SDL_SetRenderViewport(Props::renderer, &setv);
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
 
                 SDL_RenderTextureRotated(
@@ -185,6 +186,38 @@ namespace Amara {
                     SDL_FLIP_NONE
                 );
             }
+            else if (image->gpuTexture && Props::gpuDevice) {
+                // GPU Rendering
+                // SDL_SetGPUViewport(Props::gpuHandler->renderPass, &setv);
+                SDL_GPUBlitInfo blitInfo{};
+
+                // blitInfo.source.texture = image->gpuTexture;
+                // blitInfo.source.mip_level = 0;
+                // blitInfo.source.layer_or_depth_plane = 0;
+                // blitInfo.source.x = srcRect.x;
+                // blitInfo.source.y = srcRect.y; 
+                // blitInfo.source.w = srcRect.w; 
+                // blitInfo.source.h = srcRect.h;
+
+                // blitInfo.destination.texture = NULL;
+                // blitInfo.destination.mip_level = 0;
+                // blitInfo.destination.layer_or_depth_plane = 0;
+                // blitInfo.x = destRect.x;
+                // blitInfo.y = destRect.y;
+                // blitInfo.w = destRect.w;
+                // blitInfo.h = destRect.h;
+
+                // blitInfo.load_op = SDL_GPU_LOADOP_LOAD;
+                // blitInfo.filter = SDL_GPU_FILTER_NEAREST;
+                // blitInfo.cycle = true;
+
+
+                // SDL_BlitGPUTexture(
+                //     Props::gpuHandler->commandBuffer,
+                //     &blitInfo
+                // );
+            }
+            #ifdef AMARA_OPENGL
             else if (image->glTextureID != 0 && Props::glContext != NULL) {
                 glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
                 Quad srcQuad = Quad(
@@ -202,15 +235,9 @@ namespace Amara {
                     passOn.rotation + rotation
                 ));
                 
-                glBindTexture(GL_TEXTURE_2D, image->glTextureID);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                glBegin(GL_QUADS);
-                glTexCoord2f(srcQuad.p1.x, srcQuad.p1.y); glVertex2f(destQuad.p1.x, destQuad.p1.y);
-                glTexCoord2f(srcQuad.p2.x, srcQuad.p2.y); glVertex2f(destQuad.p2.x, destQuad.p2.y);
-                glTexCoord2f(srcQuad.p3.x, srcQuad.p3.y); glVertex2f(destQuad.p3.x, destQuad.p3.y);
-                glTexCoord2f(srcQuad.p4.x, srcQuad.p4.y); glVertex2f(destQuad.p4.x, destQuad.p4.y);
-                glEnd();
+                
             }
+            #endif
         }
 
         static void bindLua(sol::state& lua) {
