@@ -17,6 +17,10 @@ namespace Amara {
     class GPUHandler;
     class Asset;
 
+    #ifdef AMARA_OPENGL
+        class ShaderProgram;
+    #endif
+
     struct PassOnProps {
         float rotation = 0;
         Vector3 anchor = { 0, 0, 0 };
@@ -57,6 +61,10 @@ namespace Amara {
         static GPUHandler* gpuHandler;
 
         static bool glFunctionsLoaded;
+
+        #if AMARA_OPENGL
+            static ShaderProgram* currentShaderProgram;
+        #endif
 
         static SDL_Window* current_window;
         static Rectangle window_dim;
@@ -143,6 +151,10 @@ namespace Amara {
     GPUHandler* Props::gpuHandler = nullptr;
 
     bool Props::glFunctionsLoaded = false;
+
+    #if AMARA_OPENGL
+        ShaderProgram* Props::currentShaderProgram = nullptr;
+    #endif
     
     GameManager* Props::game = nullptr;
     World* Props::world = nullptr;

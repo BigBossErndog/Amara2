@@ -95,7 +95,7 @@
     #include "managers/amara2_props.cpp"
 
     #include "utility/amara2_luaUtlity.cpp"
-    
+
     #include "input/button.cpp"
     #include "input/keyboard.cpp"
     #include "input/controlScheme.cpp"
@@ -107,7 +107,7 @@
     
     #include "assets/amara2_asset.cpp"
     #include "assets/amara2_imageAsset.cpp"
-
+    
     #include "managers/amara2_assetManager.cpp"
     #include "managers/amara2_shaderManager.cpp"
 

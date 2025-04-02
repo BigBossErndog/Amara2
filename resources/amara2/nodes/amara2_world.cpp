@@ -445,6 +445,11 @@ namespace Amara {
 
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
+
+                                Props::shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
+                                Props::shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
+                                Props::shaders->createShaderProgram("default", "defaultVert", "defaultFrag");
+                                setShaderProgram("default");
                             }
                         }
                         #endif
@@ -564,6 +569,12 @@ namespace Amara {
 
             passOn = Props::passOn;
             passOnPropsEnabled = false;  
+
+            #ifdef AMARA_OPENGL
+            if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
+                Props::currentShaderProgram = nullptr;
+            }
+            #endif
             
             Amara::Node::draw(viewport);
         }

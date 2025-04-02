@@ -11,6 +11,8 @@ namespace Amara {
     #ifdef AMARA_OPENGL
     class ShaderProgram {
     public:
+        ShaderProgram() = default;
+        ShaderProgram(unsigned int id) : programID(id) {}
         unsigned int programID = 0;
     };
     #endif
@@ -20,6 +22,11 @@ namespace Amara {
         #ifdef AMARA_OPENGL
         std::unordered_map<std::string, unsigned int> glShaders;
         std::unordered_map<std::string, ShaderProgram> glPrograms;
+
+        ShaderManager() {
+            glShaders.clear();
+            glPrograms.clear();
+        }
         #endif
 
         bool hasShader(std::string key) {
@@ -39,12 +46,12 @@ namespace Amara {
             return glPrograms.find(key) != glPrograms.end();
         }
 
-        ShaderProgram* getProgram(std::string key) {
+        ShaderProgram* getShaderProgram(std::string key) {
             if (hasShaderProgram(key)) return &glPrograms[key];
             return nullptr;
         }
 
-        unsigned int glCompileShader(std::string key, std::string source, ShaderTypeEnum type) {
+        unsigned int compileGLShader(std::string key, std::string source, ShaderTypeEnum type) {
             unsigned int shader = glCreateShader((unsigned int)type);
             if (shader == 0) {
                 debug_log("Error: Failed to create shader of type ", (int)type);
@@ -62,14 +69,15 @@ namespace Amara {
                 char infoLog[512];
                 glGetShaderInfoLog(shader, 512, NULL, infoLog);
                 debug_log("Error: Shader compilation error: ", infoLog);
+                return 0;
             }
 
-            glShaders[key] = shader;
+            if (!key.empty()) glShaders[key] = shader;
 
             return shader;
         }
 
-        unsigned int createShaderProgram(std::string vertex_key, std::string fragment_key) {
+        unsigned int createShaderProgram(std::string key, std::string vertex_key, std::string fragment_key) {
             unsigned int shaderProgram = glCreateProgram();
             unsigned int vertexShader, fragmentShader;
 
@@ -83,7 +91,7 @@ namespace Amara {
                 std::string filePath = Props::files->getAssetPath(vertex_key);\
                 if (Props::files->fileExists(filePath)) {
                     std::string source = Props::files->readFile(filePath);
-                    vertexShader = glCompileShader(vertex_key, source, ShaderTypeEnum::Vertex);
+                    vertexShader = compileGLShader("", source, ShaderTypeEnum::Vertex);
                     tempVertex = true;
                 }
                 else {
@@ -99,7 +107,7 @@ namespace Amara {
                 std::string filePath = Props::files->getAssetPath(fragment_key);
                 if (Props::files->fileExists(filePath)) {
                     std::string source = Props::files->readFile(filePath);
-                    fragmentShader = glCompileShader(fragment_key, source, ShaderTypeEnum::Fragment);
+                    fragmentShader = compileGLShader("", source, ShaderTypeEnum::Fragment);
                     tempFragment = true;
                 }
                 else {
@@ -114,9 +122,30 @@ namespace Amara {
             glAttachShader(shaderProgram, vertexShader);
             glAttachShader(shaderProgram, fragmentShader);
 
+            if (hasShaderProgram(key)) {
+                ShaderProgram& existing = glPrograms[key];
+                existing.programID = shaderProgram;
+            }
+            else {
+                glPrograms[key] = ShaderProgram(shaderProgram);
+            }
+
             return shaderProgram;
         }
         #endif
+
+        void clear() {
+            #ifdef AMARA_OPENGL
+            for (auto& shader : glShaders) {
+                glDeleteShader(shader.second);
+            }
+            for (auto& program : glPrograms) {
+                glDeleteProgram(program.second.programID);
+            }
+            glShaders.clear();
+            glPrograms.clear();
+            #endif
+        }
 
         bool loadShader(std::string key, std::string path, ShaderTypeEnum type) {
             if (hasShader(key)) {
@@ -128,7 +157,7 @@ namespace Amara {
             std::string source = Props::files->readFile(filePath);
 
             #ifdef AMARA_OPENGL
-                unsigned int shader = glCompileShader(key, source, type);
+                unsigned int shader = compileGLShader(key, source, type);
                 if (shader != 0) return true;
             #endif
 

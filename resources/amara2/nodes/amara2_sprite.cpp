@@ -25,8 +25,55 @@ namespace Amara {
 
         Animation* animation = nullptr;
 
+        #ifdef AMARA_OPENGL
+            unsigned int VAO, VBO, EBO;
+            unsigned int texture;
+
+            std::array<float, 16> vertices = {
+                -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
+                 0.5f, -0.5f,  1.0f, 0.0f, // Bottom-right
+                 0.5f,  0.5f,  1.0f, 1.0f, // Top-right
+                -0.5f,  0.5f,  0.0f, 1.0f  // Top-left
+            };
+
+            static constexpr std::array<unsigned int, 6> indices = {
+                0, 1, 2,  // First Triangle
+                0, 2, 3   // Second Triangle
+            };
+        #endif
+
         Sprite(): Amara::Node() {
             set_base_node_id("Sprite");
+        }
+
+        void init() {
+            Amara::Node::init();
+
+            // Generate VAO, VBO, and EBO
+            glGenVertexArrays(1, &VAO);
+            glGenBuffers(1, &VBO);
+            glGenBuffers(1, &EBO);
+
+            // Bind VAO
+            glBindVertexArray(VAO);
+            
+            // Bind & Fill VBO
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+            
+            // Bind & Fill EBO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+            
+            // Position attribute
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+
+            // Texture coordinate attribute
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+            glEnableVertexAttribArray(1);
+
+            glBindVertexArray(0);
         }
 
         bool setTexture(std::string key) {
@@ -66,7 +113,7 @@ namespace Amara {
                 data["texture"] = image->key;
             }
             data["frame"] = frame;
-
+            
             data["originX"] = origin.x;
             data["originY"] = origin.y;
 
@@ -188,34 +235,6 @@ namespace Amara {
             }
             else if (image->gpuTexture && Props::gpuDevice) {
                 // GPU Rendering
-                // SDL_SetGPUViewport(Props::gpuHandler->renderPass, &setv);
-                SDL_GPUBlitInfo blitInfo{};
-
-                // blitInfo.source.texture = image->gpuTexture;
-                // blitInfo.source.mip_level = 0;
-                // blitInfo.source.layer_or_depth_plane = 0;
-                // blitInfo.source.x = srcRect.x;
-                // blitInfo.source.y = srcRect.y; 
-                // blitInfo.source.w = srcRect.w; 
-                // blitInfo.source.h = srcRect.h;
-
-                // blitInfo.destination.texture = NULL;
-                // blitInfo.destination.mip_level = 0;
-                // blitInfo.destination.layer_or_depth_plane = 0;
-                // blitInfo.x = destRect.x;
-                // blitInfo.y = destRect.y;
-                // blitInfo.w = destRect.w;
-                // blitInfo.h = destRect.h;
-
-                // blitInfo.load_op = SDL_GPU_LOADOP_LOAD;
-                // blitInfo.filter = SDL_GPU_FILTER_NEAREST;
-                // blitInfo.cycle = true;
-
-
-                // SDL_BlitGPUTexture(
-                //     Props::gpuHandler->commandBuffer,
-                //     &blitInfo
-                // );
             }
             #ifdef AMARA_OPENGL
             else if (image->glTextureID != 0 && Props::glContext != NULL) {
@@ -234,8 +253,23 @@ namespace Amara {
                     ), 
                     passOn.rotation + rotation
                 ));
+
+                // vertices = {
+                //     destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
+                //     destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
+                //     destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
+                //     destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
+                // };
+
+                glBindBuffer(GL_ARRAY_BUFFER, VBO);
+                glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
                 
-                
+                glBindTexture(GL_TEXTURE_2D, image->glTextureID);
+
+                // Draw the sprite
+                glBindVertexArray(VAO);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                glBindVertexArray(0);
             }
             #endif
         }

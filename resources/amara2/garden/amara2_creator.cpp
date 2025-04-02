@@ -204,7 +204,10 @@ namespace Amara {
 
             destroyAllWorlds();
             cleanDestroyedWorlds();
-            
+
+            assets.clear();
+            shaders.clear();
+
             factory.clear();
             garbageCollector.clearImmediately();
 

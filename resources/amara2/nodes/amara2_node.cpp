@@ -66,6 +66,10 @@ namespace Amara {
 
         std::deque<std::string> inheritanceChain;
 
+        #ifdef AMARA_OPENGL
+        ShaderProgram* shaderProgram = nullptr;
+        #endif
+
         Node() {
             set_base_node_id("Node");
         }
@@ -348,6 +352,12 @@ namespace Amara {
         }
         virtual void drawObjects(const Rectangle& v) {
             passOn = Props::passOn;
+
+            #ifdef AMARA_OPENGL
+            if (Props::graphics == GraphicsEnum::OpenGL && shaderProgram && shaderProgram != Props::currentShaderProgram) {
+                glUseProgram(shaderProgram->programID);
+            }
+            #endif
             
             drawSelf(v);
 
@@ -374,10 +384,20 @@ namespace Amara {
                 Props::passOn = passOn;
 				++it;
 			}
-            
         }
 
         void sortChildren();
+
+        #ifdef AMARA_OPENGL
+        bool setShaderProgram(std::string key) {
+            shaderProgram = Props::shaders->getShaderProgram(key);
+            if (shaderProgram == nullptr) {
+                debug_log("Error: Shader program \"", key, "\" not found.");
+                return false;
+            }
+            return true;
+        }
+        #endif
 
         virtual Amara::Node* addChild(Amara::Node* node) {
             if (isDestroyed) return node;
