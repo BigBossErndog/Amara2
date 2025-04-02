@@ -27,6 +27,8 @@
 -- Scripts:load("test","scripts/testScript")
 -- Scripts:run("test")
 
+Game:setTargetFPS(60)
+
     firstworld = Creator:createWorld()
     firstworld:configure({
         window = {

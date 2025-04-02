@@ -73,7 +73,7 @@ namespace Amara {
                 }
 
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
-
+                
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
                 glGenerateMipmap(GL_TEXTURE_2D);
                 

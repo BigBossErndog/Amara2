@@ -15,6 +15,7 @@
     #include <bitset>
     #include <map>
     #include <unordered_map>
+    #include <unordered_set>
     #include <vector>
     #include <deque>
     #include <list>
@@ -37,6 +38,10 @@
 
     #define STB_IMAGE_IMPLEMENTATION
     #include <stb_image.h>
+    
+
+    #define STB_TRUETYPE_IMPLEMENTATION
+    #include <stb_truetype.h>
 
     #if defined(_WIN32)
         #include <windows.h>
@@ -107,6 +112,7 @@
     
     #include "assets/amara2_asset.cpp"
     #include "assets/amara2_imageAsset.cpp"
+    #include "assets/amara2_fontAsset.cpp"
     
     #include "managers/amara2_assetManager.cpp"
     #include "managers/amara2_shaderManager.cpp"
