@@ -126,8 +126,9 @@ namespace Amara {
 
     enum class ScreenModeEnum {
         Windowed,
-        Borderless,
-        Fullscreen
+        BorderlessWindowed,
+        Fullscreen,
+        BorderlessFullscreen
     };
 
     void bindLua_UtilityFunctions(sol::state& lua) {
@@ -143,8 +144,9 @@ namespace Amara {
 
         lua.new_enum("ScreenMode",
             "Windowed", Amara::ScreenModeEnum::Windowed,
-            "Borderless", Amara::ScreenModeEnum::Borderless,
-            "Fullscreen", Amara::ScreenModeEnum::Fullscreen
+            "BorderlessWindowed", Amara::ScreenModeEnum::BorderlessWindowed,
+            "Fullscreen", Amara::ScreenModeEnum::Fullscreen,
+            "BorderlessFullscreen", Amara::ScreenModeEnum::BorderlessFullscreen
         );
     }
 }

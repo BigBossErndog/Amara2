@@ -272,7 +272,7 @@ namespace Amara {
                         SDL_SetWindowBordered(window, true);
                         break;
                     }
-                    case ScreenModeEnum::Borderless: {
+                    case ScreenModeEnum::BorderlessWindowed: {
                         SDL_SetWindowFullscreen(window, false);
                         SDL_SetWindowBordered(window, false);
                         break;
@@ -285,6 +285,11 @@ namespace Amara {
                         if (displayMode) SDL_SetWindowFullscreenMode(window, displayMode);
                         break;
                     }
+                    case ScreenModeEnum::BorderlessFullscreen: {
+                        SDL_SetWindowBordered(window, false);
+                        SDL_SetWindowFullscreen(window, true);
+                        break;
+                    }
                     default:
                         debug_log("Error: Invalid graphics renderer setting given.");
                         Props::breakWorld();
@@ -293,24 +298,10 @@ namespace Amara {
             }
         }
 
-        void toggleFullscreen(bool borderless) {
-            if (window == nullptr) return;
-            if (screenMode == ScreenModeEnum::Fullscreen) {
-                setScreenMode((borderless) ? ScreenModeEnum::Borderless : ScreenModeEnum::Windowed);
-            }
-            else {
-                setScreenMode(ScreenModeEnum::Fullscreen);
-            }
-        }
-        void toggleFullscreen() {
-            toggleFullscreen(false);
-        }
-        
         void setup_new_window() {
             if (window == nullptr) return;
 
             windowID = SDL_GetWindowID(window);
-
             window_dim = { pos.x, pos.y, windowW, windowH };
 
             setScreenMode(screenMode);
@@ -449,7 +440,7 @@ namespace Amara {
 
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
-                                
+
                                 Props::shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
                                 Props::shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
                                 Props::shaders->createShaderProgram("default", "defaultVert", "defaultFrag");
@@ -660,11 +651,7 @@ namespace Amara {
                 "resizeWindow", &World::resizeWindow,
                 "fitToDisplay", &World::fitToDisplay,
                 "screenMode", sol::readonly(&World::screenMode),
-                "setScreenMode", &World::setScreenMode,
-                "toggleFullscreen", sol::overload(
-                    sol::resolve<void(bool)>(&World::toggleFullscreen),
-                    sol::resolve<void()>(&World::toggleFullscreen)
-                )
+                "setScreenMode", &World::setScreenMode
             );
 
             sol::usertype<Node> node_type = lua["Node"];

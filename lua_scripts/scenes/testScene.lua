@@ -121,7 +121,18 @@ return NodeFactory:create("Scene"):configure({
         end
 
         if Keyboard:justPressed(Key.F5) then
-            self.world:toggleFullscreen(true)
+            if self.world.screenMode == ScreenMode.Windowed or self.world.screenMode == ScreenMode.BorderlessWindowed then
+                self.world:setScreenMode(ScreenMode.Fullscreen)
+            else 
+                self.world:setScreenMode(ScreenMode.Windowed)
+            end
+        end
+        if Keyboard:justPressed(Key.F11) then
+            if self.world.screenMode == ScreenMode.Windowed or self.world.screenMode == ScreenMode.BorderlessWindowed then
+                self.world:setScreenMode(ScreenMode.BorderlessFullscreen)
+            else 
+                self.world:setScreenMode(ScreenMode.BorderlessWindowed)
+            end
         end
     end
 });

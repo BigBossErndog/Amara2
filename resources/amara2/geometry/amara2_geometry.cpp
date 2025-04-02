@@ -63,6 +63,7 @@ namespace Amara {
         );
     }
 
+    #ifdef AMARA_OPENGL
     Quad glTranslateQuad(const Rectangle& v, const Quad& q) {
         Quad t = {
             { -1.0f + (q.p1.x/v.w)*2, -1.0f + (1.0f - q.p1.y/v.h)*2 },
@@ -72,6 +73,7 @@ namespace Amara {
         };
         return t;
     }
+    #endif
 
     void bindLua_Geometry(sol::state& lua) {
         sol::table math_metatable = lua["math"];
@@ -79,5 +81,14 @@ namespace Amara {
             sol::resolve<Vector2(const Vector2&, const Vector2&, float)>(&Amara::rotateAroundAnchor),
             sol::resolve<Vector2(const Vector2&, float)>(&Amara::rotateAroundAnchor)
         ));
+        math_metatable.set_function("distanceBetween", sol::overload(
+            sol::resolve<float(float, float, float, float)>(&Amara::distanceBetween),
+            sol::resolve<float(const Vector2&, const Vector2&)>(&Amara::distanceBetween)
+        ));
+        math_metatable.set_function("angleBetween", sol::overload(
+            sol::resolve<float(float, float, float, float)>(&Amara::angleBetween),
+            sol::resolve<float(const Vector2&, const Vector2&)>(&Amara::angleBetween)
+        ));
+        math_metatable.set_function("centerOf", &Amara::centerOf);
     }
 }
