@@ -420,6 +420,10 @@ namespace Amara {
                         break;
                     case Amara::GraphicsEnum::OpenGL:
                         #ifdef AMARA_OPENGL
+                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+                        
                         if (create_graphics_window(SDL_WINDOW_OPENGL)) {
                             glContext = SDL_GL_CreateContext(window);
                             renderer_created = true;
@@ -445,7 +449,7 @@ namespace Amara {
 
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
-
+                                
                                 Props::shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
                                 Props::shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
                                 Props::shaders->createShaderProgram("default", "defaultVert", "defaultFrag");

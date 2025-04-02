@@ -29,7 +29,7 @@ namespace Amara {
     X(void, glBindTexture, GLenum, GLuint) \
     X(void, glTexImage2D, GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const void*) \
     X(void, glTexParameteri, GLenum, GLenum, GLint) \
-    X(void, glGetUniformLocation, GLuint, const GLchar*) \
+    X(GLint, glGetUniformLocation, GLuint, const GLchar*) \
     X(void, glUniformMatrix4fv, GLint, GLsizei, GLboolean, const GLfloat*) \
     X(void, glUniform1i, GLint, GLint) \
     X(void, glGenFramebuffers, GLsizei, GLuint*) \

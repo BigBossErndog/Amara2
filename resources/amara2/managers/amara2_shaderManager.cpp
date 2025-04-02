@@ -13,6 +13,9 @@ namespace Amara {
     public:
         ShaderProgram() = default;
         ShaderProgram(unsigned int id) : programID(id) {}
+        ShaderProgram(std::string k, unsigned int id) : key(k), programID(id) {}
+
+        std::string key;
         unsigned int programID = 0;
     };
     #endif
@@ -36,6 +39,7 @@ namespace Amara {
             
             return false;
         }
+
         #ifdef AMARA_OPENGL
         unsigned int getShader(std::string key) {
             if (hasShader(key)) return glShaders[key];
@@ -81,6 +85,8 @@ namespace Amara {
             unsigned int shaderProgram = glCreateProgram();
             unsigned int vertexShader, fragmentShader;
 
+
+
             bool tempVertex = false;
             bool tempFragment = false;
 
@@ -95,7 +101,7 @@ namespace Amara {
                     tempVertex = true;
                 }
                 else {
-                    debug_log("Error: Vertex shader file not found: ", filePath);
+                    debug_log("Error: Vertex shader not found: ", vertex_key);
                     return 0;
                 }
             }
@@ -111,23 +117,37 @@ namespace Amara {
                     tempFragment = true;
                 }
                 else {
-                    debug_log("Error: Fragment shader file not found: ", filePath);
+                    debug_log("Error: Fragment shader not found: ", fragment_key);
                     return 0;
                 }
+            }
+
+            glAttachShader(shaderProgram, vertexShader);
+            glAttachShader(shaderProgram, fragmentShader);
+            glLinkProgram(shaderProgram);
+
+            GLint success;
+            glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+            if (!success) {
+                GLint logLength;
+                glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
+                char* log = new char[logLength];
+                glGetProgramInfoLog(shaderProgram, logLength, &logLength, log);
+                debug_log("Error: Shader Program Linking Failed: ", log);
+                delete[] log;
+                return 0;
             }
 
             if (tempVertex) glDeleteShader(vertexShader);
             if (tempFragment) glDeleteShader(fragmentShader);
 
-            glAttachShader(shaderProgram, vertexShader);
-            glAttachShader(shaderProgram, fragmentShader);
-
             if (hasShaderProgram(key)) {
                 ShaderProgram& existing = glPrograms[key];
+                existing.key = key;
                 existing.programID = shaderProgram;
             }
             else {
-                glPrograms[key] = ShaderProgram(shaderProgram);
+                glPrograms[key] = ShaderProgram(key, shaderProgram);
             }
 
             return shaderProgram;
@@ -157,8 +177,8 @@ namespace Amara {
             std::string source = Props::files->readFile(filePath);
 
             #ifdef AMARA_OPENGL
-                unsigned int shader = compileGLShader(key, source, type);
-                if (shader != 0) return true;
+            unsigned int shader = compileGLShader(key, source, type);
+            if (shader != 0) return true;
             #endif
 
             debug_log("Error: Failed to load shader from file: ", path);

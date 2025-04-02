@@ -49,6 +49,7 @@ namespace Amara {
         void init() {
             Amara::Node::init();
 
+            #ifdef AMARA_OPENGL
             // Generate VAO, VBO, and EBO
             glGenVertexArrays(1, &VAO);
             glGenBuffers(1, &VBO);
@@ -74,6 +75,7 @@ namespace Amara {
             glEnableVertexAttribArray(1);
 
             glBindVertexArray(0);
+            #endif
         }
 
         bool setTexture(std::string key) {
@@ -254,17 +256,25 @@ namespace Amara {
                     passOn.rotation + rotation
                 ));
 
-                // vertices = {
-                //     destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
-                //     destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
-                //     destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
-                //     destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
-                // };
+                vertices = {
+                    destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
+                    destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
+                    destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
+                    destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
+                };
 
                 glBindBuffer(GL_ARRAY_BUFFER, VBO);
                 glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
                 
+                GLint location = glGetUniformLocation(Props::currentShaderProgram->programID, "spriteTexture");
+                if (location == -1) {
+                    debug_log("Error: Uniform 'spriteTexture' not found in shader: \"", Props::currentShaderProgram->key, "\".");
+                }
+                glUniform1i(location, 0);
+
+                glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, image->glTextureID);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
                 // Draw the sprite
                 glBindVertexArray(VAO);

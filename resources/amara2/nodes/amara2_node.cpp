@@ -356,6 +356,7 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             if (Props::graphics == GraphicsEnum::OpenGL && shaderProgram && shaderProgram != Props::currentShaderProgram) {
                 glUseProgram(shaderProgram->programID);
+                Props::currentShaderProgram = shaderProgram;
             }
             #endif
             
