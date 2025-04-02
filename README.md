@@ -1,2 +1,2 @@
 # Amara2
-A C++ SDL2 game engine with Lua scripting.
+A C++ SDL3 game engine with Lua scripting.
