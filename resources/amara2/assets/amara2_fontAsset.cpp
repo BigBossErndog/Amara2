@@ -126,18 +126,18 @@ namespace Amara {
             stbtt_FreeBitmap(bitmap, nullptr);
         }
 
-        void packGlyphsFromString(std::string str) {
+        void packGlyphsFromString(std::u32string str) {
             for (char32_t codepoint : str) {
                 int glyphID = static_cast<int>(codepoint);
                 AddGlyphToTexture(glyphID);
             }
         }
 
-        void packGlyphsFromString(std::u32string str) {
+        void packGlyphsFromString(std::string str) {
             std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
             std::u32string u32str = converter.from_bytes(str);  // Convert UTF-8 string to UTF-32
 
-            void packGlyphsFromString(u32str);
+            packGlyphsFromString(u32str);
         }
 
         virtual void clearTexture() {

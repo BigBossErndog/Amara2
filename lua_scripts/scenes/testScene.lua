@@ -85,8 +85,6 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onUpdate = function(self, deltaTime)
-        -- self.props.s:rotate(math.pi*0.01)
-        
         if Keyboard:isDown(Key.X) then
             self.camera:rotate(2 * math.pi * deltaTime * 0.25)
         end

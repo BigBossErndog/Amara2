@@ -20,6 +20,9 @@ namespace Amara {
         bool operator==(const Rectangle& other) const {
             return x == other.x && y == other.y && w == other.w && h == other.h;
         }
+        bool operator !=(const Rectangle& other) const {
+            return x != other.x || y != other.y || w != other.w || h != other.h;
+        }
         
         explicit operator std::string() const {
             return "{ x: " + float_string(x) + ", y: " + float_string(y) + ", w: " + float_string(w) + ", h: " + float_string(h) + " }";

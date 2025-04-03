@@ -14,7 +14,7 @@ namespace Amara {
         ShaderProgram() = default;
         ShaderProgram(unsigned int id) : programID(id) {}
         ShaderProgram(std::string k, unsigned int id) : key(k), programID(id) {}
-
+        
         std::string key;
         unsigned int programID = 0;
     };

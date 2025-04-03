@@ -9,6 +9,7 @@ namespace Amara {
     class FileManager;
     class AssetManager;
     class ShaderManager;
+    class RenderBatch;
     class AudioMaster;
     class MessageQueue;
     class GarbageCollector;

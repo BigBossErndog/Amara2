@@ -8,4 +8,12 @@ namespace Amara {
         float x, y, z;
         float u, v;
     };
+
+    enum class BlendMode {
+        None = 0,
+        Alpha = 1,
+        Additive = 2,
+        Multiply = 3,
+        PremultipliedAlpha = 4
+    };
 }

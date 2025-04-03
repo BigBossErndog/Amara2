@@ -8,6 +8,8 @@ namespace Amara {
         ImageAsset* image = nullptr;
         SpritesheetAsset* spritesheet = nullptr;
 
+        Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
+
         Vector2 origin = { 0.5, 0.5 };
 
         int imageWidth = 0;
@@ -26,55 +28,16 @@ namespace Amara {
         Animation* animation = nullptr;
 
         #ifdef AMARA_OPENGL
-            unsigned int VAO, VBO, EBO;
-            
             std::array<float, 16> vertices = {
                 -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
                  0.5f, -0.5f,  1.0f, 0.0f, // Bottom-right
                  0.5f,  0.5f,  1.0f, 1.0f, // Top-right
                 -0.5f,  0.5f,  0.0f, 1.0f  // Top-left
             };
-
-            static constexpr std::array<unsigned int, 6> indices = {
-                0, 1, 2,  // First Triangle
-                0, 2, 3   // Second Triangle
-            };
         #endif
 
         Sprite(): Amara::Node() {
             set_base_node_id("Sprite");
-        }
-
-        void init() {
-            Amara::Node::init();
-
-            #ifdef AMARA_OPENGL
-            // Generate VAO, VBO, and EBO
-            glGenVertexArrays(1, &VAO);
-            glGenBuffers(1, &VBO);
-            glGenBuffers(1, &EBO);
-
-            // Bind VAO
-            glBindVertexArray(VAO);
-            
-            // Bind & Fill VBO
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-            
-            // Bind & Fill EBO
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-            
-            // Position attribute
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-            glEnableVertexAttribArray(0);
-
-            // Texture coordinate attribute
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-            glEnableVertexAttribArray(1);
-
-            glBindVertexArray(0);
-            #endif
         }
 
         bool setTexture(std::string key) {
@@ -159,8 +122,6 @@ namespace Amara {
         virtual void drawSelf(const Rectangle& v) override {
             if (image == nullptr) return;
 
-            SDL_Rect setv = Rectangle::makeSDLRect(v);
-
             if (cropLeft < 0) cropLeft = 0;
             if (cropRight < 0) cropRight = 0;
             if (cropTop < 0) cropTop = 0;
@@ -221,6 +182,7 @@ namespace Amara {
 
             if (image->texture && Props::renderer) {
                 // 2D Rendering
+                SDL_Rect setv = Rectangle::makeSDLRect(v);
                 SDL_SetRenderViewport(Props::renderer, &setv);
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
 
@@ -239,7 +201,6 @@ namespace Amara {
             }
             #ifdef AMARA_OPENGL
             else if (image->glTextureID != 0 && Props::glContext != NULL) {
-                glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
                 Quad srcQuad = Quad(
                     { srcRect.x/imageWidth, srcRect.y/imageHeight },
                     { (srcRect.x+srcRect.w)/imageWidth, srcRect.y/imageHeight },
@@ -262,25 +223,7 @@ namespace Amara {
                     destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
                 };
 
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-                
-                GLint location = glGetUniformLocation(Props::currentShaderProgram->programID, "_texture");
-                if (location == -1) {
-                    debug_log("Error: Uniform '_texture' not found in shader: \"", Props::currentShaderProgram->key, "\".");
-                }
-                glUniform1i(location, 0);
-
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, image->glTextureID);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-                // Draw the sprite
-                glBindVertexArray(VAO);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-                glBindVertexArray(0);
-
-                Props::renderBatch->pushQuad(image->glTextureID, vertices);
+                Props::renderBatch->pushQuad(image->glTextureID, vertices, v, blendMode);
             }
             #endif
         }

@@ -578,7 +578,7 @@ namespace Amara {
             
             Amara::Node::draw(viewport);
 
-            renderBatch->flush();
+            renderBatch.flush();
         }
 
         void prepareRenderer() {

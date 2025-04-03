@@ -116,7 +116,9 @@
     #include "assets/amara2_fontAsset.cpp"
     
     #include "managers/amara2_assetManager.cpp"
+    
     #include "managers/amara2_shaderManager.cpp"
+    #include "utility/amara2_renderBatch.cpp"
 
     #include "managers/amara2_messages.cpp"
     #include "managers/amara2_messageBox.cpp"
