@@ -215,25 +215,27 @@ namespace Amara {
 
     const char* defaultVertexShader = R"(
         #version 330 core
+
         layout (location = 0) in vec2 _position;
         layout (location = 1) in vec2 _coord;
 
-        out vec2 textureCoord;
+        out vec2 texCoord;
         
         void main() {
             gl_Position = vec4(_position, 0.0, 1.0);
-            textureCoord = _coord;
+            texCoord = _coord;
         }
     )";
     const char* defaultFragmentShader= R"(
         #version 330 core
-        out vec4 fragmentColor;
-        in vec2 textureCoord;
 
+        in vec2 texCoord;
         uniform sampler2D _texture;
 
+        out vec4 fragColor;
+
         void main() {
-            fragmentColor = texture(_texture, textureCoord);
+            fragColor = texture(_texture, texCoord);
         }
     )";
 }

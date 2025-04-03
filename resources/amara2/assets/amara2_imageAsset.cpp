@@ -14,7 +14,7 @@ namespace Amara {
         SDL_Texture* texture = nullptr;
         SDL_GPUTexture* gpuTexture = nullptr;
         #ifdef AMARA_OPENGL
-            GLuint glTextureID = 0;
+        GLuint glTextureID = 0;
         #endif
         
         bool loadImage(std::string _p) {

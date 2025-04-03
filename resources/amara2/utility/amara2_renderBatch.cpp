@@ -3,7 +3,7 @@ namespace Amara {
     public:
         #ifdef AMARA_OPENGL
         unsigned int VAO, VBO, EBO;
-        GLint glTextureID = 0;
+        GLuint glTextureID = 0;
         #endif
 
         RenderBatchType type = RenderBatchType::None;
@@ -20,7 +20,7 @@ namespace Amara {
         RenderBatch(): RenderBatch(RenderBatchType::None) {}
 
         #ifdef AMARA_OPENGL
-        void pushQuad(GLint _glTextureID, const std::vector<float> _v) {
+        void pushQuad(GLuint _glTextureID, const std::vector<float> _v) {
             if (glTextureID != _glTextureID) {
                 flush();
                 glTextureID = _glTextureID;
@@ -41,7 +41,7 @@ namespace Amara {
         void flush() {
             #ifdef AMARA_OPENGL
             if (glTextureID != 0 && Props::graphics == Amara::GraphicsEnum::Render2D && Props::glContext != NULL) {
-
+                
             }
             #endif
 
