@@ -11,10 +11,10 @@ namespace Amara {
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
 
         Vector2 origin = { 0.5, 0.5 };
-
+        
         int imageWidth = 0;
         int imageHeight = 0;
-
+        
         int frameWidth = 0;
         int frameHeight = 0;
 
@@ -180,6 +180,14 @@ namespace Amara {
                 (imgh*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
             };
 
+            float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
+            if (!Shape::checkCollision(
+                Rectangle(destRect), Rectangle(
+                    v.x - diag_distance, v.y - diag_distance,
+                    v.w + diag_distance*2, v.w + diag_distance*2
+                )
+            )) return;
+
             if (image->texture && Props::renderer) {
                 // 2D Rendering
                 SDL_Rect setv = Rectangle::makeSDLRect(v);
@@ -212,7 +220,7 @@ namespace Amara {
                     Vector2(
                         destRect.x + dorigin.x,
                         destRect.y + dorigin.y
-                    ), 
+                    ),
                     passOn.rotation + rotation
                 ));
 
@@ -223,7 +231,12 @@ namespace Amara {
                     destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
                 };
 
-                Props::renderBatch->pushQuad(image->glTextureID, vertices, v, blendMode);
+                Props::renderBatch->pushQuad(
+                    image->glTextureID, 
+                    vertices, 
+                    v, 
+                    blendMode
+                );
             }
             #endif
         }

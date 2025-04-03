@@ -47,7 +47,8 @@ namespace Amara {
         bool yDepthLocked = false;
         bool zDepthLocked = false;
 
-        bool depthSortEnabled = true;
+        bool depthSortSelfEnabled = true;
+        bool depthSortChildrenEnabled = true;
 
         bool isDestroyed = false;
         bool isPaused = false;
@@ -120,7 +121,9 @@ namespace Amara {
                 { "scrollFactorX", scrollFactor.x },
                 { "scrollFactorY", scrollFactor.y },
                 { "isPaused", isPaused },
-                { "isVisible", isVisible }
+                { "isVisible", isVisible },
+                { "depthSortSelfEnabled", depthSortSelfEnabled },
+                { "depthSortChildrenEnabled", depthSortChildrenEnabled }
             });
         }
 
@@ -160,6 +163,9 @@ namespace Amara {
             
             if (json_has(config, "isPaused")) isPaused = config["isPaused"];
             if (json_has(config, "isVisible")) isVisible = config["isVisible"];
+
+            if (json_has(config, "depthSortSelfEnabled")) depthSortSelfEnabled = config["depthSortSelfEnabled"];
+            if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
 
             if (json_has(config, "props")) {
                 nlohmann::json data = config["props"];
@@ -354,6 +360,7 @@ namespace Amara {
             passOn = Props::passOn;
 
             #ifdef AMARA_OPENGL
+            ShaderProgram* rec_shader = Props::currentShaderProgram;
             if (Props::graphics == GraphicsEnum::OpenGL && shaderProgram && shaderProgram != Props::currentShaderProgram) {
                 glUseProgram(shaderProgram->programID);
                 Props::currentShaderProgram = shaderProgram;
@@ -362,8 +369,15 @@ namespace Amara {
             
             drawSelf(v);
 
-            sortChildren();
+            if (depthSortChildrenEnabled) sortChildren();
             drawChildren(v);
+
+            #ifdef AMARA_OPENGL
+            if (rec_shader && shaderProgram && shaderProgram != rec_shader) {
+                glUseProgram(rec_shader->programID);
+                Props::currentShaderProgram = rec_shader;
+            }
+            #endif
         }
         virtual void drawSelf(const Rectangle& v) {}
         virtual void drawChildren(const Rectangle& v) {
@@ -637,7 +651,8 @@ namespace Amara {
                 "addChild", &Node::addChild,
                 "isDestroyed", sol::readonly(&Node::isDestroyed),
                 "destroy", &Node::destroy,
-                "depthSortEnabled", &Node::depthSortEnabled,
+                "depthSortSelfEnabled", &Node::depthSortSelfEnabled,
+                "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
                 "string", [](Amara::Node* e){
                     return std::string(*e);
                 }
@@ -722,8 +737,8 @@ namespace Amara {
 		inline bool operator() (Amara::Node* node1, Amara::Node* node2) {
 			if (node1 == nullptr) return true;
 			if (node2 == nullptr) return true;
-            if (node1->isDestroyed || !node1->depthSortEnabled) return true;
-			if (node2->isDestroyed || !node2->depthSortEnabled) return true;
+            if (node1->isDestroyed || !node1->depthSortSelfEnabled) return true;
+			if (node2->isDestroyed || !node2->depthSortSelfEnabled) return true;
             return (node1->depth < node2->depth);
 		}
 	};

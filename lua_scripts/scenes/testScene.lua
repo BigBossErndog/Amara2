@@ -38,28 +38,15 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
-        -- Game:setTargetFPS(60)
-        local s = self:createChild("Sprite")
-        s:setTexture("goldenFlower")
-        s.id = "test"
-
-        s.scale.x = 2
-        s.scale.y = 2
-
-        -- s.cropLeft = 70
-
-        local t = s:createChild("Sprite")
-        t:setTexture("goldenFlower")
-        t.x = t.x + 140
-        -- t.rotation = math.rad(90)
-        -- t.cropLeft = 70
-
-        local u = t:createChild("Sprite")
-        u:setTexture("goldenFlower")
-        u.x = u.x + 140
-        -- u.cropLeft = 70
-
-        self.props.s = s;
+        local a_rate = 2 * math.pi * 0.01
+        local d_rate = 1
+        for i = 1, 10000 do
+            self:createChild("Sprite"):configure({
+                texture = "goldenFlower",
+                x = math.sin(a_rate * i) * d_rate * i,
+                y = math.cos(a_rate * i) * d_rate * i
+            })
+        end
 
         local f = self:createChild("Sprite"):configure({
             texture = "freaker",
@@ -85,6 +72,8 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onUpdate = function(self, deltaTime)
+        print(Game.fps)
+
         if Keyboard:isDown(Key.X) then
             self.camera:rotate(2 * math.pi * deltaTime * 0.25)
         end

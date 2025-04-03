@@ -35,6 +35,16 @@ namespace Amara {
         friend std::ostream& operator<<(std::ostream& os, const Vector2& v) {
             return os << static_cast<std::string>(v);
         }
+
+        // Cross product (for 2D vector)
+        float cross(const Vector2& v) const {
+            return x * v.y - y * v.x;
+        }
+
+        // Dot product
+        float dot(const Vector2& v) const {
+            return x * v.x + y * v.y;
+        }
     };
 
     struct Vector3: public Vector2 {

@@ -6,8 +6,8 @@ namespace Amara {
         GLuint glTextureID = 0;
         #endif
 
-        Rectangle viewport;
-        BlendMode blendMode = BlendMode::Alpha;
+        Amara::Rectangle viewport;
+        Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
 
         std::vector<float> vertices;
         std::vector<unsigned int> indices;
@@ -21,8 +21,21 @@ namespace Amara {
         void init() {
             #ifdef AMARA_OPENGL
             glGenVertexArrays(1, &VAO);
+            glBindVertexArray(VAO);
+
             glGenBuffers(1, &VBO);
             glGenBuffers(1, &EBO);
+
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+            // Position attribute
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+            
+            // Texture coordinate attribute
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+            glEnableVertexAttribArray(1);
             #endif
         }
 
@@ -31,7 +44,7 @@ namespace Amara {
             GLuint _glTextureID, 
             const std::array<float, 16> _vertices,
             const Rectangle& _viewport,
-            BlendMode _blendMode
+            Amara::BlendMode _blendMode
         ) {
             if (
                 glTextureID != _glTextureID ||
@@ -77,14 +90,6 @@ namespace Amara {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
                 if (buffer_size_changed) glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_DYNAMIC_DRAW);
                 else glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(unsigned int), indices.data());
-
-                // Position attribute
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-                glEnableVertexAttribArray(0);
-
-                // Texture coordinate attribute
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-                glEnableVertexAttribArray(1);
                 
                 GLint location = glGetUniformLocation(Props::currentShaderProgram->programID, "_texture");
                 if (location == -1) {
@@ -115,7 +120,6 @@ namespace Amara {
                         glDisable(GL_BLEND);
                         break;
                 }
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
                 // Draw the sprite
                 glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

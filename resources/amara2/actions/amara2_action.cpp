@@ -10,12 +10,12 @@ namespace Amara {
         bool isCompleted = false;
         bool hasStarted = false;
         bool isWaitingForChildren = false;
-
+        
         bool locked = false;
 
         Action(): Node() {
             set_base_node_id("Action");
-            depthSortEnabled = false;
+            depthSortSelfEnabled = false;
             is_action = true;
         }
         

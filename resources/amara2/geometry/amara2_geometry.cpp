@@ -75,6 +75,64 @@ namespace Amara {
     }
     #endif
 
+    // Function to check if two line segments (p1-p2) and (p3-p4) intersect
+    bool doIntersect(const Vector2& p1, const Vector2& p2, const Vector2& p3, const Vector2& p4) {
+        // Check if p1p2 and p3p4 intersect using cross product to determine orientation
+        auto orientation = [](const Vector2& a, const Vector2& b, const Vector2& c) {
+            return (b - a).cross(c - a);
+        };
+
+        float o1 = orientation(p1, p2, p3);
+        float o2 = orientation(p1, p2, p4);
+        float o3 = orientation(p3, p4, p1);
+        float o4 = orientation(p3, p4, p2);
+
+        // General case: if o1 and o2 have different signs and o3 and o4 have different signs
+        return (o1 * o2 < 0 && o3 * o4 < 0);
+    }
+
+    // Function to check if a point is inside a polygon (here, a quadrilateral)
+    bool isPointInside(const Quad& quad, const Vector2& p) {
+        // Use the cross product to check if the point is to the left of all edges
+        auto sign = [](const Vector2& a, const Vector2& b, const Vector2& c) {
+            return (b - a).cross(c - a);
+        };
+
+        bool b1 = sign(quad.p1, quad.p2, p) < 0.0f;
+        bool b2 = sign(quad.p2, quad.p3, p) < 0.0f;
+        bool b3 = sign(quad.p3, quad.p4, p) < 0.0f;
+        bool b4 = sign(quad.p4, quad.p1, p) < 0.0f;
+
+        return b1 == b2 && b2 == b3 && b3 == b4;
+    }
+
+    // Function to check if two Quads are touching
+    bool Shape::checkCollision(const Quad& q1, const Quad& q2) {
+        // Check if any edge of q1 intersects with any edge of q2
+        if (doIntersect(q1.p1, q1.p2, q2.p1, q2.p2) || doIntersect(q1.p1, q1.p2, q2.p2, q2.p3) ||
+            doIntersect(q1.p1, q1.p2, q2.p3, q2.p4) || doIntersect(q1.p1, q1.p2, q2.p4, q2.p1) ||
+            doIntersect(q1.p2, q1.p3, q2.p1, q2.p2) || doIntersect(q1.p2, q1.p3, q2.p2, q2.p3) ||
+            doIntersect(q1.p2, q1.p3, q2.p3, q2.p4) || doIntersect(q1.p2, q1.p3, q2.p4, q2.p1) ||
+            doIntersect(q1.p3, q1.p4, q2.p1, q2.p2) || doIntersect(q1.p3, q1.p4, q2.p2, q2.p3) ||
+            doIntersect(q1.p3, q1.p4, q2.p3, q2.p4) || doIntersect(q1.p3, q1.p4, q2.p4, q2.p1) ||
+            doIntersect(q1.p4, q1.p1, q2.p1, q2.p2) || doIntersect(q1.p4, q1.p1, q2.p2, q2.p3) ||
+            doIntersect(q1.p4, q1.p1, q2.p3, q2.p4) || doIntersect(q1.p4, q1.p1, q2.p4, q2.p1)) {
+            return true;
+        }
+
+        // Check if any vertex of q1 is inside q2
+        if (isPointInside(q2, q1.p1) || isPointInside(q2, q1.p2) || isPointInside(q2, q1.p3) || isPointInside(q2, q1.p4)) {
+            return true;
+        }
+
+        // Check if any vertex of q2 is inside q1
+        if (isPointInside(q1, q2.p1) || isPointInside(q1, q2.p2) || isPointInside(q1, q2.p3) || isPointInside(q1, q2.p4)) {
+            return true;
+        }
+
+        return false;
+    }
+
     void bindLua_Geometry(sol::state& lua) {
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("rotateAroundAnchor", sol::overload(

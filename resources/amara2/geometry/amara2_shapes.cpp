@@ -177,6 +177,18 @@ namespace Amara {
         //     return (t1.base > 0 && t1.height > 0 && t2.base > 0 && t2.height > 0);
         // }
 
+        static bool checkCollision(const Rectangle& r1, const Rectangle& r2) {
+            if (r1.x + r1.w <= r2.x || r2.x + r2.w <= r1.x) {
+                return false;
+            }
+            if (r1.y + r1.h <= r2.y || r2.y + r2.h <= r1.y) {
+                return false;
+            }
+            return true;
+        }
+
+        static bool checkCollision(const Quad& q1, const Quad& q2);
+
         template <typename T1, typename T2>
         static std::enable_if_t<!std::is_same_v<T1, T2>, bool> checkCollision(const T1& a, const T2& b) {
             // Swap and call the correct function
