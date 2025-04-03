@@ -267,7 +267,7 @@ namespace Amara {
                 
                 GLint location = glGetUniformLocation(Props::currentShaderProgram->programID, "_texture");
                 if (location == -1) {
-                    debug_log("Error: Uniform 'spriteTexture' not found in shader: \"", Props::currentShaderProgram->key, "\".");
+                    debug_log("Error: Uniform '_texture' not found in shader: \"", Props::currentShaderProgram->key, "\".");
                 }
                 glUniform1i(location, 0);
 
@@ -280,7 +280,7 @@ namespace Amara {
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
                 glBindVertexArray(0);
 
-                Props::renderBatch.pushQuad(vertices);
+                Props::renderBatch->pushQuad(image->glTextureID, vertices);
             }
             #endif
         }

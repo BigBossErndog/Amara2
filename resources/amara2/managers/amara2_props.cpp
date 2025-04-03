@@ -59,7 +59,7 @@ namespace Amara {
         static SDL_Renderer* renderer;
 
         static GPUHandler* gpuHandler;
-        static RenderBatch renderBatch;
+        static RenderBatch* renderBatch;
 
         static bool glFunctionsLoaded;
 
@@ -150,6 +150,7 @@ namespace Amara {
     SDL_GPUDevice* Props::gpuDevice = nullptr;
 
     GPUHandler* Props::gpuHandler = nullptr;
+    RenderBatch* Props::renderBatch = nullptr;
 
     bool Props::glFunctionsLoaded = false;
 

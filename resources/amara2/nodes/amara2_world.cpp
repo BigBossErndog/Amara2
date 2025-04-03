@@ -50,6 +50,7 @@ namespace Amara {
         std::vector<Amara::GraphicsEnum> graphics_priority = Amara_Default_Graphics_Priority;
 
         GPUHandler gpuHandler;
+        RenderBatch renderBatch;
 
         World(): Node() {
             set_base_node_id("World");
@@ -133,6 +134,7 @@ namespace Amara {
                 }
                 Props::graphics = graphics;
                 Props::gpuHandler = &gpuHandler;
+                Props::renderBatch = &renderBatch;
             }
             update_window();
             
@@ -441,6 +443,9 @@ namespace Amara {
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
 
+                                Props::renderBatch = &renderBatch;
+                                renderBatch.init();
+
                                 Props::shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
                                 Props::shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
                                 Props::shaders->createShaderProgram("default", "defaultVert", "defaultFrag");
@@ -572,6 +577,8 @@ namespace Amara {
             #endif
             
             Amara::Node::draw(viewport);
+
+            renderBatch->flush();
         }
 
         void prepareRenderer() {

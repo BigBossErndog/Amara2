@@ -13,11 +13,15 @@ namespace Amara {
 
         int offset = 0;
         
-        RenderBatch() {
-            vertices.clear();
-            indices.clear();
+        RenderBatch() {}
+
+        void init() {
+            #ifdef AMARA_OPENGL
+            glGenVertexArrays(1, &VAO);
+            glGenBuffers(1, &VBO);
+            glGenBuffers(1, &EBO);
+            #endif
         }
-        RenderBatch(): RenderBatch(RenderBatchType::None) {}
 
         #ifdef AMARA_OPENGL
         void pushQuad(GLuint _glTextureID, const std::vector<float> _v) {
@@ -34,14 +38,16 @@ namespace Amara {
             indices.push_back(offset + 2);
             indices.push_back(offset + 3);
             indices.push_back(offset + 0);
-            offset += 1;
+            offset += 4;
         }
         #endif
 
         void flush() {
+            if (vertices.size() == 0) return;
+
             #ifdef AMARA_OPENGL
             if (glTextureID != 0 && Props::graphics == Amara::GraphicsEnum::Render2D && Props::glContext != NULL) {
-                
+
             }
             #endif
 
