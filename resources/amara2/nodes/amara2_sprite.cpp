@@ -27,8 +27,7 @@ namespace Amara {
 
         #ifdef AMARA_OPENGL
             unsigned int VAO, VBO, EBO;
-            unsigned int texture;
-
+            
             std::array<float, 16> vertices = {
                 -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
                  0.5f, -0.5f,  1.0f, 0.0f, // Bottom-right
@@ -151,7 +150,7 @@ namespace Amara {
             Amara::Action* anim = animate(lua_to_json(config));
             return anim->get_lua_object();
         }
-
+        
         sol::object setOrigin(float _x, float _y) {
             origin = { _x, _y };
             return get_lua_object();
@@ -266,7 +265,7 @@ namespace Amara {
                 glBindBuffer(GL_ARRAY_BUFFER, VBO);
                 glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
                 
-                GLint location = glGetUniformLocation(Props::currentShaderProgram->programID, "spriteTexture");
+                GLint location = glGetUniformLocation(Props::currentShaderProgram->programID, "_texture");
                 if (location == -1) {
                     debug_log("Error: Uniform 'spriteTexture' not found in shader: \"", Props::currentShaderProgram->key, "\".");
                 }
@@ -280,6 +279,8 @@ namespace Amara {
                 glBindVertexArray(VAO);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
                 glBindVertexArray(0);
+
+                Props::renderBatch.pushQuad(vertices);
             }
             #endif
         }

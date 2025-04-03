@@ -53,12 +53,13 @@ namespace Amara {
         static GraphicsEnum graphics;
         
         #ifdef AMARA_OPENGL
-            static SDL_GLContext glContext;
+        static SDL_GLContext glContext;
         #endif
         static SDL_GPUDevice* gpuDevice;
         static SDL_Renderer* renderer;
 
         static GPUHandler* gpuHandler;
+        static RenderBatch renderBatch;
 
         static bool glFunctionsLoaded;
 

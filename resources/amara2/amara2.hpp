@@ -6,6 +6,7 @@
     #include <stdlib.h>
     #include <string.h>
     #include <string>
+    #include <codecvt>
     #include <iostream>
     #include <fstream>
     #include <sstream>
@@ -128,6 +129,8 @@
     #ifdef AMARA_WEB_SERVER
         #include "nodes/amara2_webServer.cpp"
     #endif
+
+    #include "nodes/amara2_text.cpp"
 
     #include "nodes/amara2_camera.cpp"
     
