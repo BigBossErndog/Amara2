@@ -127,7 +127,7 @@ namespace Amara {
             if (cropTop < 0) cropTop = 0;
             if (cropBottom < 0) cropBottom = 0;
 
-            Vector2 vcenter = centerOf(v);
+            Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
 
             float imgw = (spritesheet ? frameWidth : imageWidth);
             float imgh = (spritesheet ? frameHeight : imageHeight);

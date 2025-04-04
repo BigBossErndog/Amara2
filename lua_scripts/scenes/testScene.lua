@@ -40,7 +40,7 @@ return NodeFactory:create("Scene"):configure({
     onCreate = function(self)
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
-        for i = 1, 10000 do
+        for i = 1, (64*64) do
             self:createChild("Sprite"):configure({
                 texture = "goldenFlower",
                 x = math.sin(a_rate * i) * d_rate * i,
