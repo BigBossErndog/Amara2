@@ -446,9 +446,7 @@ namespace Amara {
                                 Props::renderBatch = &renderBatch;
                                 renderBatch.init();
 
-                                Props::shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
-                                Props::shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
-                                Props::shaders->createShaderProgram("default", "defaultVert", "defaultFrag");
+                                prepareGLShaders();
                                 setShaderProgram("default");
                             }
                         }
@@ -508,6 +506,14 @@ namespace Amara {
                 return;
             }
         }
+
+        #ifdef AMARA_OPENGL
+        void prepareGLShaders() {
+            Props::shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
+            Props::shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
+            Props::shaders->createShaderProgram("default", "defaultVert", "defaultFrag");
+        }
+        #endif
 
         virtual void preload() override {
             if (create_window_on_start) {

@@ -4,6 +4,8 @@ namespace Amara {
         #ifdef AMARA_OPENGL
         unsigned int VAO, VBO, EBO;
         GLuint glTextureID = 0;
+
+        ShaderProgram* shaderProgram = nullptr;
         #endif
 
         Amara::Rectangle viewport;
@@ -41,17 +43,20 @@ namespace Amara {
 
         #ifdef AMARA_OPENGL
         void pushQuad(
+            ShaderProgram* _shaderProgram,
             GLuint _glTextureID, 
             const std::array<float, 16> _vertices,
             const Rectangle& _viewport,
             Amara::BlendMode _blendMode
         ) {
             if (
+                shaderProgram != _shaderProgram ||
                 glTextureID != _glTextureID ||
                 viewport != _viewport ||
                 blendMode != _blendMode
             ) {
                 flush();
+                shaderProgram = _shaderProgram;
                 glTextureID = _glTextureID;
                 viewport = _viewport;
                 blendMode = _blendMode;

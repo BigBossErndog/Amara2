@@ -232,6 +232,7 @@ namespace Amara {
                 };
 
                 Props::renderBatch->pushQuad(
+                    Props::currentShaderProgram,
                     image->glTextureID, 
                     vertices, 
                     v, 

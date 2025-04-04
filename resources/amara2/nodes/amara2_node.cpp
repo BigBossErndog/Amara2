@@ -362,7 +362,7 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             ShaderProgram* rec_shader = Props::currentShaderProgram;
             if (Props::graphics == GraphicsEnum::OpenGL && shaderProgram && shaderProgram != Props::currentShaderProgram) {
-                glUseProgram(shaderProgram->programID);
+                shaderProgram->applyShader();
                 Props::currentShaderProgram = shaderProgram;
             }
             #endif
@@ -374,7 +374,7 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             if (rec_shader && shaderProgram && shaderProgram != rec_shader) {
-                glUseProgram(rec_shader->programID);
+                rec_shader->applyShader();
                 Props::currentShaderProgram = rec_shader;
             }
             #endif
@@ -653,6 +653,7 @@ namespace Amara {
                 "destroy", &Node::destroy,
                 "depthSortSelfEnabled", &Node::depthSortSelfEnabled,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
+                "setShaderProgram", &Node::setShaderProgram,
                 "string", [](Amara::Node* e){
                     return std::string(*e);
                 }

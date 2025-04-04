@@ -238,4 +238,17 @@ namespace Amara {
             fragColor = texture(_texture, texCoord);
         }
     )";
+    const char* tintedFragmentShader= R"(
+        #version 330 core
+
+        in vec2 texCoord;
+        uniform sampler2D _texture;
+        uniform vec4 _tintColor;
+
+        out vec4 fragColor;
+
+        void main() {
+            fragColor = texture(_texture, texCoord) * _tintColor;
+        }
+    )";
 }

@@ -7,29 +7,19 @@ namespace Amara {
         TessControl = GL_TESS_CONTROL_SHADER,
         TessEvaluation = GL_TESS_EVALUATION_SHADER
     };
-
-    #ifdef AMARA_OPENGL
-    class ShaderProgram {
-    public:
-        ShaderProgram() = default;
-        ShaderProgram(unsigned int id) : programID(id) {}
-        ShaderProgram(std::string k, unsigned int id) : key(k), programID(id) {}
-        
-        std::string key;
-        unsigned int programID = 0;
-    };
-    #endif
-
+    
     class ShaderManager {
     public:
         #ifdef AMARA_OPENGL
         std::unordered_map<std::string, unsigned int> glShaders;
-        std::unordered_map<std::string, ShaderProgram> glPrograms;
+        std::unordered_map<std::string, ShaderProgram*> glPrograms;
 
         ShaderManager() {
             glShaders.clear();
             glPrograms.clear();
         }
+        #else
+        ShaderManager() = default;
         #endif
 
         bool hasShader(std::string key) {
@@ -51,7 +41,7 @@ namespace Amara {
         }
 
         ShaderProgram* getShaderProgram(std::string key) {
-            if (hasShaderProgram(key)) return &glPrograms[key];
+            if (hasShaderProgram(key)) return glPrograms[key];
             return nullptr;
         }
 
@@ -81,11 +71,9 @@ namespace Amara {
             return shader;
         }
 
-        unsigned int createShaderProgram(std::string key, std::string vertex_key, std::string fragment_key) {
+        ShaderProgram* createShaderProgram(std::string vertex_key, std::string fragment_key) {
             unsigned int shaderProgram = glCreateProgram();
             unsigned int vertexShader, fragmentShader;
-
-
 
             bool tempVertex = false;
             bool tempFragment = false;
@@ -141,15 +129,20 @@ namespace Amara {
             if (tempVertex) glDeleteShader(vertexShader);
             if (tempFragment) glDeleteShader(fragmentShader);
 
+            return new ShaderProgram(shaderProgram);
+        }
+
+        ShaderProgram* createShaderProgram(std::string key, std::string vertex_key, std::string fragment_key) {
             if (hasShaderProgram(key)) {
-                ShaderProgram& existing = glPrograms[key];
-                existing.key = key;
-                existing.programID = shaderProgram;
-            }
-            else {
-                glPrograms[key] = ShaderProgram(key, shaderProgram);
+                ShaderProgram* existing = glPrograms[key];
+                existing->destroy();
+                delete existing;
             }
 
+            ShaderProgram* shaderProgram = createShaderProgram(vertex_key, fragment_key);
+            shaderProgram->key = key;
+            glPrograms[key] = shaderProgram;
+            
             return shaderProgram;
         }
         #endif
@@ -160,7 +153,8 @@ namespace Amara {
                 glDeleteShader(shader.second);
             }
             for (auto& program : glPrograms) {
-                glDeleteProgram(program.second.programID);
+                program.second->destroy();
+                delete program.second;
             }
             glShaders.clear();
             glPrograms.clear();
@@ -186,9 +180,14 @@ namespace Amara {
         }
         
         static void bindLua(sol::state& lua) {
+            ShaderProgram::bindLua(lua);
+            
             lua.new_usertype<ShaderManager>("ShaderManager",
                 #ifdef AMARA_OPENGL
-                "createShaderProgram", &ShaderManager::createShaderProgram,
+                "createShaderProgram", sol::overload(
+                    sol::resolve<ShaderProgram*(std::string, std::string, std::string)>(&ShaderManager::createShaderProgram),
+                    sol::resolve<ShaderProgram*(std::string, std::string)>(&ShaderManager::createShaderProgram)
+                ),
                 "hasShaderProgram", &ShaderManager::hasShaderProgram,
                 #endif
                 "hasShader", &ShaderManager::hasShader,

@@ -84,6 +84,7 @@
         #define M_PI 3.14159265358979323846264338327950288
     #endif
 
+    #include "utility/amara2_string.cpp"
     #include "utility/amara2_utility.cpp"
     #include "utility/amara2_easing.cpp"
 
@@ -95,8 +96,8 @@
     #include "geometry/amara2_shapes.cpp"
     #include "geometry/amara2_geometry.cpp"
 
-    #include "utility/amara2_renderUtility.cpp"
-    #include "managers/amara2_gpuHandler.cpp"
+    #include "rendering/amara2_renderUtility.cpp"
+    #include "rendering/amara2_gpuHandler.cpp"
 
     #include "managers/amara2_props.cpp"
 
@@ -114,11 +115,15 @@
     #include "assets/amara2_asset.cpp"
     #include "assets/amara2_imageAsset.cpp"
     #include "assets/amara2_fontAsset.cpp"
+
+    #ifdef AMARA_OPENGL
+    #include "rendering/amara2_shaderProgram.cpp"
+    #endif
     
     #include "managers/amara2_assetManager.cpp"
-    
     #include "managers/amara2_shaderManager.cpp"
-    #include "utility/amara2_renderBatch.cpp"
+    
+    #include "rendering/amara2_renderBatch.cpp"
 
     #include "managers/amara2_messages.cpp"
     #include "managers/amara2_messageBox.cpp"
