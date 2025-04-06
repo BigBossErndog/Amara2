@@ -56,6 +56,7 @@ namespace Amara {
                 blendMode != _blendMode
             ) {
                 flush();
+
                 shaderProgram = _shaderProgram;
                 glTextureID = _glTextureID;
                 viewport = _viewport;
@@ -79,6 +80,8 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             if (glTextureID != 0 && Props::graphics == Amara::GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                shaderProgram->applyShader();
+                
                 glViewport(viewport.x, Props::window_dim.h - viewport.y - viewport.h, viewport.w, viewport.h);
                 glBindVertexArray(VAO);
 

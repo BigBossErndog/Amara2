@@ -9,6 +9,8 @@ namespace Amara {
 
         int frameWidth = 0;
         int frameHeight = 0;
+
+        int fontSize = 0;
     };
     
     class Loader: public Action {
@@ -63,6 +65,12 @@ namespace Amara {
                     if (success) Props::assets->add(task.key, sprAsset);
                     break;
                 }
+                case AssetEnum::Font: {
+                    FontAsset* fontAsset = createAsset<FontAsset>(task.key);
+                    success = fontAsset->loadFont(task.path, task.fontSize);
+                    if (success) Props::assets->add(task.key, fontAsset);
+                    break;
+                }
                 default:
                     break;
             }
@@ -89,6 +97,17 @@ namespace Amara {
 
             task.frameWidth = frameWidth;
             task.frameHeight = frameHeight;
+
+            queueTask(task);
+            return get_lua_object();
+        }
+
+        sol::object font(std::string key, std::string path, int fontSize) {
+            LoadTask task;
+            task.key = key;
+            task.path = path;
+            task.fontSize = fontSize;
+            task.type = AssetEnum::Font;
 
             queueTask(task);
             return get_lua_object();

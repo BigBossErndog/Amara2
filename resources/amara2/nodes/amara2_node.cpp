@@ -374,7 +374,6 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             if (rec_shader && shaderProgram && shaderProgram != rec_shader) {
-                rec_shader->applyShader();
                 Props::currentShaderProgram = rec_shader;
             }
             #endif

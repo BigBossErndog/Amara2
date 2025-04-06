@@ -4,7 +4,8 @@ namespace Amara {
         Surface,
         Image,
         Spritesheet,
-        Audio
+        Audio,
+        Font
     };
 
     class Asset {

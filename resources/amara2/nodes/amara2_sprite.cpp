@@ -28,12 +28,12 @@ namespace Amara {
         Animation* animation = nullptr;
 
         #ifdef AMARA_OPENGL
-            std::array<float, 16> vertices = {
-                -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
-                 0.5f, -0.5f,  1.0f, 0.0f, // Bottom-right
-                 0.5f,  0.5f,  1.0f, 1.0f, // Top-right
-                -0.5f,  0.5f,  0.0f, 1.0f  // Top-left
-            };
+        std::array<float, 16> vertices = {
+            -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
+             0.5f, -0.5f,  1.0f, 0.0f, // Bottom-right
+             0.5f,  0.5f,  1.0f, 1.0f, // Top-right
+            -0.5f,  0.5f,  0.0f, 1.0f  // Top-left
+        };
         #endif
 
         Sprite(): Amara::Node() {
@@ -233,7 +233,7 @@ namespace Amara {
 
                 Props::renderBatch->pushQuad(
                     Props::currentShaderProgram,
-                    image->glTextureID, 
+                    image->glTextureID,
                     vertices, 
                     v, 
                     blendMode

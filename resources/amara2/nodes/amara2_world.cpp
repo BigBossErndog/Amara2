@@ -448,6 +448,8 @@ namespace Amara {
 
                                 prepareGLShaders();
                                 setShaderProgram("default");
+                                Props::currentShaderProgram = shaderProgram;
+                                shaderProgram->applyShader();
                             }
                         }
                         #endif

@@ -12,20 +12,23 @@ namespace Amara {
         static const int atlasHeight = 2048;
 
         std::map<int, Glyph> glyphCache;
-    
+        
         int currentX = 0, currentY = 0;
         int rowHeight = 0;
 
         unsigned char *fontBuffer;
         stbtt_fontinfo font;
 
+        int fontSize = 0;
+
         SDL_Texture* texture = nullptr;
         #ifdef AMARA_OPENGL
         GLuint glTextureID = 0;
         #endif
 
-        bool loadFont(std::string _p) {
+        bool loadFont(std::string _p, int _size) {
             path = Props::files->getAssetPath(_p);
+            fontSize = _size;
 
             if (!Props::files->fileExists(path)) {
                 debug_log("Error: File not found at ", path);
@@ -75,11 +78,11 @@ namespace Amara {
             return false;
         }
 
-        void AddGlyphToTexture(int codepoint) {
+        void addGlyphToTexture(int codepoint) {
             if (glyphCache.find(codepoint) != glyphCache.end()) return;
         
             int width, height, xoff, yoff;
-            unsigned char* bitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 32), codepoint, &width, &height, &xoff, &yoff);
+            unsigned char* bitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, fontSize), codepoint, &width, &height, &xoff, &yoff);
         
             // Check if we need to start a new row
             if (currentX + width >= atlasWidth) {
@@ -96,7 +99,6 @@ namespace Amara {
             
             #ifdef AMARA_OPENGL
             if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                // Upload glyph to texture at (currentX, currentY)
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
                 glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, currentY, width, height, GL_RED, GL_UNSIGNED_BYTE, bitmap);
             }
@@ -129,12 +131,53 @@ namespace Amara {
         void packGlyphsFromString(std::u32string str) {
             for (char32_t codepoint : str) {
                 int glyphID = static_cast<int>(codepoint);
-                AddGlyphToTexture(glyphID);
+                addGlyphToTexture(glyphID);
             }
         }
 
         void packGlyphsFromString(std::string str) {
             packGlyphsFromString(Amara::String::utf8_to_utf32(str));
+        }
+
+        Rectangle getSize(std::u32string str, int wordWrapWidth) {
+            float width = 0, height = 0;
+            float maxHeight = 0;
+            float lineWidth = 0;
+        
+            for (char32_t codepoint : str) {
+                if (codepoint == U' ') {
+                    lineWidth += glyphCache[U' '].xadvance;
+                    continue;
+                }
+                if (codepoint == U'\n') {
+                    height += maxHeight;
+                    maxHeight = 0;
+                    lineWidth = 0;
+                    continue;
+                }
+        
+                if (glyphCache.find(codepoint) == glyphCache.end()) {
+                    continue;
+                }
+        
+                Glyph &glyph = glyphCache[codepoint];
+                lineWidth += glyph.xadvance;
+                maxHeight = std::max(maxHeight, static_cast<float>(glyph.height));
+                
+                if (wordWrapWidth > 0 && lineWidth > wordWrapWidth) {
+                    height += maxHeight;
+                    maxHeight = glyph.height;
+                    lineWidth = glyph.xadvance;
+                }
+
+                width = std::max(width, lineWidth);
+            }
+        
+            height += maxHeight;
+            return { 0, 0, width, height };
+        }
+        Rectangle getSize(std::string str, int wordWrapWidth) {
+            return getSize(Amara::String::utf8_to_utf32(str), wordWrapWidth);
         }
 
         virtual void clearTexture() {
