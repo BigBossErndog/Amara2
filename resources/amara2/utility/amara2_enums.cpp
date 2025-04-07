@@ -68,7 +68,7 @@ namespace Amara {
             "PremultipliedAlpha", Amara::BlendMode::PremultipliedAlpha
         );
 
-        lua.new_enum("Alignment",
+        lua.new_enum("Align",
             "Left", Amara::AlignmentEnum::Left,
             "Center", Amara::AlignmentEnum::Center,
             "Right", Amara::AlignmentEnum::Right,

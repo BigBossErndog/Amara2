@@ -57,9 +57,11 @@ return NodeFactory:create("Scene"):configure({
         self.props.f = f;
         f.frame = 3
 
-        self:createChild("Text"):configure({
-            text = "abcdefghijk\nlmnopqrstuvwxyz",
-            font = "font"
+        local txt = self:createChild("Text"):configure({
+            text = "abcdefghijklmnopqrstuvwxyz",
+            font = "font",
+            alignment = Align.Center,
+            wordWrap = 40
         })
 
         local controlRight = Controls:scheme("right");

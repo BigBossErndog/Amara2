@@ -118,6 +118,9 @@ namespace Amara {
             origin = { _x, _y };
             return get_lua_object();
         }
+        sol::object setOrigin(float _o) {
+            return setOrigin(_o, _o);
+        }
 
         virtual void drawSelf(const Rectangle& v) override {
             if (image == nullptr) return;
@@ -256,7 +259,10 @@ namespace Amara {
                 "cropRight", &Sprite::cropRight,
                 "cropTop", &Sprite::cropTop,
                 "cropBottom", &Sprite::cropBottom,
-                "setOrigin", &Sprite::setOrigin
+                "setOrigin", sol::overload(
+                    sol::resolve<sol::object(float, float)>(&Sprite::setOrigin),
+                    sol::resolve<sol::object(float)>(&Sprite::setOrigin)
+                )
             );
         }
     };

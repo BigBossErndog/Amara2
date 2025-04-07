@@ -33,14 +33,32 @@ namespace Amara {
             set_base_node_id("Text");
         }
 
+        virtual nlohmann::json toJSON() override {
+            nlohmann::json config = Amara::Node::toJSON();
+            
+            config["wordWrap"] = wordWrapWidth;
+            config["alignment"] = static_cast<int>(alignment);
+            
+            if (font) config["font"] = font->key;
+            if (!text.empty()) config["text"] = text;
+
+            config["originX"] = origin.x;
+            config["originY"] = origin.y;
+
+            return config;
+        }
+
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Node::configure(config);
             
             if (json_has(config, "wordWrap")) setWordWrap(config["wordWrap"]);
-            if (json_has(config, "alignment")) alignment = static_cast<Amara::AlignmentEnum>(config["alignment"]);
+            if (json_has(config, "alignment")) align(static_cast<Amara::AlignmentEnum>(config["alignment"]));
             
             if (json_has(config, "font")) setFont(config["font"]);
             if (json_has(config, "text")) setText(config["text"]);
+
+            if (json_has(config, "originX")) origin.x = config["originX"];
+            if (json_has(config, "originY")) origin.y = config["originY"];
 
             return this;
         }
@@ -91,6 +109,20 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object setOrigin(float _x, float _y) {
+            origin = { _x, _y };
+            return get_lua_object();
+        }
+        sol::object setOrigin(float _o) {
+            return setOrigin(_o, _o);
+        }
+
+        sol::object align(AlignmentEnum _alignment) {
+            alignment = _alignment;
+            updateText();
+            return get_lua_object();
+        }
+
         void drawSelf(const Rectangle& v) override {
             if (font == nullptr || converted_text.empty()) return;
 
@@ -119,14 +151,16 @@ namespace Amara {
 
             SDL_FPoint dorigin = { 0, 0 };
 
+            int count = 0;
+
             for (const TextLine& line : layout.lines) {
                 for (const Glyph& glyph : line.glyphs) {
                     Vector3 glyphPos = Vector3(
                         rotateAroundAnchor(
                             anchoredPos, 
                             Vector2( 
-                                anchoredPos.x + (glyph.x - layout.width*origin.x)*passOn.scale.x*scale.x,
-                                anchoredPos.y + (glyph.y - layout.height*origin.y)*passOn.scale.y*scale.y
+                                anchoredPos.x + (line.x + glyph.x - layout.width*origin.x)*passOn.scale.x*scale.x,
+                                anchoredPos.y + (line.y + glyph.y - layout.height*origin.y)*passOn.scale.y*scale.y
                             ),
                             passOn.rotation + rotation
                         ),
@@ -195,6 +229,11 @@ namespace Amara {
                     //         SDL_FLIP_NONE
                     //     );
                     // }
+
+                    count += 1;
+                    if (count >= progress) {
+                        return;
+                    }
                 }
             }
         }
@@ -206,10 +245,19 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
+                "w", sol::readonly(&Text::textwidth),
+                "h", sol::readonly(&Text::textheight),
                 "setText", &Text::setText,
                 "setFont", &Text::setFont,
                 "progress", &Text::progress,
-                "length", sol::property(&Text::length)
+                "length", sol::property(&Text::length),
+                "setOrigin", sol::overload(
+                    sol::resolve<sol::object(float, float)>(&Text::setOrigin),
+                    sol::resolve<sol::object(float)>(&Text::setOrigin)
+                ),
+                "align", &Text::align,
+                "alignment", sol::readonly(&Text::alignment),
+                "setWordWrap", &Text::setWordWrap
             );
         }
     };

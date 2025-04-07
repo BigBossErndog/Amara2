@@ -221,47 +221,6 @@ namespace Amara {
             packGlyphsFromString(Amara::String::utf8_to_utf32(str));
         }
 
-        Rectangle getSize(std::u32string str, int wordWrapWidth) {
-            float width = 0, height = 0;
-            float maxHeight = 0;
-            float lineWidth = 0;
-            
-            for (char32_t codepoint : str) {
-                if (codepoint == U' ') {
-                    lineWidth += glyphCache[U' '].xadvance;
-                    continue;
-                }
-                if (codepoint == U'\n') {
-                    height += maxHeight;
-                    maxHeight = 0;
-                    lineWidth = 0;
-                    continue;
-                }
-        
-                if (glyphCache.find(codepoint) == glyphCache.end()) {
-                    continue;
-                }
-        
-                Glyph &glyph = glyphCache[codepoint];
-                lineWidth += glyph.xadvance;
-                maxHeight = std::max(maxHeight, static_cast<float>(glyph.src.h));
-                
-                if (wordWrapWidth > 0 && lineWidth > wordWrapWidth) {
-                    height += maxHeight;
-                    maxHeight = glyph.src.h;
-                    lineWidth = glyph.xadvance;
-                }
-
-                width = std::max(width, lineWidth);
-            }
-        
-            height += maxHeight;
-            return { 0, 0, width, height };
-        }
-        Rectangle getSize(std::string str, int wordWrapWidth) {
-            return getSize(Amara::String::utf8_to_utf32(str), wordWrapWidth);
-        }
-
         TextLayout generateLayout(std::u32string str, int wordWrapWidth, AlignmentEnum alignment) {
             TextLayout layout = TextLayout();
             layout.text = str;
@@ -308,11 +267,11 @@ namespace Amara {
                     cursorY += lineHeight;  // Move down for new line
                     line = &layout.newLine();
                     line->y = cursorY;
-
+                    
                     glyph.x = 0;
                 }
                 glyph.x = cursorX + glyph.xoffset;
-                glyph.y = cursorY + glyph.yoffset;
+                glyph.y = glyph.yoffset;
                 cursorX += glyph.xadvance;
                 line->width += glyph.xadvance;
 
