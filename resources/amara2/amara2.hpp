@@ -84,6 +84,7 @@
         #define M_PI 3.14159265358979323846264338327950288
     #endif
 
+    #include "utility/amara2_enums.cpp"
     #include "utility/amara2_string.cpp"
     #include "utility/amara2_utility.cpp"
     #include "utility/amara2_easing.cpp"

@@ -197,6 +197,7 @@ namespace Amara {
     X(void, glVertexArrayVertexBuffer, GLuint, GLuint, GLuint, GLintptr, GLsizei) \
     X(void, glVertexArrayVertexBuffers, GLuint, GLuint, GLsizei, const GLuint*, const GLintptr*, const GLsizei*) \
     X(void, glVertexArrayAttribBinding, GLuint, GLuint, GLuint) \
+    X(void, glPixelStorei, GLenum, GLint) \
     X(void, glVertexArrayAttribFormat, GLuint, GLuint, GLint, GLenum, GLboolean, GLuint)
 
     #define X(ret, name, ...) typedef ret (*PFN_##name)(__VA_ARGS__); PFN_##name name = NULL;

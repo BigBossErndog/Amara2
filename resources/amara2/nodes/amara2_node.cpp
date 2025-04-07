@@ -81,7 +81,7 @@ namespace Amara {
             }
             baseNodeID = key;
         }
-
+        
         virtual void create() {
             if (luaCreate.valid()) {
                 try {

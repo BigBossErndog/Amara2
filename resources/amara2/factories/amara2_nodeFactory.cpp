@@ -162,6 +162,9 @@ namespace Amara {
 
         void prepareEntities() {
             registerNode<Amara::Node>("Node");
+
+            registerNode<Amara::Text>("Text");
+
             registerNode<Amara::Camera>("Camera");
             registerNode<Amara::Scene>("Scene");
 
@@ -191,6 +194,8 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             Amara::Node::bindLua(lua);
+            Amara::Text::bindLua(lua);
+            
             Amara::Camera::bindLua(lua);
             Amara::Scene::bindLua(lua);
             

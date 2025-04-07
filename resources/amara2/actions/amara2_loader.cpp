@@ -175,7 +175,9 @@ namespace Amara {
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "setReplaceExisting", &Loader::setReplaceExisting,
                 "image", &Loader::image,
-                "spritesheet", &Loader::spritesheet
+                "spritesheet", &Loader::spritesheet,
+                "font", &Loader::font,
+                "setLoadRate", &Loader::setLoadRate
             );
             
             sol::usertype<Node> node_type = lua["Node"];

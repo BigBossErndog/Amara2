@@ -1,13 +1,4 @@
 namespace Amara {
-    enum class AssetEnum {
-        None,
-        Surface,
-        Image,
-        Spritesheet,
-        Audio,
-        Font
-    };
-
     class Asset {
     public:
         Asset() = default;

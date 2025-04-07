@@ -215,7 +215,7 @@ namespace Amara {
         }
 
         void bindLua() {
-            bindLua_UtilityFunctions(lua);
+            bindLua_Enums(lua);
             bindLua_LuaUtilityFunctions(lua);
             bindLua_Vectors(lua);
             bindLua_Shapes(lua);

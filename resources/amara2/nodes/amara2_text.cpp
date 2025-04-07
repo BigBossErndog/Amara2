@@ -8,9 +8,17 @@ namespace Amara {
         
         int progress = 0;
 
+        Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
+
+        Amara::AlignmentEnum alignment = Amara::AlignmentEnum::Left;
+
+        Vector2 origin = { 0.5, 0.5 };
+
         int textwidth = 0;
         int textheight = 0;
         int wordWrapWidth = -1;
+
+        TextLayout layout;
 
         #ifdef AMARA_OPENGL
         std::array<float, 16> vertices = {
@@ -25,12 +33,24 @@ namespace Amara {
             set_base_node_id("Text");
         }
 
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            Amara::Node::configure(config);
+            
+            if (json_has(config, "wordWrap")) setWordWrap(config["wordWrap"]);
+            if (json_has(config, "alignment")) alignment = static_cast<Amara::AlignmentEnum>(config["alignment"]);
+            
+            if (json_has(config, "font")) setFont(config["font"]);
+            if (json_has(config, "text")) setText(config["text"]);
+
+            return this;
+        }
+
         void updateText() {
             if (font) {
                 font->packGlyphsFromString(converted_text);
-                Rectangle dim = font->getSize(converted_text, wordWrapWidth);
-                textwidth = dim.w;
-                textheight = dim.h;
+                layout = font->generateLayout(converted_text, wordWrapWidth, alignment);
+                textwidth = layout.width;
+                textheight = layout.height;
             }
         }
 
@@ -65,6 +85,12 @@ namespace Amara {
             return true;
         }
 
+        sol::object setWordWrap(int width) {
+            wordWrapWidth = width;
+            updateText();
+            return get_lua_object();
+        }
+
         void drawSelf(const Rectangle& v) override {
             if (font == nullptr || converted_text.empty()) return;
 
@@ -93,57 +119,83 @@ namespace Amara {
 
             SDL_FPoint dorigin = { 0, 0 };
 
-            for (int i = 0; i < progress && i < converted_text.size(); i++) {
-                char32_t c = converted_text[i];
-                if (c == U' ') {
-                    cursorX += font->glyphCache[U' '].xadvance;  // Space handling
-                    continue;
-                }
-                if (c == U'\n') {
-                    cursorX = 0;  // Reset cursorX for new line
-                    cursorY += font->fontSize;  // Move down for new line
-                    continue;
-                }
-
-                if (font->glyphCache.find(c) == font->glyphCache.end()) {
-                    continue;  // Skip if glyph not found
-                }
-                Glyph &glyph = font->glyphCache[c];
-
-                Vector3 glyphPos = Vector3(
-                    rotateAroundAnchor(
-                        anchoredPos, 
-                        Vector2( 
-                            anchoredPos.x + cursorX + glyph.xoffset,
-                            anchoredPos.y + cursorY - glyph.yoffset
+            for (const TextLine& line : layout.lines) {
+                for (const Glyph& glyph : line.glyphs) {
+                    Vector3 glyphPos = Vector3(
+                        rotateAroundAnchor(
+                            anchoredPos, 
+                            Vector2( 
+                                anchoredPos.x + (glyph.x - layout.width*origin.x)*passOn.scale.x*scale.x,
+                                anchoredPos.y + (glyph.y - layout.height*origin.y)*passOn.scale.y*scale.y
+                            ),
+                            passOn.rotation + rotation
                         ),
-                        rotation
-                    ),
-                    anchoredPos.z
-                );
-                float glyphw = glyph.width;
-                float glyphh = glyph.height;
+                        anchoredPos.z
+                    );
 
-                srcRect = {
-                    glyph.u0 * font->atlasWidth,
-                    glyph.v0 * font->atlasHeight,
-                    glyph.u1 * font->atlasWidth - glyph.u0 * font->atlasWidth,
-                    glyph.v1 * font->atlasHeight - glyph.v0 * font->atlasHeight
-                };
+                    srcRect.x = glyph.src.x;
+                    srcRect.y = glyph.src.y;
+                    srcRect.w = glyph.src.w;
+                    srcRect.h = glyph.src.h;
+    
+                    dim = {
+                        glyphPos.x,
+                        glyphPos.y - glyphPos.z,
+                        glyph.src.w*scale.x*passOn.scale.x,
+                        glyph.src.h*scale.y*passOn.scale.y
+                    };
+    
+                    destRect.x = vcenter.x + dim.x*passOn.zoom.x;
+                    destRect.y = vcenter.y + dim.y*passOn.zoom.y;
+                    destRect.w = dim.w * passOn.zoom.x;
+                    destRect.h = dim.h * passOn.zoom.y;
 
-                dim = {
-                    glyphPos.x,
-                    glyphPos.y - glyphPos.z,
-                    glyphw*scale.x*passOn.scale.x,
-                    glyphh*scale.y*passOn.scale.y
-                };
+                    if (font->glTextureID != 0 && Props::glContext != NULL) {
+                        Quad srcQuad = Quad(
+                            { srcRect.x/font->atlasWidth, srcRect.y/font->atlasHeight },
+                            { (srcRect.x+srcRect.w)/font->atlasWidth, srcRect.y/font->atlasHeight },
+                            { (srcRect.x+srcRect.w)/font->atlasWidth, (srcRect.y+srcRect.h)/font->atlasHeight },
+                            { srcRect.x/font->atlasWidth, (srcRect.y+srcRect.h)/font->atlasHeight }
+                        );
+                        Quad destQuad = glTranslateQuad(v, rotateQuad(
+                            Quad(destRect),
+                            Vector2(
+                                destRect.x + dorigin.x,
+                                destRect.y + dorigin.y
+                            ),
+                            passOn.rotation + rotation
+                        ));
 
-                destRect.x = vcenter.x + dim.x*passOn.zoom.x;
-                destRect.y = vcenter.y + dim.y*passOn.zoom.y;
-                destRect.w = dim.w * passOn.zoom.x;
-                destRect.h = dim.h * passOn.zoom.y;
+                        vertices = {
+                            destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
+                            destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
+                            destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
+                            destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
+                        };
 
-                cursorX += glyph.xadvance;
+                        Props::renderBatch->pushQuad(
+                            Props::currentShaderProgram,
+                            font->glTextureID,
+                            vertices,
+                            v, 
+                            blendMode
+                        );
+                    }
+                    // else if (font->texture && Props::renderer) {
+                    //     SDL_SetRenderViewport(Props::renderer, &v);
+                    //     SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
+    
+                    //     SDL_RenderTextureRotated(
+                    //         Props::renderer, 
+                    //         font->texture,
+                    //         &srcRect,
+                    //         &destRect,
+                    //         getDegrees(passOn.rotation + rotation),
+                    //         &dorigin,
+                    //         SDL_FLIP_NONE
+                    //     );
+                    // }
+                }
             }
         }
 
@@ -151,7 +203,7 @@ namespace Amara {
             return converted_text.size();
         }
 
-        void bindLua(sol::state& lua) {
+        static void bindLua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
                 "setText", &Text::setText,

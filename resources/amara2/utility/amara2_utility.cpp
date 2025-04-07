@@ -85,15 +85,6 @@ namespace Amara {
 
     bool is_node(sol::object);
 
-    enum class GraphicsEnum {
-        None,
-        Render2D,
-        OpenGL,
-        Vulkan,
-        DirectX,
-        DirectX_Legacy,
-        VulkanMetalDirectX
-    };
     std::string graphics_to_string(GraphicsEnum g) {
         switch (g) {
             case GraphicsEnum::Render2D: return "Render2D";
@@ -123,30 +114,4 @@ namespace Amara {
             GraphicsEnum::Render2D
         };
     #endif
-
-    enum class ScreenModeEnum {
-        Windowed,
-        BorderlessWindowed,
-        Fullscreen,
-        BorderlessFullscreen
-    };
-
-    void bindLua_UtilityFunctions(sol::state& lua) {
-        lua.new_enum("Graphics",
-            "None", Amara::GraphicsEnum::None,
-            "Render2D", Amara::GraphicsEnum::Render2D,
-            "OpenGL", Amara::GraphicsEnum::OpenGL,
-            "Vulkan", Amara::GraphicsEnum::Vulkan,
-            "DirectX", Amara::GraphicsEnum::DirectX,
-            "DirectX_Legacy", Amara::GraphicsEnum::DirectX_Legacy,
-            "VulkanMetalDirectX", Amara::GraphicsEnum::VulkanMetalDirectX
-        );
-
-        lua.new_enum("ScreenMode",
-            "Windowed", Amara::ScreenModeEnum::Windowed,
-            "BorderlessWindowed", Amara::ScreenModeEnum::BorderlessWindowed,
-            "Fullscreen", Amara::ScreenModeEnum::Fullscreen,
-            "BorderlessFullscreen", Amara::ScreenModeEnum::BorderlessFullscreen
-        );
-    }
 }

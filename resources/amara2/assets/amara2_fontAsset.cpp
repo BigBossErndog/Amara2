@@ -1,9 +1,56 @@
 namespace Amara {
     struct Glyph {
-        float u0, v0, u1, v1; // UV texture coordinates
-        int width, height;
+        float x, y; // Position to render
+        float u0, v0, u1, v1; // Texture coordinates
+        Rectangle src;
         int xoffset, yoffset;
         int xadvance;
+    };
+
+    class TextLine {
+    public:
+        TextLine() {
+            text.clear();
+            glyphs.clear();
+            width = 0;
+            height = 0;
+        }
+
+        std::u32string text;
+        std::vector<Glyph> glyphs;
+        int width, height;
+
+        int x, y; // Position to render
+
+        int size() {
+            return text.size();
+        }
+    };
+
+    class TextLayout {
+    public:
+        TextLayout() {
+            text.clear();
+            lines.clear();
+            width = 0;
+            height = 0;
+        }
+
+        std::u32string text;
+        std::deque<TextLine> lines;
+        int width, height;
+
+        TextLine& newLine() {
+            lines.emplace_back();
+            return lines.back();
+        }
+
+        TextLine& getLine(int index) {
+            return lines[index];
+        }
+        TextLine& getLastLine() {
+            return lines.back();
+        }
     };
     
     class FontAsset: public Asset {
@@ -15,6 +62,13 @@ namespace Amara {
         
         int currentX = 0, currentY = 0;
         int rowHeight = 0;
+
+        float scale = 1;
+        int ascent = 0;
+        int descent = 0;
+        int lineGap = 0;
+        int baseline = 0;
+        float lineHeight = 0;
 
         unsigned char *fontBuffer;
         stbtt_fontinfo font;
@@ -50,9 +104,19 @@ namespace Amara {
 
             stbtt_InitFont(&font, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));
 
+            scale = stbtt_ScaleForMappingEmToPixels(&font, fontSize);
+
+            stbtt_GetFontVMetrics(&font, &ascent, &descent, &lineGap);
+            baseline = (int)(ascent * scale);
+
+            lineHeight = (ascent - descent + lineGap) * scale;
+
+            if (Props::graphics == GraphicsEnum::Render2D && Props::renderer) {
+                texture = SDL_CreateTexture(Props::renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, atlasWidth, atlasHeight);
+                return true;
+            }
             #ifdef AMARA_OPENGL
-            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                GLuint glTextureID;
+            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 glGenTextures(1, &glTextureID);
 
                 if (glTextureID == 0) {
@@ -63,7 +127,7 @@ namespace Amara {
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
 
                 unsigned char* emptyData = (unsigned char*)calloc(atlasWidth * atlasHeight, 1);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, emptyData);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, emptyData);
                 free(emptyData);
                 glGenerateMipmap(GL_TEXTURE_2D);
                 
@@ -72,6 +136,8 @@ namespace Amara {
                 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                return true;
             }
             #endif
 
@@ -82,8 +148,8 @@ namespace Amara {
             if (glyphCache.find(codepoint) != glyphCache.end()) return;
         
             int width, height, xoff, yoff;
-            unsigned char* bitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, fontSize), codepoint, &width, &height, &xoff, &yoff);
-        
+            unsigned char* monobitmap = stbtt_GetCodepointBitmap(&font, 0, scale, codepoint, &width, &height, &xoff, &yoff);
+
             // Check if we need to start a new row
             if (currentX + width >= atlasWidth) {
                 currentX = 0;
@@ -93,31 +159,46 @@ namespace Amara {
         
             if (currentY + height >= atlasHeight) {
                 debug_log("Error: Texture atlas for font \"", key ,"\" is full!");
-                stbtt_FreeBitmap(bitmap, nullptr);
+                stbtt_FreeBitmap(monobitmap, nullptr);
                 return;
+            }
+
+            unsigned char* rgbaBitmap = new unsigned char[width * height * 4];
+            
+            for (int i = 0; i < width * height; ++i) {
+                unsigned char alpha = monobitmap[i];
+                rgbaBitmap[i * 4 + 0] = 255;    // R
+                rgbaBitmap[i * 4 + 1] = 255;    // G
+                rgbaBitmap[i * 4 + 2] = 255;    // B
+                rgbaBitmap[i * 4 + 3] = alpha;  // A
             }
             
             #ifdef AMARA_OPENGL
             if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
-                glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, currentY, width, height, GL_RED, GL_UNSIGNED_BYTE, bitmap);
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, currentY, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgbaBitmap);
             }
             #endif
             
             // Store glyph metadata
             Glyph glyph;
+            glyph.src = {
+                (float)currentX,
+                (float)currentY,
+                (float)width,
+                (float)height
+            };
             glyph.u0 = (float)currentX / atlasWidth;
             glyph.v0 = (float)currentY / atlasHeight;
             glyph.u1 = (float)(currentX + width) / atlasWidth;
             glyph.v1 = (float)(currentY + height) / atlasHeight;
-            glyph.width = width;
-            glyph.height = height;
             glyph.xoffset = xoff;
             glyph.yoffset = yoff;
             
             int advance;
             stbtt_GetCodepointHMetrics(&font, codepoint, &advance, nullptr);
-            glyph.xadvance = advance * stbtt_ScaleForPixelHeight(&font, 32);
+            glyph.xadvance = advance * scale;
         
             glyphCache[codepoint] = glyph;
         
@@ -125,7 +206,8 @@ namespace Amara {
             currentX += width + 2; // Add padding
             rowHeight = std::max(rowHeight, height);
         
-            stbtt_FreeBitmap(bitmap, nullptr);
+            stbtt_FreeBitmap(monobitmap, nullptr);
+            delete[] rgbaBitmap;
         }
 
         void packGlyphsFromString(std::u32string str) {
@@ -143,7 +225,7 @@ namespace Amara {
             float width = 0, height = 0;
             float maxHeight = 0;
             float lineWidth = 0;
-        
+            
             for (char32_t codepoint : str) {
                 if (codepoint == U' ') {
                     lineWidth += glyphCache[U' '].xadvance;
@@ -162,11 +244,11 @@ namespace Amara {
         
                 Glyph &glyph = glyphCache[codepoint];
                 lineWidth += glyph.xadvance;
-                maxHeight = std::max(maxHeight, static_cast<float>(glyph.height));
+                maxHeight = std::max(maxHeight, static_cast<float>(glyph.src.h));
                 
                 if (wordWrapWidth > 0 && lineWidth > wordWrapWidth) {
                     height += maxHeight;
-                    maxHeight = glyph.height;
+                    maxHeight = glyph.src.h;
                     lineWidth = glyph.xadvance;
                 }
 
@@ -180,6 +262,86 @@ namespace Amara {
             return getSize(Amara::String::utf8_to_utf32(str), wordWrapWidth);
         }
 
+        TextLayout generateLayout(std::u32string str, int wordWrapWidth, AlignmentEnum alignment) {
+            TextLayout layout = TextLayout();
+            layout.text = str;
+
+            float cursorX = 0, cursorY = 0;
+
+            TextLine* line = &layout.newLine();
+        
+            for (char32_t codepoint : str) {
+                if (glyphCache.find(codepoint) == glyphCache.end()) {
+                    continue;
+                }
+
+                if (codepoint == U'\t') {
+                    cursorX += glyphCache[U' '].xadvance * 4;  // Tab handling
+                    continue;
+                }
+                if (codepoint == U'\r') {
+                    continue;  // Carriage return handling
+                }
+                if (codepoint == U' ') {
+                    cursorX += glyphCache[U' '].xadvance;  // Space handling
+                    line->width += glyphCache[U' '].xadvance;
+                    continue;
+                }
+
+                Glyph glyph = glyphCache[codepoint];
+                line->height = lineHeight;
+
+                if (codepoint == U'\n') {
+                    layout.height += line->height;
+
+                    cursorX = 0;  // Reset cursorX for new line
+                    cursorY += fontSize;  // Move down for new line
+                    line = &layout.newLine();
+                    line->y = cursorY;
+                    continue;
+                }
+                
+                if (wordWrapWidth > 0 && (line->width + glyph.xadvance) > wordWrapWidth) {
+                    layout.height += line->height;
+
+                    cursorX = 0;  // Reset cursorX for new line
+                    cursorY += lineHeight;  // Move down for new line
+                    line = &layout.newLine();
+                    line->y = cursorY;
+
+                    glyph.x = 0;
+                }
+                glyph.x = cursorX + glyph.xoffset;
+                glyph.y = cursorY + glyph.yoffset;
+                cursorX += glyph.xadvance;
+                line->width += glyph.xadvance;
+
+                line->text += codepoint;
+                line->glyphs.push_back(glyph);
+
+                layout.width = std::max(layout.width, line->width);
+            }
+            layout.height += line->height;
+
+            float alignmentOffset;
+            switch (alignment) {
+                case Amara::AlignmentEnum::Left:
+                    alignmentOffset = 0;
+                    break;
+                case Amara::AlignmentEnum::Center:
+                    alignmentOffset = 0.5f;
+                    break;
+                case Amara::AlignmentEnum::Right:
+                    alignmentOffset = 1.0f;
+                    break;
+            }
+            for (TextLine& line : layout.lines) {
+                line.x = alignmentOffset * (layout.width - line.width);
+            }
+
+            return layout;
+        }
+ 
         virtual void clearTexture() {
             if (texture) {
                 SDL_DestroyTexture(texture);
@@ -191,6 +353,11 @@ namespace Amara {
                 glTextureID = 0;
             }
             #endif
+
+            if (fontBuffer) {
+                SDL_free(fontBuffer);
+                fontBuffer = nullptr;
+            }
         }
 
         void destroy() {

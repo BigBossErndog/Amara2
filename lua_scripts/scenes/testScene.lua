@@ -1,7 +1,8 @@
 return NodeFactory:create("Scene"):configure({
     onPreload = function(self) 
         self.load:image("goldenFlower", "goldenFlower.png")
-        self.load:spritesheet("freaker", "freaker.png", 32, 64);
+        self.load:spritesheet("freaker", "freaker.png", 32, 64)
+        self.load:font("font", "KLEINTEN.ttf", 10)
         
         Animations:add({
             key = "runningDown",
@@ -56,6 +57,11 @@ return NodeFactory:create("Scene"):configure({
         self.props.f = f;
         f.frame = 3
 
+        self:createChild("Text"):configure({
+            text = "abcdefghijk\nlmnopqrstuvwxyz",
+            font = "font"
+        })
+
         local controlRight = Controls:scheme("right");
         controlRight:setKeys({ Key.Right, Key.D });
 
@@ -72,8 +78,6 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onUpdate = function(self, deltaTime)
-        print(Game.fps)
-
         if Keyboard:isDown(Key.X) then
             self.camera:rotate(2 * math.pi * deltaTime * 0.25)
         end
