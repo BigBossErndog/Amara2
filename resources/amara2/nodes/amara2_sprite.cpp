@@ -259,6 +259,7 @@ namespace Amara {
                 "cropRight", &Sprite::cropRight,
                 "cropTop", &Sprite::cropTop,
                 "cropBottom", &Sprite::cropBottom,
+                "origin", &Sprite::origin,
                 "setOrigin", sol::overload(
                     sol::resolve<sol::object(float, float)>(&Sprite::setOrigin),
                     sol::resolve<sol::object(float)>(&Sprite::setOrigin)

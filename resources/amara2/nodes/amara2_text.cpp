@@ -251,6 +251,7 @@ namespace Amara {
                 "setFont", &Text::setFont,
                 "progress", &Text::progress,
                 "length", sol::property(&Text::length),
+                "origin", &Text::origin,
                 "setOrigin", sol::overload(
                     sol::resolve<sol::object(float, float)>(&Text::setOrigin),
                     sol::resolve<sol::object(float)>(&Text::setOrigin)

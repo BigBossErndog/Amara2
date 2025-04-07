@@ -1,7 +1,7 @@
 namespace Amara {
     struct Glyph {
-        float x, y; // Position to render
-        float u0, v0, u1, v1; // Texture coordinates
+        float x = 0, y = 0; // Position to render
+        float u0 = 0, v0 = 0, u1 = 0, v1 = 0; // Texture coordinates
         Rectangle src;
         int xoffset, yoffset;
         int xadvance;
@@ -18,9 +18,9 @@ namespace Amara {
 
         std::u32string text;
         std::vector<Glyph> glyphs;
-        int width, height;
+        int width = 0, height = 0;
 
-        int x, y; // Position to render
+        int x = 0, y = 0; // Position to render
 
         int size() {
             return text.size();
@@ -125,7 +125,7 @@ namespace Amara {
                 }
 
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
-
+                
                 unsigned char* emptyData = (unsigned char*)calloc(atlasWidth * atlasHeight, 1);
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, emptyData);
                 free(emptyData);
@@ -267,7 +267,7 @@ namespace Amara {
                     cursorY += lineHeight;  // Move down for new line
                     line = &layout.newLine();
                     line->y = cursorY;
-                    
+
                     glyph.x = 0;
                 }
                 glyph.x = cursorX + glyph.xoffset;
@@ -282,7 +282,7 @@ namespace Amara {
             }
             layout.height += line->height;
 
-            float alignmentOffset;
+            float alignmentOffset = 0;
             switch (alignment) {
                 case Amara::AlignmentEnum::Left:
                     alignmentOffset = 0;
