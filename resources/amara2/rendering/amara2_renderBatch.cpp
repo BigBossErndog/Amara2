@@ -13,7 +13,7 @@ namespace Amara {
 
         std::vector<float> vertices;
         std::vector<unsigned int> indices;
-
+        
         int rec_buffer_size = 0;
 
         int offset = 0;
@@ -42,10 +42,18 @@ namespace Amara {
         }
 
         #ifdef AMARA_OPENGL
+        void newCycle() {
+            vertices.clear();
+            indices.clear();
+            shaderProgram = nullptr;
+            glTextureID = 0;
+            offset = 0;
+        }
+
         void pushQuad(
             ShaderProgram* _shaderProgram,
             GLuint _glTextureID, 
-            const std::array<float, 16> _vertices,
+            const std::array<float, 16>& _vertices,
             const Rectangle& _viewport,
             Amara::BlendMode _blendMode
         ) {
@@ -56,8 +64,10 @@ namespace Amara {
                 blendMode != _blendMode
             ) {
                 flush();
-
-                shaderProgram = _shaderProgram;
+                if (shaderProgram != _shaderProgram) {
+                    shaderProgram = _shaderProgram;
+                    shaderProgram->applyShader();
+                }
                 glTextureID = _glTextureID;
                 viewport = _viewport;
                 blendMode = _blendMode;
@@ -80,8 +90,6 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             if (glTextureID != 0 && Props::graphics == Amara::GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                shaderProgram->applyShader();
-                
                 glViewport(viewport.x, Props::window_dim.h - viewport.y - viewport.h, viewport.w, viewport.h);
                 glBindVertexArray(VAO);
 

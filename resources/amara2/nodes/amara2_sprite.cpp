@@ -113,6 +113,14 @@ namespace Amara {
             Amara::Action* anim = animate(lua_to_json(config));
             return anim->get_lua_object();
         }
+        sol::object stopAnimating() {
+            for (Amara::Node* node: children) {
+                if (node->is_animation && !node->isDestroyed) {
+                    node->destroy();
+                }
+            }
+            return get_lua_object();
+        }
         
         sol::object setOrigin(float _x, float _y) {
             origin = { _x, _y };
@@ -251,6 +259,7 @@ namespace Amara {
                 "setTexture", &Sprite::setTexture,
                 "frame", &Sprite::frame,
                 "animate",  sol::resolve<sol::object(sol::object)>(&Sprite::animate),
+                "stopAnimating", &Sprite::stopAnimating,
                 "imagew", sol::readonly(&Sprite::imageWidth),
                 "imageh", sol::readonly(&Sprite::imageHeight),
                 "framew", sol::readonly(&Sprite::frameWidth),

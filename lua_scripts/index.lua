@@ -41,7 +41,10 @@
             virtualHeight = 360,
             graphics = Graphics.OpenGL
         },
-        entryScene = "scenes/TestScene"
+        entryScene = "scenes/TestScene",
+        onUpdate = function(self, deltaTime)
+            -- print(Game.fps)
+        end
     })
 
 --     firstworld.onPreload = function(self)

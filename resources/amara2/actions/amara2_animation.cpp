@@ -25,8 +25,39 @@ namespace Amara {
         }
 
         void setAnimation(nlohmann::json config) {
+            progress = 0;
+            repeats = 0;
+            frameRate = 60;
+            yoyo = false;
+            waitingYoyo = false;
+            frames.clear();
+
             if (config.is_string()) {
                 animKey = config.get<std::string>();
+
+                if (sprite && !animKey.empty()) {
+                    if (sprite->spritesheet) {
+                        AnimationData* animData = Props::animations->get(sprite->spritesheet->key, animKey);
+                                
+                        if (animData == nullptr) {
+                            debug_log("Error: Node ", *sprite, " could not be animated.");
+                            debug_log("Error: Animation with key \"", animKey, "\" was not found on texture \"", sprite->spritesheet->key, "\".");
+                            Props::breakWorld();
+                            return;
+                        }
+
+                        frames = animData->frames;
+                        repeats = animData->repeats;
+                        frameRate = animData->frameRate;
+                        yoyo = animData->yoyo;
+
+                        anim_configured = true;
+                    }
+                    else {
+                        debug_log("Error: Node ", *sprite, " does not have a valid texture for animation.");
+                        Props::breakWorld();
+                    }
+                }
             }
             else if (config.is_object()) {
                 AnimationData anim;
@@ -86,14 +117,13 @@ namespace Amara {
                         return;
                     }
                 }
-    
+                
+                anim.repeats = 0;
                 if (json_has(config, "repeats")) {
                     anim.repeats = config["repeats"];
                 }
     
-                if (json_has(config, "yoyo")) {
-                    anim.yoyo = config["yoyo"];
-                }
+                anim.yoyo = json_is(config, "yoyo");
 
                 frames = anim.frames;
                 repeats = anim.repeats;
@@ -112,41 +142,18 @@ namespace Amara {
                 sprite = actor->as<Amara::Sprite*>();
             }
             if (sprite) {
-                if (sprite->spritesheet) {
-                    if (!animKey.empty()) {
-                        AnimationData* animData = Props::animations->get(sprite->spritesheet->key, animKey);
-                        
-                        if (animData == nullptr) {
-                            debug_log("Error: Node ", *sprite, " could not be animated.");
-                            debug_log("Error: Animation with key \"", animKey, "\" was not found on texture \"", sprite->spritesheet->key, "\".");
-                            Props::breakWorld();
-                            return;
-                        }
-
-                        frames = animData->frames;
-                        repeats = animData->repeats;
-                        frameRate = animData->frameRate;
-                        yoyo = animData->yoyo;
-                        
-                        ready = true;
-                    }
-                    else if (anim_configured) {
-                        ready = true;
-                    }
-                }
-                else {
-                    debug_log("Error: Node ", *sprite, " does not have a valid texture for animation.");
-                    Props::breakWorld();
-                    return;
-                }
+                if (!animKey.empty()) setAnimation(animKey);
             }
             else {
                 debug_log("Error: Node ", *actor, " cannot be animated.");
                 Props::breakWorld();
                 return;
             }
-            if (!ready) complete();
-            else Amara::Action::prepare();
+            if (!anim_configured) complete();
+            else {
+                waitingYoyo = yoyo;
+                Amara::Action::prepare();
+            }
         }
 
         virtual void act(double deltaTime) {
@@ -217,7 +224,13 @@ namespace Amara {
                 if (config.is_string() && string_equal(config, node->as<Animation*>()->animKey)) {
                     return node->as<Amara::Action*>();
                 }
-                else node->destroy();
+                else {
+                    Amara::Animation* anim = node->as<Animation*>();
+                    if (anim) {
+                        anim->setAnimation(config);
+                        return anim;
+                    }
+                }
             }
         }
         

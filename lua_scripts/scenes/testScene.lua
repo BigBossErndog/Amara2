@@ -58,10 +58,10 @@ return NodeFactory:create("Scene"):configure({
         f.frame = 3
 
         local txt = self:createChild("Text"):configure({
-            text = "abcdefghijklmnopqrstuvwxyz",
+            text = "For the fate of the world.",
             font = "font",
             alignment = Align.Center,
-            wordWrap = 40
+            -- wrapWidth = 40
         })
 
         local controlRight = Controls:scheme("right");
@@ -97,21 +97,27 @@ return NodeFactory:create("Scene"):configure({
         self.props.f.rotation = -self.camera.rotation
         
         local speed = 200;
+        local anyPressed = false
 
         if Controls:isDown("right") then
             self.props.f:move(math.rotateAroundAnchor(Vector2.new(speed*deltaTime, 0), -self.camera.rotation))
             self.props.f:animate("runningRight")
+            anyPressed = true
         elseif Controls:isDown("left") then
             self.props.f:move(math.rotateAroundAnchor(Vector2.new(-speed*deltaTime, 0), -self.camera.rotation))
             self.props.f:animate("runningLeft")
+            anyPressed = true
         end
         if Controls:isDown("up") then
             self.props.f:move(math.rotateAroundAnchor(Vector2.new(0, -speed*deltaTime), -self.camera.rotation))
             self.props.f:animate("runningUp")
+            anyPressed = true
         elseif Controls:isDown("down") then
             self.props.f:animate("runningDown")
             self.props.f:move(math.rotateAroundAnchor(Vector2.new(0, speed*deltaTime), -self.camera.rotation))
+            anyPressed = true
         end
+        -- if not anyPressed then self.props.f:stopAnimating() end
 
         if Keyboard:justPressed(Key.F5) then
             if self.world.screenMode == ScreenMode.Windowed or self.world.screenMode == ScreenMode.BorderlessWindowed then

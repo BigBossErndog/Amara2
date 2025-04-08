@@ -42,6 +42,11 @@ namespace Amara {
         Bottom = 5
     };
 
+    enum class WrapModeEnum {
+        ByCharacter,
+        ByWord
+    };
+
     void bindLua_Enums(sol::state& lua) {
         lua.new_enum("Graphics",
             "None", Amara::GraphicsEnum::None,
@@ -75,6 +80,11 @@ namespace Amara {
             "Top", Amara::AlignmentEnum::Top,
             "Middle", Amara::AlignmentEnum::Middle,
             "Bottom", Amara::AlignmentEnum::Bottom
+        );
+
+        lua.new_enum("WrapMode",
+            "ByCharacter", Amara::WrapModeEnum::ByCharacter,
+            "ByWord", Amara::WrapModeEnum::ByWord
         );
     }
 }

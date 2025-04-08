@@ -16,7 +16,9 @@ namespace Amara {
 
         int textwidth = 0;
         int textheight = 0;
-        int wordWrapWidth = -1;
+
+        int wrapWidth = -1;
+        Amara::WrapModeEnum wrapMode = Amara::WrapModeEnum::ByCharacter;
 
         TextLayout layout;
 
@@ -36,7 +38,7 @@ namespace Amara {
         virtual nlohmann::json toJSON() override {
             nlohmann::json config = Amara::Node::toJSON();
             
-            config["wordWrap"] = wordWrapWidth;
+            config["wrapWidth"] = wrapWidth;
             config["alignment"] = static_cast<int>(alignment);
             
             if (font) config["font"] = font->key;
@@ -51,7 +53,13 @@ namespace Amara {
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Node::configure(config);
             
-            if (json_has(config, "wordWrap")) setWordWrap(config["wordWrap"]);
+            if (json_has(config, "wrapWidth")) {
+                setWrapWidth(config["wrapWidth"]);
+            }
+            if (json_has(config, "wrapMode")) {
+                setWrapMode(config["wrapMode"]);
+            }
+
             if (json_has(config, "alignment")) align(static_cast<Amara::AlignmentEnum>(config["alignment"]));
             
             if (json_has(config, "font")) setFont(config["font"]);
@@ -66,7 +74,7 @@ namespace Amara {
         void updateText() {
             if (font) {
                 font->packGlyphsFromString(converted_text);
-                layout = font->generateLayout(converted_text, wordWrapWidth, alignment);
+                layout = font->generateLayout(converted_text, wrapWidth, wrapMode, alignment);
                 textwidth = layout.width;
                 textheight = layout.height;
             }
@@ -103,10 +111,19 @@ namespace Amara {
             return true;
         }
 
-        sol::object setWordWrap(int width) {
-            wordWrapWidth = width;
+        sol::object setWrapWidth(int width) {
+            wrapWidth = width;
             updateText();
             return get_lua_object();
+        }
+        sol::object setWrapMode(Amara::WrapModeEnum _mode) {
+            wrapMode = _mode;
+            updateText();
+            return get_lua_object();
+        }
+        sol::object setWrap(int width, Amara::WrapModeEnum _mode) {
+            wrapMode = _mode;
+            return setWrapWidth(width);
         }
 
         sol::object setOrigin(float _x, float _y) {
@@ -247,6 +264,7 @@ namespace Amara {
                 sol::base_classes, sol::bases<Node>(),
                 "w", sol::readonly(&Text::textwidth),
                 "h", sol::readonly(&Text::textheight),
+                "text", sol::readonly(&Text::text),
                 "setText", &Text::setText,
                 "setFont", &Text::setFont,
                 "progress", &Text::progress,
@@ -258,7 +276,9 @@ namespace Amara {
                 ),
                 "align", &Text::align,
                 "alignment", sol::readonly(&Text::alignment),
-                "setWordWrap", &Text::setWordWrap
+                "setWrapWidth", &Text::setWrapWidth,
+                "setWrapMode", &Text::setWrapMode,
+                "setWrap", &Text::setWrap
             );
         }
     };

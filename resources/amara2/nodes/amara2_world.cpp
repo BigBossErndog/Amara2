@@ -596,6 +596,8 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                 Props::gpuHandler = &gpuHandler;
+                Props::renderBatch = &renderBatch;
+                Props::renderBatch->newCycle();
                 SDL_GL_MakeCurrent(window, glContext);
                 glClear(GL_COLOR_BUFFER_BIT);
             }

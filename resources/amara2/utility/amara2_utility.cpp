@@ -114,4 +114,39 @@ namespace Amara {
             GraphicsEnum::Render2D
         };
     #endif
+
+    struct Color: public SDL_Color {
+        Color() = default;
+        Color(Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a) {
+            r = _r;
+            g = _g;
+            b = _b;
+            a = _a;
+        }
+        Color(Uint8 _r, Uint8 _g, Uint8 _b): Color(_r, _g, _b, 255) {}
+        Color(SDL_Color _color) {
+            r = _color.r;
+            g = _color.g;
+            b = _color.b;
+            a = _color.a;
+        }
+
+        void toFloats(float* _r, float* _g, float* _b) {
+            (*_r) = r;
+            (*_g) = g;
+            (*_b) = b;
+        }
+        void toFloats(float* _r, float* _g, float* _b, float* _a) {
+            (*_a) = a;
+            toFloats(_r, _g, _b);
+        }
+
+        Color& operator= (const SDL_Color& _color) {
+            r = _color.r;
+            g = _color.g;
+            b = _color.b;
+            a = _color.a;
+            return *this; 
+        }
+    };
 }

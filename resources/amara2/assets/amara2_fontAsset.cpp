@@ -221,66 +221,71 @@ namespace Amara {
             packGlyphsFromString(Amara::String::utf8_to_utf32(str));
         }
 
-        TextLayout generateLayout(std::u32string str, int wordWrapWidth, AlignmentEnum alignment) {
+        TextLayout generateLayout(std::u32string str, int wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment) {
             TextLayout layout = TextLayout();
             layout.text = str;
 
             float cursorX = 0, cursorY = 0;
 
             TextLine* line = &layout.newLine();
-        
-            for (char32_t codepoint : str) {
-                if (glyphCache.find(codepoint) == glyphCache.end()) {
-                    continue;
+            
+            if (wrapMode == WrapModeEnum::ByCharacter) {
+                for (char32_t codepoint : str) {
+                    if (glyphCache.find(codepoint) == glyphCache.end()) {
+                        continue;
+                    }
+
+                    if (codepoint == U'\t') {
+                        cursorX += glyphCache[U' '].xadvance * 4;  // Tab handling
+                        continue;
+                    }
+                    if (codepoint == U'\r') {
+                        continue;  // Carriage return handling
+                    }
+                    if (codepoint == U' ') {
+                        cursorX += glyphCache[U' '].xadvance;  // Space handling
+                        line->width += glyphCache[U' '].xadvance;
+                        continue;
+                    }
+
+                    Glyph glyph = glyphCache[codepoint];
+                    line->height = lineHeight;
+
+                    if (codepoint == U'\n') {
+                        layout.height += line->height;
+
+                        cursorX = 0;  // Reset cursorX for new line
+                        cursorY += fontSize;  // Move down for new line
+                        line = &layout.newLine();
+                        line->y = cursorY;
+                        continue;
+                    }
+                    
+                    if (wrapWidth > 0 && (line->width + glyph.xadvance) > wrapWidth) {
+                        layout.height += line->height;
+
+                        cursorX = 0;  // Reset cursorX for new line
+                        cursorY += lineHeight;  // Move down for new line
+                        line = &layout.newLine();
+                        line->y = cursorY;
+
+                        glyph.x = 0;
+                    }
+                    glyph.x = cursorX + glyph.xoffset;
+                    glyph.y = glyph.yoffset;
+                    cursorX += glyph.xadvance;
+                    line->width += glyph.xadvance;
+
+                    line->text += codepoint;
+                    line->glyphs.push_back(glyph);
+
+                    layout.width = std::max(layout.width, line->width);
                 }
-
-                if (codepoint == U'\t') {
-                    cursorX += glyphCache[U' '].xadvance * 4;  // Tab handling
-                    continue;
-                }
-                if (codepoint == U'\r') {
-                    continue;  // Carriage return handling
-                }
-                if (codepoint == U' ') {
-                    cursorX += glyphCache[U' '].xadvance;  // Space handling
-                    line->width += glyphCache[U' '].xadvance;
-                    continue;
-                }
-
-                Glyph glyph = glyphCache[codepoint];
-                line->height = lineHeight;
-
-                if (codepoint == U'\n') {
-                    layout.height += line->height;
-
-                    cursorX = 0;  // Reset cursorX for new line
-                    cursorY += fontSize;  // Move down for new line
-                    line = &layout.newLine();
-                    line->y = cursorY;
-                    continue;
-                }
-                
-                if (wordWrapWidth > 0 && (line->width + glyph.xadvance) > wordWrapWidth) {
-                    layout.height += line->height;
-
-                    cursorX = 0;  // Reset cursorX for new line
-                    cursorY += lineHeight;  // Move down for new line
-                    line = &layout.newLine();
-                    line->y = cursorY;
-
-                    glyph.x = 0;
-                }
-                glyph.x = cursorX + glyph.xoffset;
-                glyph.y = glyph.yoffset;
-                cursorX += glyph.xadvance;
-                line->width += glyph.xadvance;
-
-                line->text += codepoint;
-                line->glyphs.push_back(glyph);
-
-                layout.width = std::max(layout.width, line->width);
+                layout.height += line->height;
             }
-            layout.height += line->height;
+            else if (wrapMode == WrapModeEnum::ByWord) {
+                
+            }
 
             float alignmentOffset = 0;
             switch (alignment) {
