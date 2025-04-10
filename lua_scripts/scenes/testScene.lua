@@ -39,15 +39,25 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
+        local textCont = self:createChild("TextureContainer")
+        debug_log(1)
+        textCont:configure({
+            width = 256,
+            height = 256
+        })
+        debug_log(2)
+
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
-        for i = 1, (64*64) do
-            self:createChild("Sprite"):configure({
+        for i = 1, (64*64*4) do
+            textCont:createChild("Sprite"):configure({
                 texture = "goldenFlower",
                 x = math.sin(a_rate * i) * d_rate * i,
                 y = math.cos(a_rate * i) * d_rate * i
             })
         end
+
+        debug_log(3)
 
         local f = self:createChild("Sprite"):configure({
             texture = "freaker",
@@ -57,7 +67,7 @@ return NodeFactory:create("Scene"):configure({
         self.props.f = f;
         f.frame = 3
 
-        local txt = self:createChild("Text"):configure({
+        self.props.txt = self:createChild("Text"):configure({
             text = "For the fate of the world.",
             font = "font",
             alignment = Align.Center,
@@ -80,6 +90,8 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onUpdate = function(self, deltaTime)
+        self.props.txt:setText(math.floor(Game.fps), " FPS")
+
         if Keyboard:isDown(Key.X) then
             self.camera:rotate(2 * math.pi * deltaTime * 0.25)
         end

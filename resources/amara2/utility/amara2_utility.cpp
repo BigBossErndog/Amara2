@@ -16,11 +16,11 @@ namespace Amara {
         for (T element: list2) list1.push_back(element);
     }
 
-    bool json_has(nlohmann::json data, std::string key) {
+    bool json_has(const nlohmann::json& data, std::string key) {
         return (data.find(key) != data.end()) ? true : false;
     }
 
-    bool json_is(nlohmann::json data, std::string key) {
+    bool json_is(const nlohmann::json& data, std::string key) {
         return json_has(data, key) && data[key].is_boolean() && data[key];
     }
 

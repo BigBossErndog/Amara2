@@ -90,6 +90,11 @@ namespace Amara {
             updateText();
         }
 
+        sol::object setText(sol::variadic_args input) {
+            setText(lua_string_concat(input));
+            return get_lua_object();
+        }
+
         bool setFont(std::string key) {
             font = nullptr;
             if (!Props::assets->has(key)) {
@@ -265,7 +270,7 @@ namespace Amara {
                 "w", sol::readonly(&Text::textwidth),
                 "h", sol::readonly(&Text::textheight),
                 "text", sol::readonly(&Text::text),
-                "setText", &Text::setText,
+                "setText", sol::resolve<sol::object(sol::variadic_args)>(&Text::setText),
                 "setFont", &Text::setFont,
                 "progress", &Text::progress,
                 "length", sol::property(&Text::length),

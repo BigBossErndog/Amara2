@@ -29,8 +29,7 @@
 
 -- Game:setTargetFPS(60)
 
-    firstworld = Creator:createWorld()
-    firstworld:configure({
+    Creator:createWorld():configure({
         window = {
             windowTitle = "Amara2",
             -- resizable = true,

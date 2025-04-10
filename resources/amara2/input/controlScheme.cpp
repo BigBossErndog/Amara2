@@ -62,10 +62,12 @@ namespace Amara {
             return false;
         }
         bool justReleased() {
+            bool result = false;
             for (SDL_Keycode k: keys) {
-                if (Props::keyboard->justReleased(k)) return true;
+                if (Props::keyboard->isDown(k)) return false;
+                if (Props::keyboard->justReleased(k)) result = true;
             }
-            return false;
+            return result;
         }
         double timeHeld() {
             double t = 0;

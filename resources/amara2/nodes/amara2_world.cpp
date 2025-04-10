@@ -414,7 +414,7 @@ namespace Amara {
                     case Amara::GraphicsEnum::OpenGL:
                         #ifdef AMARA_OPENGL
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
                         
                         if (create_graphics_window(SDL_WINDOW_OPENGL)) {
@@ -551,15 +551,12 @@ namespace Amara {
                 exception_thrown = true;
             }
         }
-
+        
         virtual void draw(const Rectangle& v) override {
             update_properties();
 
-            Props::passOn.anchor = { 0, 0, 0 };
-            Props::passOn.rotation = 0;
-            Props::passOn.scroll = { 0, 0 };
-            Props::passOn.scale = { 1, 1 };
-            Props::passOn.zoom = { 1, 1 };
+            reset_pass_on_props();
+
             if (virtualWidth > 0 || virtualHeight > 0) {
                 if (virtualWidth <= 0) virtualWidth = windowW;
                 if (virtualHeight <= 0) virtualHeight = windowH;

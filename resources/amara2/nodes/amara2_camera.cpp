@@ -61,6 +61,9 @@ namespace Amara {
             if (json_has(config, "lerpX")) lerp.x = config["lerpX"];
             if (json_has(config, "lerpY")) lerp.y = config["lerpY"];
 
+            if (json_has(config, "width")) width = config["width"];
+            if (json_has(config, "height")) height = config["height"];
+
             return this;
         }
 

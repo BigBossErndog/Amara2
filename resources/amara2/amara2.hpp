@@ -152,6 +152,8 @@
     #include "nodes/amara2_sprite.cpp"
     #include "actions/amara2_animation.cpp"
 
+    #include "nodes/amara2_textureContainer.cpp"
+
     #include "audio/amara2_audio.cpp"
     #include "audio/amara2_audiogroup.cpp"
     #include "audio/amara2_audioMaster.cpp"

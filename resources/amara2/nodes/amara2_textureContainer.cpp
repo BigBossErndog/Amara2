@@ -1,0 +1,302 @@
+namespace Amara {
+    class TextureContainer: public Amara::Node {
+    public:
+        SDL_Texture* texture = nullptr;
+        SDL_GPUTexture* gpuTexture = nullptr;
+
+        Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
+
+        #ifdef AMARA_OPENGL
+        GLuint glCanvasID = 0;
+        GLuint glBufferID = 0;
+
+        GLuint VAO, VBO, EBO;
+
+        std::array<float, 16> vertices = {
+            -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
+             0.5f, -0.5f,  1.0f, 0.0f, // Bottom-right
+             0.5f,  0.5f,  1.0f, 1.0f, // Top-right
+            -0.5f,  0.5f,  0.0f, 1.0f  // Top-left
+        };
+        std::array<float, 16> indices = {
+            0, 1, 2,
+            2, 3, 0
+        };
+        #endif
+        
+        int width = 0;
+        int height = 0;
+        int rec_width = -1;
+        int rec_height = -1;
+
+        float left = 0;
+        float right = 0;
+        float top = 0;
+        float bottom = 0;
+
+        int cropLeft = 0;
+        int cropRight = 0;
+        int cropTop = 0;
+        int cropBottom = 0;
+
+        Vector2 origin = { 0.5, 0.5 };
+
+        Rectangle container_viewport;
+
+        Amara::RenderBatch renderBatch;
+
+        TextureContainer(): Amara::Node() {
+            set_base_node_id("TextureContainer");
+        }
+
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            if (json_has(config, "w")) width = config["w"];
+            if (json_has(config, "h")) height = config["h"];
+            if (json_has(config, "width")) width = config["width"];
+            if (json_has(config, "height")) height = config["height"];
+
+            return Amara::Node::configure(config);
+        }
+
+        void deletePipeline() {
+            #ifdef AMARA_OPENGL
+            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                if (glCanvasID != 0) {
+                    glDeleteTextures(1, &glCanvasID);
+                    glCanvasID = 0;
+                }
+                if (glBufferID != 0) {
+                    glDeleteFramebuffers(1, &glBufferID);
+                    glBufferID = 0;
+                }
+            }
+            #endif
+        }
+
+        void createCanvas(int _w, int _h) {
+            width = rec_width = _w;
+            height = rec_height = _h;
+
+            deletePipeline();
+
+            #ifdef AMARA_OPENGL
+            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                GLint prevBuffer = 0;
+                glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
+
+                glMakeFrameBuffer(glCanvasID, glBufferID, width, height);
+                glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
+
+                glGenVertexArrays(1, &VAO);
+                glBindVertexArray(VAO);
+
+                glGenBuffers(1, &VBO);
+                glGenBuffers(1, &EBO);
+                
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+                glEnableVertexAttribArray(0);
+                
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+                glEnableVertexAttribArray(1);
+
+                renderBatch.init(VAO, VBO, EBO);
+
+                glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+            }
+            #endif
+
+            container_viewport = { 0, 0, static_cast<float>(width), static_cast<float>(height) };
+
+            left = -width/2.0;
+            right = width/2.0;
+            top = -height/2.0;
+            bottom = height/2.0;
+        }
+
+        sol::object setOrigin(float _x, float _y) {
+            origin = { _x, _y };
+            return get_lua_object();
+        }
+        sol::object setOrigin(float _o) {
+            return setOrigin(_o, _o);
+        }
+
+        virtual void drawObjects(const Rectangle& v) override {
+            passOn = Props::passOn;
+
+            if (rec_width != width || rec_height != height) {
+                createCanvas(width, height);
+            }
+
+            #ifdef AMARA_OPENGL
+            Amara::RenderBatch* rec_batch = Props::renderBatch;
+
+            GLint prevBuffer = 0;
+            ShaderProgram* rec_shader = Props::currentShaderProgram;
+            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                if (shaderProgram && shaderProgram != Props::currentShaderProgram) {
+                    Props::currentShaderProgram = shaderProgram;
+                }
+                Props::renderBatch->flush();
+                Props::renderBatch = &renderBatch;
+                
+                glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
+                glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
+                glViewport(0, 0, width, height);
+                
+                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            }
+            #endif
+            
+            if (depthSortChildrenEnabled) sortChildren();
+            drawChildren(container_viewport);
+
+            if (cropLeft < 0) cropLeft = 0;
+            if (cropRight < 0) cropRight = 0;
+            if (cropTop < 0) cropTop = 0;
+            if (cropBottom < 0) cropBottom = 0;
+
+            Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
+
+            Vector3 anchoredPos = Vector3(
+                rotateAroundAnchor(
+                    passOn.anchor, 
+                    Vector2( 
+                        (passOn.anchor.x + pos.x*passOn.scale.x), 
+                        (passOn.anchor.y + pos.y*passOn.scale.y)
+                    ),
+                    passOn.rotation
+                ),
+                passOn.anchor.z + pos.z
+            );
+
+            SDL_FRect srcRect;
+            SDL_FRect destRect;
+
+            Rectangle dim = {
+                anchoredPos.x + (cropLeft - width*origin.x)*scale.x*passOn.scale.x, 
+                anchoredPos.y - anchoredPos.z + (cropTop - height*origin.y)*scale.y*passOn.scale.y,
+                (width - cropLeft - cropRight)*scale.x*passOn.scale.x,
+                (height - cropTop - cropBottom)*scale.y*passOn.scale.y
+            };
+
+            destRect.x = vcenter.x + dim.x*passOn.zoom.x;
+            destRect.y = vcenter.y + dim.y*passOn.zoom.y;
+            destRect.w = dim.w * passOn.zoom.x;
+            destRect.h = dim.h * passOn.zoom.y;
+
+            SDL_FPoint dorigin = {
+                (width*origin.x - cropLeft)*scale.x*passOn.scale.x*passOn.zoom.x,
+                (height*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
+            };
+
+            srcRect = {
+                static_cast<float>(cropLeft),
+                static_cast<float>(cropTop),
+                static_cast<float>(width - cropLeft - cropRight),
+                static_cast<float>(height - cropTop - cropBottom)
+            };
+
+            float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
+            if (!Shape::checkCollision(
+                Rectangle(destRect), Rectangle(
+                    v.x - diag_distance, v.y - diag_distance,
+                    v.w + diag_distance*2, v.w + diag_distance*2
+                )
+            )) return;
+
+            #ifdef AMARA_OPENGL
+            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                Props::renderBatch->flush();
+
+                if (rec_batch) Props::renderBatch = rec_batch;
+                glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+
+                Quad srcQuad = Quad(
+                    { srcRect.x/width, srcRect.y/height },
+                    { (srcRect.x+srcRect.w)/width, srcRect.y/height },
+                    { (srcRect.x+srcRect.w)/width, (srcRect.y+srcRect.h)/height },
+                    { srcRect.x/width, (srcRect.y+srcRect.h)/height }
+                );
+                Quad destQuad = glTranslateQuad(v, rotateQuad(
+                    Quad(destRect),
+                    Vector2(
+                        destRect.x + dorigin.x,
+                        destRect.y + dorigin.y
+                    ),
+                    passOn.rotation + rotation
+                ));
+
+                vertices = {
+                    destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
+                    destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
+                    destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
+                    destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
+                };
+
+                Props::renderBatch->pushQuad(
+                    Props::currentShaderProgram,
+                    glCanvasID,
+                    vertices, 
+                    v,
+                    blendMode
+                );
+            }
+                
+            if (rec_shader && shaderProgram && shaderProgram != rec_shader) {
+                Props::currentShaderProgram = rec_shader;
+            }
+            #endif
+        }
+
+        virtual void drawChildren(const Rectangle& v) {
+            children_copy_list = children;
+
+            PassOnProps rec_props = Props::passOn;
+            PassOnProps new_props;
+            Props::passOn = new_props;
+
+            Amara::Node* child;
+			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
+                child = *it;
+				if (child == nullptr || child->isDestroyed || child->parent != this) {
+					++it;
+					continue;
+				}
+
+                update_properties();
+				child->draw(v);
+
+                Props::passOn = new_props;
+				++it;
+			}
+
+            Props::passOn = rec_props;
+        }
+
+        virtual void destroy() override {
+            deletePipeline();
+            Amara::Node::destroy();
+        }
+
+        static void bindLua(sol::state& lua) {
+            lua.new_usertype<TextureContainer>("TextureContainer",
+                sol::base_classes, sol::bases<Node>(),
+                "w", &TextureContainer::width,
+                "h", &TextureContainer::height,
+                "width", &TextureContainer::width,
+                "height", &TextureContainer::height,
+                "left", sol::readonly(&TextureContainer::left),
+                "right", sol::readonly(&TextureContainer::right),
+                "top", sol::readonly(&TextureContainer::top),
+                "bottom", sol::readonly(&TextureContainer::bottom),
+                "origin", &TextureContainer::origin,
+                "setOrigin", sol::overload(
+                    sol::resolve<sol::object(float, float)>(&TextureContainer::setOrigin),
+                    sol::resolve<sol::object(float)>(&TextureContainer::setOrigin)
+                )
+            );
+        }
+    };
+}

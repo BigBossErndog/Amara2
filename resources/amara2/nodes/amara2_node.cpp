@@ -43,7 +43,7 @@ namespace Amara {
 
         Vector2 cameraFollowOffset = { 0, 0 };
         
-        float depth = 0;
+        float depth = 0.0f;
         bool yDepthLocked = false;
         bool zDepthLocked = false;
 
@@ -267,6 +267,8 @@ namespace Amara {
             passOn = Props::passOn;
             
             if (passOnPropsEnabled) {
+                passOn.rotation += rotation;
+
                 passOn.anchor = Vector3(
                     rotateAroundAnchor(
                         Props::passOn.anchor, 
@@ -278,8 +280,6 @@ namespace Amara {
                     ),
                     passOn.anchor.z + pos.z
                 );
-
-                passOn.rotation += rotation;
 
                 passOn.scale = {
                     Props::passOn.scale.x * scale.x,
@@ -296,6 +296,13 @@ namespace Amara {
 
                 Props::passOn = passOn;
             }
+        }
+        void reset_pass_on_props() {
+            Props::passOn.rotation = 0;
+            Props::passOn.anchor = { 0, 0, 0 };
+            Props::passOn.scroll = { 0, 0 };
+            Props::passOn.scale = { 1, 1 };
+            Props::passOn.zoom = { 1, 1 };
         }
  
         virtual void run(double deltaTime) {
@@ -362,7 +369,6 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             ShaderProgram* rec_shader = Props::currentShaderProgram;
             if (Props::graphics == GraphicsEnum::OpenGL && shaderProgram && shaderProgram != Props::currentShaderProgram) {
-                shaderProgram->applyShader();
                 Props::currentShaderProgram = shaderProgram;
             }
             #endif
@@ -558,6 +564,12 @@ namespace Amara {
             return get_lua_object();
         }
 
+        void stopActing() {
+            for (Amara::Node* node: children) {
+                if (node->is_action && !node->isDestroyed) node->destroy();
+            }
+        }
+
         template <typename T>
         T as();
 
@@ -653,6 +665,7 @@ namespace Amara {
                 "depthSortSelfEnabled", &Node::depthSortSelfEnabled,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
                 "setShaderProgram", &Node::setShaderProgram,
+                "stopActing", &Node::stopActing,
                 "string", [](Amara::Node* e){
                     return std::string(*e);
                 }

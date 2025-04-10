@@ -45,7 +45,8 @@ namespace Amara {
     X(void, glFenceSync, GLenum, GLbitfield) \
     X(void, glClientWaitSync, GLsync, GLbitfield, GLuint64) \
     X(void, glBindBuffer, GLenum, GLuint) \
-    X(void, glDeleteFramebuffers, GLsizei, const GLuint*) \
+    X(void, glDeleteFramebuffers, GLsizei, GLuint*) \
+    X(void, glDeleteRenderbuffers, GLsizei, GLuint*) \
     X(void, glDetachShader, GLuint, GLuint) \
     X(void, glValidateProgram, GLuint) \
     X(void, glDeleteProgramPipelines, GLsizei, const GLuint*) \
@@ -61,11 +62,11 @@ namespace Amara {
     X(void, glUniform2iv, GLint, GLsizei, const GLint*) \
     X(void, glUniform3iv, GLint, GLsizei, const GLint*) \
     X(void, glUniform4iv, GLint, GLsizei, const GLint*) \
-    X(void, glCheckFramebufferStatus, GLenum) \
+    X(GLenum, glCheckFramebufferStatus, GLenum) \
     X(void, glGenRenderbuffers, GLsizei, GLuint*) \
     X(void, glBindRenderbuffer, GLenum, GLuint) \
     X(void, glRenderbufferStorage, GLenum, GLenum, GLsizei, GLsizei) \
-    X(void, glFramebufferRenderbuffer, GLenum, GLenum, GLuint) \
+    X(void, glFramebufferRenderbuffer, GLenum, GLenum, GLenum, GLuint) \
     X(void, glTexSubImage2D, GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const void*) \
     X(void, glTexStorage2D, GLenum, GLsizei, GLenum, GLsizei, GLsizei) \
     X(void, glGenerateMipmap, GLenum) \
@@ -214,16 +215,76 @@ namespace Amara {
         #undef X
     }
 
+    void glMakeFrameBuffer(
+        GLuint& glTextureID,
+        GLuint& glBufferID,
+        GLuint* glRenderBufferIDPtr,
+        int width,
+        int height
+    ) {
+        glGenFramebuffers(1, &glBufferID);
+        glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
+
+        glGenTextures(1, &glTextureID);
+        glBindTexture(GL_TEXTURE_2D, glTextureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);    
+        
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTextureID, 0);
+
+        if (glRenderBufferIDPtr) {
+            // Creating depth buffer
+            GLuint& glRenderBufferID = *glRenderBufferIDPtr;
+
+            glGenRenderbuffers(1, &glRenderBufferID);
+            glBindRenderbuffer(GL_RENDERBUFFER, glRenderBufferID);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, glRenderBufferID);
+        }
+        
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            debug_log("Error: Failed to create frame buffer.");
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        if (glRenderBufferIDPtr) {
+            glBindRenderbuffer(GL_RENDERBUFFER, 0);
+        }
+    }
+    void glMakeFrameBuffer(
+        GLuint& glTextureID,
+        GLuint& glBufferID,
+        GLuint& glDepthBufferID,
+        int width,
+        int height
+    ) {
+        glMakeFrameBuffer(glTextureID, glBufferID, &glDepthBufferID, width, height);
+    }
+    void glMakeFrameBuffer(
+        GLuint& glTextureID,
+        GLuint& glBufferID,
+        int width,
+        int height
+    ) {
+        glMakeFrameBuffer(glTextureID, glBufferID, nullptr, width, height);
+    };
+
     const char* defaultVertexShader = R"(
         #version 330 core
 
-        layout (location = 0) in vec2 _position;
+        layout (location = 0) in vec3 _position;
         layout (location = 1) in vec2 _coord;
 
         out vec2 texCoord;
         
         void main() {
-            gl_Position = vec4(_position, 0.0, 1.0);
+            gl_Position = vec4(_position, 1.0);
             texCoord = _coord;
         }
     )";

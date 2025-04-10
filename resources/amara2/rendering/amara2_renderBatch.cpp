@@ -2,7 +2,7 @@ namespace Amara {
     class RenderBatch {
     public:
         #ifdef AMARA_OPENGL
-        unsigned int VAO, VBO, EBO;
+        GLuint VAO, VBO, EBO;
         GLuint glTextureID = 0;
 
         ShaderProgram* shaderProgram = nullptr;
@@ -17,6 +17,8 @@ namespace Amara {
         int rec_buffer_size = 0;
 
         int offset = 0;
+
+        bool external_buffers = false;
         
         RenderBatch() {}
 
@@ -42,6 +44,14 @@ namespace Amara {
         }
 
         #ifdef AMARA_OPENGL
+        void init(GLuint _vao, GLuint _vbo, GLuint _ebo) {
+            VAO = _vao;
+            VBO = _vbo;
+            EBO = _ebo;
+
+            external_buffers = true;
+        }
+
         void newCycle() {
             vertices.clear();
             indices.clear();
@@ -150,6 +160,25 @@ namespace Amara {
             offset = 0;
 
             glTextureID = 0;
+        }
+
+        void destroy() {
+            #ifdef AMARA_OPENGL
+            if (!external_buffers) {
+                if (VAO) {
+                    glDeleteVertexArrays(1, &VAO);
+                    VAO = 0;
+                }
+                if (VBO) {
+                    glDeleteBuffers(1, &VBO);
+                    VBO = 0;
+                }
+                if (EBO) {
+                    glDeleteBuffers(1, &EBO);
+                    EBO = 0;
+                }
+            }
+            #endif
         }
     };
 }
