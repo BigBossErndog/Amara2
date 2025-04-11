@@ -72,7 +72,7 @@ return NodeFactory:create("Scene"):configure({
         f.frame = 3
 
         self.props.txt = self:createChild("Text", {
-            text = "Fuck the police coming straight from the underground. I hate this shit. Fuck my life.",
+            text = "a b c d e f g h i j k l m n o p q r s",
             font = "font",
             alignment = Align.Center,
             wrapMode = WrapMode.ByWord,
