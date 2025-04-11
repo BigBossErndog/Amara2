@@ -192,6 +192,6 @@ namespace Amara {
     };
 
     bool Amara::Node::finishedLoading() {
-        return loader == nullptr || loader->isCompleted;
+        return loader == nullptr || loader->completed;
     }
 }

@@ -5,8 +5,8 @@ namespace Amara {
         Amara::MessageBox* sender = nullptr;
         std::string key;
         nlohmann::json data;
-        bool isActive = true;
-        bool isNull = false;
+        bool active = true;
+        bool null = false;
         bool skip = false;
         bool forceRemove = false;
 
@@ -28,7 +28,7 @@ namespace Amara {
             void update() {
                 for (auto it = queue.begin(); it != queue.end();) {
                     Message msg = *it;
-                    if (msg.sender == nullptr || !msg.isActive || msg.forceRemove) {
+                    if (msg.sender == nullptr || !msg.active || msg.forceRemove) {
                         if (msg.skip) msg.skip = false;
                         else {
                             it = queue.erase(it);
@@ -61,7 +61,7 @@ namespace Amara {
             Message& get(std::string key) {
                 for (auto it = queue.begin(); it != queue.end(); ++it) {
                     Message& msg = *it;
-                    if (msg.isActive && key.compare(msg.key) == 0) {
+                    if (msg.active && key.compare(msg.key) == 0) {
                         return msg;
                     }
                 }

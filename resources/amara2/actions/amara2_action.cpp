@@ -7,9 +7,9 @@ namespace Amara {
         sol::protected_function onAct;
         sol::protected_function onComplete;
 
-        bool isCompleted = false;
+        bool completed = false;
         bool hasStarted = false;
-        bool isWaitingForChildren = false;
+        bool waitingForChildren = false;
         
         bool locked = false;
 
@@ -45,7 +45,7 @@ namespace Amara {
             if (!hasStarted) {
                 prepare();
             }
-            if (hasStarted && !isCompleted && onAct.valid()) {
+            if (hasStarted && !completed && onAct.valid()) {
                 try {
                     sol::protected_function_result result = onAct(actor, deltaTime);
                     if (!result.valid()) {
@@ -60,13 +60,13 @@ namespace Amara {
         }
 
         virtual void update(double deltaTime) override {
-            if (!destroyed && !locked && !isCompleted) act(deltaTime);
+            if (!destroyed && !locked && !completed) act(deltaTime);
         }
 
         virtual void run(double deltaTime) override {
             Amara::Node::run(deltaTime);
-            if (isCompleted && !destroyed && !has_running_child_actions()) {
-                isWaitingForChildren = false;
+            if (completed && !destroyed && !has_running_child_actions()) {
+                waitingForChildren = false;
                 // Destroy self when done and children are done.
                 destroy();
             }
@@ -77,7 +77,7 @@ namespace Amara {
             if (action) {
                 if (actor == nullptr) actor = parent;
                 action->actor = actor;
-                if (!isCompleted) action->locked = true;
+                if (!completed) action->locked = true;
             }
             return Amara::Node::addChild(node);
         }
@@ -88,8 +88,8 @@ namespace Amara {
         }
 
         virtual sol::object complete() {
-            if (isCompleted) return get_lua_object();
-            isCompleted = true;
+            if (completed) return get_lua_object();
+            completed = true;
             if (onComplete.valid()) {
                 try {
                     sol::protected_function_result result = onComplete(actor);
@@ -104,7 +104,7 @@ namespace Amara {
             }
 
             start_child_actions();
-            isWaitingForChildren = true;
+            waitingForChildren = true;
 
             return get_lua_object();
         }
@@ -157,7 +157,7 @@ namespace Amara {
 					++it;
 					continue;
 				}
-				if (!child->isCompleted || child->isWaitingForChildren) return true;
+				if (!child->completed || child->waitingForChildren) return true;
 				++it;
 			}
             return false;
@@ -175,7 +175,7 @@ namespace Amara {
                 "onAct", &Action::onAct,
                 "onComplete", &Action::onComplete,
                 "hasStarted", sol::readonly(&Action::hasStarted),
-                "isCompleted", sol::readonly(&Action::isCompleted),
+                "completed", sol::readonly(&Action::completed),
                 "complete", &Action::complete,
                 "addChild", &Action::addChild,
                 "chain", &Action::chain,

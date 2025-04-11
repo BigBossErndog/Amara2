@@ -211,7 +211,7 @@ namespace Amara {
                 for (Amara::Node* node: s.children) {
                     if (!node->is_animation || node->destroyed) continue;
                     Amara::Animation* anim = node->as<Amara::Animation*>();
-                    if (!anim->isCompleted) return true;
+                    if (!anim->completed) return true;
                 }
                 return false;
             });
