@@ -47,7 +47,8 @@ return NodeFactory:create("Scene"):configure({
         textCont:configure({
             width = 256,
             height = 256,
-            alpha = 0.5
+            alpha = 0.5,
+            lockedCanvas = true
         })
 
         local a_rate = 2 * math.pi * 0.01
@@ -92,6 +93,7 @@ return NodeFactory:create("Scene"):configure({
 
     onUpdate = function(self, deltaTime)
         self.props.txt:setText(math.floor(Game.fps), " FPS")
+        print(math.floor(Game.fps), " FPS")
 
         if Keyboard:isDown(Key.X) then
             self.camera:rotate(2 * math.pi * deltaTime * 0.25)

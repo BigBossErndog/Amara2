@@ -41,6 +41,9 @@ namespace Amara {
         int cropTop = 0;
         int cropBottom = 0;
 
+        bool lockedCanvas = false;
+        bool update_canvas = false;
+
         Vector2 origin = { 0.5, 0.5 };
 
         Rectangle container_viewport;
@@ -51,11 +54,23 @@ namespace Amara {
             set_base_node_id("TextureContainer");
         }
 
+        virtual nlohmann::json toJSON() {
+            nlohmann::json data = Amara::Node::toJSON();
+
+            data["width"] = width;
+            data["height"] = height;
+            
+            data["lockedCanvas"] = lockedCanvas;
+
+            return data;
+        }
+
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "w")) width = config["w"];
             if (json_has(config, "h")) height = config["h"];
             if (json_has(config, "width")) width = config["width"];
             if (json_has(config, "height")) height = config["height"];
+            if (json_has(config, "lockedCanvas")) lockedCanvas = config["lockedCanvas"];
 
             return Amara::Node::configure(config);
         }
@@ -126,6 +141,8 @@ namespace Amara {
             right = width/2.0;
             top = -height/2.0;
             bottom = height/2.0;
+            
+            update_canvas = true;
         }
 
         sol::object setOrigin(float _x, float _y) {
@@ -136,18 +153,20 @@ namespace Amara {
             return setOrigin(_o, _o);
         }
 
-        virtual void drawObjects(const Rectangle& v) override {
-            passOn = Props::passOn;
-
-            if (rec_width != width || rec_height != height) {
-                createCanvas(width, height);
+        void drawCanvas(const Rectangle& v) {
+            SDL_Texture* rec_target = nullptr;
+            if (canvasTexture != nullptr && Props::renderer) {
+                rec_target = SDL_GetRenderTarget(Props::renderer);
+                SDL_SetRenderTarget(Props::renderer, canvasTexture);
+                SDL_SetRenderDrawColor(Props::renderer, 0, 0, 0, 0);
+                SDL_RenderClear(Props::renderer);
             }
 
             #ifdef AMARA_OPENGL
             Amara::RenderBatch* rec_batch = Props::renderBatch;
 
             GLint prevBuffer = 0;
-            ShaderProgram* rec_shader = Props::currentShaderProgram;
+            
             if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 if (shaderProgram && shaderProgram != Props::currentShaderProgram) {
                     Props::currentShaderProgram = shaderProgram;
@@ -163,17 +182,43 @@ namespace Amara {
                 glClear(GL_COLOR_BUFFER_BIT);
             }
             #endif
-
-            SDL_Texture* rec_target = nullptr;
-            if (canvasTexture != nullptr && Props::renderer) {
-                rec_target = SDL_GetRenderTarget(Props::renderer);
-                SDL_SetRenderTarget(Props::renderer, canvasTexture);
-                SDL_SetRenderDrawColor(Props::renderer, 0, 0, 0, 0);
-                SDL_RenderClear(Props::renderer);
-            }
             
             if (depthSortChildrenEnabled) sortChildren();
             drawChildren(container_viewport);
+
+            if (canvasTexture && Props::renderer) {
+                SDL_SetRenderTarget(Props::renderer, rec_target);
+            }
+            #ifdef AMARA_OPENGL
+            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                Props::renderBatch->flush();
+                if (rec_batch) Props::renderBatch = rec_batch;
+                glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+                glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
+            }
+            #endif
+        }
+
+        virtual void drawObjects(const Rectangle& v) override {
+            passOn = Props::passOn;
+
+            if (rec_width != width || rec_height != height) {
+                createCanvas(width, height);
+            }
+
+            if (update_canvas || !lockedCanvas) {
+                drawCanvas(v);
+                update_canvas = false;
+            }
+
+            #ifdef AMARA_OPENGL
+            ShaderProgram* rec_shader = Props::currentShaderProgram;
+            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                if (shaderProgram && shaderProgram != Props::currentShaderProgram) {
+                    Props::currentShaderProgram = shaderProgram;
+                }
+            }
+            #endif
 
             if (cropLeft < 0) cropLeft = 0;
             if (cropRight < 0) cropRight = 0;
@@ -230,8 +275,6 @@ namespace Amara {
             )) return;
             
             if (canvasTexture && Props::renderer) {
-                SDL_SetRenderTarget(Props::renderer, rec_target);
-
                 SDL_SetTextureScaleMode(canvasTexture, SDL_SCALEMODE_NEAREST);
                 SDL_SetTextureAlphaMod(canvasTexture, alpha * passOn.alpha * 255);
                 setSDLBlendMode(canvasTexture, blendMode);
@@ -248,12 +291,6 @@ namespace Amara {
             }
             #ifdef AMARA_OPENGL
             else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                Props::renderBatch->flush();
-
-                if (rec_batch) Props::renderBatch = rec_batch;
-                glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
-                glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
-
                 Quad srcQuad = Quad(
                     { srcRect.x/width, srcRect.y/height },
                     { (srcRect.x+srcRect.w)/width, srcRect.y/height },
