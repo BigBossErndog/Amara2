@@ -69,9 +69,9 @@ namespace Amara {
             }
         }
 
-        virtual World* createWorld(nlohmann::json config) override {
+        virtual World* createWorld(sol::object config) override {
             std::string key = "World";
-            if (config.is_string()) key = config;
+            if (config.is<std::string>()) key = config.as<std::string>();
 
             World* new_world = factory.create(key)->as<World*>();
 
@@ -85,14 +85,14 @@ namespace Amara {
 
             new_world->init();
 
-            if (config.is_object()) {
-                new_world->configure(config);
+            if (config.is<sol::table>()) {
+                new_world->luaConfigure(config);
             }
 
             return new_world;
         }
         virtual World* createWorld() override {
-            return createWorld("World");
+            return createWorld(sol::make_object(Props::lua(), std::string("World")));
         }
 
         void cleanDestroyedWorlds() {
@@ -256,7 +256,7 @@ namespace Amara {
         ~Creator() {}
     };
 
-    World* Demiurge::createWorld(nlohmann::json config) {
+    World* Demiurge::createWorld(sol::object config) {
         if (true_creator) return true_creator->createWorld(config);
         return nullptr;
     };

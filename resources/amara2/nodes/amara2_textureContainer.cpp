@@ -42,8 +42,6 @@ namespace Amara {
 
         Rectangle container_viewport;
 
-        Amara::RenderBatch renderBatch;
-
         TextureContainer(): Amara::Node() {
             set_base_node_id("TextureContainer");
         }
@@ -65,7 +63,7 @@ namespace Amara {
             if (json_has(config, "width")) width = config["width"];
             if (json_has(config, "height")) height = config["height"];
             if (json_has(config, "canvasLocked")) canvasLocked = config["canvasLocked"];
-
+            
             return Amara::Node::configure(config);
         }
 
@@ -85,7 +83,6 @@ namespace Amara {
                     glBufferID = 0;
                 }
             }
-            renderBatch.destroy();
             #endif
         }
 
@@ -111,8 +108,6 @@ namespace Amara {
 
                 glMakeFrameBuffer(glCanvasID, glBufferID, width, height);
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
-
-                renderBatch.init();
 
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
             }
@@ -155,15 +150,14 @@ namespace Amara {
             }
 
             #ifdef AMARA_OPENGL
-            Amara::RenderBatch* rec_batch = Props::renderBatch;
-
             GLint prevBuffer = 0;
             
             if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                Props::renderBatch->flush();
+                
                 if (shaderProgram && shaderProgram != Props::currentShaderProgram) {
                     Props::currentShaderProgram = shaderProgram;
                 }
-                Props::renderBatch = &renderBatch;
                 
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
@@ -184,7 +178,6 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 Props::renderBatch->flush();
-                if (rec_batch) Props::renderBatch = rec_batch;
 
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
                 glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
