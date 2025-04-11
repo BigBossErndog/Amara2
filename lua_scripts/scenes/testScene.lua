@@ -39,13 +39,16 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
+        self:createChild("Sprite"):configure({
+            texture = "goldenFlower"
+        });
+
         local textCont = self:createChild("TextureContainer")
-        debug_log(1)
         textCont:configure({
             width = 256,
-            height = 256
+            height = 256,
+            alpha = 0.5
         })
-        debug_log(2)
 
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
@@ -56,8 +59,6 @@ return NodeFactory:create("Scene"):configure({
                 y = math.cos(a_rate * i) * d_rate * i
             })
         end
-
-        debug_log(3)
 
         local f = self:createChild("Sprite"):configure({
             texture = "freaker",

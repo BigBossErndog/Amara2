@@ -23,6 +23,8 @@ namespace Amara {
     #endif
 
     struct PassOnProps {
+        float alpha = 1;
+
         float rotation = 0;
         Vector3 anchor = { 0, 0, 0 };
         Vector2 scale = { 1, 1 };
@@ -65,7 +67,7 @@ namespace Amara {
         static bool glFunctionsLoaded;
 
         #if AMARA_OPENGL
-            static ShaderProgram* currentShaderProgram;
+        static ShaderProgram* currentShaderProgram;
         #endif
 
         static SDL_Window* current_window;
@@ -145,7 +147,7 @@ namespace Amara {
     GraphicsEnum Props::graphics = GraphicsEnum::None;
 
     #ifdef AMARA_OPENGL
-        SDL_GLContext Props::glContext = NULL;
+    SDL_GLContext Props::glContext = NULL;
     #endif
     SDL_Renderer* Props::renderer = nullptr;
     SDL_GPUDevice* Props::gpuDevice = nullptr;

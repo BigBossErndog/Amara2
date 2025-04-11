@@ -201,9 +201,9 @@ namespace Amara {
 
             if (image->texture && Props::renderer) {
                 // 2D Rendering
-                SDL_Rect setv = Rectangle::makeSDLRect(v);
-                SDL_SetRenderViewport(Props::renderer, &setv);
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureAlphaMod(image->texture, alpha * passOn.alpha * 255);
+                setSDLBlendMode(image->texture, blendMode);
 
                 SDL_RenderTextureRotated(
                     Props::renderer, 

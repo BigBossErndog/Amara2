@@ -116,15 +116,16 @@ namespace Amara {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
                 if (buffer_size_changed) glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_DYNAMIC_DRAW);
                 else glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(unsigned int), indices.data());
-                
+
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, glTextureID);
+
                 GLint location = glGetUniformLocation(Props::currentShaderProgram->programID, "_texture");
                 if (location == -1) {
                     debug_log("Error: Uniform '_texture' not found in shader: \"", Props::currentShaderProgram->key, "\".");
                 }
                 glUniform1i(location, 0);
 
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, glTextureID);
                 switch (blendMode) {
                     case BlendMode::Alpha:
                         glEnable(GL_BLEND);

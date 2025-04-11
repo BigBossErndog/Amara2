@@ -172,6 +172,8 @@ namespace Amara {
         
         virtual void drawChildren(const Rectangle& v) override {
             children_copy_list = parent->children;
+            SDL_Rect setv = Rectangle::makeSDLRect(v);
+            SDL_SetRenderViewport(Props::renderer, &setv);
 
             if (isSizeTethered) {
                 viewport = v;

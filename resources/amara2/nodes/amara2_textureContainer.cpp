@@ -23,6 +23,8 @@ namespace Amara {
             2, 3, 0
         };
         #endif
+
+        SDL_Texture* canvasTexture = nullptr;
         
         int width = 0;
         int height = 0;
@@ -59,6 +61,10 @@ namespace Amara {
         }
 
         void deletePipeline() {
+            if (canvasTexture) {
+                SDL_DestroyTexture(canvasTexture);
+                canvasTexture = nullptr;
+            }
             #ifdef AMARA_OPENGL
             if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 if (glCanvasID != 0) {
@@ -79,8 +85,17 @@ namespace Amara {
 
             deletePipeline();
 
+            if (Props::graphics == GraphicsEnum::Render2D && Props::renderer) {
+                canvasTexture = SDL_CreateTexture(
+                    Props::renderer,
+                    SDL_PIXELFORMAT_RGBA32,
+                    SDL_TEXTUREACCESS_TARGET,
+                    width,
+                    height
+                );
+            }
             #ifdef AMARA_OPENGL
-            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 GLint prevBuffer = 0;
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
 
@@ -142,12 +157,20 @@ namespace Amara {
                 
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
-                glViewport(0, 0, width, height);
                 
-                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                glViewport(0, 0, width, height);
+                glClearColor(1.0f, 0.0f, 0.0f, 0.5f);
+                glClear(GL_COLOR_BUFFER_BIT);
             }
             #endif
+
+            SDL_Texture* rec_target = nullptr;
+            if (canvasTexture != nullptr && Props::renderer) {
+                rec_target = SDL_GetRenderTarget(Props::renderer);
+                SDL_SetRenderTarget(Props::renderer, canvasTexture);
+                SDL_SetRenderDrawColor(Props::renderer, 0, 0, 0, 0);
+                SDL_RenderClear(Props::renderer);
+            }
             
             if (depthSortChildrenEnabled) sortChildren();
             drawChildren(container_viewport);
@@ -180,7 +203,7 @@ namespace Amara {
                 (width - cropLeft - cropRight)*scale.x*passOn.scale.x,
                 (height - cropTop - cropBottom)*scale.y*passOn.scale.y
             };
-
+            
             destRect.x = vcenter.x + dim.x*passOn.zoom.x;
             destRect.y = vcenter.y + dim.y*passOn.zoom.y;
             destRect.w = dim.w * passOn.zoom.x;
@@ -205,13 +228,31 @@ namespace Amara {
                     v.w + diag_distance*2, v.w + diag_distance*2
                 )
             )) return;
+            
+            if (canvasTexture && Props::renderer) {
+                SDL_SetRenderTarget(Props::renderer, rec_target);
 
+                SDL_SetTextureScaleMode(canvasTexture, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureAlphaMod(canvasTexture, alpha * passOn.alpha * 255);
+                setSDLBlendMode(canvasTexture, blendMode);
+
+                SDL_RenderTextureRotated(
+                    Props::renderer, 
+                    canvasTexture,
+                    &srcRect,
+                    &destRect,
+                    getDegrees(passOn.rotation + rotation),
+                    &dorigin,
+                    SDL_FLIP_NONE
+                );
+            }
             #ifdef AMARA_OPENGL
-            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 Props::renderBatch->flush();
 
                 if (rec_batch) Props::renderBatch = rec_batch;
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+                glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
 
                 Quad srcQuad = Quad(
                     { srcRect.x/width, srcRect.y/height },

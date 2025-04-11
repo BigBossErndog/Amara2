@@ -215,6 +215,17 @@ namespace Amara {
         #undef X
     }
 
+    template<typename... Args>
+    void glPrintError(Args... args) {
+        GLint error = glGetError();
+        if (error != GL_NO_ERROR) {
+            std::ostringstream ss;
+            (ss << ... << args);
+            std::cout << ss.str().c_str() << error << std::endl;
+            return;
+        }
+    }
+
     void glMakeFrameBuffer(
         GLuint& glTextureID,
         GLuint& glBufferID,
@@ -223,6 +234,7 @@ namespace Amara {
         int height
     ) {
         glGenFramebuffers(1, &glBufferID);
+
         glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
 
         glGenTextures(1, &glTextureID);
@@ -239,6 +251,7 @@ namespace Amara {
 
         if (glRenderBufferIDPtr) {
             // Creating depth buffer
+            std::cout << "WTF" << std::endl;
             GLuint& glRenderBufferID = *glRenderBufferIDPtr;
 
             glGenRenderbuffers(1, &glRenderBufferID);
@@ -278,13 +291,13 @@ namespace Amara {
     const char* defaultVertexShader = R"(
         #version 330 core
 
-        layout (location = 0) in vec3 _position;
+        layout (location = 0) in vec2 _position;
         layout (location = 1) in vec2 _coord;
 
         out vec2 texCoord;
         
         void main() {
-            gl_Position = vec4(_position, 1.0);
+            gl_Position = vec4(_position, 0.0, 1.0);
             texCoord = _coord;
         }
     )";
@@ -308,7 +321,7 @@ namespace Amara {
         uniform vec4 _tintColor;
 
         out vec4 fragColor;
-
+        
         void main() {
             fragColor = texture(_texture, texCoord) * _tintColor;
         }

@@ -42,6 +42,8 @@ namespace Amara {
         float rotation = 0;
 
         Vector2 cameraFollowOffset = { 0, 0 };
+
+        float alpha = 1;
         
         float depth = 0.0f;
         bool yDepthLocked = false;
@@ -110,6 +112,7 @@ namespace Amara {
                 { "x", pos.x },
                 { "y", pos.y },
                 { "z", pos.z },
+                { "alpha", alpha },
                 { "depth", depth },
                 { "rotation", rotation },
                 { "anchorX", passOn.anchor.x },
@@ -159,6 +162,8 @@ namespace Amara {
             if (json_has(config, "scrollFactorY")) scrollFactor.y = config["scrollFactorY"];
             
             if (json_has(config, "rotation")) rotation = config["rotation"];
+
+            if (json_has(config, "alpha")) alpha = config["alpha"];
             if (json_has(config, "depth")) depth = config["depth"];
             
             if (json_has(config, "isPaused")) isPaused = config["isPaused"];
@@ -267,6 +272,8 @@ namespace Amara {
             passOn = Props::passOn;
             
             if (passOnPropsEnabled) {
+                passOn.alpha *= alpha;
+                
                 passOn.rotation += rotation;
 
                 passOn.anchor = Vector3(
@@ -298,6 +305,7 @@ namespace Amara {
             }
         }
         void reset_pass_on_props() {
+            Props::passOn.alpha = 1;
             Props::passOn.rotation = 0;
             Props::passOn.anchor = { 0, 0, 0 };
             Props::passOn.scroll = { 0, 0 };
