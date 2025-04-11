@@ -192,7 +192,7 @@ namespace Amara {
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
-				if (child == nullptr || child->isDestroyed || child->parent != parent) {
+				if (child == nullptr || child->isDestroyed || !child->isVisible || child->parent != parent) {
 					++it;
 					continue;
 				}

@@ -1,6 +1,7 @@
 return NodeFactory:create("Scene"):configure({
     onPreload = function(self) 
         self.load:image("goldenFlower", "goldenFlower.png")
+        self.load:image("bigThing", "CrossroadCommune-EXT.png")
         self.load:spritesheet("freaker", "freaker.png", 32, 64)
         self.load:font("font", "KLEINTEN.ttf", 10)
         
@@ -40,29 +41,29 @@ return NodeFactory:create("Scene"):configure({
 
     onCreate = function(self)
         self:createChild("Sprite"):configure({
-            texture = "goldenFlower"
+            texture = "bigThing"
         });
 
-        local textCont = self:createChild("TextureContainer")
-        textCont:configure({
-            width = 32*128,
-            height = 32*128,
-            alpha = 0.5,
+        local textCont = self:createChild("TextureContainer", {
+            width = 128,
+            height = 128,
+            alpha = 1,
+            -- isVisible = false,
             paused = true,
             canvasLocked = true
         })
 
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
-        for i = 1, (64*64*4) do
-            textCont:createChild("Sprite"):configure({
+        for i = 1, (128*128) do
+            textCont:createChild("Sprite", {
                 texture = "goldenFlower",
                 x = math.sin(a_rate * i) * d_rate * i,
                 y = math.cos(a_rate * i) * d_rate * i
             })
         end
 
-        local f = self:createChild("Sprite"):configure({
+        local f = self:createChild("Sprite", {
             texture = "freaker",
             animation = "runningDown"
         })
@@ -70,7 +71,7 @@ return NodeFactory:create("Scene"):configure({
         self.props.f = f;
         f.frame = 3
 
-        self.props.txt = self:createChild("Text"):configure({
+        self.props.txt = self:createChild("Text", {
             text = "For the fate of the world.",
             font = "font",
             alignment = Align.Center,
@@ -94,7 +95,7 @@ return NodeFactory:create("Scene"):configure({
 
     onUpdate = function(self, deltaTime)
         self.props.txt:setText(math.floor(Game.fps), " FPS")
-        print(math.floor(Game.fps), " FPS")
+        -- print(math.floor(Game.fps), " FPS")
 
         if Keyboard:isDown(Key.X) then
             self.camera:rotate(2 * math.pi * deltaTime * 0.25)

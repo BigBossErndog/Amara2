@@ -232,9 +232,12 @@ namespace Amara {
         return node;
     }
 
-    sol::object Node::luaCreateChild(std::string key) {
+    sol::object Node::luaCreateChild(std::string key, sol::object config) {
         Amara::Node* node = createChild(key);
-        if (node) return node->get_lua_object();
+        if (node) {
+            if (config.is<sol::table>()) node->configure(lua_to_json(config));
+            return node->get_lua_object();
+        }
         return sol::nil;
     }
 

@@ -10,17 +10,11 @@ namespace Amara {
         GLuint glCanvasID = 0;
         GLuint glBufferID = 0;
 
-        GLuint VAO, VBO, EBO;
-
         std::array<float, 16> vertices = {
             -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
              0.5f, -0.5f,  1.0f, 0.0f, // Bottom-right
              0.5f,  0.5f,  1.0f, 1.0f, // Top-right
             -0.5f,  0.5f,  0.0f, 1.0f  // Top-left
-        };
-        std::array<float, 16> indices = {
-            0, 1, 2,
-            2, 3, 0
         };
         #endif
 
@@ -118,19 +112,7 @@ namespace Amara {
                 glMakeFrameBuffer(glCanvasID, glBufferID, width, height);
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
 
-                glGenVertexArrays(1, &VAO);
-                glBindVertexArray(VAO);
-
-                glGenBuffers(1, &VBO);
-                glGenBuffers(1, &EBO);
-                
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-                glEnableVertexAttribArray(0);
-                
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-                glEnableVertexAttribArray(1);
-
-                renderBatch.init(VAO, VBO, EBO);
+                renderBatch.init();
 
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
             }
@@ -166,9 +148,9 @@ namespace Amara {
                 SDL_SetRenderTarget(Props::renderer, canvasTexture);
                 SDL_SetRenderDrawColor(Props::renderer, 0, 0, 0, 0);
 
-                SDL_Rect setv = Rectangle::makeSDLRect(v);
+                SDL_Rect setv = Rectangle::makeSDLRect(container_viewport);
                 SDL_SetRenderViewport(Props::renderer, &setv);
-                
+
                 SDL_RenderClear(Props::renderer);
             }
 
@@ -197,6 +179,8 @@ namespace Amara {
 
             if (canvasTexture && Props::renderer) {
                 SDL_SetRenderTarget(Props::renderer, rec_target);
+                SDL_Rect setv = Rectangle::makeSDLRect(v);
+                SDL_SetRenderViewport(Props::renderer, &setv);
             }
             #ifdef AMARA_OPENGL
             else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
@@ -267,7 +251,7 @@ namespace Amara {
                 (width*origin.x - cropLeft)*scale.x*passOn.scale.x*passOn.zoom.x,
                 (height*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
             };
-
+            
             srcRect = {
                 static_cast<float>(cropLeft),
                 static_cast<float>(cropTop),
@@ -275,13 +259,13 @@ namespace Amara {
                 static_cast<float>(height - cropTop - cropBottom)
             };
 
-            float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
-            if (!Shape::checkCollision(
-                Rectangle(destRect), Rectangle(
-                    v.x - diag_distance, v.y - diag_distance,
-                    v.w + diag_distance*2, v.w + diag_distance*2
-                )
-            )) return;
+            // float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
+            // if (!Shape::checkCollision(
+            //     Rectangle(destRect), Rectangle(
+            //         v.x - diag_distance, v.y - diag_distance,
+            //         v.w + diag_distance*2, v.w + diag_distance*2
+            //     )
+            // )) return;
             
             if (canvasTexture && Props::renderer) {
                 SDL_SetTextureScaleMode(canvasTexture, SDL_SCALEMODE_NEAREST);
@@ -347,7 +331,7 @@ namespace Amara {
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
-				if (child == nullptr || child->isDestroyed || child->parent != this) {
+				if (child == nullptr || child->isDestroyed || !child->isVisible || child->parent != this) {
 					++it;
 					continue;
 				}

@@ -52,7 +52,7 @@ namespace Amara {
             override_existence();
         }
 
-        virtual World* createWorld(std::string key);
+        virtual World* createWorld(nlohmann::json config);
         virtual World* createWorld();
 
         static void bindLua(sol::state& lua) {
@@ -64,8 +64,8 @@ namespace Amara {
                 "scripts", &Demiurge::scripts,
                 "createWorld", [](Amara::Demiurge& d, sol::object key) -> sol::object {
                     World* world = nullptr;
-                    if (key.is<std::string>()) {
-                        world = d.createWorld(key.as<std::string>());
+                    if (!key.is<sol::nil_t>()) {
+                        world = d.createWorld(lua_to_json(key));
                     }
                     else world = d.createWorld();
                     if (world) return world->get_lua_object();

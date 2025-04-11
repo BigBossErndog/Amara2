@@ -69,7 +69,10 @@ namespace Amara {
             }
         }
 
-        virtual World* createWorld(std::string key) override {
+        virtual World* createWorld(nlohmann::json config) override {
+            std::string key = "World";
+            if (config.is_string()) key = config;
+
             World* new_world = factory.create(key)->as<World*>();
 
             if (new_world == nullptr) {
@@ -79,8 +82,12 @@ namespace Amara {
 
             worlds.push_back(new_world);
             new_worlds.push_back(new_world);
-
+            
             new_world->init();
+
+            if (config.is_object()) {
+                new_world->configure(config);
+            }
 
             return new_world;
         }
@@ -249,8 +256,8 @@ namespace Amara {
         ~Creator() {}
     };
 
-    World* Demiurge::createWorld(std::string key) {
-        if (true_creator) return true_creator->createWorld(key);
+    World* Demiurge::createWorld(nlohmann::json config) {
+        if (true_creator) return true_creator->createWorld(config);
         return nullptr;
     };
     World* Demiurge::createWorld() {

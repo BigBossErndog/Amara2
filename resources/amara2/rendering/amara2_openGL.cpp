@@ -251,7 +251,6 @@ namespace Amara {
 
         if (glRenderBufferIDPtr) {
             // Creating depth buffer
-            std::cout << "WTF" << std::endl;
             GLuint& glRenderBufferID = *glRenderBufferIDPtr;
 
             glGenRenderbuffers(1, &glRenderBufferID);

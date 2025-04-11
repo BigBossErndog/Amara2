@@ -191,13 +191,13 @@ namespace Amara {
                 (imgh*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
             };
 
-            float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
-            if (!Shape::checkCollision(
-                Rectangle(destRect), Rectangle(
-                    v.x - diag_distance, v.y - diag_distance,
-                    v.w + diag_distance*2, v.w + diag_distance*2
-                )
-            )) return;
+            // float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
+            // if (!Shape::checkCollision(
+            //     Rectangle(destRect), Rectangle(
+            //         v.x - diag_distance, v.y - diag_distance,
+            //         v.w + diag_distance*2, v.w + diag_distance*2
+            //     )
+            // )) return;
 
             if (image->texture && Props::renderer) {
                 // 2D Rendering

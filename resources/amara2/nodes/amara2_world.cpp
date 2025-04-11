@@ -596,6 +596,7 @@ namespace Amara {
                 Props::renderBatch = &renderBatch;
                 Props::renderBatch->newCycle();
                 SDL_GL_MakeCurrent(window, glContext);
+                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
             }
             #endif

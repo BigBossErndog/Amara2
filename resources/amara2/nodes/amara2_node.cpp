@@ -404,7 +404,7 @@ namespace Amara {
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
-				if (child == nullptr || child->isDestroyed || child->parent != this) {
+				if (child == nullptr || child->isDestroyed || !child->isVisible || child->parent != this) {
 					++it;
 					continue;
 				}
@@ -442,7 +442,7 @@ namespace Amara {
             return node;
         }
         Amara::Node* createChild(std::string);
-        sol::object luaCreateChild(std::string);
+        sol::object luaCreateChild(std::string, sol::object config);
 
         void removeChild(Amara::Node* find) {
             if (isDestroyed) return;

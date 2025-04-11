@@ -29,7 +29,7 @@
 
 -- Game:setTargetFPS(60)
 
-    Creator:createWorld():configure({
+    Creator:createWorld({
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
@@ -38,7 +38,7 @@
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
-            graphics = Graphics.Render2D
+            graphics = Graphics.OpenGL
         },
         entryScene = "scenes/TestScene",
         onUpdate = function(self, deltaTime)
