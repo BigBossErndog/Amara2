@@ -45,10 +45,11 @@ return NodeFactory:create("Scene"):configure({
 
         local textCont = self:createChild("TextureContainer")
         textCont:configure({
-            width = 256,
-            height = 256,
+            width = 32*128,
+            height = 32*128,
             alpha = 0.5,
-            lockedCanvas = true
+            paused = true,
+            canvasLocked = true
         })
 
         local a_rate = 2 * math.pi * 0.01

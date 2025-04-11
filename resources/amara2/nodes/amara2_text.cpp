@@ -206,7 +206,23 @@ namespace Amara {
                     destRect.w = dim.w * passOn.zoom.x;
                     destRect.h = dim.h * passOn.zoom.y;
 
-                    if (font->glTextureID != 0 && Props::glContext != NULL) {
+                    if (font->texture && Props::renderer) {
+                        SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
+                        SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * 255);
+                        setSDLBlendMode(font->texture, blendMode);
+
+                        SDL_RenderTextureRotated(
+                            Props::renderer, 
+                            font->texture,
+                            &srcRect,
+                            &destRect,
+                            getDegrees(passOn.rotation + rotation),
+                            &dorigin,
+                            SDL_FLIP_NONE
+                        );
+                    }
+                    #ifdef AMARA_OPENGL
+                    else if (font->glTextureID != 0 && Props::glContext != NULL) {
                         Quad srcQuad = Quad(
                             { srcRect.x/font->atlasWidth, srcRect.y/font->atlasHeight },
                             { (srcRect.x+srcRect.w)/font->atlasWidth, srcRect.y/font->atlasHeight },
@@ -237,20 +253,7 @@ namespace Amara {
                             blendMode
                         );
                     }
-                    // else if (font->texture && Props::renderer) {
-                    //     SDL_SetRenderViewport(Props::renderer, &v);
-                    //     SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
-    
-                    //     SDL_RenderTextureRotated(
-                    //         Props::renderer, 
-                    //         font->texture,
-                    //         &srcRect,
-                    //         &destRect,
-                    //         getDegrees(passOn.rotation + rotation),
-                    //         &dorigin,
-                    //         SDL_FLIP_NONE
-                    //     );
-                    // }
+                    #endif
 
                     count += 1;
                     if (count >= progress) {

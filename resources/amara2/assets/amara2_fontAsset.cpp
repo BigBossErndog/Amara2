@@ -2,6 +2,7 @@ namespace Amara {
     struct Glyph {
         float x = 0, y = 0; // Position to render
         float u0 = 0, v0 = 0, u1 = 0, v1 = 0; // Texture coordinates
+        int width = 0, height = 0;
         Rectangle src;
         int xoffset, yoffset;
         int xadvance;
@@ -173,8 +174,12 @@ namespace Amara {
                 rgbaBitmap[i * 4 + 3] = alpha;  // A
             }
             
+            if (Props::graphics == GraphicsEnum::Render2D && Props::renderer) {
+                SDL_Rect destRect = { currentX, currentY, width, height };
+                SDL_UpdateTexture(texture, &destRect, rgbaBitmap, width * 4);
+            }
             #ifdef AMARA_OPENGL
-            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
                 glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                 glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, currentY, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgbaBitmap);
@@ -195,6 +200,8 @@ namespace Amara {
             glyph.v1 = (float)(currentY + height) / atlasHeight;
             glyph.xoffset = xoff;
             glyph.yoffset = yoff;
+            glyph.width = width;
+            glyph.height = height;
             
             int advance;
             stbtt_GetCodepointHMetrics(&font, codepoint, &advance, nullptr);

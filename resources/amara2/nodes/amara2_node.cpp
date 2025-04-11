@@ -167,7 +167,10 @@ namespace Amara {
             if (json_has(config, "depth")) depth = config["depth"];
             
             if (json_has(config, "isPaused")) isPaused = config["isPaused"];
+            if (json_has(config, "paused")) isPaused = config["paused"];
+
             if (json_has(config, "isVisible")) isVisible = config["isVisible"];
+            if (json_has(config, "visible")) isVisible = config["visible"];
 
             if (json_has(config, "depthSortSelfEnabled")) depthSortSelfEnabled = config["depthSortSelfEnabled"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];

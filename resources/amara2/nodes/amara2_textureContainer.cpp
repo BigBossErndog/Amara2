@@ -41,7 +41,7 @@ namespace Amara {
         int cropTop = 0;
         int cropBottom = 0;
 
-        bool lockedCanvas = false;
+        bool isCanvasLocked = false;
         bool update_canvas = false;
 
         Vector2 origin = { 0.5, 0.5 };
@@ -60,7 +60,7 @@ namespace Amara {
             data["width"] = width;
             data["height"] = height;
             
-            data["lockedCanvas"] = lockedCanvas;
+            data["isCanvasLocked"] = isCanvasLocked;
 
             return data;
         }
@@ -70,7 +70,8 @@ namespace Amara {
             if (json_has(config, "h")) height = config["h"];
             if (json_has(config, "width")) width = config["width"];
             if (json_has(config, "height")) height = config["height"];
-            if (json_has(config, "lockedCanvas")) lockedCanvas = config["lockedCanvas"];
+            if (json_has(config, "isCanvasLocked")) isCanvasLocked = config["isCanvasLocked"];
+            if (json_has(config, "canvasLocked")) isCanvasLocked = config["canvasLocked"];
 
             return Amara::Node::configure(config);
         }
@@ -141,7 +142,7 @@ namespace Amara {
             right = width/2.0;
             top = -height/2.0;
             bottom = height/2.0;
-            
+
             update_canvas = true;
         }
 
@@ -153,12 +154,21 @@ namespace Amara {
             return setOrigin(_o, _o);
         }
 
+        virtual void drawCanvasContents(const Rectangle& v) {
+            if (depthSortChildrenEnabled) sortChildren();
+            drawChildren(v);
+        }
+
         void drawCanvas(const Rectangle& v) {
             SDL_Texture* rec_target = nullptr;
             if (canvasTexture != nullptr && Props::renderer) {
                 rec_target = SDL_GetRenderTarget(Props::renderer);
                 SDL_SetRenderTarget(Props::renderer, canvasTexture);
                 SDL_SetRenderDrawColor(Props::renderer, 0, 0, 0, 0);
+
+                SDL_Rect setv = Rectangle::makeSDLRect(v);
+                SDL_SetRenderViewport(Props::renderer, &setv);
+                
                 SDL_RenderClear(Props::renderer);
             }
 
@@ -183,8 +193,7 @@ namespace Amara {
             }
             #endif
             
-            if (depthSortChildrenEnabled) sortChildren();
-            drawChildren(container_viewport);
+            drawCanvasContents(container_viewport);
 
             if (canvasTexture && Props::renderer) {
                 SDL_SetRenderTarget(Props::renderer, rec_target);
@@ -206,7 +215,7 @@ namespace Amara {
                 createCanvas(width, height);
             }
 
-            if (update_canvas || !lockedCanvas) {
+            if (update_canvas || !isCanvasLocked) {
                 drawCanvas(v);
                 update_canvas = false;
             }
