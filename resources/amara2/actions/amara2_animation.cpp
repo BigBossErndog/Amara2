@@ -209,7 +209,7 @@ namespace Amara {
             };
             sprite_type["isAnimating"] = sol::property([](Amara::Sprite& s) {
                 for (Amara::Node* node: s.children) {
-                    if (!node->is_animation || node->isDestroyed) continue;
+                    if (!node->is_animation || node->destroyed) continue;
                     Amara::Animation* anim = node->as<Amara::Animation*>();
                     if (!anim->isCompleted) return true;
                 }
@@ -220,7 +220,7 @@ namespace Amara {
 
     Amara::Action* Amara::Sprite::animate(nlohmann::json config) {
         for (Amara::Node* node: children) {
-            if (node->is_animation && !node->isDestroyed) {
+            if (node->is_animation && !node->destroyed) {
                 if (config.is_string() && string_equal(config, node->as<Animation*>()->animKey)) {
                     return node->as<Amara::Action*>();
                 }

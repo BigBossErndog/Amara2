@@ -82,7 +82,7 @@ namespace Amara {
 
             worlds.push_back(new_world);
             new_worlds.push_back(new_world);
-            
+
             new_world->init();
 
             if (config.is_object()) {
@@ -99,7 +99,7 @@ namespace Amara {
             World* world;
             for (auto it = worlds.begin(); it != worlds.end();) {
                 world = *it;
-                if (world->isDestroyed) {
+                if (world->destroyed) {
                     if (world->demiurge) {
                         Amara::Demiurge* demiurge = world->demiurge;
                         delete demiurge;

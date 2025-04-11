@@ -28,7 +28,7 @@ namespace Amara {
         }
 
         void destroyAsset(Amara::Asset* asset) {
-            if (asset->isDestroyed) return;
+            if (asset->destroyed) return;
             asset->destroy();
             Props::queue_asset_garbage(asset);
         }

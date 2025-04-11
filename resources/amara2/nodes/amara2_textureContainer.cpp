@@ -35,7 +35,7 @@ namespace Amara {
         int cropTop = 0;
         int cropBottom = 0;
 
-        bool isCanvasLocked = false;
+        bool canvasLocked = false;
         bool update_canvas = false;
 
         Vector2 origin = { 0.5, 0.5 };
@@ -54,7 +54,7 @@ namespace Amara {
             data["width"] = width;
             data["height"] = height;
             
-            data["isCanvasLocked"] = isCanvasLocked;
+            data["canvasLocked"] = canvasLocked;
 
             return data;
         }
@@ -64,8 +64,7 @@ namespace Amara {
             if (json_has(config, "h")) height = config["h"];
             if (json_has(config, "width")) width = config["width"];
             if (json_has(config, "height")) height = config["height"];
-            if (json_has(config, "isCanvasLocked")) isCanvasLocked = config["isCanvasLocked"];
-            if (json_has(config, "canvasLocked")) isCanvasLocked = config["canvasLocked"];
+            if (json_has(config, "canvasLocked")) canvasLocked = config["canvasLocked"];
 
             return Amara::Node::configure(config);
         }
@@ -154,7 +153,7 @@ namespace Amara {
 
                 SDL_RenderClear(Props::renderer);
             }
-            
+
             #ifdef AMARA_OPENGL
             Amara::RenderBatch* rec_batch = Props::renderBatch;
 
@@ -200,7 +199,7 @@ namespace Amara {
                 createCanvas(width, height);
             }
 
-            if (update_canvas || !isCanvasLocked) {
+            if (update_canvas || !canvasLocked) {
                 drawCanvas(v);
                 update_canvas = false;
             }
@@ -332,7 +331,7 @@ namespace Amara {
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
-				if (child == nullptr || child->isDestroyed || !child->isVisible || child->parent != this) {
+				if (child == nullptr || child->destroyed || !child->visible || child->parent != this) {
 					++it;
 					continue;
 				}

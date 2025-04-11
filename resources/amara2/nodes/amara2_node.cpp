@@ -52,10 +52,10 @@ namespace Amara {
         bool depthSortSelfEnabled = true;
         bool depthSortChildrenEnabled = true;
 
-        bool isDestroyed = false;
-        bool isPaused = false;
-        bool isVisible = true;
-        bool isActuated = false;
+        bool destroyed = false;
+        bool paused = false;
+        bool visible = true;
+        bool actuated = false;
 
         bool is_camera = false;
         bool is_scene = false;
@@ -123,8 +123,8 @@ namespace Amara {
                 { "zoomFactorY", zoomFactor.y },
                 { "scrollFactorX", scrollFactor.x },
                 { "scrollFactorY", scrollFactor.y },
-                { "isPaused", isPaused },
-                { "isVisible", isVisible },
+                { "paused", paused },
+                { "visible", visible },
                 { "depthSortSelfEnabled", depthSortSelfEnabled },
                 { "depthSortChildrenEnabled", depthSortChildrenEnabled }
             });
@@ -166,11 +166,9 @@ namespace Amara {
             if (json_has(config, "alpha")) alpha = config["alpha"];
             if (json_has(config, "depth")) depth = config["depth"];
             
-            if (json_has(config, "isPaused")) isPaused = config["isPaused"];
-            if (json_has(config, "paused")) isPaused = config["paused"];
+            if (json_has(config, "paused")) paused = config["paused"];
 
-            if (json_has(config, "isVisible")) isVisible = config["isVisible"];
-            if (json_has(config, "visible")) isVisible = config["visible"];
+            if (json_has(config, "visible")) visible = config["visible"];
 
             if (json_has(config, "depthSortSelfEnabled")) depthSortSelfEnabled = config["depthSortSelfEnabled"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
@@ -317,17 +315,17 @@ namespace Amara {
         }
  
         virtual void run(double deltaTime) {
-            if (!isActuated) {
+            if (!actuated) {
                 preload();
                 create();
-                isActuated = true;
+                actuated = true;
             }
 
             update_properties();
             messages.run();
 
             update(deltaTime);
-            if (!isDestroyed && luaUpdate.valid()) {
+            if (!destroyed && luaUpdate.valid()) {
                 try {
                     sol::protected_function_result result = luaUpdate(get_lua_object(), deltaTime);
                     if (!result.valid()) {
@@ -343,7 +341,7 @@ namespace Amara {
             if (yDepthLocked) depth = pos.y;
             else if (zDepthLocked) depth = pos.z;
             
-            if (!isDestroyed) runChildren(deltaTime);
+            if (!destroyed) runChildren(deltaTime);
             clean_node_list(children);
         }
 
@@ -354,23 +352,23 @@ namespace Amara {
 
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
-				if (isDestroyed) break;
+				if (destroyed) break;
                 update_properties();
 
                 child = *it;
-				if (child == nullptr || child->isDestroyed || child->parent != this || child->isPaused) {
+				if (child == nullptr || child->destroyed || child->parent != this || child->paused) {
 					++it;
 					continue;
 				}
 
 				child->run(deltaTime);
 				++it;
-				if (isDestroyed) break;
+				if (destroyed) break;
 			}
         }
 
         virtual void draw(const Rectangle& v) {
-            if (isDestroyed) return;
+            if (destroyed) return;
             update_properties();
             drawObjects(v);
         }
@@ -404,7 +402,7 @@ namespace Amara {
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
-				if (child == nullptr || child->isDestroyed || !child->isVisible || child->parent != this) {
+				if (child == nullptr || child->destroyed || !child->visible || child->parent != this) {
 					++it;
 					continue;
 				}
@@ -431,7 +429,7 @@ namespace Amara {
         #endif
 
         virtual Amara::Node* addChild(Amara::Node* node) {
-            if (isDestroyed) return node;
+            if (destroyed) return node;
             
             update_properties();
             node->world = world;
@@ -445,7 +443,7 @@ namespace Amara {
         sol::object luaCreateChild(std::string, sol::object config);
 
         void removeChild(Amara::Node* find) {
-            if (isDestroyed) return;
+            if (destroyed) return;
             Amara::Node* child;
 			for (auto it = children.begin(); it != children.end();) {
                 child = *it;
@@ -458,9 +456,9 @@ namespace Amara {
         }
 
         virtual void destroy() {
-            if (isDestroyed) return;
+            if (destroyed) return;
             update_properties();
-            isDestroyed = true;
+            destroyed = true;
 
             if (luaDestroy.valid()) {
                 try {
@@ -488,7 +486,7 @@ namespace Amara {
         }
 
         sol::object bringToFront() {
-            if (parent == nullptr || isDestroyed) return get_lua_object();
+            if (parent == nullptr || destroyed) return get_lua_object();
             
             std::vector<Node*> family = parent->children;
             Node* node = nullptr;
@@ -501,7 +499,7 @@ namespace Amara {
                 else if (foundSelf) {
                     family[i - 1] = node;
                     family[i] = node;
-                    if (!node->isDestroyed && node->depth > depth) {
+                    if (!node->destroyed && node->depth > depth) {
                         depth = node->depth;
                     }
                 }
@@ -511,7 +509,7 @@ namespace Amara {
         }
 
         sol::object sendToBack() {
-            if (parent == nullptr || isDestroyed) return get_lua_object();
+            if (parent == nullptr || destroyed) return get_lua_object();
             
             std::vector<Node*> family = parent->children;
             Node* node = nullptr;
@@ -524,7 +522,7 @@ namespace Amara {
                 else if (foundSelf) {
                     family[i + 1] = node;
                     family[i] = node;
-                    if (!node->isDestroyed && node->depth < depth) {
+                    if (!node->destroyed && node->depth < depth) {
                         depth = node->depth;
                     }
                 }
@@ -577,7 +575,7 @@ namespace Amara {
 
         void stopActing() {
             for (Amara::Node* node: children) {
-                if (node->is_action && !node->isDestroyed) node->destroy();
+                if (node->is_action && !node->destroyed) node->destroy();
             }
         }
 
@@ -606,7 +604,7 @@ namespace Amara {
             Amara::Node* node;
 			for (auto it = list.begin(); it != list.end();) {
 				node = *it;
-				if (node == nullptr || node->isDestroyed) {
+				if (node == nullptr || node->destroyed) {
 					it = list.erase(it);
 					continue;
 				}
@@ -671,7 +669,7 @@ namespace Amara {
                 "onDestroy", &Node::luaDestroy,
                 "createChild", &Node::luaCreateChild,
                 "addChild", &Node::addChild,
-                "isDestroyed", sol::readonly(&Node::isDestroyed),
+                "destroyed", sol::readonly(&Node::destroyed),
                 "destroy", &Node::destroy,
                 "depthSortSelfEnabled", &Node::depthSortSelfEnabled,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
@@ -697,7 +695,7 @@ namespace Amara {
                     else if (getter.is<std::string>()) {
                         std::string gid = getter.as<std::string>();
                         for (Amara::Node* node: vec) {
-                            if (node->isDestroyed) continue;
+                            if (node->destroyed) continue;
                             if (string_equal(node->id, gid)) {
                                 return node->get_lua_object();
                             }
@@ -718,7 +716,7 @@ namespace Amara {
                 },
                 "find", [](std::vector<Amara::Node*>& vec, std::string gid) -> sol::object {
                     for (Amara::Node* node: vec) {
-                        if (node->isDestroyed) continue;
+                        if (node->destroyed) continue;
                         if (string_equal(node->id, gid)) {
                             return node->get_lua_object();
                         }
@@ -761,8 +759,8 @@ namespace Amara {
 		inline bool operator() (Amara::Node* node1, Amara::Node* node2) {
 			if (node1 == nullptr) return true;
 			if (node2 == nullptr) return true;
-            if (node1->isDestroyed || !node1->depthSortSelfEnabled) return true;
-			if (node2->isDestroyed || !node2->depthSortSelfEnabled) return true;
+            if (node1->destroyed || !node1->depthSortSelfEnabled) return true;
+			if (node2->destroyed || !node2->depthSortSelfEnabled) return true;
             return (node1->depth < node2->depth);
 		}
 	};

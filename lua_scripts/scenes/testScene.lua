@@ -48,7 +48,7 @@ return NodeFactory:create("Scene"):configure({
             width = 256,
             height = 256,
             alpha = 0.5,
-            -- isVisible = false,
+            -- visible = false,
             paused = true,
             canvasLocked = true
         })

@@ -24,7 +24,7 @@ namespace Amara {
             Amara::Node::run(deltaTime);
             if (
                 camera != nullptr &&
-                camera->isDestroyed
+                camera->destroyed
             ) camera = nullptr;
             clean_node_list(cameras);
         }
@@ -37,7 +37,7 @@ namespace Amara {
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
-				if (child == nullptr || child->isDestroyed || child->parent != this) {
+				if (child == nullptr || child->destroyed || child->parent != this) {
 					++it;
 					continue;
 				}

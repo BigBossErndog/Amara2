@@ -8,7 +8,7 @@ namespace Amara {
         std::string key;
         std::string path;
 
-        bool isDestroyed = false;
+        bool destroyed = false;
 
         explicit operator std::string() const {
             return string_concat(
@@ -24,7 +24,7 @@ namespace Amara {
         T as();
 
         virtual void destroy() {
-            isDestroyed = true;
+            destroyed = true;
         }
 
         virtual ~Asset() {}

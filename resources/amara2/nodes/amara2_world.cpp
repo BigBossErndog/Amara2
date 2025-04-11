@@ -538,7 +538,7 @@ namespace Amara {
             }
             Amara::Node::run(deltaTime);
 
-            if (isActuated && !created_entry_scenes) {
+            if (actuated && !created_entry_scenes) {
                 for (std::string key: entryScenes) {
                     createChild(key);        
                 }
@@ -649,6 +649,7 @@ namespace Amara {
                 SDL_DestroyWindow(window);
                 window = nullptr;
             }
+            renderBatch.destroy();
         }
         
         static void bindLua(sol::state& lua) {

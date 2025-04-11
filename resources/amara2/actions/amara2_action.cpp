@@ -60,12 +60,12 @@ namespace Amara {
         }
 
         virtual void update(double deltaTime) override {
-            if (!isDestroyed && !locked && !isCompleted) act(deltaTime);
+            if (!destroyed && !locked && !isCompleted) act(deltaTime);
         }
 
         virtual void run(double deltaTime) override {
             Amara::Node::run(deltaTime);
-            if (isCompleted && !isDestroyed && !has_running_child_actions()) {
+            if (isCompleted && !destroyed && !has_running_child_actions()) {
                 isWaitingForChildren = false;
                 // Destroy self when done and children are done.
                 destroy();
@@ -135,7 +135,7 @@ namespace Amara {
 
                 if (node != nullptr && child == nullptr) node->destroy();
 				
-                if (child == nullptr || child->isDestroyed || child->parent != this) {
+                if (child == nullptr || child->destroyed || child->parent != this) {
 					++it;
 					continue;
 				}
@@ -153,7 +153,7 @@ namespace Amara {
             Amara::Action* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = dynamic_cast<Amara::Action*>(*it);
-				if (child == nullptr || child->isDestroyed || child->parent != this) {
+				if (child == nullptr || child->destroyed || child->parent != this) {
 					++it;
 					continue;
 				}
@@ -200,7 +200,7 @@ namespace Amara {
                 Amara::Node* child = nullptr;
                 for (int i = e.children.size()-1; i >= 0; i++) {
                     child = e.children[i];
-                    if (!child->isDestroyed && child->is_action) {
+                    if (!child->destroyed && child->is_action) {
                         action = child->createChild(key)->as<Amara::Action*>();
                         break;
                     }
@@ -210,16 +210,16 @@ namespace Amara {
                 return action->get_lua_object();
             };
             node_type["isActing"] = sol::property([](Amara::Node& e) -> bool {
-                if (e.is_action) return !e.isDestroyed;
+                if (e.is_action) return !e.destroyed;
                 for (Amara::Node* child: e.children) {
-                    if (!child->isDestroyed && child->is_action) return true;
+                    if (!child->destroyed && child->is_action) return true;
                 }
                 return false;
             });
             node_type["finishedActing"] = sol::property([](Amara::Node& e) -> bool {
-                if (e.is_action) return e.isDestroyed;
+                if (e.is_action) return e.destroyed;
                 for (Amara::Node* child: e.children) {
-                    if (!child->isDestroyed && child->is_action) return false;
+                    if (!child->destroyed && child->is_action) return false;
                 }
                 return true;
             });

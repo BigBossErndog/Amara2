@@ -3,7 +3,7 @@ namespace Amara {
     
     class ShaderProgram {
     public:
-        bool isDestroyed = false;
+        bool destroyed = false;
 
         ShaderProgram() = default;
         ShaderProgram(unsigned int id) : programID(id) {}
@@ -13,17 +13,17 @@ namespace Amara {
         unsigned int programID = 0;
 
         virtual void applyShader() {
-            if (isDestroyed) return;
+            if (destroyed) return;
             if (programID != 0) {
                 glUseProgram(programID);
             }
         }
         
         virtual void destroy() {
-            if (isDestroyed) return;
+            if (destroyed) return;
             glDeleteProgram(programID);
 
-            isDestroyed = true;
+            destroyed = true;
             programID = 0;
         }
 

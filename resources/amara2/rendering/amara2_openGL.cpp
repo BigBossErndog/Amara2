@@ -247,12 +247,14 @@ namespace Amara {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);    
         
+        glBindTexture(GL_TEXTURE_2D, 0);
+
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTextureID, 0);
 
         if (glRenderBufferIDPtr) {
             // Creating depth buffer
             GLuint& glRenderBufferID = *glRenderBufferIDPtr;
-
+            
             glGenRenderbuffers(1, &glRenderBufferID);
             glBindRenderbuffer(GL_RENDERBUFFER, glRenderBufferID);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);

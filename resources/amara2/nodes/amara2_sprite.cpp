@@ -115,7 +115,7 @@ namespace Amara {
         }
         sol::object stopAnimating() {
             for (Amara::Node* node: children) {
-                if (node->is_animation && !node->isDestroyed) {
+                if (node->is_animation && !node->destroyed) {
                     node->destroy();
                 }
             }
