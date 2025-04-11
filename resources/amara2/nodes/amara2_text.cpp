@@ -39,6 +39,8 @@ namespace Amara {
             nlohmann::json config = Amara::Node::toJSON();
             
             config["wrapWidth"] = wrapWidth;
+            config["wrapMode"] = wrapMode;
+
             config["alignment"] = static_cast<int>(alignment);
             
             if (font) config["font"] = font->key;

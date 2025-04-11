@@ -38,7 +38,8 @@
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
-            graphics = Graphics.OpenGL
+            graphics = Graphics.OpenGL,
+            -- graphics = Graphics.Render2D,
         },
         entryScene = "scenes/TestScene",
         onUpdate = function(self, deltaTime)

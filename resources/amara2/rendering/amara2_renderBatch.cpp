@@ -159,7 +159,7 @@ namespace Amara {
             vertices.clear();
             indices.clear();
             offset = 0;
-
+            
             glTextureID = 0;
         }
 

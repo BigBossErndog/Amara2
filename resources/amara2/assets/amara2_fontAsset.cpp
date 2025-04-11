@@ -6,22 +6,46 @@ namespace Amara {
         Rectangle src;
         int xoffset, yoffset;
         int xadvance;
+
+        bool renderable = true;
     };
 
     class TextLine {
     public:
         TextLine() {
-            text.clear();
-            glyphs.clear();
-            width = 0;
-            height = 0;
+            reset();
         }
 
         std::u32string text;
         std::vector<Glyph> glyphs;
-        int width = 0, height = 0;
 
         int x = 0, y = 0; // Position to render
+        int width = 0, height = 0;
+
+        float cursorX = 0;
+
+        void reset() {
+            text.clear();
+            glyphs.clear();
+
+            x = 0;
+            y = 0;
+
+            width = 0;
+            height = 0;
+        }
+
+        void merge(const TextLine& other) {
+            text += other.text;
+            
+            for (Glyph glyph: other.glyphs) {
+                glyph.x += other.x;
+                glyphs.push_back(glyph);
+            }
+
+            width += other.width;
+            height = std::max(height, other.height);
+        }
 
         int size() {
             return text.size();
@@ -244,6 +268,9 @@ namespace Amara {
 
                     if (codepoint == U'\t') {
                         cursorX += glyphCache[U' '].xadvance * 4;  // Tab handling
+                        if (wrapWidth <= 0 || ((line->width + glyphCache[U'\t'].xadvance*4) <= wrapWidth)) {
+                            line->width += glyphCache[U'\t'].xadvance*4;
+                        }
                         continue;
                     }
                     if (codepoint == U'\r') {
@@ -251,24 +278,16 @@ namespace Amara {
                     }
                     if (codepoint == U' ') {
                         cursorX += glyphCache[U' '].xadvance;  // Space handling
-                        line->width += glyphCache[U' '].xadvance;
+                        if (wrapWidth <= 0 || ((line->width + glyphCache[U' '].xadvance) <= wrapWidth)) {
+                            line->width += glyphCache[U' '].xadvance;
+                        }
                         continue;
                     }
 
                     Glyph glyph = glyphCache[codepoint];
                     line->height = lineHeight;
 
-                    if (codepoint == U'\n') {
-                        layout.height += line->height;
-
-                        cursorX = 0;  // Reset cursorX for new line
-                        cursorY += fontSize;  // Move down for new line
-                        line = &layout.newLine();
-                        line->y = cursorY;
-                        continue;
-                    }
-                    
-                    if (wrapWidth > 0 && (line->width + glyph.xadvance) > wrapWidth) {
+                    if (codepoint == U'\n' || (wrapWidth > 0 && (line->width + glyph.xadvance) > wrapWidth)) {
                         layout.height += line->height;
 
                         cursorX = 0;  // Reset cursorX for new line
@@ -276,8 +295,10 @@ namespace Amara {
                         line = &layout.newLine();
                         line->y = cursorY;
 
-                        glyph.x = 0;
+                        if (codepoint == U'\n') continue;
+                        else glyph.x = 0;
                     }
+                    
                     glyph.x = cursorX + glyph.xoffset;
                     glyph.y = glyph.yoffset;
                     cursorX += glyph.xadvance;
@@ -291,7 +312,91 @@ namespace Amara {
                 layout.height += line->height;
             }
             else if (wrapMode == WrapModeEnum::ByWord) {
-                
+                TextLine word = TextLine();
+
+                for (char32_t codepoint : str) {
+                    if (glyphCache.find(codepoint) == glyphCache.end()) {
+                        continue;
+                    }
+                    Glyph glyph = glyphCache[codepoint];
+                    line->height = lineHeight;
+
+                    if (codepoint == U'\t') { // Tab handling
+                        if (wrapWidth > 0 && (line->width + word.width) > wrapWidth) {
+                            layout.height += line->height;
+                            
+                            cursorY += lineHeight;
+                            line = &layout.newLine();
+                            line->y = cursorY;
+                            
+                            word.x = 0;
+                        }
+                        else {
+                            cursorX += glyphCache[U' '].xadvance * 4;
+                            word.width += glyphCache[U' '].xadvance * 4;
+
+                            line->merge(word);
+                            cursorX += word.x;
+
+                            word = TextLine();
+                            word.x += cursorX;
+                            cursorX = 0;
+                        }
+                        continue;
+                    }
+                    if (codepoint == U'\r') { // Carriage return handling
+                        continue;  
+                    }
+                    if (codepoint == U' ') { // Space handling
+                        if (wrapWidth > 0 && (line->width + word.width) > wrapWidth) {
+                            layout.height += line->height;
+                            
+                            cursorY += lineHeight;
+                            line = &layout.newLine();
+                            line->y = cursorY;
+                            
+                            word.x = 0;
+                        }
+                        cursorX += glyphCache[U' '].xadvance;
+                        word.width += glyphCache[U' '].xadvance;
+
+                        line->merge(word);
+                        cursorX += word.x;
+
+                        word = TextLine();
+                        word.x += cursorX;
+                        cursorX = 0;
+                        continue;
+                    }
+
+                    if (codepoint == U'\n') {
+                        layout.height += line->height;
+
+                        line->merge(word);
+
+                        word = TextLine();
+
+                        cursorX = 0;
+                        cursorY += fontSize;
+                        line = &layout.newLine();
+                        line->y = cursorY;
+                        continue;
+                    }
+
+                    line->height = lineHeight;
+
+                    glyph.x = cursorX + glyph.xoffset;
+                    glyph.y = glyph.yoffset;
+                    cursorX += glyph.xadvance;
+
+                    word.text += codepoint;
+                    word.width += glyph.xadvance;
+                    word.glyphs.push_back(glyph);
+
+                    layout.width = std::max(layout.width, line->width + word.width);
+                }
+                line->merge(word);
+                layout.height += line->height;
             }
 
             float alignmentOffset = 0;

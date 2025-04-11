@@ -45,9 +45,9 @@ return NodeFactory:create("Scene"):configure({
         });
 
         local textCont = self:createChild("TextureContainer", {
-            width = 128,
-            height = 128,
-            alpha = 1,
+            width = 256,
+            height = 256,
+            alpha = 0.5,
             -- isVisible = false,
             paused = true,
             canvasLocked = true
@@ -72,29 +72,30 @@ return NodeFactory:create("Scene"):configure({
         f.frame = 3
 
         self.props.txt = self:createChild("Text", {
-            text = "For the fate of the world.",
+            text = "Fuck the police coming straight from the underground. I hate this shit. Fuck my life.",
             font = "font",
             alignment = Align.Center,
-            -- wrapWidth = 40
+            wrapMode = WrapMode.ByWord,
+            wrapWidth = 128
         })
 
-        local controlRight = Controls:scheme("right");
-        controlRight:setKeys({ Key.Right, Key.D });
+        local controlRight = Controls:scheme("right")
+        controlRight:setKeys({ Key.Right, Key.D })
 
-        local controlLeft = Controls:scheme("left");
-        controlLeft:setKeys({ Key.Left, Key.A });
+        local controlLeft = Controls:scheme("left")
+        controlLeft:setKeys({ Key.Left, Key.A })
 
-        local controlUp = Controls:scheme("up");
-        controlUp:setKeys({ Key.Up, Key.W });
+        local controlUp = Controls:scheme("up")
+        controlUp:setKeys({ Key.Up, Key.W })
 
-        local controlDown = Controls:scheme("down");
-        controlDown:setKeys({ Key.Down, Key.S });
+        local controlDown = Controls:scheme("down")
+        controlDown:setKeys({ Key.Down, Key.S })
 
         self.camera:startFollow(f, 10)
     end,
 
     onUpdate = function(self, deltaTime)
-        self.props.txt:setText(math.floor(Game.fps), " FPS")
+        -- self.props.txt:setText(math.floor(Game.fps), " FPS")
         -- print(math.floor(Game.fps), " FPS")
 
         if Keyboard:isDown(Key.X) then
@@ -113,7 +114,7 @@ return NodeFactory:create("Scene"):configure({
 
         self.props.f.rotation = -self.camera.rotation
         
-        local speed = 200;
+        local speed = 200
         local anyPressed = false
 
         if Controls:isDown("right") then

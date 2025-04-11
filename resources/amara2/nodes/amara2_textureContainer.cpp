@@ -86,6 +86,7 @@ namespace Amara {
                     glBufferID = 0;
                 }
             }
+            renderBatch.destroy();
             #endif
         }
 
@@ -153,7 +154,7 @@ namespace Amara {
 
                 SDL_RenderClear(Props::renderer);
             }
-
+            
             #ifdef AMARA_OPENGL
             Amara::RenderBatch* rec_batch = Props::renderBatch;
 
@@ -163,7 +164,6 @@ namespace Amara {
                 if (shaderProgram && shaderProgram != Props::currentShaderProgram) {
                     Props::currentShaderProgram = shaderProgram;
                 }
-                Props::renderBatch->flush();
                 Props::renderBatch = &renderBatch;
                 
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
@@ -186,6 +186,7 @@ namespace Amara {
             else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 Props::renderBatch->flush();
                 if (rec_batch) Props::renderBatch = rec_batch;
+
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
                 glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
             }
@@ -259,13 +260,13 @@ namespace Amara {
                 static_cast<float>(height - cropTop - cropBottom)
             };
 
-            // float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
-            // if (!Shape::checkCollision(
-            //     Rectangle(destRect), Rectangle(
-            //         v.x - diag_distance, v.y - diag_distance,
-            //         v.w + diag_distance*2, v.w + diag_distance*2
-            //     )
-            // )) return;
+            float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
+            if (!Shape::checkCollision(
+                Rectangle(destRect), Rectangle(
+                    v.x - diag_distance, v.y - diag_distance,
+                    v.w + diag_distance*2, v.w + diag_distance*2
+                )
+            )) return;
             
             if (canvasTexture && Props::renderer) {
                 SDL_SetTextureScaleMode(canvasTexture, SDL_SCALEMODE_NEAREST);
