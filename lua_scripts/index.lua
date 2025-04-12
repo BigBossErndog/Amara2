@@ -27,8 +27,22 @@
 -- Scripts:load("test","scripts/testScript")
 -- Scripts:run("test")
 
--- Game:setTargetFPS(60)
-
+    -- Game:setTargetFPS(60)
+    -- Creator:createWorld({
+    --     window = {
+    --         windowTitle = "Amara2",
+    --         -- resizable = true,
+    --         screenMode = ScreenMode.Windowed,
+    --         width = 1280,
+    --         height = 720,
+    --         virtualWidth = 640,
+    --         virtualHeight = 360,
+    --         graphics = Graphics.OpenGL
+    --         -- graphics = Graphics.Render2D,
+    --     },
+    --     entryScene = "scenes/TestScene",
+    -- })
+    
     Creator:createWorld({
         window = {
             windowTitle = "Amara2",
@@ -38,7 +52,7 @@
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
-            graphics = Graphics.OpenGL,
+            graphics = Graphics.OpenGL
             -- graphics = Graphics.Render2D,
         },
         entryScene = "scenes/TestScene",

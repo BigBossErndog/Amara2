@@ -182,18 +182,16 @@ namespace Amara {
                     }
 
                     cleanDestroyedWorlds();
-
-                    for (Amara::World* w: worlds) w->prepareRenderer();
-
+                    
                     for (auto it = worlds.begin(); it != worlds.end(); it++) {
                         currentWorld = *it;
                         if (currentWorld->headless) continue;
                         update_properties();
-                        
-                        currentWorld->draw(Props::master_viewport);
-                    }
 
-                    for (Amara::World* w: worlds) w->presentRenderer();
+                        currentWorld->prepareRenderer();
+                        currentWorld->draw(Props::master_viewport);
+                        currentWorld->presentRenderer();
+                    }
 
                     currentWorld = nullptr;
 
@@ -214,7 +212,6 @@ namespace Amara {
             destroyAllWorlds();
             cleanDestroyedWorlds();
 
-            assets.clear();
             shaders.clear();
 
             factory.clear();

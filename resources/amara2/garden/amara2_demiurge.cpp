@@ -7,7 +7,7 @@ namespace Amara {
 
         GameManager game;
         FileManager files;
-        AssetManager assets;
+        
         ScriptFactory scripts;
         NodeFactory factory;
         AnimationFactory animations;
@@ -23,7 +23,6 @@ namespace Amara {
             Props::lua()["Creator"] = this;
             Props::lua()["Game"] = &game;
             Props::lua()["Files"] = &files;
-            Props::lua()["Assets"] = &assets;
             Props::lua()["NodeFactory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
             Props::lua()["Animations"] = &animations;
@@ -32,7 +31,6 @@ namespace Amara {
             Props::lua()["AudioMaster"] = &audio;
             
             Props::files = &files;
-            Props::assets = &assets;
             Props::factory = &factory;
             Props::scripts = &scripts;
             Props::animations = &animations;
@@ -59,7 +57,6 @@ namespace Amara {
             lua.new_usertype<Demiurge>("Demiurge",
                 "game", &Demiurge::game,
                 "files", &Demiurge::files,
-                "assets", &Demiurge::assets,
                 "factory", &Demiurge::factory,
                 "scripts", &Demiurge::scripts,
                 "createWorld", [](Amara::Demiurge& d, sol::object key) -> sol::object {
@@ -77,7 +74,6 @@ namespace Amara {
         virtual ~Demiurge() {
             factory.clear();
             scripts.clear();
-            assets.clear();
         }
     };
 }

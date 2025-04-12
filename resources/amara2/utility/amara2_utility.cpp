@@ -99,15 +99,16 @@ namespace Amara {
 
     #if defined(_WIN32)
         std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
-            GraphicsEnum::VulkanMetalDirectX,
+            GraphicsEnum::Render2D,
             #ifdef AMARA_OPENGL
                 GraphicsEnum::OpenGL,
             #endif
-            GraphicsEnum::Render2D
+            GraphicsEnum::VulkanMetalDirectX
+            
         };
     #else
         std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
-            GraphicsEnum::Vulkan,
+            GraphicsEnum::VulkanMetalDirectX,
             #ifdef AMARA_OPENGL
                 GraphicsEnum::OpenGL,
             #endif

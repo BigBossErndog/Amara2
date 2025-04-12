@@ -4,6 +4,8 @@ namespace Amara {
     class World: public Node {
     public:
         Amara::Demiurge* demiurge = nullptr;
+        
+        AssetManager assets;
 
         std::string base_dir_path = Props::files->getBasePath();
 
@@ -114,7 +116,10 @@ namespace Amara {
 
         virtual void update_properties() override {
             Props::world = this;
+            Props::assets = &assets;
+
             Props::lua()["World"] = get_lua_object();
+            Props::lua()["Assets"] = &assets;
 
             if (window) {
                 #ifdef AMARA_OPENGL
@@ -440,7 +445,9 @@ namespace Amara {
                                 Props::glFunctionsLoaded = true;
                                 Props::render_origin = this;
                                 Props::glContext = glContext;
+
                                 graphics = g;
+                                Props::graphics = g;
 
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
@@ -637,6 +644,11 @@ namespace Amara {
 
         virtual void destroy() override {
             Amara::Node::destroy();
+
+            assets.clear();
+
+            renderBatch.destroy();
+            
             #ifdef AMARA_OPENGL
             if (glContext != NULL) {
                 SDL_GL_DestroyContext(glContext);
@@ -655,7 +667,6 @@ namespace Amara {
                 SDL_DestroyWindow(window);
                 window = nullptr;
             }
-            renderBatch.destroy();
         }
         
         static void bindLua(sol::state& lua) {
@@ -665,6 +676,7 @@ namespace Amara {
                 "h", &World::windowH,
                 "vw", &World::virtualWidth,
                 "vh", &World::virtualHeight,
+                "assets", &World::assets,
                 "base_dir_path", sol::readonly(&World::base_dir_path),
                 "display", sol::readonly(&World::display),
                 "displayID", sol::readonly(&World::displayID),

@@ -295,13 +295,14 @@ namespace Amara {
         }
  
         virtual void run(double deltaTime) {
+            update_properties();
+            
             if (!actuated) {
                 preload();
                 create();
                 actuated = true;
             }
 
-            update_properties();
             messages.run();
 
             update(deltaTime);
@@ -399,6 +400,8 @@ namespace Amara {
 
         #ifdef AMARA_OPENGL
         bool setShaderProgram(std::string key) {
+            if (Props::graphics != GraphicsEnum::OpenGL || Props::glContext == NULL) return false;
+            
             shaderProgram = Props::shaders->getShaderProgram(key);
             if (shaderProgram == nullptr) {
                 debug_log("Error: Shader program \"", key, "\" not found.");
@@ -433,6 +436,15 @@ namespace Amara {
 				}
 				++it;
 			}
+        }
+
+        void switchParent(Amara::Node* other) {
+            if (destroyed || other->destroyed || other == parent) return;
+            if (other->parent == this) {
+                other->switchParent(parent);
+            }
+            parent->removeChild(this);
+            other->addChild(this);
         }
 
         virtual void destroy() {
@@ -652,7 +664,12 @@ namespace Amara {
                 "destroy", &Node::destroy,
                 "depthSortSelfEnabled", &Node::depthSortSelfEnabled,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
+                "bringToFront", &Node::bringToFront,
+                "sendToBack", &Node::sendToBack,
+                "switchParent", &Node::switchParent,
+                #ifdef AMARA_OPENGL
                 "setShaderProgram", &Node::setShaderProgram,
+                #endif
                 "stopActing", &Node::stopActing,
                 "string", [](Amara::Node* e){
                     return std::string(*e);
