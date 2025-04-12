@@ -171,7 +171,7 @@ namespace Amara {
     World* Props::world = nullptr;
     Scene* Props::scene = nullptr;
     std::vector<World*>* Props::world_list = nullptr;
-
+    
     NodeFactory* Props::factory = nullptr;
     ScriptFactory* Props::scripts = nullptr;
     FileManager* Props::files = nullptr;

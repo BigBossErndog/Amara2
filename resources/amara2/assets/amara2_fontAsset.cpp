@@ -252,7 +252,7 @@ namespace Amara {
             packGlyphsFromString(Amara::String::utf8_to_utf32(str));
         }
 
-        TextLayout generateLayout(std::u32string str, int wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment) {
+        TextLayout generateLayout(std::u32string str, int wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing) {
             TextLayout layout = TextLayout();
             layout.text = str;
 
@@ -262,35 +262,31 @@ namespace Amara {
             line->height = lineHeight;
             
             if (wrapMode == WrapModeEnum::ByCharacter) {
-                for (char32_t codepoint : str) {
+                for (int i = 0; i < str.size(); ++i) {
+                    char32_t codepoint = str[i];
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
                         continue;
                     }
                     Glyph glyph = glyphCache[codepoint];
 
-                    if (codepoint == U'\t') {
-                        cursorX += glyph.xadvance;  // Tab handling
+                    if (codepoint == U'\t' || codepoint == U' ') {
+                        cursorX += glyph.xadvance;
                         if (wrapWidth <= 0 || ((line->width + glyph.xadvance) <= wrapWidth)) {
                             line->width += glyph.xadvance;
                         }
+                        glyph.renderable = false;
+                        line->glyphs.push_back(glyph);
                         continue;
                     }
-                    if (codepoint == U'\r') {
-                        continue;  // Carriage return handling
-                    }
-                    if (codepoint == U' ') {
-                        cursorX += glyph.xadvance;  // Space handling
-                        if (wrapWidth <= 0 || ((line->width + glyph.xadvance) <= wrapWidth)) {
-                            line->width += glyph.xadvance;
-                        }
+                    if (codepoint == U'\r') { // Carriage return handling
                         continue;
                     }
 
                     if (codepoint == U'\n' || (wrapWidth > 0 && (line->width + glyph.xadvance) > wrapWidth)) {
-                        layout.height += line->height;
+                        layout.height += line->height + lineSpacing;
 
-                        cursorX = 0;  // Reset cursorX for new line
-                        cursorY += lineHeight;  // Move down for new line
+                        cursorX = 0;
+                        cursorY += lineHeight + lineSpacing;
                         line = &layout.newLine();
                         line->height = lineHeight;
                         line->y = cursorY;
@@ -314,45 +310,19 @@ namespace Amara {
             else if (wrapMode == WrapModeEnum::ByWord) {
                 TextLine word = TextLine();
 
-                for (char32_t codepoint : str) {
+                for (int i = 0; i < str.size(); ++i) {
+                    char32_t codepoint = str[i];
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
                         continue;
                     }
                     
                     Glyph glyph = glyphCache[codepoint];
 
-                    if (codepoint == U'\t') { // Tab handling
+                    if (codepoint == U'\t' || codepoint == U' ') {
                         if (wrapWidth > 0 && (line->width + word.width) > wrapWidth) {
-                            layout.height += line->height;
+                            layout.height += line->height + lineSpacing;
                             
-                            cursorY += lineHeight;
-                            line = &layout.newLine();
-                            line->height = lineHeight;
-                            line->y = cursorY;
-                            
-                            word.x = 0;
-                        }
-                        else {
-                            cursorX += glyph.xadvance;
-                            word.width += glyph.xadvance;
-
-                            line->merge(word);
-                            cursorX += word.x;
-
-                            word = TextLine();
-                            word.x += cursorX;
-                            cursorX = 0;
-                        }
-                        continue;
-                    }
-                    if (codepoint == U'\r') { // Carriage return handling
-                        continue;  
-                    }
-                    if (codepoint == U' ') { // Space handling
-                        if (wrapWidth > 0 && (line->width + word.width) > wrapWidth) {
-                            layout.height += line->height;
-                            
-                            cursorY += lineHeight;
+                            cursorY += lineHeight + lineSpacing;
                             line = &layout.newLine();
                             line->height = lineHeight;
                             line->y = cursorY;
@@ -368,11 +338,17 @@ namespace Amara {
                         word = TextLine();
                         word.x += cursorX;
                         cursorX = 0;
+
+                        glyph.renderable = false;
+                        word.glyphs.push_back(glyph);
                         continue;
+                    }
+                    if (codepoint == U'\r') { // Carriage return handling
+                        continue;  
                     }
 
                     if (codepoint == U'\n') {
-                        layout.height += line->height;
+                        layout.height += line->height + lineSpacing;
 
                         line->merge(word);
 

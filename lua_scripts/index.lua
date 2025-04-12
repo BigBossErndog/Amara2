@@ -42,9 +42,9 @@
             -- graphics = Graphics.Render2D,
         },
         entryScene = "scenes/TestScene",
-        onPreload = function(self)
-            self.load:image("goldenFlower", "goldenFlower.png")
-        end,
+        -- onPreload = function(self)
+        --     self.load:image("goldenFlower", "goldenFlower.png")
+        -- end,
         -- onCreate = function(self)
         --     local textCont = self:createChild("TextureContainer", {
         --         width = 256,

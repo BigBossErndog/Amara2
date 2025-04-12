@@ -20,6 +20,8 @@ namespace Amara {
         int wrapWidth = -1;
         Amara::WrapModeEnum wrapMode = Amara::WrapModeEnum::ByCharacter;
 
+        int lineSpacing = 0;
+
         TextLayout layout;
 
         #ifdef AMARA_OPENGL
@@ -40,6 +42,8 @@ namespace Amara {
             
             config["wrapWidth"] = wrapWidth;
             config["wrapMode"] = wrapMode;
+
+            config["lineSpacing"] = lineSpacing;
 
             config["alignment"] = static_cast<int>(alignment);
             
@@ -62,6 +66,8 @@ namespace Amara {
                 setWrapMode(config["wrapMode"]);
             }
 
+            if (json_has(config, "lineSpacing")) setLineSpacing(config["lineSpacing"]);
+
             if (json_has(config, "alignment")) align(static_cast<Amara::AlignmentEnum>(config["alignment"]));
             
             if (json_has(config, "font")) setFont(config["font"]);
@@ -76,7 +82,7 @@ namespace Amara {
         void updateText() {
             if (font) {
                 font->packGlyphsFromString(converted_text);
-                layout = font->generateLayout(converted_text, wrapWidth, wrapMode, alignment);
+                layout = font->generateLayout(converted_text, wrapWidth, wrapMode, alignment, lineSpacing);
                 textwidth = layout.width;
                 textheight = layout.height;
             }
@@ -133,6 +139,12 @@ namespace Amara {
             return setWrapWidth(width);
         }
 
+        sol::object setLineSpacing(int _spacing) {
+            lineSpacing = _spacing;
+            updateText();
+            return get_lua_object();
+        }
+
         sol::object setOrigin(float _x, float _y) {
             origin = { _x, _y };
             return get_lua_object();
@@ -160,7 +172,7 @@ namespace Amara {
             
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(
-                    passOn.anchor, 
+                    passOn.anchor,
                     Vector2( 
                         (passOn.anchor.x + pos.x*passOn.scale.x), 
                         (passOn.anchor.y + pos.y*passOn.scale.y)
@@ -288,7 +300,8 @@ namespace Amara {
                 "alignment", sol::readonly(&Text::alignment),
                 "setWrapWidth", &Text::setWrapWidth,
                 "setWrapMode", &Text::setWrapMode,
-                "setWrap", &Text::setWrap
+                "setWrap", &Text::setWrap,
+                "setLineSpacing", &Text::setLineSpacing
             );
         }
     };
