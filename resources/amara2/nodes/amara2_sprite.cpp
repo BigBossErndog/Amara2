@@ -233,28 +233,20 @@ namespace Amara {
                         destRect.y + dorigin.y
                     ),
                     passOn.rotation + rotation
-                ));
-
-                // vertices = {
-                //     destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
-                //     destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
-                //     destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
-                //     destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
-                // };
+                ), passOn.insideFrameBuffer);
 
                 vertices = {
-                    //  destX,  destY,  srcU, srcV
-                    -1.0f, -1.0f, 0.0f, 0.0f,  // bottom-left
-                     1.0f, -1.0f, 1.0f, 0.0f,  // bottom-right
-                    -1.0f,  1.0f, 0.0f, 1.0f,  // top-left
-                     1.0f,  1.0f, 1.0f, 1.0f   // top-right
+                    destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
+                    destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
+                    destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
+                    destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
                 };
 
                 Props::renderBatch->pushQuad(
                     Props::currentShaderProgram,
                     image->glTextureID,
                     vertices, 
-                    v, 
+                    v, passOn.insideFrameBuffer,
                     blendMode
                 );
             }

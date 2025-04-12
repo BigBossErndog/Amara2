@@ -238,7 +238,7 @@ namespace Amara {
                                 destRect.y + dorigin.y
                             ),
                             passOn.rotation + rotation
-                        ));
+                        ), passOn.insideFrameBuffer);
 
                         vertices = {
                             destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
@@ -251,7 +251,7 @@ namespace Amara {
                             Props::currentShaderProgram,
                             font->glTextureID,
                             vertices,
-                            v, 
+                            v, passOn.insideFrameBuffer,
                             blendMode
                         );
                     }

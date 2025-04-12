@@ -233,13 +233,15 @@ namespace Amara {
         int width,
         int height
     ) {
-        glGenFramebuffers(1, &glBufferID);
+        GLint prevBuffer = 0;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
 
+        glGenFramebuffers(1, &glBufferID);
         glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
 
         glGenTextures(1, &glTextureID);
         glBindTexture(GL_TEXTURE_2D, glTextureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -265,7 +267,7 @@ namespace Amara {
             debug_log("Error: Failed to create frame buffer.");
         }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
         glBindTexture(GL_TEXTURE_2D, 0);
         if (glRenderBufferIDPtr) {
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -293,13 +295,13 @@ namespace Amara {
         #version 330 core
 
         layout (location = 0) in vec2 _position;
-        layout (location = 1) in vec2 _coord;
+        layout (location = 1) in vec2 _texCoord;
 
         out vec2 texCoord;
         
         void main() {
             gl_Position = vec4(_position, 0.0, 1.0);
-            texCoord = _coord;
+            texCoord = _texCoord;
         }
     )";
     const char* defaultFragmentShader= R"(

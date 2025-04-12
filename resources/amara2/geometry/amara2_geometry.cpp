@@ -64,14 +64,23 @@ namespace Amara {
     }
 
     #ifdef AMARA_OPENGL
-    Quad glTranslateQuad(const Rectangle& v, const Quad& q) {
-        Quad t = {
-            { -1.0f + (q.p1.x/v.w)*2, -1.0f + (1.0f - q.p1.y/v.h)*2 },
-            { -1.0f + (q.p2.x/v.w)*2, -1.0f + (1.0f - q.p2.y/v.h)*2 },
-            { -1.0f + (q.p3.x/v.w)*2, -1.0f + (1.0f - q.p3.y/v.h)*2 },
-            { -1.0f + (q.p4.x/v.w)*2, -1.0f + (1.0f - q.p4.y/v.h)*2 }
-        };
-        return t;
+    Quad glTranslateQuad(const Rectangle& v, const Quad& q, bool insideFrameBuffer) {
+        if (!insideFrameBuffer) {
+            return {
+                { -1.0f + (q.p1.x/v.w)*2, -1.0f + (1.0f - q.p1.y/v.h)*2 },
+                { -1.0f + (q.p2.x/v.w)*2, -1.0f + (1.0f - q.p2.y/v.h)*2 },
+                { -1.0f + (q.p3.x/v.w)*2, -1.0f + (1.0f - q.p3.y/v.h)*2 },
+                { -1.0f + (q.p4.x/v.w)*2, -1.0f + (1.0f - q.p4.y/v.h)*2 }
+            };
+        }
+        else {
+            return {
+                { -1.0f + (q.p1.x/v.w)*2, -1.0f + (q.p1.y/v.h)*2 },
+                { -1.0f + (q.p2.x/v.w)*2, -1.0f + (q.p2.y/v.h)*2 },
+                { -1.0f + (q.p3.x/v.w)*2, -1.0f + (q.p3.y/v.h)*2 },
+                { -1.0f + (q.p4.x/v.w)*2, -1.0f + (q.p4.y/v.h)*2 }
+            };
+        }
     }
     #endif
 

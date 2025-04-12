@@ -32,6 +32,8 @@ namespace Amara {
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
 
+        bool insideFrameBuffer = false;
+
         float volume = 1;
     };
 
@@ -68,6 +70,7 @@ namespace Amara {
 
         #if AMARA_OPENGL
         static ShaderProgram* currentShaderProgram;
+        static ShaderProgram* defaultShaderProgram;
         #endif
 
         static SDL_Window* current_window;
@@ -158,7 +161,8 @@ namespace Amara {
     bool Props::glFunctionsLoaded = false;
 
     #if AMARA_OPENGL
-        ShaderProgram* Props::currentShaderProgram = nullptr;
+    ShaderProgram* Props::currentShaderProgram = nullptr;
+    ShaderProgram* Props::defaultShaderProgram = nullptr;
     #endif
     
     GameManager* Props::game = nullptr;

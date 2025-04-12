@@ -9,6 +9,8 @@ namespace Amara {
         #endif
 
         Amara::Rectangle viewport;
+        bool insideFrameBuffer = false;
+
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
 
         std::vector<float> vertices;
@@ -34,12 +36,12 @@ namespace Amara {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
             // Position attribute
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
             glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
             
             // Texture coordinate attribute
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
             glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
             #endif
         }
 
@@ -65,12 +67,14 @@ namespace Amara {
             GLuint _glTextureID, 
             const std::array<float, 16>& _vertices,
             const Rectangle& _viewport,
+            bool _insideFrameBuffer,
             Amara::BlendMode _blendMode
         ) {
             if (
                 shaderProgram != _shaderProgram ||
                 glTextureID != _glTextureID ||
                 viewport != _viewport ||
+                insideFrameBuffer != _insideFrameBuffer ||
                 blendMode != _blendMode
             ) {
                 flush();
@@ -80,6 +84,7 @@ namespace Amara {
                 }
                 glTextureID = _glTextureID;
                 viewport = _viewport;
+                insideFrameBuffer = _insideFrameBuffer;
                 blendMode = _blendMode;
             }
 
@@ -100,7 +105,17 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             if (glTextureID != 0 && Props::graphics == Amara::GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                glViewport(viewport.x, Props::window_dim.h - viewport.y - viewport.h, viewport.w, viewport.h);
+                glDisable(GL_DEPTH_TEST);
+                
+                if (!insideFrameBuffer) {
+                    glViewport(
+                        Props::window_dim.w - viewport.x - viewport.w, 
+                        Props::window_dim.h - viewport.y - viewport.h, 
+                        viewport.w, viewport.h
+                    );
+                }
+                else glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
+                
                 glBindVertexArray(VAO);
 
                 bool buffer_size_changed = false;
@@ -151,7 +166,8 @@ namespace Amara {
                 // Draw the sprite
                 glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
-                // Unbind VAO
+                // Unbind
+                glBindTexture(GL_TEXTURE_2D, 0);
                 glBindVertexArray(0);
             }
             #endif
@@ -159,7 +175,7 @@ namespace Amara {
             vertices.clear();
             indices.clear();
             offset = 0;
-            
+
             glTextureID = 0;
         }
 

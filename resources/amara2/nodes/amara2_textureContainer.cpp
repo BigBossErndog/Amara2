@@ -151,19 +151,18 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             GLint prevBuffer = 0;
+            ShaderProgram* rec_shader = Props::currentShaderProgram;
             
             if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 Props::renderBatch->flush();
                 
-                if (shaderProgram && shaderProgram != Props::currentShaderProgram) {
-                    Props::currentShaderProgram = shaderProgram;
-                }
+                Props::currentShaderProgram = Props::defaultShaderProgram;
                 
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
                 
                 glViewport(0, 0, width, height);
-                glClearColor(1.0f, 0.0f, 0.0f, 0.5f);
+                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
             }
             #endif
@@ -178,6 +177,8 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 Props::renderBatch->flush();
+
+                Props::currentShaderProgram = rec_shader;
 
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
                 glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
@@ -290,7 +291,7 @@ namespace Amara {
                         destRect.y + dorigin.y
                     ),
                     passOn.rotation + rotation
-                ));
+                ), passOn.insideFrameBuffer);
 
                 vertices = {
                     destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
@@ -303,7 +304,7 @@ namespace Amara {
                     Props::currentShaderProgram,
                     glCanvasID,
                     vertices, 
-                    v,
+                    v, passOn.insideFrameBuffer,
                     blendMode
                 );
             }
@@ -319,6 +320,8 @@ namespace Amara {
 
             PassOnProps rec_props = Props::passOn;
             PassOnProps new_props;
+            new_props.insideFrameBuffer = true;
+
             Props::passOn = new_props;
 
             Amara::Node* child;

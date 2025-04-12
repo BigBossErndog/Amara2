@@ -152,7 +152,7 @@ namespace Amara {
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
                 
                 unsigned char* emptyData = (unsigned char*)calloc(atlasWidth * atlasHeight, 1);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, emptyData);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, emptyData);
                 free(emptyData);
                 glGenerateMipmap(GL_TEXTURE_2D);
                 
@@ -259,17 +259,19 @@ namespace Amara {
             float cursorX = 0, cursorY = 0;
 
             TextLine* line = &layout.newLine();
+            line->height = lineHeight;
             
             if (wrapMode == WrapModeEnum::ByCharacter) {
                 for (char32_t codepoint : str) {
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
                         continue;
                     }
+                    Glyph glyph = glyphCache[codepoint];
 
                     if (codepoint == U'\t') {
-                        cursorX += glyphCache[U' '].xadvance * 4;  // Tab handling
-                        if (wrapWidth <= 0 || ((line->width + glyphCache[U'\t'].xadvance*4) <= wrapWidth)) {
-                            line->width += glyphCache[U'\t'].xadvance*4;
+                        cursorX += glyph.xadvance;  // Tab handling
+                        if (wrapWidth <= 0 || ((line->width + glyph.xadvance) <= wrapWidth)) {
+                            line->width += glyph.xadvance;
                         }
                         continue;
                     }
@@ -277,15 +279,12 @@ namespace Amara {
                         continue;  // Carriage return handling
                     }
                     if (codepoint == U' ') {
-                        cursorX += glyphCache[U' '].xadvance;  // Space handling
-                        if (wrapWidth <= 0 || ((line->width + glyphCache[U' '].xadvance) <= wrapWidth)) {
-                            line->width += glyphCache[U' '].xadvance;
+                        cursorX += glyph.xadvance;  // Space handling
+                        if (wrapWidth <= 0 || ((line->width + glyph.xadvance) <= wrapWidth)) {
+                            line->width += glyph.xadvance;
                         }
                         continue;
                     }
-
-                    Glyph glyph = glyphCache[codepoint];
-                    line->height = lineHeight;
 
                     if (codepoint == U'\n' || (wrapWidth > 0 && (line->width + glyph.xadvance) > wrapWidth)) {
                         layout.height += line->height;
@@ -293,6 +292,7 @@ namespace Amara {
                         cursorX = 0;  // Reset cursorX for new line
                         cursorY += lineHeight;  // Move down for new line
                         line = &layout.newLine();
+                        line->height = lineHeight;
                         line->y = cursorY;
 
                         if (codepoint == U'\n') continue;
@@ -318,8 +318,8 @@ namespace Amara {
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
                         continue;
                     }
+                    
                     Glyph glyph = glyphCache[codepoint];
-                    line->height = lineHeight;
 
                     if (codepoint == U'\t') { // Tab handling
                         if (wrapWidth > 0 && (line->width + word.width) > wrapWidth) {
@@ -327,13 +327,14 @@ namespace Amara {
                             
                             cursorY += lineHeight;
                             line = &layout.newLine();
+                            line->height = lineHeight;
                             line->y = cursorY;
                             
                             word.x = 0;
                         }
                         else {
-                            cursorX += glyphCache[U' '].xadvance * 4;
-                            word.width += glyphCache[U' '].xadvance * 4;
+                            cursorX += glyph.xadvance;
+                            word.width += glyph.xadvance;
 
                             line->merge(word);
                             cursorX += word.x;
@@ -353,12 +354,13 @@ namespace Amara {
                             
                             cursorY += lineHeight;
                             line = &layout.newLine();
+                            line->height = lineHeight;
                             line->y = cursorY;
                             
                             word.x = 0;
                         }
-                        cursorX += glyphCache[U' '].xadvance;
-                        word.width += glyphCache[U' '].xadvance;
+                        cursorX += glyph.xadvance;
+                        word.width += glyph.xadvance;
 
                         line->merge(word);
                         cursorX += word.x;
@@ -379,11 +381,10 @@ namespace Amara {
                         cursorX = 0;
                         cursorY += fontSize;
                         line = &layout.newLine();
+                        line->height = lineHeight;
                         line->y = cursorY;
                         continue;
                     }
-
-                    line->height = lineHeight;
 
                     glyph.x = cursorX + glyph.xoffset;
                     glyph.y = glyph.yoffset;

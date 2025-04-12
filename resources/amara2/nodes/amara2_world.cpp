@@ -52,6 +52,8 @@ namespace Amara {
         GPUHandler gpuHandler;
         RenderBatch renderBatch;
 
+        ShaderProgram* defaultShaderProgram = nullptr;
+
         World(): Node() {
             set_base_node_id("World");
             world = this;
@@ -449,6 +451,8 @@ namespace Amara {
                                 prepareGLShaders();
                                 setShaderProgram("default");
                                 Props::currentShaderProgram = shaderProgram;
+                                Props::defaultShaderProgram = shaderProgram;
+                                defaultShaderProgram = shaderProgram;
                                 shaderProgram->applyShader();
                             }
                         }
@@ -598,6 +602,8 @@ namespace Amara {
                 SDL_GL_MakeCurrent(window, glContext);
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
+
+                Props::defaultShaderProgram = defaultShaderProgram;
             }
             #endif
             else if (gpuDevice) {

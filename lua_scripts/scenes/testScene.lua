@@ -84,7 +84,7 @@ return NodeFactory:create("Scene"):configure({
 
         local controlLeft = Controls:scheme("left")
         controlLeft:setKeys({ Key.Left, Key.A })
-
+        
         local controlUp = Controls:scheme("up")
         controlUp:setKeys({ Key.Up, Key.W })
 
@@ -95,7 +95,7 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onUpdate = function(self, deltaTime)
-        self.props.txt:setText(math.floor(Game.fps), " FPS")
+        -- self.props.txt:setText(math.floor(Game.fps), " FPS")
         -- print(math.floor(Game.fps), " FPS")
 
         if Keyboard:isDown(Key.X) then
