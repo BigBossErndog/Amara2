@@ -81,6 +81,8 @@ namespace Amara {
         static World* world;
         static Scene* scene;
 
+        static std::vector<World*>* world_list;
+
         static void breakWorld();
 
         static NodeFactory* factory;
@@ -168,6 +170,8 @@ namespace Amara {
     GameManager* Props::game = nullptr;
     World* Props::world = nullptr;
     Scene* Props::scene = nullptr;
+    std::vector<World*>* Props::world_list = nullptr;
+
     NodeFactory* Props::factory = nullptr;
     ScriptFactory* Props::scripts = nullptr;
     FileManager* Props::files = nullptr;

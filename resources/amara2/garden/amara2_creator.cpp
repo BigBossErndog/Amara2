@@ -54,6 +54,8 @@ namespace Amara {
             Props::keyboard = &(inputManager.keyboard);
 
             override_existence();
+
+            Props::world_list = &worlds;
         }
 
         Creator(int argv, char** args): Creator() {

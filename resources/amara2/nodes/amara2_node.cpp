@@ -37,8 +37,6 @@ namespace Amara {
 
         Vector3 pos = { 0, 0, 0 };
         Vector2 scale = { 1, 1 };
-        Vector2 zoomFactor = { 1, 1 };
-        Vector2 scrollFactor = { 1, 1 };
         float rotation = 0;
 
         Vector2 cameraFollowOffset = { 0, 0 };
@@ -119,10 +117,6 @@ namespace Amara {
                 { "anchorY", passOn.anchor.y },
                 { "scaleX", scale.x },
                 { "scaleY", scale.y },
-                { "zoomFactorX", zoomFactor.x },
-                { "zoomFactorY", zoomFactor.y },
-                { "scrollFactorX", scrollFactor.x },
-                { "scrollFactorY", scrollFactor.y },
                 { "paused", paused },
                 { "visible", visible },
                 { "depthSortSelfEnabled", depthSortSelfEnabled },
@@ -154,12 +148,6 @@ namespace Amara {
 
             if (json_has(config, "scaleX")) scale.x = config["scaleX"];
             if (json_has(config, "scaleY")) scale.y = config["scaleY"];
-            
-            if (json_has(config, "zoomFactorX")) zoomFactor.x = config["zoomFactorX"];
-            if (json_has(config, "zoomFactorY")) zoomFactor.y = config["zoomFactorY"];
-
-            if (json_has(config, "scrollFactorX")) scrollFactor.x = config["scrollFactorX"];
-            if (json_has(config, "scrollFactorY")) scrollFactor.y = config["scrollFactorY"];
             
             if (json_has(config, "rotation")) rotation = config["rotation"];
 
@@ -292,14 +280,6 @@ namespace Amara {
                 passOn.scale = {
                     Props::passOn.scale.x * scale.x,
                     Props::passOn.scale.y * scale.y
-                };
-                passOn.zoom = {
-                    Props::passOn.zoom.x * zoomFactor.x,
-                    Props::passOn.zoom.y * zoomFactor.y
-                };
-                passOn.scroll = {
-                    Props::passOn.scroll.x * scrollFactor.x,
-                    Props::passOn.scroll.y * scrollFactor.y
                 };
 
                 Props::passOn = passOn;
@@ -648,8 +628,6 @@ namespace Amara {
                 ),
                 "rotation", &Node::rotation,
                 "rotate", &Node::rotate,
-                "scrollFactor", &Node::scrollFactor,
-                "zoomFactor", &Node::zoomFactor,
                 "cameraFollowOffset", &Node::cameraFollowOffset,
                 "cameraFollowOffsetX", sol::property([](Node& e, float val) { e.cameraFollowOffset.x = val; }, [](Node& e) { return e.cameraFollowOffset.x; }),
                 "cameraFollowOffsetY", sol::property([](Node& e, float val) { e.cameraFollowOffset.y = val; }, [](Node& e) { return e.cameraFollowOffset.y; }),
@@ -660,6 +638,7 @@ namespace Amara {
                 "configure_override", &Node::configure_override,
                 "super_configure", &Node::super_configure,
                 "toData", &Node::toData,
+                "alpha", &Node::alpha,
                 "depth", &Node::depth,
                 "yDepthLocked", &Node::yDepthLocked,
                 "zDepthLocked", &Node::zDepthLocked,

@@ -84,7 +84,7 @@ return NodeFactory:create("Scene"):configure({
 
         local controlLeft = Controls:scheme("left")
         controlLeft:setKeys({ Key.Left, Key.A })
-        
+
         local controlUp = Controls:scheme("up")
         controlUp:setKeys({ Key.Up, Key.W })
 
