@@ -6,6 +6,7 @@ namespace Amara {
         Amara::Demiurge* demiurge = nullptr;
         
         AssetManager assets;
+        ShaderManager shaders;
 
         std::string base_dir_path = Props::files->getBasePath();
 
@@ -117,9 +118,11 @@ namespace Amara {
         virtual void update_properties() override {
             Props::world = this;
             Props::assets = &assets;
+            Props::shaders = &shaders;
 
             Props::lua()["World"] = get_lua_object();
             Props::lua()["Assets"] = &assets;
+            Props::lua()["Shaders"] = &shaders;
 
             if (window) {
                 #ifdef AMARA_OPENGL
@@ -600,13 +603,21 @@ namespace Amara {
         void prepareRenderer() {
             if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
                 SDL_RenderClear(renderer);
+                Props::master_viewport = viewport;
+                Props::graphics = graphics;
             }
             #ifdef AMARA_OPENGL
             else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                 Props::gpuHandler = &gpuHandler;
+                Props::glContext = glContext;
                 Props::renderBatch = &renderBatch;
+                Props::master_viewport = viewport;
+                Props::graphics = graphics;
+
                 Props::renderBatch->newCycle();
+
                 SDL_GL_MakeCurrent(window, glContext);
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
 
@@ -615,6 +626,9 @@ namespace Amara {
             #endif
             else if (gpuDevice) {
                 Props::gpuHandler = &gpuHandler;
+                Props::master_viewport = viewport;
+                Props::graphics = graphics;
+
                 gpuHandler.commandBuffer = SDL_AcquireGPUCommandBuffer(Props::gpuDevice);
                 if (gpuHandler.commandBuffer == NULL) {
                     debug_log("Error: AcquireGPUCommandBuffer failed: ", SDL_GetError());
@@ -646,7 +660,7 @@ namespace Amara {
             Amara::Node::destroy();
 
             assets.clear();
-
+            shaders.clear();
             renderBatch.destroy();
             
             #ifdef AMARA_OPENGL

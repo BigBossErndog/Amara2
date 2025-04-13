@@ -162,6 +162,7 @@ namespace Amara {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+                glBindTexture(GL_TEXTURE_2D, 0);
                 return true;
             }
             #endif
@@ -207,6 +208,7 @@ namespace Amara {
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
                 glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                 glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, currentY, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgbaBitmap);
+                glBindTexture(GL_TEXTURE_2D, 0);
             }
             #endif
             

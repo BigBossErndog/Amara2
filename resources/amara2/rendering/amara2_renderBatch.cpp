@@ -2,7 +2,7 @@ namespace Amara {
     class RenderBatch {
     public:
         #ifdef AMARA_OPENGL
-        GLuint VAO, VBO, EBO, alphaBO;
+        GLuint VAO = 0, VBO = 0, EBO = 0, alphaBO = 0;
         GLuint glTextureID = 0;
 
         ShaderProgram* shaderProgram = nullptr;
@@ -200,10 +200,14 @@ namespace Amara {
 
             glTextureID = 0;
         }
-
+        
         void destroy() {
             #ifdef AMARA_OPENGL
-            if (!external_buffers) {
+            if (!external_buffers && Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                glBindVertexArray(0);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                
                 if (VAO) {
                     glDeleteVertexArrays(1, &VAO);
                     VAO = 0;
