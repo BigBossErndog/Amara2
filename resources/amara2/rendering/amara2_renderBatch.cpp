@@ -2,7 +2,7 @@ namespace Amara {
     class RenderBatch {
     public:
         #ifdef AMARA_OPENGL
-        GLuint VAO, VBO, EBO;
+        GLuint VAO, VBO, EBO, alphaBO;
         GLuint glTextureID = 0;
 
         ShaderProgram* shaderProgram = nullptr;
@@ -15,6 +15,7 @@ namespace Amara {
 
         std::vector<float> vertices;
         std::vector<unsigned int> indices;
+        std::vector<float> alphas;
         
         int rec_buffer_size = 0;
 
@@ -42,6 +43,17 @@ namespace Amara {
             // Texture coordinate attribute
             glEnableVertexAttribArray(1);
             glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+            glGenBuffers(1, &alphaBO);
+            glBindBuffer(GL_ARRAY_BUFFER, alphaBO);
+
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+            glVertexAttribDivisor(2, 1);
+
+            glBindVertexArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             #endif
         }
 
@@ -66,6 +78,7 @@ namespace Amara {
             ShaderProgram* _shaderProgram,
             GLuint _glTextureID, 
             const std::array<float, 16>& _vertices,
+            float _alpha,
             const Rectangle& _viewport,
             bool _insideFrameBuffer,
             Amara::BlendMode _blendMode
@@ -97,6 +110,8 @@ namespace Amara {
             indices.push_back(offset + 3);
             indices.push_back(offset + 0);
             offset += 4;
+
+            alphas.push_back(_alpha);
         }
         #endif
 
@@ -131,6 +146,10 @@ namespace Amara {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
                 if (buffer_size_changed) glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_DYNAMIC_DRAW);
                 else glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(unsigned int), indices.data());
+
+                glBindBuffer(GL_ARRAY_BUFFER, alphaBO);
+                if (buffer_size_changed) glBufferData(GL_ARRAY_BUFFER, alphas.size() * sizeof(float), alphas.data(), GL_DYNAMIC_DRAW);
+                else glBufferSubData(GL_ARRAY_BUFFER, 0, alphas.size() * sizeof(float), alphas.data());
 
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
@@ -169,11 +188,14 @@ namespace Amara {
                 // Unbind
                 glBindTexture(GL_TEXTURE_2D, 0);
                 glBindVertexArray(0);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
             #endif
 
             vertices.clear();
             indices.clear();
+            alphas.clear();
             offset = 0;
 
             glTextureID = 0;
@@ -193,6 +215,10 @@ namespace Amara {
                 if (EBO) {
                     glDeleteBuffers(1, &EBO);
                     EBO = 0;
+                }
+                if (alphaBO) {
+                    glDeleteBuffers(1, &alphaBO);
+                    alphaBO = 0;
                 }
             }
             #endif

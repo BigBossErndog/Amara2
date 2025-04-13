@@ -296,37 +296,47 @@ namespace Amara {
 
         layout (location = 0) in vec2 _position;
         layout (location = 1) in vec2 _texCoord;
+        layout (location = 2) in float _alpha;
 
         out vec2 texCoord;
+        out float fragAlpha;
         
         void main() {
             gl_Position = vec4(_position, 0.0, 1.0);
             texCoord = _texCoord;
+            fragAlpha = _alpha;
         }
     )";
     const char* defaultFragmentShader= R"(
         #version 330 core
 
         in vec2 texCoord;
+        in float fragAlpha;
+
         uniform sampler2D _texture;
 
         out vec4 fragColor;
 
         void main() {
-            fragColor = texture(_texture, texCoord);
+            vec4 texColor = texture(_texture, texCoord);
+            fragColor = vec4(texColor.rgb, texColor.a * fragAlpha);
         }
     )";
     const char* tintedFragmentShader= R"(
         #version 330 core
 
         in vec2 texCoord;
+        in float fragAlpha;
+
         uniform sampler2D _texture;
         uniform vec4 _tintColor;
 
         out vec4 fragColor;
         
         void main() {
-            fragColor = texture(_texture, texCoord) * _tintColor;
+            vec4 texColor = texture(_texture, texCoord);
+            fragColor = texColor * _tintColor;
+            fragColor.a *= fragAlpha;
         }
     )";
 }

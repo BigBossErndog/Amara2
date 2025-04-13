@@ -245,7 +245,7 @@ namespace Amara {
                 Props::renderBatch->pushQuad(
                     Props::currentShaderProgram,
                     image->glTextureID,
-                    vertices, 
+                    vertices, passOn.alpha * alpha,
                     v, passOn.insideFrameBuffer,
                     blendMode
                 );

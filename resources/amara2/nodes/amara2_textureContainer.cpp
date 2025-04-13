@@ -303,7 +303,7 @@ namespace Amara {
                 Props::renderBatch->pushQuad(
                     Props::currentShaderProgram,
                     glCanvasID,
-                    vertices, 
+                    vertices, passOn.alpha * alpha,
                     v, passOn.insideFrameBuffer,
                     blendMode
                 );
