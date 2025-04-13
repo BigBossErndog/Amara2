@@ -187,6 +187,9 @@ namespace Amara {
         }
 
         virtual void drawObjects(const Rectangle& v) override {
+            if (fixedToCamera) {
+                Props::passOn.reset();
+            }
             passOn = Props::passOn;
 
             if (rec_width != width || rec_height != height) {
@@ -213,6 +216,7 @@ namespace Amara {
             if (cropBottom < 0) cropBottom = 0;
 
             Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
+            Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
 
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(
@@ -236,14 +240,14 @@ namespace Amara {
                 (height - cropTop - cropBottom)*scale.y*passOn.scale.y
             };
             
-            destRect.x = vcenter.x + dim.x*passOn.zoom.x;
-            destRect.y = vcenter.y + dim.y*passOn.zoom.y;
-            destRect.w = dim.w * passOn.zoom.x;
-            destRect.h = dim.h * passOn.zoom.y;
+            destRect.x = vcenter.x + dim.x*totalZoom.x;
+            destRect.y = vcenter.y + dim.y*totalZoom.y;
+            destRect.w = dim.w * totalZoom.x;
+            destRect.h = dim.h * totalZoom.y;
 
             SDL_FPoint dorigin = {
-                (width*origin.x - cropLeft)*scale.x*passOn.scale.x*passOn.zoom.x,
-                (height*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
+                (width*origin.x - cropLeft)*scale.x*passOn.scale.x*totalZoom.x,
+                (height*origin.y - cropTop)*scale.y*passOn.scale.y*totalZoom.y
             };
             
             srcRect = {

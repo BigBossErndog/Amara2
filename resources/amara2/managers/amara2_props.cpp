@@ -32,9 +32,20 @@ namespace Amara {
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
 
+        Vector2 window_zoom = { 1, 1 };
+
         bool insideFrameBuffer = false;
 
         float volume = 1;
+
+        void reset() {
+            Vector2 rec_window_zoom = window_zoom;
+
+            PassOnProps new_props;
+            *this = new_props;
+
+            window_zoom = rec_window_zoom;
+        }
     };
 
     class Props {

@@ -580,7 +580,7 @@ namespace Amara {
                 else {
                     zoom = viewport.w / virtualWidth;
                 }
-                Props::passOn.zoom = { zoom, zoom };
+                Props::passOn.window_zoom = { zoom, zoom };
             }
 
             passOn = Props::passOn;

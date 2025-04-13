@@ -52,7 +52,8 @@ return NodeFactory:create("Scene"):configure({
             alpha = 0.5,
             -- visible = false,
             paused = true,
-            canvasLocked = true
+            canvasLocked = true,
+            fixedToCamera = true
         })
 
         local a_rate = 2 * math.pi * 0.01
@@ -79,7 +80,8 @@ return NodeFactory:create("Scene"):configure({
             alignment = Align.Center,
             wrapMode = WrapMode.ByWord,
             wrapWidth = 128,
-            lineSpacing = 10
+            lineSpacing = 10,
+            fixedToCamera = true
         })
 
         local controlRight = Controls:scheme("right")

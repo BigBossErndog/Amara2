@@ -163,9 +163,10 @@ namespace Amara {
             if (font == nullptr || converted_text.empty()) return;
 
             Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
+            Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
 
             float cursorX = 0, cursorY = 0;
-
+            
             if (progress > converted_text.size()) {
                 progress = converted_text.size();
             }
@@ -215,10 +216,10 @@ namespace Amara {
                         glyph.src.h*scale.y*passOn.scale.y
                     };
     
-                    destRect.x = vcenter.x + dim.x*passOn.zoom.x;
-                    destRect.y = vcenter.y + dim.y*passOn.zoom.y;
-                    destRect.w = dim.w * passOn.zoom.x;
-                    destRect.h = dim.h * passOn.zoom.y;
+                    destRect.x = vcenter.x + dim.x*totalZoom.x;
+                    destRect.y = vcenter.y + dim.y*totalZoom.y;
+                    destRect.w = dim.w * totalZoom.x;
+                    destRect.h = dim.h * totalZoom.y;
 
                     if (font->texture && Props::renderer) {
                         SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);

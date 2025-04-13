@@ -50,6 +50,8 @@ namespace Amara {
         bool depthSortSelfEnabled = true;
         bool depthSortChildrenEnabled = true;
 
+        bool fixedToCamera = false;
+
         bool destroyed = false;
         bool paused = false;
         bool visible = true;
@@ -117,6 +119,9 @@ namespace Amara {
                 { "anchorY", passOn.anchor.y },
                 { "scaleX", scale.x },
                 { "scaleY", scale.y },
+                { "fixedToCamera", fixedToCamera },
+                { "yDepthLocked", yDepthLocked },
+                { "zDepthLocked", zDepthLocked },
                 { "paused", paused },
                 { "visible", visible },
                 { "depthSortSelfEnabled", depthSortSelfEnabled },
@@ -157,6 +162,11 @@ namespace Amara {
             if (json_has(config, "paused")) paused = config["paused"];
 
             if (json_has(config, "visible")) visible = config["visible"];
+
+            if (json_has(config, "fixedToCamera")) fixedToCamera = config["fixedToCamera"];
+
+            if (json_has(config, "yDepthLocked")) yDepthLocked = config["yDepthLocked"];
+            if (json_has(config, "zDepthLocked")) zDepthLocked = config["zDepthLocked"];
 
             if (json_has(config, "depthSortSelfEnabled")) depthSortSelfEnabled = config["depthSortSelfEnabled"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
@@ -258,6 +268,9 @@ namespace Amara {
         virtual void update(double deltaTime) {}
         virtual void update_properties() {}
         virtual void pass_on_properties() {
+            if (fixedToCamera) {
+                Props::passOn.reset();
+            }
             passOn = Props::passOn;
             
             if (passOnPropsEnabled) {
@@ -286,12 +299,7 @@ namespace Amara {
             }
         }
         void reset_pass_on_props() {
-            Props::passOn.alpha = 1;
-            Props::passOn.rotation = 0;
-            Props::passOn.anchor = { 0, 0, 0 };
-            Props::passOn.scroll = { 0, 0 };
-            Props::passOn.scale = { 1, 1 };
-            Props::passOn.zoom = { 1, 1 };
+            Props::passOn.reset();
         }
  
         virtual void run(double deltaTime) {
@@ -341,7 +349,7 @@ namespace Amara {
 					++it;
 					continue;
 				}
-
+                
 				child->run(deltaTime);
 				++it;
 				if (destroyed) break;
@@ -354,6 +362,9 @@ namespace Amara {
             drawObjects(v);
         }
         virtual void drawObjects(const Rectangle& v) {
+            if (fixedToCamera) {
+                Props::passOn.reset();
+            }
             passOn = Props::passOn;
 
             #ifdef AMARA_OPENGL
@@ -654,6 +665,7 @@ namespace Amara {
                 "depth", &Node::depth,
                 "yDepthLocked", &Node::yDepthLocked,
                 "zDepthLocked", &Node::zDepthLocked,
+                "fixedToCamera", &Node::fixedToCamera,
                 "onPreload", &Node::luaPreload,
                 "onCreate", &Node::luaCreate,
                 "onUpdate", &Node::luaUpdate,

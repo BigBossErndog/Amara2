@@ -129,7 +129,7 @@ namespace Amara {
         sol::object setOrigin(float _o) {
             return setOrigin(_o, _o);
         }
-
+        
         virtual void drawSelf(const Rectangle& v) override {
             if (image == nullptr) return;
 
@@ -139,6 +139,7 @@ namespace Amara {
             if (cropBottom < 0) cropBottom = 0;
 
             Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
+            Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
 
             float imgw = (spritesheet ? frameWidth : imageWidth);
             float imgh = (spritesheet ? frameHeight : imageHeight);
@@ -181,14 +182,14 @@ namespace Amara {
                 (imgh - cropTop - cropBottom)*scale.y*passOn.scale.y
             };
 
-            destRect.x = vcenter.x + dim.x*passOn.zoom.x;
-            destRect.y = vcenter.y + dim.y*passOn.zoom.y;
-            destRect.w = dim.w * passOn.zoom.x;
-            destRect.h = dim.h * passOn.zoom.y;
+            destRect.x = vcenter.x + dim.x*totalZoom.x;
+            destRect.y = vcenter.y + dim.y*totalZoom.y;
+            destRect.w = dim.w * totalZoom.x;
+            destRect.h = dim.h * totalZoom.y;
 
             SDL_FPoint dorigin = {
-                (imgw*origin.x - cropLeft)*scale.x*passOn.scale.x*passOn.zoom.x,
-                (imgh*origin.y - cropTop)*scale.y*passOn.scale.y*passOn.zoom.y
+                (imgw*origin.x - cropLeft)*scale.x*passOn.scale.x*totalZoom.x,
+                (imgh*origin.y - cropTop)*scale.y*passOn.scale.y*totalZoom.y
             };
 
             float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
