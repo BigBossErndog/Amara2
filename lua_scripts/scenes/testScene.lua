@@ -53,11 +53,11 @@ return NodeFactory:create("Scene"):configure({
             -- visible = false,
             paused = true,
             canvasLocked = true,
-            scale = Vector2.new(0.5, 0.5)*4,
             -- fixedToCamera = true,
+            origin = "top",
             tint = Colors.Red
         })
-
+        
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
         for i = 1, (128*128) do

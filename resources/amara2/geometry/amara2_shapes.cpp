@@ -59,6 +59,7 @@ namespace Amara {
             if (json_has(config, "height")) h = config["height"];
             return *this;
         }
+        Rectangle& operator= (sol::object obj);
     };
 
     struct Quad {

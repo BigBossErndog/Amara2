@@ -88,6 +88,7 @@ namespace Amara {
         }
 
         Vector2& operator= (nlohmann::json config);
+        Vector2& operator= (sol::object obj);
 
         static Vector2 Left;
         static Vector2 Right;
@@ -99,6 +100,7 @@ namespace Amara {
         static Vector2 BottomRight;
         static Vector2 Center;
     };
+
     Vector2 Vector2::Left = Vector2(0, 0);
     Vector2 Vector2::Right = Vector2(1, 0);
     Vector2 Vector2::Top = Vector2(0, 1);
@@ -166,6 +168,7 @@ namespace Amara {
             if (json_has(config, "z")) z = config["z"];
             return *this;
         }
+        Vector3& operator= (sol::object obj);
 
         bool operator==(const Vector3& other) const {
             return x == other.x && y == other.y && z == other.z;

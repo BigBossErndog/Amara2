@@ -168,6 +168,22 @@ namespace Amara {
         debug_log(std::string(buffer.data()));
     }
 
+    Vector2& Vector2::operator= (sol::object obj) {
+        if (obj.is<Vector2>()) *this = obj.as<Vector2>();
+        else *this = lua_to_json(obj);
+        return *this;
+    }
+    Vector3& Vector3::operator= (sol::object obj) {
+        if (obj.is<Vector3>()) *this = obj.as<Vector3>();
+        else *this = lua_to_json(obj);
+        return *this;
+    }
+    Rectangle& Rectangle::operator= (sol::object obj) {
+        if (obj.is<Rectangle>()) *this = obj.as<Rectangle>();
+        else *this = lua_to_json(obj);
+        return *this;
+    }
+
     void bindLua_LuaUtilityFunctions(sol::state& lua) {
         lua.set_function("debug_log", &Amara::lua_debug_log);
 
