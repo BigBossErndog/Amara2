@@ -540,7 +540,9 @@ namespace Amara {
                 debug_log("Note: Demiurgic presence. Rendering Mode Overridden: ", graphics_to_string(Props::graphics));
                 debug_log("Control will be handed over in target builds.");
             }
+            
             update_properties();
+            basePassOnProps();
 
             Amara::Node::preload();
         }
@@ -564,10 +566,8 @@ namespace Amara {
                 exception_thrown = true;
             }
         }
-        
-        virtual void draw(const Rectangle& v) override {
-            update_properties();
 
+        void basePassOnProps() {
             reset_pass_on_props();
 
             if (virtualWidth > 0 || virtualHeight > 0) {
@@ -584,6 +584,14 @@ namespace Amara {
                 }
                 Props::passOn.window_zoom = Vector2( zoom, zoom );
             }
+
+            passOn = Props::passOn;
+            passOnPropsEnabled = false;  
+        }
+        
+        virtual void draw(const Rectangle& v) override {
+            update_properties();
+            basePassOnProps();
 
             passOn = Props::passOn;
             passOnPropsEnabled = false;  

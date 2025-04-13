@@ -5,7 +5,7 @@ namespace Amara {
     class Camera: public Amara::Node {
     public:
         Rectangle viewport;
-        bool isSizeTethered = true;
+        bool sizeTethered = true;
 
         float width = 0;
         float height = 0;
@@ -66,6 +66,23 @@ namespace Amara {
             if (json_has(config, "height")) height = config["height"];
 
             return this;
+        }
+
+        virtual void init() override {
+            Amara::Node::init();
+            
+            passOn = Props::passOn;
+            if (sizeTethered) {
+                viewport = Props::master_viewport;
+                width = ((viewport.w / passOn.scale.x) / passOn.zoom.x)/passOn.window_zoom.x;
+                height = ((viewport.h / passOn.scale.y) / passOn.zoom.y)/passOn.window_zoom.y;
+            }
+
+            center = Vector2( scroll.x, scroll.y );
+            leftBorder = center.x - (width/zoom.x)/2.0;
+            rightBorder = center.x + (width/zoom.x)/2.0;
+            topBorder = center.y - (height/zoom.y)/2.0;
+            bottomBorder = center.y + (height/zoom.y)/2.0;
         }
 
         virtual void run(double deltaTime) override {
@@ -176,8 +193,10 @@ namespace Amara {
             SDL_Rect setv = Rectangle::makeSDLRect(v);
             SDL_SetRenderViewport(Props::renderer, &setv);
 
-            if (isSizeTethered) {
+            if (sizeTethered) {
                 viewport = v;
+                width = ((v.w / passOn.scale.x) / passOn.zoom.x)/passOn.window_zoom.x;
+                height = ((v.h / passOn.scale.y) / passOn.zoom.y)/passOn.window_zoom.y;
             }
             else {
                 viewport = Rectangle(
@@ -238,7 +257,12 @@ namespace Amara {
                     sol::resolve<sol::object(Amara::Node*, float, float)>(&Camera::startFollow),
                     sol::resolve<sol::object(Amara::Node*, float)>(&Camera::startFollow)
                 ),
-                "stopFollow", &Camera::stopFollow
+                "stopFollow", &Camera::stopFollow,
+                "sizeTethered", &Camera::sizeTethered,
+                "focusOn", sol::overload(
+                    sol::resolve<sol::object(float, float)>(&Camera::focusOn),
+                    sol::resolve<sol::object(Amara::Node*)>(&Camera::focusOn)
+                )
             );
         }
     };

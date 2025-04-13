@@ -101,10 +101,10 @@ namespace Amara {
         static Vector2 Center;
     };
 
-    Vector2 Vector2::Left = Vector2(0, 0);
-    Vector2 Vector2::Right = Vector2(1, 0);
-    Vector2 Vector2::Top = Vector2(0, 1);
-    Vector2 Vector2::Bottom = Vector2(0, -1);
+    Vector2 Vector2::Left = Vector2(0, 0.5);
+    Vector2 Vector2::Right = Vector2(1, 0.5);
+    Vector2 Vector2::Top = Vector2(0.5, 0);
+    Vector2 Vector2::Bottom = Vector2(0.5, 1);
     Vector2 Vector2::TopLeft = Vector2(0, 0);
     Vector2 Vector2::TopRight = Vector2(1, 0);
     Vector2 Vector2::BottomLeft = Vector2(0, 1);

@@ -44,7 +44,7 @@ return NodeFactory:create("Scene"):configure({
 
         self:createChild("Sprite"):configure({
             texture = "bigThing"
-        });
+        })
 
         local textCont = self:createChild("TextureContainer", {
             width = 256,
@@ -54,9 +54,11 @@ return NodeFactory:create("Scene"):configure({
             paused = true,
             canvasLocked = true,
             -- fixedToCamera = true,
-            origin = "top",
-            tint = Colors.Red
+            origin = Position.Top,
+            tint = Colors.Red,
+            y = self.camera.topBorder
         })
+        self.props.textCont = textCont
         
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
@@ -87,7 +89,7 @@ return NodeFactory:create("Scene"):configure({
             fixedToCamera = true,
             color = Colors.Yellow,
             origin = "right",
-            alignment = Align.Lefta,
+            alignment = Align.Left,
         })
 
         local controlRight = Controls:scheme("right")
@@ -108,6 +110,7 @@ return NodeFactory:create("Scene"):configure({
     onUpdate = function(self, deltaTime)
         -- self.props.txt:setText(math.floor(Game.fps), " FPS")
         -- print(math.floor(Game.fps), " FPS")
+        -- self.props.textCont.y = self.camera.topBorder
 
         if Keyboard:isDown(Key.X) then
             self.camera:rotate(2 * math.pi * deltaTime * 0.25)
