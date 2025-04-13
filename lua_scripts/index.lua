@@ -54,7 +54,9 @@
             virtualWidth = 640,
             virtualHeight = 360,
             -- graphics = Graphics.OpenGL
-            graphics = Graphics.OpenGL
+            graphics = Graphics.OpenGL,
+            transparent = true,
+            alwaysOnTop = true
         },
         -- entryScene = "scenes/TestScene",
         -- onPreload = function(self)
@@ -62,6 +64,12 @@
         -- end,
         onCreate = function(self)
             self:createChild("scenes/TestScene")
+            local world = self.world;
+            local display = world.display;
+            world.x = display.x
+            world.y = display.y
+            world.w = display.w
+            world.h = display.h
         end
         -- onCreate = function(self)
         --     local textCont = self:createChild("TextureContainer", {
@@ -80,9 +88,9 @@
         --             texture = "goldenFlower",
         --             x = math.sin(a_rate * i) * d_rate * i,
         --             y = math.cos(a_rate * i) * d_rate * i
-        --         })
+        --         })as
         --     end
-        -- end,
+        -- end,a
         -- onUpdate = function(self, deltaTime)
         --     -- print(Game.fps)
         -- end

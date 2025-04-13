@@ -42,9 +42,9 @@ return NodeFactory:create("Scene"):configure({
     onCreate = function(self)
         -- Game:setTargetFPS(60)
 
-        self:createChild("Sprite"):configure({
-            texture = "bigThing"
-        })
+        -- self:createChild("Sprite"):configure({
+        --     texture = "bigThing"
+        -- })
 
         local textCont = self:createChild("TextureContainer", {
             width = 256,
@@ -72,8 +72,7 @@ return NodeFactory:create("Scene"):configure({
 
         local f = self:createChild("Sprite", {
             texture = "freaker",
-            animation = "runningDown",
-            tint = Colors.Blue
+            animation = "runningDown"
         })
         
         self.props.f = f;

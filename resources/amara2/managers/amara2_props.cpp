@@ -57,6 +57,7 @@ namespace Amara {
         static std::string platform;
 
         static bool integrate_new_windows;
+        static bool transparent_window;
 
         static double deltaTime;
         
@@ -147,7 +148,8 @@ namespace Amara {
     std::string Props::platform = "unknown";
 
     bool Props::integrate_new_windows = false;
-
+    bool Props::transparent_window = false;
+    
     double Props::deltaTime = 1;
 
     Amara::World* Props::render_origin = nullptr;

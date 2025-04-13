@@ -13,7 +13,7 @@ namespace Amara {
         SDL_Window* window = nullptr;
         Uint32 windowID = 0;
         std::string windowTitle;
-
+        
         bool create_window_on_start = false;
 
         float windowW = 640;
@@ -41,9 +41,12 @@ namespace Amara {
 
         Rectangle viewport;
 
-        int resizable = 0;
+        
         int vsync = 0;
         bool headless = true;
+        bool resizable = 0;
+        bool transparent = false;
+        bool alwaysOnTop = false;
 
         bool exception_thrown = false;
         
@@ -144,10 +147,32 @@ namespace Amara {
                 Props::graphics = graphics;
                 Props::gpuHandler = &gpuHandler;
                 Props::renderBatch = &renderBatch;
+
+                Props::transparent_window = transparent;
             }
             update_window();
             
             Node::update_properties();
+        }
+
+        virtual nlohmann::json toJSON() override {
+            nlohmann::json data = Amara::Node::toJSON();
+
+            data["window"] = nlohmann::json::object();
+            nlohmann::json& window_data = data["window"];
+
+            window_data["windowTitle"] = windowTitle;
+            window_data["width"] = windowW;
+            window_data["height"] = windowH;
+            window_data["virtualWidth"] = virtualWidth;
+            window_data["virtualHeight"] = virtualHeight;
+            window_data["resizable"] = resizable;
+            window_data["vsync"] = vsync;
+            window_data["headless"] = headless;
+            window_data["transparent"] = transparent;
+            window_data["alwaysOnTop"] = alwaysOnTop;
+
+            return data;
         }
 
         void configure_window(nlohmann::json config) {
@@ -171,10 +196,8 @@ namespace Amara {
                 virtualHeight = config["virtualHeight"];
             }
             if (json_has(config, "resizable")) {
-                bool r = config["resizable"];
-                if (r) resizable = SDL_WINDOW_RESIZABLE;
-                else resizable = 0;
-                if (window) SDL_SetWindowResizable(window, r);
+                bool resizable = config["resizable"];
+                if (window) SDL_SetWindowResizable(window, resizable);
             }
             if (json_is(config, "singleWindowApplication")) {
                 Props::integrate_new_windows = true;
@@ -233,6 +256,12 @@ namespace Amara {
                 else {
                     setScreenMode(config["screenMode"]);
                 }
+            }
+            if (json_has(config, "transparent")) {
+                if (window == nullptr) transparent = config["transparent"];
+            }
+            if (json_has(config, "alwaysOnTop")) {
+                setAlwaysOnTop(config["alwaysOnTop"]);
             }
         }
 
@@ -309,6 +338,11 @@ namespace Amara {
             }
         }
 
+        void setAlwaysOnTop(bool _t) {
+            transparent = _t;
+            if (window) SDL_SetWindowAlwaysOnTop(window, _t);
+        }
+
         void setup_new_window() {
             if (window == nullptr) return;
 
@@ -320,10 +354,15 @@ namespace Amara {
 
         bool create_graphics_window(int flags) {
             if (window != nullptr) return false;
+
+            if (resizable) flags |= SDL_WINDOW_RESIZABLE;
+            if (transparent) flags |= SDL_WINDOW_TRANSPARENT;
+            if (alwaysOnTop) flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+
             window = SDL_CreateWindow(
                 windowTitle.c_str(),
                 windowW, windowH,
-                resizable | flags
+                flags
             );
             if (window) {
                 setup_new_window();
@@ -392,10 +431,16 @@ namespace Amara {
                 switch (g) {
                     case Amara::GraphicsEnum::Render2D:
                         if (window == nullptr) {
+                            int flags = 0;
+
+                            if (resizable) flags |= SDL_WINDOW_RESIZABLE;
+                            if (transparent) flags |= SDL_WINDOW_TRANSPARENT;
+                            if (alwaysOnTop) flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+
                             if (!SDL_CreateWindowAndRenderer(
                                 windowTitle.c_str(),
                                 windowW, windowH,
-                                resizable,
+                                flags,
                                 &window,
                                 &renderer
                             )) {
@@ -706,7 +751,9 @@ namespace Amara {
                 "resizeWindow", &World::resizeWindow,
                 "fitToDisplay", &World::fitToDisplay,
                 "screenMode", sol::readonly(&World::screenMode),
-                "setScreenMode", &World::setScreenMode
+                "setScreenMode", &World::setScreenMode,
+                "transparent", sol::readonly(&World::transparent),
+                "alwaysOnTop", sol::readonly(&World::alwaysOnTop)
             );
 
             sol::usertype<Node> node_type = lua["Node"];
