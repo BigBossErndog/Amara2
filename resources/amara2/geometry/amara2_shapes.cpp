@@ -40,15 +40,34 @@ namespace Amara {
             };
             return s;
         }
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"x", x},
+                {"y", y},
+                {"w", w},
+                {"h", h}
+            });
+        }
+
+        Rectangle& operator= (nlohmann::json config) {
+            if (json_has(config, "x")) x = config["x"];
+            if (json_has(config, "y")) y = config["y"];
+            if (json_has(config, "w")) w = config["w"];
+            if (json_has(config, "h")) h = config["h"];
+            if (json_has(config, "width")) w = config["width"];
+            if (json_has(config, "height")) h = config["height"];
+            return *this;
+        }
     };
 
     struct Quad {
         Quad() = default;
         Quad(const Rectangle& rect) {
-            p1 = { rect.x, rect.y };
-            p2 = { rect.x + rect.w, rect.y };
-            p3 = { rect.x + rect.w, rect.y + rect.h };
-            p4 = { rect.x, rect.y + rect.h };
+            p1 = Vector2( rect.x, rect.y );
+            p2 = Vector2( rect.x + rect.w, rect.y );
+            p3 = Vector2( rect.x + rect.w, rect.y + rect.h );
+            p4 = Vector2( rect.x, rect.y + rect.h );
         }
         Quad(const SDL_FRect& rect): Quad(Rectangle(rect)) {}
         Quad(const SDL_Rect& rect): Quad(Rectangle(rect)) {}
@@ -106,13 +125,13 @@ namespace Amara {
         // From point to point
         Line() = default;
         Line(float x1, float y1, float x2, float y2) {
-            start = { x1, y1 };
-            end = { x2, y2 };
+            start = Vector2( x1, y1 );
+            end = Vector2( x2, y2 );
         }
         Line(Vector2 _s, Vector2 _e): Line(_s.x, _s.y, _e.x, _e.y) {}
 
-        Vector2 start = {0, 0};
-        Vector2 end = {0, 0};
+        Vector2 start = Vector2( 0, 0 );
+        Vector2 end = Vector2( 0, 0 );
     };
 
     class Shape {

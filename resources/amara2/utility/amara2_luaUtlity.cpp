@@ -40,6 +40,12 @@ namespace Amara {
             return obj.as<std::string>();
         } else if (obj.is<Amara::Color>()) {
             return obj.as<Amara::Color>().toJSON();
+        } else if (obj.is<Vector2>()) {
+            return obj.as<Vector2>().toJSON();
+        } else if (obj.is<Vector3>()) {
+            return obj.as<Vector3>().toJSON();
+        } else if (obj.is<Rectangle>()) {
+            return obj.as<Rectangle>().toJSON();
         } else if (obj.get_type() == sol::type::table) {
             sol::table tbl = obj.as<sol::table>();
             nlohmann::json json;

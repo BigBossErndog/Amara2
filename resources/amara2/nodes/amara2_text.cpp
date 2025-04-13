@@ -67,6 +67,7 @@ namespace Amara {
             Amara::Node::configure(config);
 
             if (json_has(config, "tint")) tint = config["tint"];
+            if (json_has(config, "color")) tint = config["color"];
             if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
             
             if (json_has(config, "wrapWidth")) {
@@ -85,6 +86,19 @@ namespace Amara {
 
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
+            if (json_has(config, "origin")) {
+                nlohmann::json originData = config["origin"];
+                if (originData.is_string()) {
+                    origin = stringToPosition(originData.get<std::string>());
+                }
+                else if (originData.is_number()) {
+                    origin = Vector2( originData.get<float>(), originData.get<float>() );
+                }
+                else if (originData.is_object()) {
+                    if (json_has(originData, "x")) origin.x = originData["x"];
+                    if (json_has(originData, "y")) origin.y = originData["y"];
+                }
+            }
 
             return this;
         }
@@ -156,7 +170,7 @@ namespace Amara {
         }
 
         sol::object setOrigin(float _x, float _y) {
-            origin = { _x, _y };
+            origin = Vector2( _x, _y );
             return get_lua_object();
         }
         sol::object setOrigin(float _o) {
@@ -226,12 +240,12 @@ namespace Amara {
                     srcRect.w = glyph.src.w;
                     srcRect.h = glyph.src.h;
     
-                    dim = {
+                    dim = Rectangle(
                         glyphPos.x,
                         glyphPos.y - glyphPos.z,
                         glyph.src.w*scale.x*passOn.scale.x,
                         glyph.src.h*scale.y*passOn.scale.y
-                    };
+                    );
     
                     destRect.x = vcenter.x + dim.x*totalZoom.x;
                     destRect.y = vcenter.y + dim.y*totalZoom.y;

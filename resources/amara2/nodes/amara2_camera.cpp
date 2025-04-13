@@ -31,6 +31,7 @@ namespace Amara {
 
         virtual nlohmann::json toJSON() {
             nlohmann::json data = Amara::Node::toJSON();
+
             data["scrollX"] = scroll.x;
             data["scrollY"] = scroll.y;
 
@@ -80,7 +81,7 @@ namespace Amara {
                 else scroll.y = ty;
             }
 
-            center = { scroll.x, scroll.y };
+            center = Vector2( scroll.x, scroll.y );
             leftBorder = center.x - (width/zoom.x)/2.0;
             rightBorder = center.x + (width/zoom.x)/2.0;
             topBorder = center.y - (height/zoom.y)/2.0;
@@ -88,7 +89,7 @@ namespace Amara {
         }
 
         sol::object focusOn(float _x, float _y) {
-            scroll = { _x, _y };
+            scroll = Vector2( _x, _y );
             return get_lua_object();
         }
 
@@ -97,7 +98,7 @@ namespace Amara {
         }
 
         sol::object startFollow(Amara::Node* node, float _lx, float _ly) {
-            lerp = { _lx, _ly };
+            lerp = Vector2( _lx, _ly );
             followTarget = node;
             focusOn(node);
             return get_lua_object();
@@ -140,31 +141,31 @@ namespace Amara {
             passOn = Props::passOn;
 
             if (passOnPropsEnabled) {
-                passOn.anchor = { 
+                passOn.anchor = Vector3( 
                     rotateAroundAnchor(
                         Vector2(0, 0),
                         Vector2(-scroll.x, -scroll.y),
                         rotation
                     ),
                     0
-                };
+                );
 
                 passOn.rotation += rotation;
 
-                passOn.scale = {
+                passOn.scale = Vector2(
                     Props::passOn.scale.x * scale.x,
                     Props::passOn.scale.y * scale.y
-                };
+                );
 
-                passOn.scroll = {
+                passOn.scroll = Vector2(
                     Props::passOn.scroll.x + scroll.x,
                     Props::passOn.scroll.y + scroll.y
-                };
+                );
 
-                passOn.zoom = {
+                passOn.zoom = Vector2(
                     Props::passOn.zoom.x * zoom.x,
                     Props::passOn.zoom.y * zoom.y
-                };
+                );
 
                 Props::passOn = passOn;
             }
@@ -179,12 +180,12 @@ namespace Amara {
                 viewport = v;
             }
             else {
-                viewport = {
+                viewport = Rectangle(
                     (pos.x - (width*origin.x)*scale.x*passOn.scale.x)*passOn.zoom.x*passOn.window_zoom.x,
                     (pos.y - (height*origin.y)*scale.y*passOn.scale.y - pos.z)*passOn.zoom.y*passOn.window_zoom.y,
                     width*scale.x*passOn.scale.x*passOn.zoom.x*passOn.window_zoom.x, 
                     height*scale.y*passOn.scale.x*passOn.zoom.y*passOn.window_zoom.y
-                };
+                );
             }
 
             pass_on_properties();
@@ -217,7 +218,7 @@ namespace Amara {
                     sol::resolve<sol::object(float, float)>(&Camera::changeScroll),
                     sol::resolve<sol::object(float)>(&Camera::changeScroll)
                 ),
-                "zoom", &Camera::zoom,
+                "zoom", &Camera::zoom, 
                 "zoomX", sol::property([](Camera& cam) { return cam.zoom.x; }, [](Camera& cam, float val) { cam.zoom.x = val; }),
                 "zoomY", sol::property([](Camera& cam) { return cam.zoom.y; }, [](Camera& cam, float val) { cam.zoom.y = val; }),
                 "changeZoom", sol::overload(

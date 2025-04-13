@@ -214,12 +214,12 @@ namespace Amara {
             
             // Store glyph metadata
             Glyph glyph;
-            glyph.src = {
+            glyph.src = Rectangle(
                 (float)currentX,
                 (float)currentY,
                 (float)width,
                 (float)height
-            };
+            );
             glyph.u0 = (float)currentX / atlasWidth;
             glyph.v0 = (float)currentY / atlasHeight;
             glyph.u1 = (float)(currentX + width) / atlasWidth;

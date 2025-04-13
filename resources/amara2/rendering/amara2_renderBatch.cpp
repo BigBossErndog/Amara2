@@ -199,7 +199,7 @@ namespace Amara {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
             #endif
-
+            
             vertices.clear();
             indices.clear();
             alphas.clear();

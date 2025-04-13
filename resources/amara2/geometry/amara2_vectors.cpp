@@ -7,10 +7,44 @@ namespace Amara {
         float x = 0;
         float y = 0;
 
+        Vector2 operator* (float scalar) const {
+            return Vector2(x * scalar, y * scalar);
+        }
+        Vector2& operator*= (float scalar) {
+            x *= scalar;
+            y *= scalar;
+            return *this;
+        }
+        Vector2 operator* (const Vector2& other) const {
+            return Vector2(x * other.x, y * other.y);
+        }
+        Vector2& operator*= (const Vector2& other) {
+            x *= other.x;
+            y *= other.y;
+            return *this;
+        }
+
+        Vector2 operator/ (float scalar) const {
+            return Vector2(x / scalar, y / scalar);
+        }
+        Vector2& operator/= (float scalar) {
+            x /= scalar;
+            y /= scalar;
+            return *this;
+        }
+        Vector2 operator/ (const Vector2& other) const {
+            return Vector2(x / other.x, y / other.y);
+        }
+        Vector2& operator/= (const Vector2& other) {
+            x /= other.x;
+            y /= other.y;
+            return *this;
+        }
+
         Vector2 operator+ (const Vector2& other) const {
             return Vector2(x + other.x, y + other.y);
         }
-        Vector2& operator+=(const Vector2& other) {
+        Vector2& operator+= (const Vector2& other) {
             x += other.x;
             y += other.y;
             return *this;
@@ -19,13 +53,13 @@ namespace Amara {
         Vector2 operator- (const Vector2& other) const {
             return Vector2(x - other.x, y - other.y);
         }
-        Vector2& operator-=(const Vector2& other) {
+        Vector2& operator-= (const Vector2& other) {
             x -= other.x;
             y -= other.y;
             return *this;
         }
         
-        bool operator==(const Vector2& other) const {
+        bool operator== (const Vector2& other) const {
             return x == other.x && y == other.y;
         }
 
@@ -45,7 +79,35 @@ namespace Amara {
         float dot(const Vector2& v) const {
             return x * v.x + y * v.y;
         }
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"x", x},
+                {"y", y}
+            });
+        }
+
+        Vector2& operator= (nlohmann::json config);
+
+        static Vector2 Left;
+        static Vector2 Right;
+        static Vector2 Top;
+        static Vector2 Bottom;
+        static Vector2 TopLeft;
+        static Vector2 TopRight;
+        static Vector2 BottomLeft;
+        static Vector2 BottomRight;
+        static Vector2 Center;
     };
+    Vector2 Vector2::Left = Vector2(0, 0);
+    Vector2 Vector2::Right = Vector2(1, 0);
+    Vector2 Vector2::Top = Vector2(0, 1);
+    Vector2 Vector2::Bottom = Vector2(0, -1);
+    Vector2 Vector2::TopLeft = Vector2(0, 0);
+    Vector2 Vector2::TopRight = Vector2(1, 0);
+    Vector2 Vector2::BottomLeft = Vector2(0, 1);
+    Vector2 Vector2::BottomRight = Vector2(1, 1);
+    Vector2 Vector2::Center = Vector2(0.5, 0.5);
 
     struct Vector3: public Vector2 {
         Vector3() = default;
@@ -87,6 +149,21 @@ namespace Amara {
         Vector3& operator-=(const Vector2& other) {
             x -= other.x;
             y -= other.y;
+            return *this;
+        }
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"x", x},
+                {"y", y},
+                {"z", z}
+            });
+        }
+
+        Vector3& operator= (nlohmann::json config) {
+            if (json_has(config, "x")) x = config["x"];
+            if (json_has(config, "y")) y = config["y"];
+            if (json_has(config, "z")) z = config["z"];
             return *this;
         }
 
@@ -140,6 +217,34 @@ namespace Amara {
                     return &v;
                 }
             ),
+            sol::meta_function::multiplication, sol::overload(
+                sol::resolve<Vector2(float) const>(&Vector2::operator*),
+                sol::resolve<Vector2(const Vector2&) const>(&Vector2::operator*)
+            ),
+            "multiply", sol::overload(
+                sol::resolve<Vector2&(float)>(&Vector2::operator*=),
+                sol::resolve<Vector2&(const Vector2&)>(&Vector2::operator*=),
+                [](Vector2& v, float _x, float _y) -> Vector2* {
+                    v.x *= _x;
+                    v.y *= _y;
+                    return &v;
+                }
+            ),
+            sol::meta_function::division, sol::overload(
+                sol::resolve<Vector2(float) const>(&Vector2::operator/),
+                sol::resolve<Vector2(const Vector2&) const>(&Vector2::operator/)
+            ),
+            "divide", sol::overload(
+                sol::resolve<Vector2&(float)>(&Vector2::operator/=),
+                sol::resolve<Vector2&(const Vector2&)>(&Vector2::operator/=),
+                [](Vector2& v, float _x, float _y) -> Vector2* {
+                    v.x /= _x;
+                    v.y /= _y;
+                    return &v;
+                }
+            ),
+            "cross", &Vector2::cross,
+            "dot", &Vector2::dot,
             sol::meta_function::equal_to, &Vector2::operator==,
             sol::meta_function::to_string, [](const Vector2& v) {
                 return std::string(v);

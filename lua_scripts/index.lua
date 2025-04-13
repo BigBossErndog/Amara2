@@ -54,12 +54,15 @@
             virtualWidth = 640,
             virtualHeight = 360,
             -- graphics = Graphics.OpenGL
-            graphics = Graphics.Render2D,
+            graphics = Graphics.OpenGL
         },
-        entryScene = "scenes/TestScene",
+        -- entryScene = "scenes/TestScene",
         -- onPreload = function(self)
         --     self.load:image("goldenFlower", "goldenFlower.png")
         -- end,
+        onCreate = function(self)
+            self:createChild("scenes/TestScene")
+        end
         -- onCreate = function(self)
         --     local textCont = self:createChild("TextureContainer", {
         --         width = 256,

@@ -142,6 +142,31 @@ namespace Amara {
         return false;
     }
 
+    Vector2 stringToPosition(std::string str) {
+        if (string_equal(str, "top")) return { 0.5, 0 };
+        if (string_equal(str, "bottom")) return { 0.5, 1 };
+        if (string_equal(str, "left")) return { 0, 0.5 };
+        if (string_equal(str, "right")) return { 1, 0.5 };
+        if (string_equal(str, "center")) return { 0.5, 0.5 };
+        if (string_equal(str, "topLeft")) return { 0, 0 };
+        if (string_equal(str, "topRight")) return { 1, 0 };
+        if (string_equal(str, "bottomLeft")) return { 0, 1 };
+        if (string_equal(str, "bottomRight")) return { 1, 1 };
+        return { 0.5, 0.5 };
+    }
+    Vector2& Vector2::operator= (nlohmann::json config) {
+        if (config.is_string()) *this = stringToPosition(config.get<std::string>());
+        else if (config.is_number()) {
+            x = config.get<float>();
+            y = config.get<float>();
+        }
+        else if (config.is_object()) {
+            if (json_has(config, "x")) x = config["x"];
+            if (json_has(config, "y")) y = config["y"];
+        }
+        return *this;
+    }
+
     void bindLua_Geometry(sol::state& lua) {
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("rotateAroundAnchor", sol::overload(
@@ -157,5 +182,17 @@ namespace Amara {
             sol::resolve<float(const Vector2&, const Vector2&)>(&Amara::angleBetween)
         ));
         math_metatable.set_function("centerOf", &Amara::centerOf);
+
+        lua.new_enum("Position",
+            "Top", &Vector2::Top,
+            "Bottom", &Vector2::Bottom,
+            "Left", &Vector2::Left,
+            "Right", &Vector2::Right,
+            "Center", &Vector2::Center,
+            "TopLeft", &Vector2::TopLeft,
+            "TopRight", &Vector2::TopRight,
+            "BottomLeft", &Vector2::BottomLeft,
+            "BottomRight", &Vector2::BottomRight
+        );
     }
 }

@@ -53,6 +53,7 @@ return NodeFactory:create("Scene"):configure({
             -- visible = false,
             paused = true,
             canvasLocked = true,
+            scale = Vector2.new(0.5, 0.5)*4,
             -- fixedToCamera = true,
             tint = Colors.Red
         })
@@ -84,7 +85,9 @@ return NodeFactory:create("Scene"):configure({
             wrapWidth = 128,
             lineSpacing = 10,
             fixedToCamera = true,
-            tint = Colors.Green
+            color = Colors.Yellow,
+            origin = "right",
+            alignment = Align.Lefta,
         })
 
         local controlRight = Controls:scheme("right")
@@ -103,7 +106,7 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onUpdate = function(self, deltaTime)
-        self.props.txt:setText(math.floor(Game.fps), " FPS")
+        -- self.props.txt:setText(math.floor(Game.fps), " FPS")
         -- print(math.floor(Game.fps), " FPS")
 
         if Keyboard:isDown(Key.X) then

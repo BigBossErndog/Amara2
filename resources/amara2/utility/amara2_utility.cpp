@@ -150,7 +150,7 @@ namespace Amara {
             g = _color.g;
             b = _color.b;
             a = _color.a;
-            return *this; 
+            return *this;
         }
         Color& operator= (nlohmann::json config) {
             configure(config);

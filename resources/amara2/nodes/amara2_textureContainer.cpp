@@ -70,6 +70,22 @@ namespace Amara {
             if (json_has(config, "width")) width = config["width"];
             if (json_has(config, "height")) height = config["height"];
             if (json_has(config, "canvasLocked")) canvasLocked = config["canvasLocked"];
+
+            if (json_has(config, "originX")) origin.x = config["originX"];
+            if (json_has(config, "originY")) origin.y = config["originY"];
+            if (json_has(config, "origin")) {
+                nlohmann::json originData = config["origin"];
+                if (originData.is_string()) {
+                    origin = stringToPosition(originData.get<std::string>());
+                }
+                else if (originData.is_number()) {
+                    origin = Vector2( originData.get<float>(), originData.get<float>() );
+                }
+                else if (originData.is_object()) {
+                    if (json_has(originData, "x")) origin.x = originData["x"];
+                    if (json_has(originData, "y")) origin.y = originData["y"];
+                }
+            }
             
             return Amara::Node::configure(config);
         }
@@ -120,7 +136,7 @@ namespace Amara {
             }
             #endif
 
-            container_viewport = { 0, 0, static_cast<float>(width), static_cast<float>(height) };
+            container_viewport = Rectangle( 0, 0, static_cast<float>(width), static_cast<float>(height) );
 
             left = -width/2.0;
             right = width/2.0;
@@ -131,7 +147,7 @@ namespace Amara {
         }
 
         sol::object setOrigin(float _x, float _y) {
-            origin = { _x, _y };
+            origin = Vector2( _x, _y );
             return get_lua_object();
         }
         sol::object setOrigin(float _o) {

@@ -105,6 +105,19 @@ namespace Amara {
 
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
+            if (json_has(config, "origin")) {
+                nlohmann::json originData = config["origin"];
+                if (originData.is_string()) {
+                    origin = stringToPosition(originData.get<std::string>());
+                }
+                else if (originData.is_number()) {
+                    origin = Vector2( originData.get<float>(), originData.get<float>() );
+                }
+                else if (originData.is_object()) {
+                    if (json_has(originData, "x")) origin.x = originData["x"];
+                    if (json_has(originData, "y")) origin.y = originData["y"];
+                }
+            }
 
             if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
             if (json_has(config, "cropRight")) cropRight = config["cropRight"];
@@ -130,7 +143,7 @@ namespace Amara {
         }
         
         sol::object setOrigin(float _x, float _y) {
-            origin = { _x, _y };
+            origin = Vector2( _x, _y );
             return get_lua_object();
         }
         sol::object setOrigin(float _o) {

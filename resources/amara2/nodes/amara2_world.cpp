@@ -69,19 +69,19 @@ namespace Amara {
                 if (displayID != rec_displayID) {
                     SDL_Rect displayBounds;
                     if (SDL_GetDisplayUsableBounds(displayID, &displayBounds)) {
-                        display = {
+                        display = Rectangle(
                             static_cast<float>(displayBounds.x), 
                             static_cast<float>(displayBounds.y),
                             static_cast<float>(displayBounds.w), 
                             static_cast<float>(displayBounds.h)
-                        };
+                        );
                     }
                 }
                 Props::display = display;
                 Props::displayID = displayID;
                 
                 Props::current_window = window;
-                viewport = { 0, 0, windowW, windowH };
+                viewport = Rectangle( 0, 0, windowW, windowH );
                 Props::master_viewport = viewport;
 
                 int wx, wy;
@@ -106,11 +106,11 @@ namespace Amara {
                 }
                 windowW = fww;
                 windowH = fwh;
-                window_dim = { pos.x, pos.y, windowW, windowH };
+                window_dim = Rectangle( pos.x, pos.y, windowW, windowH );
                 Props::window_dim = window_dim;
             }
             else {
-                viewport = { pos.x, pos.y, windowW, windowH };
+                viewport = Rectangle( pos.x, pos.y, windowW, windowH );
                 display = Props::display;
             }
         }
@@ -120,7 +120,6 @@ namespace Amara {
             Props::assets = &assets;
             Props::shaders = &shaders;
 
-            Props::lua()["World"] = get_lua_object();
             Props::lua()["Assets"] = &assets;
             Props::lua()["Shaders"] = &shaders;
 
@@ -314,7 +313,7 @@ namespace Amara {
             if (window == nullptr) return;
 
             windowID = SDL_GetWindowID(window);
-            window_dim = { pos.x, pos.y, windowW, windowH };
+            window_dim = Rectangle( pos.x, pos.y, windowW, windowH );
 
             setScreenMode(screenMode);
         }
@@ -583,7 +582,7 @@ namespace Amara {
                 else {
                     zoom = viewport.w / virtualWidth;
                 }
-                Props::passOn.window_zoom = { zoom, zoom };
+                Props::passOn.window_zoom = Vector2( zoom, zoom );
             }
 
             passOn = Props::passOn;
@@ -662,7 +661,7 @@ namespace Amara {
             assets.clear();
             shaders.clear();
             renderBatch.destroy();
-            
+
             #ifdef AMARA_OPENGL
             if (glContext != NULL) {
                 SDL_GL_DestroyContext(glContext);
