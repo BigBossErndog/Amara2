@@ -5,6 +5,7 @@ namespace Amara {
         SDL_GPUTexture* gpuTexture = nullptr;
 
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
+        Amara::Color tint = Amara::Color::White;
 
         #ifdef AMARA_OPENGL
         GLuint glCanvasID = 0;
@@ -49,6 +50,9 @@ namespace Amara {
         virtual nlohmann::json toJSON() {
             nlohmann::json data = Amara::Node::toJSON();
 
+            data["tint"] = tint.toJSON();
+            data["blendMode"] = static_cast<int>(blendMode);
+
             data["width"] = width;
             data["height"] = height;
             
@@ -58,6 +62,9 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
+            if (json_has(config, "tint")) tint = config["tint"];
+            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
+
             if (json_has(config, "w")) width = config["w"];
             if (json_has(config, "h")) height = config["h"];
             if (json_has(config, "width")) width = config["width"];
@@ -267,6 +274,7 @@ namespace Amara {
             
             if (canvasTexture && Props::renderer) {
                 SDL_SetTextureScaleMode(canvasTexture, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureColorMod(canvasTexture, tint.r, tint.g, tint.b);
                 SDL_SetTextureAlphaMod(canvasTexture, alpha * passOn.alpha * 255);
                 setSDLBlendMode(canvasTexture, blendMode);
 
@@ -307,7 +315,7 @@ namespace Amara {
                 Props::renderBatch->pushQuad(
                     Props::currentShaderProgram,
                     glCanvasID,
-                    vertices, passOn.alpha * alpha,
+                    vertices, passOn.alpha * alpha, tint,
                     v, passOn.insideFrameBuffer,
                     blendMode
                 );
@@ -354,6 +362,8 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<TextureContainer>("TextureContainer",
                 sol::base_classes, sol::bases<Node>(),
+                "tint", &TextureContainer::tint,
+                "blendMode", &TextureContainer::blendMode,
                 "w", &TextureContainer::width,
                 "h", &TextureContainer::height,
                 "width", &TextureContainer::width,

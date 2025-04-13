@@ -101,18 +101,18 @@ namespace Amara {
         std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
             GraphicsEnum::Render2D,
             #ifdef AMARA_OPENGL
-                GraphicsEnum::OpenGL,
+            GraphicsEnum::OpenGL,
             #endif
             GraphicsEnum::VulkanMetalDirectX
             
         };
     #else
         std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
-            GraphicsEnum::VulkanMetalDirectX,
+            GraphicsEnum::Render2D,
             #ifdef AMARA_OPENGL
-                GraphicsEnum::OpenGL,
+            GraphicsEnum::OpenGL
             #endif
-            GraphicsEnum::Render2D
+            GraphicsEnum::VulkanMetalDirectX,
         };
     #endif
 
@@ -130,6 +130,9 @@ namespace Amara {
             g = _color.g;
             b = _color.b;
             a = _color.a;
+        }
+        Color(nlohmann::json config) {
+            configure(config);
         }
 
         void toFloats(float* _r, float* _g, float* _b) {
@@ -149,5 +152,74 @@ namespace Amara {
             a = _color.a;
             return *this; 
         }
+        Color& operator= (nlohmann::json config) {
+            configure(config);
+            return *this; 
+        }
+
+        Amara::Color& configure(nlohmann::json config) {
+            if (json_has(config, "r")) r = config["r"];
+            else r = 0;
+            if (json_has(config, "g")) g = config["g"];
+            else g = 0;
+            if (json_has(config, "b")) b = config["b"];
+            else b = 0;
+            if (json_has(config, "a")) a = config["a"];
+            else a = 255;
+            return *this;
+        }
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                { "r", r },
+                { "g", g },
+                { "b", b },
+                { "a", a }
+            });
+        }
+
+        static Color White;
+        static Color Black;
+        static Color Red;
+        static Color Green;
+        static Color Blue;
+        static Color Yellow;
+        static Color Magenta;
+        static Color Cyan;
+        static Color Transparent;
+
+        static void bindLua(sol::state& lua);
     };
+
+    Color Color::White = {255, 255, 255, 255};
+    Color Color::Black = {0, 0, 0, 255};
+    Color Color::Red = {255, 0, 0, 255};
+    Color Color::Green = {0, 255, 0, 255};
+    Color Color::Blue = {0, 0, 255, 255};
+    Color Color::Yellow = {255, 255, 0, 255};
+    Color Color::Magenta = {255, 0, 255, 255};
+    Color Color::Cyan = {0, 255, 255, 255};
+    Color Color::Transparent = {0, 0, 0, 0};
+
+    void Color::bindLua(sol::state& lua) {
+        sol::usertype<Color> color_type = lua.new_usertype<Color>("Color",
+            sol::constructors<Color(Uint8, Uint8, Uint8, Uint8), Color(Uint8, Uint8, Uint8)>(),
+            "r", &Color::r,
+            "g", &Color::g,
+            "b", &Color::b,
+            "a", &Color::a
+        );
+
+        lua.new_enum("Colors",
+            "White", Color::White,
+            "Black", Color::Black,
+            "Red", Color::Red,
+            "Green", Color::Green,
+            "Blue", Color::Blue,
+            "Yellow", Color::Yellow,
+            "Magenta", Color::Magenta,
+            "Cyan", Color::Cyan,
+            "Transparent", Color::Transparent
+        );
+    }
 }

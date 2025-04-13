@@ -9,6 +9,7 @@ namespace Amara {
         int progress = 0;
 
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
+        Amara::Color tint = Amara::Color::White;
 
         Amara::AlignmentEnum alignment = Amara::AlignmentEnum::Left;
 
@@ -39,6 +40,12 @@ namespace Amara {
 
         virtual nlohmann::json toJSON() override {
             nlohmann::json config = Amara::Node::toJSON();
+
+            config["tint"] = tint.toJSON();
+            config["blendMode"] = static_cast<int>(blendMode);
+
+            config["tint"] = tint.toJSON();
+            config["blendMode"] = static_cast<int>(blendMode);
             
             config["wrapWidth"] = wrapWidth;
             config["wrapMode"] = wrapMode;
@@ -58,6 +65,9 @@ namespace Amara {
 
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Node::configure(config);
+
+            if (json_has(config, "tint")) tint = config["tint"];
+            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
             
             if (json_has(config, "wrapWidth")) {
                 setWrapWidth(config["wrapWidth"]);
@@ -190,6 +200,13 @@ namespace Amara {
 
             int count = 0;
 
+            if (font->texture && Props::renderer) {
+                SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureColorMod(font->texture, tint.r, tint.g, tint.b);
+                SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * 255);
+                setSDLBlendMode(font->texture, blendMode);
+            }
+
             for (const TextLine& line : layout.lines) {
                 for (const Glyph& glyph : line.glyphs) {
                     Vector3 glyphPos = Vector3(
@@ -222,10 +239,6 @@ namespace Amara {
                     destRect.h = dim.h * totalZoom.y;
 
                     if (font->texture && Props::renderer) {
-                        SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
-                        SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * 255);
-                        setSDLBlendMode(font->texture, blendMode);
-
                         SDL_RenderTextureRotated(
                             Props::renderer, 
                             font->texture,
@@ -263,7 +276,7 @@ namespace Amara {
                         Props::renderBatch->pushQuad(
                             Props::currentShaderProgram,
                             font->glTextureID,
-                            vertices, passOn.alpha * alpha,
+                            vertices, passOn.alpha * alpha, tint,
                             v, passOn.insideFrameBuffer,
                             blendMode
                         );
@@ -285,6 +298,8 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
+                "tint", &Text::tint,
+                "blendMode", &Text::blendMode,
                 "w", sol::readonly(&Text::textwidth),
                 "h", sol::readonly(&Text::textheight),
                 "text", sol::readonly(&Text::text),

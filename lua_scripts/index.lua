@@ -27,8 +27,23 @@
 -- Scripts:load("test","scripts/testScript")
 -- Scripts:run("test")
 
-    Game:setTargetFPS(60)
+    -- Game:setTargetFPS(60)
 
+    -- Creator:createWorld({
+    --     window = {
+    --         windowTitle = "Amara2",
+    --         -- resizable = true,
+    --         screenMode = ScreenMode.Windowed,
+    --         width = 1280,
+    --         height = 720,
+    --         virtualWidth = 640,
+    --         virtualHeight = 360,
+    --         -- graphics = Graphics.OpenGL
+    --         graphics = Graphics.Render2D,
+    --     },
+    --     entryScene = "scenes/TestScene",
+    -- })
+    
     Creator:createWorld({
         window = {
             windowTitle = "Amara2",
@@ -42,53 +57,38 @@
             graphics = Graphics.Render2D,
         },
         entryScene = "scenes/TestScene",
-    })
+        -- onPreload = function(self)
+        --     self.load:image("goldenFlower", "goldenFlower.png")
+        -- end,
+        -- onCreate = function(self)
+        --     local textCont = self:createChild("TextureContainer", {
+        --         width = 256,
+        --         height = 256,
+        --         alpha = 0.5,
+        --         -- visible = false,
+        --         paused = true,
+        --         canvasLocked = true
+        --     })
     
-    Creator:createWorld({
-        window = {
-            windowTitle = "Amara2",
-            -- resizable = true,
-            screenMode = ScreenMode.Windowed,
-            width = 1280,
-            height = 720,
-            virtualWidth = 640,
-            virtualHeight = 360,
-            graphics = Graphics.Render2D
-            -- graphics = Graphics.Render2D,
-        },
-        -- entryScene = "scenes/TestScene",
-        onPreload = function(self)
-            self.load:image("goldenFlower", "goldenFlower.png")
-        end,
-        onCreate = function(self)
-            local textCont = self:createChild("TextureContainer", {
-                width = 256,
-                height = 256,
-                alpha = 0.5,
-                -- visible = false,
-                paused = true,
-                canvasLocked = true
-            })
-    
-            local a_rate = 2 * math.pi * 0.01
-            local d_rate = 1
-            for i = 1, (128*128) do
-                textCont:createChild("Sprite", {
-                    texture = "goldenFlower",
-                    x = math.sin(a_rate * i) * d_rate * i,
-                    y = math.cos(a_rate * i) * d_rate * i
-                })
-            end
-        end,
-        onUpdate = function(self, deltaTime)
-            -- print(Game.fps)
-        end
+        --     local a_rate = 2 * math.pi * 0.01
+        --     local d_rate = 1
+        --     for i = 1, (128*128) do
+        --         textCont:createChild("Sprite", {
+        --             texture = "goldenFlower",
+        --             x = math.sin(a_rate * i) * d_rate * i,
+        --             y = math.cos(a_rate * i) * d_rate * i
+        --         })
+        --     end
+        -- end,
+        -- onUpdate = function(self, deltaTime)
+        --     -- print(Game.fps)
+        -- end
     })
 
 --     firstworld.onPreload = function(self)
 --         self.load:image("goldenFlower", "goldenFlower.png")
 --         self.load:spritesheet("freaker", "freaker.png", 32, 64);
-        
+
 --         Animations:add({
 --             key = "running",
 --             texture = "freaker",

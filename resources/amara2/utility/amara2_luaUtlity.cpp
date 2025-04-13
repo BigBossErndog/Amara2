@@ -38,6 +38,8 @@ namespace Amara {
             return obj.as<double>();
         } else if (obj.get_type() == sol::type::string) {
             return obj.as<std::string>();
+        } else if (obj.is<Amara::Color>()) {
+            return obj.as<Amara::Color>().toJSON();
         } else if (obj.get_type() == sol::type::table) {
             sol::table tbl = obj.as<sol::table>();
             nlohmann::json json;

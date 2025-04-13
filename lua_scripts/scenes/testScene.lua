@@ -40,7 +40,7 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
-        Game:setTargetFPS(60)
+        -- Game:setTargetFPS(60)
 
         self:createChild("Sprite"):configure({
             texture = "bigThing"
@@ -49,11 +49,12 @@ return NodeFactory:create("Scene"):configure({
         local textCont = self:createChild("TextureContainer", {
             width = 256,
             height = 256,
-            alpha = 0.5,
+            -- alpha = 0.5,
             -- visible = false,
             paused = true,
             canvasLocked = true,
-            fixedToCamera = true
+            -- fixedToCamera = true,
+            tint = Colors.Red
         })
 
         local a_rate = 2 * math.pi * 0.01
@@ -68,7 +69,8 @@ return NodeFactory:create("Scene"):configure({
 
         local f = self:createChild("Sprite", {
             texture = "freaker",
-            animation = "runningDown"
+            animation = "runningDown",
+            tint = Colors.Blue
         })
         
         self.props.f = f;
@@ -81,7 +83,8 @@ return NodeFactory:create("Scene"):configure({
             wrapMode = WrapMode.ByWord,
             wrapWidth = 128,
             lineSpacing = 10,
-            fixedToCamera = true
+            fixedToCamera = true,
+            tint = Colors.Green
         })
 
         local controlRight = Controls:scheme("right")
@@ -100,7 +103,7 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onUpdate = function(self, deltaTime)
-        -- self.props.txt:setText(math.floor(Game.fps), " FPS")
+        self.props.txt:setText(math.floor(Game.fps), " FPS")
         -- print(math.floor(Game.fps), " FPS")
 
         if Keyboard:isDown(Key.X) then

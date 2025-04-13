@@ -9,6 +9,7 @@ namespace Amara {
         SpritesheetAsset* spritesheet = nullptr;
 
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
+        Amara::Color tint = Amara::Color::White;
 
         Vector2 origin = { 0.5, 0.5 };
         
@@ -77,6 +78,9 @@ namespace Amara {
                 data["texture"] = image->key;
             }
             data["frame"] = frame;
+
+            data["tint"] = tint.toJSON();
+            data["blendMode"] = static_cast<int>(blendMode);
             
             data["originX"] = origin.x;
             data["originY"] = origin.y;
@@ -91,6 +95,9 @@ namespace Amara {
 
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Node::configure(config);
+
+            if (json_has(config, "tint")) tint = config["tint"];
+            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
 
             if (json_has(config, "texture")) setTexture(config["texture"]);
             if (json_has(config, "frame")) frame = config["frame"];
@@ -129,7 +136,7 @@ namespace Amara {
         sol::object setOrigin(float _o) {
             return setOrigin(_o, _o);
         }
-        
+
         virtual void drawSelf(const Rectangle& v) override {
             if (image == nullptr) return;
 
@@ -203,6 +210,7 @@ namespace Amara {
             if (image->texture && Props::renderer) {
                 // 2D Rendering
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureColorMod(image->texture, tint.r, tint.g, tint.b);
                 SDL_SetTextureAlphaMod(image->texture, alpha * passOn.alpha * 255);
                 setSDLBlendMode(image->texture, blendMode);
 
@@ -246,7 +254,7 @@ namespace Amara {
                 Props::renderBatch->pushQuad(
                     Props::currentShaderProgram,
                     image->glTextureID,
-                    vertices, passOn.alpha * alpha,
+                    vertices, passOn.alpha * alpha, tint,
                     v, passOn.insideFrameBuffer,
                     blendMode
                 );
@@ -258,6 +266,8 @@ namespace Amara {
             lua.new_usertype<Sprite>("Sprite",
                 sol::base_classes, sol::bases<Node>(),
                 "setTexture", &Sprite::setTexture,
+                "tint", &Sprite::tint,
+                "blendMode", &Sprite::blendMode,
                 "frame", &Sprite::frame,
                 "animate",  sol::resolve<sol::object(sol::object)>(&Sprite::animate),
                 "stopAnimating", &Sprite::stopAnimating,
