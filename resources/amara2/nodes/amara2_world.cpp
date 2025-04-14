@@ -30,6 +30,8 @@ namespace Amara {
 
         GraphicsEnum graphics;
 
+        Amara::Color backgroundColor = Amara::Color::Transparent;
+
         Rectangle display;
         Uint32 displayID = 0;
         Uint32 rec_displayID = 0;
@@ -40,14 +42,15 @@ namespace Amara {
         float virtualHeight = -1;
 
         Rectangle viewport;
-
         
         int vsync = 0;
         bool headless = true;
         bool resizable = 0;
         bool transparent = false;
         bool alwaysOnTop = false;
+
         bool clickThrough = false;
+        bool clickThroughState = false;
 
         bool exception_thrown = false;
         
@@ -172,6 +175,12 @@ namespace Amara {
             window_data["headless"] = headless;
             window_data["transparent"] = transparent;
             window_data["alwaysOnTop"] = alwaysOnTop;
+            window_data["clickThrough"] = clickThrough;
+            window_data["screenMode"] = screenMode;
+            window_data["graphics"] = graphics_to_string(graphics);
+            window_data["backgroundColor"] = backgroundColor.toJSON();
+
+            data["entryScenes"] = entryScenes;
 
             return data;
         }
@@ -267,6 +276,9 @@ namespace Amara {
             if (json_has(config, "clickThrough")) {
                 clickThrough = config["clickThrough"];
             }
+            if (json_has(config, "backgroundColor")) {
+                backgroundColor = config["backgroundColor"];
+            }
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
@@ -348,9 +360,14 @@ namespace Amara {
         }
 
         void setClickThrough(bool enabled) {
-            if (clickThrough == enabled || window == nullptr) return;
-
             clickThrough = enabled;
+            setClickThroughState(enabled);
+        }
+
+        void setClickThroughState(bool enabled) {
+            if (clickThroughState == enabled || window == nullptr) return;
+
+            clickThroughState = enabled;
 
             if (enabled) {
                 SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
@@ -388,9 +405,6 @@ namespace Amara {
                     }
                 #endif
             }
-
-            Props::clickThroughEnabled = enabled;
-            Props::clickThroughState = enabled;
         }
 
         void setup_new_window() {
@@ -715,6 +729,7 @@ namespace Amara {
 
         void prepareRenderer() {
             if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
+                SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
                 SDL_RenderClear(renderer);
                 Props::master_viewport = viewport;
                 Props::graphics = graphics;
@@ -731,7 +746,12 @@ namespace Amara {
 
                 SDL_GL_MakeCurrent(window, glContext);
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                glClearColor(
+                    backgroundColor.r / 255.0f,
+                    backgroundColor.g / 255.0f,
+                    backgroundColor.b / 255.0f,
+                    backgroundColor.a / 255.0f
+                );
                 glClear(GL_COLOR_BUFFER_BIT);
 
                 Props::defaultShaderProgram = defaultShaderProgram;
@@ -819,7 +839,8 @@ namespace Amara {
                 "clickThrough", sol::readonly(&World::clickThrough),
                 "setClickThrough", &World::setClickThrough,
                 "windowTitle", sol::readonly(&World::windowTitle),
-                "setWindowTitle", &World::setWindowTitle
+                "setWindowTitle", &World::setWindowTitle,
+                "backgroundColor", &World::backgroundColor
             );
 
             sol::usertype<Node> node_type = lua["Node"];
