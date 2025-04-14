@@ -91,7 +91,7 @@ namespace Amara {
                 new_world->luaConfigure(config);
             }
 
-            if (currentDemiurge) {
+            if (currentDemiurge && !currentDemiurge->paused) {
                 new_world->demiurge = currentDemiurge;
                 currentDemiurge->addWorld(new_world);
             }
@@ -148,6 +148,16 @@ namespace Amara {
                 delete currentDemiurge;
             }
             currentDemiurge = nullptr;
+        }
+        void pauseDemiurgicUniverse() {
+            if (currentDemiurge) {
+                currentDemiurge->paused = true;
+            }
+        }
+        void resumeDemiurgicUniverse() {
+            if (currentDemiurge) {
+                currentDemiurge->paused = false;
+            }
         }
 
         void startCreation(std::string path) {
@@ -254,7 +264,9 @@ namespace Amara {
                 "startDemiurgicUniverse", &Creator::startDemiurgicUniverse,
                 "makePresenceKnown", &Creator::makePresenceKnown,
                 "newDemiurgicUniverse", &Creator::newDemiurgicUniverse,
-                "destroyDemiurgicUniverse", &Creator::destroyDemiurgicUniverse
+                "destroyDemiurgicUniverse", &Creator::destroyDemiurgicUniverse,
+                "pauseDemuirgicUniverse", &Creator::pauseDemiurgicUniverse,
+                "resumeDemiurgicUniverse", &Creator::resumeDemiurgicUniverse
             );
         }
         

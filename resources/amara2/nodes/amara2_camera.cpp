@@ -40,7 +40,7 @@ namespace Amara {
 
             data["zoomX"] = zoom.x;
             data["zoomY"] = zoom.y;
-
+            
             data["originX"] = origin.x;
             data["originY"] = origin.y;
 

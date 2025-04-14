@@ -560,6 +560,11 @@ namespace Amara {
                         break;
                     case Amara::GraphicsEnum::OpenGL:
                         #ifdef AMARA_OPENGL
+                        if (Props::glContext != NULL) {
+                            debug_log("Error: Multiple OpenGL worlds is currently not supported.");
+                            continue;
+                        }
+
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);

@@ -38,7 +38,7 @@
     --         height = 720,
     --         virtualWidth = 640,
     --         virtualHeight = 360,
-    --         graphics = Graphics.Render2D
+    --         graphics = Graphics.OpenGL
     --         -- graphics = Graphics.Render2D,
     --     },
     --     entryScene = "scenes/TestScene",
@@ -55,10 +55,9 @@
             virtualHeight = 360,
             -- graphics = Graphics.OpenGL
             graphics = Graphics.OpenGL,
-            -- transparent = true,
+            transparent = true,
             -- alwaysOnTop = true,
             -- clickThrough = true,
-            -- backgroundColor = Color.new(100, 100, 100, 0)
         },
         -- entryScene = "scenes/TestScene",
         -- onPreload = function(self)

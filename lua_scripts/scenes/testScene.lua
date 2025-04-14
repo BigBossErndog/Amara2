@@ -41,7 +41,8 @@ return NodeFactory:create("Scene"):configure({
 
     onCreate = function(self)
         local map = self:createChild("Sprite"):configure({
-            texture = "bigThing"
+            texture = "bigThing",
+            alpha = 0.5
         })
         self.camera:setBounds(
             map.x - map.w/2,

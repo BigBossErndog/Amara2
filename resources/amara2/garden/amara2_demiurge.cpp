@@ -17,6 +17,7 @@ namespace Amara {
         std::vector<World*> worlds;
 
         bool demiurgic = true;
+        bool paused = false;
 
         Demiurge() {}
 
