@@ -146,6 +146,11 @@ namespace Amara {
             update_canvas = true;
         }
 
+        void paintOnce() {
+            update_canvas = true;
+            canvasLocked = true;
+        }
+
         sol::object setOrigin(float _x, float _y) {
             origin = Vector2( _x, _y );
             return get_lua_object();
@@ -392,7 +397,9 @@ namespace Amara {
                 "setOrigin", sol::overload(
                     sol::resolve<sol::object(float, float)>(&TextureContainer::setOrigin),
                     sol::resolve<sol::object(float)>(&TextureContainer::setOrigin)
-                )
+                ),
+                "canvasLocked", &TextureContainer::canvasLocked,
+                "paintOnce", &TextureContainer::paintOnce
             );
         }
     };

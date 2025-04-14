@@ -3,6 +3,12 @@ namespace Amara {
         Vector2() = default;
         Vector2(float x_, float y_) : x(x_), y(y_) {}
         Vector2(const SDL_FPoint& p): Vector2(p.x, p.y) {}
+        Vector2(nlohmann::json config) {
+            *this = config;
+        }
+        Vector2(sol::object obj) {
+            *this = obj;
+        }
 
         float x = 0;
         float y = 0;
@@ -115,6 +121,12 @@ namespace Amara {
         Vector3() = default;
         Vector3(float _x, float _y, float _z) : Vector2(_x, _y), z(_z) {}
         Vector3(const Vector2& v2, float _z): Vector2(v2.x, v2.y), z(_z) {}
+        Vector3(nlohmann::json config) {
+            *this = config;
+        }
+        Vector3(sol::object obj) {
+            *this = obj;
+        }
 
         public: float z = 0;
 
@@ -154,6 +166,16 @@ namespace Amara {
             return *this;
         }
 
+        Vector3 operator* (float scalar) const {
+            return Vector3(x * scalar, y * scalar, z * scalar);
+        }
+        Vector3& operator*= (float scalar) {
+            x *= scalar;
+            y *= scalar;
+            z *= scalar;
+            return *this;
+        }
+
         nlohmann::json toJSON() {
             return nlohmann::json::object({
                 {"x", x},
@@ -181,8 +203,109 @@ namespace Amara {
             return os << static_cast<std::string>(v);
         }
     };
+    
+    struct Vector4: public Vector3 {
+        Vector4() = default;
+        Vector4(float _x, float _y, float _z, float _w) : Vector3(_x, _y, _z), w(_w) {}
+        Vector4(nlohmann::json config) {
+            *this = config;
+        }
+        Vector4(sol::object obj) {
+            *this = obj;
+        }
+
+        public: float w = 0;
+
+        Vector4 operator+ (const Vector4& other) const {
+            return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
+        }
+        Vector4& operator+=(const Vector4& other) {
+            x += other.x;
+            y += other.y;
+            z += other.z;
+            w += other.w;
+            return *this;
+        }
+
+        Vector4 operator- (const Vector4& other) const {
+            return Vector4(x - other.x, y - other.y, z - other.z, w - other.w);
+        }
+        Vector4& operator-=(const Vector4& other) {
+            x -= other.x;
+            y -= other.y;
+            z -= other.z;
+            w -= other.w;
+            return *this;
+        }
+
+        Vector4 operator* (float scalar) const {
+            return Vector4(x * scalar, y * scalar, z * scalar, w * scalar);
+        }
+        Vector4& operator*= (float scalar) {
+            x *= scalar;
+            y *= scalar;
+            z *= scalar;
+            w *= scalar;
+            return *this;
+        }
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"x", x},
+                {"y", y},
+                {"z", z},
+                {"w", w}
+            });
+        }
+
+        Vector4& operator= (nlohmann::json config) {
+            if (json_has(config, "x")) x = config["x"];
+            if (json_has(config, "y")) y = config["y"];
+            if (json_has(config, "z")) z = config["z"];
+            if (json_has(config, "w")) w = config["w"];
+            return *this;
+        }
+        Vector4& operator= (sol::object obj);
+
+        bool operator==(const Vector4& other) const {
+            return x == other.x && y == other.y && z == other.z && w == other.w;
+        }
+
+        explicit operator std::string() const {
+            return "{ x: " + float_string(x) + ", y: " + float_string(y) + ", z: " + float_string(z) + ", w: " + float_string(w) + " }";
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const Vector4& v) {
+            return os << static_cast<std::string>(v);
+        }
+    };
 
     struct Matrix4x4 {
+        Matrix4x4() = default;
+        Matrix4x4(
+            float _m11, float _m12, float _m13, float _m14,
+            float _m21, float _m22, float _m23, float _m24,
+            float _m31, float _m32, float _m33, float _m34,
+            float _m41, float _m42, float _m43, float _m44
+        ) {
+            m11 = _m11;
+            m12 = _m12;
+            m13 = _m13;
+            m14 = _m14;
+            m21 = _m21;
+            m22 = _m22;
+            m23 = _m23;
+            m24 = _m24;
+            m31 = _m31;
+            m32 = _m32;
+            m33 = _m33;
+            m34 = _m34;
+            m41 = _m41;
+            m42 = _m42;
+            m43 = _m43;
+            m44 = _m44;
+        }
+
         float m11, m12, m13, m14;
         float m21, m22, m23, m24;
         float m31, m32, m33, m34;

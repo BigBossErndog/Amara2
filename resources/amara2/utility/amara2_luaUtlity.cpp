@@ -178,6 +178,11 @@ namespace Amara {
         else *this = lua_to_json(obj);
         return *this;
     }
+    Vector4& Vector4::operator= (sol::object obj) {
+        if (obj.is<Vector4>()) *this = obj.as<Vector4>();
+        else *this = lua_to_json(obj);
+        return *this;
+    }
     Rectangle& Rectangle::operator= (sol::object obj) {
         if (obj.is<Rectangle>()) *this = obj.as<Rectangle>();
         else *this = lua_to_json(obj);

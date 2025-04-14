@@ -14,6 +14,13 @@ namespace Amara {
             w = static_cast<float>(r.w);
             h = static_cast<float>(r.h);
         }
+        Rectangle(nlohmann::json config) {
+            *this = config;
+        }
+        Rectangle(sol::object obj) {
+            *this = obj;
+        }
+            
         float w = 0;
         float h = 0;
 
@@ -50,7 +57,7 @@ namespace Amara {
             });
         }
 
-        Rectangle& operator= (nlohmann::json config) {
+        Rectangle& operator= (const nlohmann::json& config) {
             if (json_has(config, "x")) x = config["x"];
             if (json_has(config, "y")) y = config["y"];
             if (json_has(config, "w")) w = config["w"];
@@ -170,7 +177,7 @@ namespace Amara {
         bool is() const {
             return std::holds_alternative<T>(shape);
         }
-
+        
         template <typename T>
         T as() const {
             if (!std::holds_alternative<T>(shape))

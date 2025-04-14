@@ -71,79 +71,104 @@ namespace Amara {
             return shader;
         }
 
-        ShaderProgram* createShaderProgram(std::string vertex_key, std::string fragment_key) {
-            unsigned int shaderProgram = glCreateProgram();
-            unsigned int vertexShader, fragmentShader;
+        ShaderProgram* createShaderProgram(nlohmann::json config) {
+            unsigned int shaderProgramID = glCreateProgram();
 
-            bool tempVertex = false;
-            bool tempFragment = false;
-
-            if (hasShader(vertex_key)) {
-                vertexShader = getShader(vertex_key);
-            }
-            else {
-                std::string filePath = Props::files->getAssetPath(vertex_key);\
-                if (Props::files->fileExists(filePath)) {
-                    std::string source = Props::files->readFile(filePath);
-                    vertexShader = compileGLShader("", source, ShaderTypeEnum::Vertex);
-                    tempVertex = true;
+            if (json_has(config, "vertex")) {
+                bool temp = false;
+                std::string shader_key = json_extract(config, "vertex");
+                unsigned int shaderID = 0;
+                if (hasShader(shader_key)) {
+                    shaderID = getShader(shader_key);
                 }
+                else if (!shader_key.empty()) {
+                    std::string filePath = Props::files->getAssetPath(shader_key);
+                    if (Props::files->fileExists(filePath)) {
+                        std::string source = Props::files->readFile(filePath);
+                        shaderID = compileGLShader("", source, ShaderTypeEnum::Vertex);
+                        temp = true;
+                    }
+                    else {
+                        debug_log("Error: Vertex shader not found: ", shader_key);
+                        return nullptr;
+                    }
+                }
+                if (shaderID != 0) glAttachShader(shaderProgramID, shaderID);
                 else {
-                    debug_log("Error: Vertex shader not found: ", vertex_key);
-                    return 0;
+                    debug_log("Error: Unable to compile vertex shader: ", shader_key);
+                    return nullptr;
                 }
+                if (temp) glDeleteShader(shaderID);
             }
 
-            if (hasShader(fragment_key)) {
-                fragmentShader = getShader(fragment_key);
-            }
-            else {
-                std::string filePath = Props::files->getAssetPath(fragment_key);
-                if (Props::files->fileExists(filePath)) {
-                    std::string source = Props::files->readFile(filePath);
-                    fragmentShader = compileGLShader("", source, ShaderTypeEnum::Fragment);
-                    tempFragment = true;
+            if (json_has(config, "fragement")) {
+                bool temp = false;
+                std::string shader_key = json_extract(config, "fragment");
+                unsigned int shaderID = 0;
+                if (hasShader(shader_key)) {
+                    shaderID = getShader(shader_key);
                 }
+                else if (!shader_key.empty()) {
+                    std::string filePath = Props::files->getAssetPath(shader_key);
+                    if (Props::files->fileExists(filePath)) {
+                        std::string source = Props::files->readFile(filePath);
+                        shaderID = compileGLShader("", source, ShaderTypeEnum::Fragment);
+                        temp = true;
+                    }
+                    else {
+                        debug_log("Error: Fragment shader not found: ", shader_key);
+                        return nullptr;
+                    }
+                }
+                if (shaderID != 0) glAttachShader(shaderProgramID, shaderID);
                 else {
-                    debug_log("Error: Fragment shader not found: ", fragment_key);
-                    return 0;
+                    debug_log("Error: Unable to compile fragment shader: ", shader_key);
+                    return nullptr;
                 }
+                if (temp) glDeleteShader(shaderID);
             }
-
-            glAttachShader(shaderProgram, vertexShader);
-            glAttachShader(shaderProgram, fragmentShader);
-            glLinkProgram(shaderProgram);
+            
+            glLinkProgram(shaderProgramID);
 
             GLint success;
-            glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+            glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &success);
             if (!success) {
                 GLint logLength;
-                glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
+                glGetProgramiv(shaderProgramID, GL_INFO_LOG_LENGTH, &logLength);
                 char* log = new char[logLength];
-                glGetProgramInfoLog(shaderProgram, logLength, &logLength, log);
+                glGetProgramInfoLog(shaderProgramID, logLength, &logLength, log);
                 debug_log("Error: Shader Program Linking Failed: ", log);
                 delete[] log;
                 return 0;
             }
 
-            if (tempVertex) glDeleteShader(vertexShader);
-            if (tempFragment) glDeleteShader(fragmentShader);
-
-            return new ShaderProgram(shaderProgram);
+            ShaderProgram* newProgram = new ShaderProgram(shaderProgramID);
+            newProgram->manager = this;
+            newProgram->configure(config);
+        
+            return newProgram;
         }
 
-        ShaderProgram* createShaderProgram(std::string key, std::string vertex_key, std::string fragment_key) {
+        ShaderProgram* createShaderProgram(std::string key, nlohmann::json config) {
             if (hasShaderProgram(key)) {
                 ShaderProgram* existing = glPrograms[key];
                 existing->destroy();
                 delete existing;
             }
 
-            ShaderProgram* shaderProgram = createShaderProgram(vertex_key, fragment_key);
+            ShaderProgram* shaderProgram = createShaderProgram(config);
             shaderProgram->key = key;
+
             glPrograms[key] = shaderProgram;
             
             return shaderProgram;
+        }
+
+        ShaderProgram* createShaderProgram(std::string key, sol::object config) {
+            return createShaderProgram(key, lua_to_json(config));
+        }
+        ShaderProgram* createShaderProgram(sol::object config) {
+            return createShaderProgram(lua_to_json(config));
         }
         #endif
 
@@ -184,10 +209,7 @@ namespace Amara {
             
             lua.new_usertype<ShaderManager>("ShaderManager",
                 #ifdef AMARA_OPENGL
-                "createShaderProgram", sol::overload(
-                    sol::resolve<ShaderProgram*(std::string, std::string, std::string)>(&ShaderManager::createShaderProgram),
-                    sol::resolve<ShaderProgram*(std::string, std::string)>(&ShaderManager::createShaderProgram)
-                ),
+                "createShaderProgram", sol::resolve<ShaderProgram*(std::string, sol::object)>(&ShaderManager::createShaderProgram),
                 "hasShaderProgram", &ShaderManager::hasShaderProgram,
                 #endif
                 "hasShader", &ShaderManager::hasShader,
@@ -195,4 +217,10 @@ namespace Amara {
             );
         }
     };
+
+    #ifdef AMARA_OPENGL
+    void ShaderProgram::configure(nlohmann::json config) {
+
+    }
+    #endif
 }

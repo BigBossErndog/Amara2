@@ -646,7 +646,10 @@ namespace Amara {
         void prepareGLShaders() {
             Props::shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
             Props::shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
-            Props::shaders->createShaderProgram("default", "defaultVert", "defaultFrag");
+            Props::shaders->createShaderProgram("default", {
+                { "vertex", "defaultVert" },
+                { "fragment", "defaultFrag" }
+            });
         }
         #endif
 

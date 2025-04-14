@@ -125,7 +125,7 @@
     #include "assets/amara2_fontAsset.cpp"
 
     #ifdef AMARA_OPENGL
-    #include "rendering/amara2_shaderProgram.cpp"
+    #include "rendering/shaders/amara2_shaderProgram.cpp"
     #endif
     
     #include "managers/amara2_assetManager.cpp"

@@ -42,13 +42,13 @@ return NodeFactory:create("Scene"):configure({
     onCreate = function(self)
         -- Game:setTargetFPS(60)
 
-        -- self:createChild("Sprite"):configure({
-        --     texture = "bigThing"
-        -- })
+        self:createChild("Sprite"):configure({
+            texture = "bigThing"
+        })
 
         local textCont = self:createChild("TextureContainer", {
-            width = 256,
-            height = 256,
+            width = 128,
+            height = 128,
             -- alpha = 0.5,
             -- visible = false,
             paused = true,

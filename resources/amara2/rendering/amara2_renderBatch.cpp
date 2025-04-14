@@ -61,7 +61,7 @@ namespace Amara {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             #endif
         }
-
+        
         #ifdef AMARA_OPENGL
         void newCycle() {
             vertices.clear();
