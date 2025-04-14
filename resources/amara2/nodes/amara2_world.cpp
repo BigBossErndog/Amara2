@@ -894,7 +894,19 @@ namespace Amara {
                 "setWindowTitle", &World::setWindowTitle,
                 "backgroundColor", &World::backgroundColor,
                 "windowMoved", sol::readonly(&World::windowMoved),
-                "windowResized", sol::readonly(&World::windowResized)
+                "windowResized", sol::readonly(&World::windowResized),
+                "depth", sol::property(
+                    [](const Amara::World& world) {
+                        return world.depth;
+                    },
+                    [](Amara::World& world, float value) {
+                        if (world.demiurge) {
+                            debug_log("Note: Demiurgic presence. World Depth Overridden.");
+                            debug_log("Control will be handed over in target builds.");
+                        }
+                        else world.depth = value;
+                    }    
+                )
             );
 
             sol::usertype<Node> node_type = lua["Node"];
