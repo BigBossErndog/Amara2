@@ -33,7 +33,7 @@ namespace Amara {
             #endif
             Props::platform = platform;
         }
-
+        
         void setTargetFPS(float _fps) {
             if (_fps <= 0) {
                 debug_log("Error: Target FPS cannot be 0 or less (Note: use World:uncapFPS() to uncap frame rate).");

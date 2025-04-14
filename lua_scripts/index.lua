@@ -48,7 +48,7 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            screenMode = ScreenMode.Windowed,
+            screenMode = ScreenMode.Fullscreen,
             width = 1280,
             height = 720,
             virtualWidth = 640,
@@ -56,8 +56,8 @@
             -- graphics = Graphics.OpenGL
             graphics = Graphics.OpenGL,
             transparent = true,
-            -- alwaysOnTop = true,
-            -- clickThrough = true,
+            alwaysOnTop = true,
+            clickThrough = true,
         },
         -- entryScene = "scenes/TestScene",
         -- onPreload = function(self)

@@ -446,7 +446,7 @@ namespace Amara {
             #endif
         }
 
-        bool setEnvironmentVar(std::string path, bool permanent) {
+        bool setEnvironmentVar(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
             #if defined(_WIN32)
                 if (isPathInRegistry(filePath.string())) {
@@ -457,70 +457,23 @@ namespace Amara {
                     debug_log("Info: Path \"", filePath.string(), "\" is already set in environment.");
                     return true;
                 }
-                if (permanent) {
-                    HKEY hKey;
-                    const char* regPath = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
-                    const std::string newPath = getRelativePath(path);
-                    // Open the registry key
-                    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS) {
-                        debug_log("Error: Unable to access environment variables.");
-                        return 1;
-                    }
-
-                    // Get the required buffer size
-                    DWORD bufferSize = 0;
-                    if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, nullptr, &bufferSize) != ERROR_SUCCESS) {
-                        debug_log("Error: Unable to access environment variables.");
-                        RegCloseKey(hKey);
-                        return false;
-                    }
-
-                    // Use vector as a dynamically sized buffer
-                    std::vector<char> currentPath(bufferSize);
-                    if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, reinterpret_cast<LPBYTE>(currentPath.data()), &bufferSize) != ERROR_SUCCESS) {
-                        debug_log("Error: Unable to access environment variables.");
-                        RegCloseKey(hKey);
-                        return false;
-                    }
-
-                    // Convert to std::string and append new path
-                    std::string updatedPath(currentPath.data());
-                    updatedPath += ";" + newPath;
-
-                    // Set the new PATH value
-                    if (RegSetValueEx(hKey, "Path", 0, REG_EXPAND_SZ, reinterpret_cast<const BYTE*>(updatedPath.c_str()), updatedPath.size() + 1) != ERROR_SUCCESS) {
-                        debug_log("Error: Unable to add new environment variable.");
-                        RegCloseKey(hKey);
-                        return false;
-                    }
-
-                    // Close the registry key
-                    RegCloseKey(hKey);
-
-                    // Notify the system of the change
-                    SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>("Environment"));
-                    
-                    return true;
+                DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
+                if (size == 0) {
+                    debug_log("Error: Unable to access environment variables.");
+                    return false;
                 }
-                else {
-                    DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
-                    if (size == 0) {
-                        debug_log("Error: Unable to access environment variables.");
-                        return false;
-                    }
-                    std::vector<char> buffer(size);
-                    if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
-                        debug_log("Error: Unable to access environment variables.");
-                        return false;
-                    }
+                std::vector<char> buffer(size);
+                if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
+                    debug_log("Error: Unable to access environment variables.");
+                    return false;
+                }
 
-                    std::string updatedPath(buffer.data());
-                    updatedPath += ";" + filePath.string();
+                std::string updatedPath(buffer.data());
+                updatedPath += ";" + filePath.string();
 
-                    if (!SetEnvironmentVariable("PATH", updatedPath.c_str())) {
-                        debug_log("Error: Unable to add new environment variable.");
-                        return false;
-                    }
+                if (!SetEnvironmentVariable("PATH", updatedPath.c_str())) {
+                    debug_log("Error: Unable to add new environment variable.");
+                    return false;
                 }
                     
                 return true;
