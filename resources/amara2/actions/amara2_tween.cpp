@@ -86,7 +86,7 @@ namespace Amara {
         void clean_data() {
             std::vector<std::string> to_clean;
             for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                if (!json_has(target_data, it.key()) || !it.value().is_number()) {
+                if (!json_has(target_data, it.key()) || !(it.value().is_number() || it.value().is_object())) {
                     to_clean.push_back(it.key());
                 }
             }
@@ -140,7 +140,7 @@ namespace Amara {
                         else if (string_equal(it.key(), "color") || string_equal(it.key(), "tint")) {
                             Amara::Color start_color = start_data[it.key()];
                             Amara::Color target_color = target_data[it.key()];
-                            lua_actor_table.set(it.key(), json_to_lua(ease(start_color, target_color, progress, easing).toJSON()));
+                            lua_actor_table.set(it.key(), ease(start_color, target_color, progress, easing));
                         }
                     }
                 }

@@ -45,7 +45,6 @@ return NodeFactory:create("Scene"):configure({
             alpha = 0.5
         })
         self.camera:setBounds(map.rect)
-        print(map.rect)
 
         local textCont = self:createChild("TextureContainer", {
             width = 256,
@@ -60,8 +59,10 @@ return NodeFactory:create("Scene"):configure({
             -- y = self.camera.topBorder
         })
         self.props.textCont = textCont
-
-        print(textCont.left, textCont.top)
+        textCont.tween:to({
+            tint = Colors.Green,
+            duration = 10
+        })
         
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
@@ -86,8 +87,6 @@ return NodeFactory:create("Scene"):configure({
             -- origin = 1,
             alignment = Align.Left
         })
-
-        print(self.props.txt.pos)
 
         local f = textCont:createChild("Sprite", {
             texture = "freaker",
