@@ -211,6 +211,14 @@ namespace Amara {
 
             for (const TextLine& line : layout.lines) {
                 for (const Glyph& glyph : line.glyphs) {
+                    if (!glyph.renderable) {
+                        count += 1;
+                        if (count >= progress) {
+                            return;
+                        }
+                        continue;
+                    }
+
                     Vector3 glyphPos = Vector3(
                         rotateAroundAnchor(
                             anchoredPos, 
@@ -297,6 +305,27 @@ namespace Amara {
             return converted_text.size();
         }
 
+        Rectangle getRectangle() {
+            return Rectangle(
+                pos.x - (textwidth*scale.x)*origin.x,
+                pos.y - (textheight*scale.y)*origin.y,
+                textwidth*scale.x,
+                textheight*scale.y
+            );
+        }
+
+        void resetProgress() {
+            progress = 0;
+        }
+        bool progressText(int speed) {
+            progress += speed;
+            if (progress >= converted_text.size()) {
+                progress = converted_text.size();
+                return false;
+            }
+            return true;
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
@@ -304,10 +333,13 @@ namespace Amara {
                 "blendMode", &Text::blendMode,
                 "w", sol::readonly(&Text::textwidth),
                 "h", sol::readonly(&Text::textheight),
+                "rect", sol::property(&Text::getRectangle),
+                "length", sol::property(&Text::length),
+                "width", sol::readonly(&Text::textwidth),
+                "height", sol::readonly(&Text::textheight),
                 "text", sol::readonly(&Text::text),
                 "setText", sol::resolve<sol::object(sol::variadic_args)>(&Text::setText),
                 "setFont", &Text::setFont,
-                "progress", &Text::progress,
                 "length", sol::property(&Text::length),
                 "origin", &Text::origin,
                 "setOrigin", sol::overload(
@@ -321,7 +353,10 @@ namespace Amara {
                 "setWrapWidth", &Text::setWrapWidth,
                 "setWrapMode", &Text::setWrapMode,
                 "setWrap", &Text::setWrap,
-                "setLineSpacing", &Text::setLineSpacing
+                "setLineSpacing", &Text::setLineSpacing,
+                "progress", sol::readonly(&Text::progress),
+                "progressText", &Text::progressText,
+                "resetProgress", &Text::resetProgress
             );
         }
     };

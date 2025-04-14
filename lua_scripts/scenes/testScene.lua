@@ -44,12 +44,8 @@ return NodeFactory:create("Scene"):configure({
             texture = "bigThing",
             alpha = 0.5
         })
-        self.camera:setBounds(
-            map.x - map.w/2,
-            map.y - map.h/2,
-            map.w,
-            map.h
-        )
+        self.camera:setBounds(map.rect)
+        print(map.rect)
 
         local textCont = self:createChild("TextureContainer", {
             width = 256,

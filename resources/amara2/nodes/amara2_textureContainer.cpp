@@ -374,6 +374,15 @@ namespace Amara {
             Amara::Node::destroy();
         }
 
+        Rectangle getRectangle() {
+            return Rectangle(
+                pos.x - (width*scale.x)*origin.x,
+                pos.y - (height*scale.y)*origin.y,
+                width*scale.x,
+                height*scale.y
+            );
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<TextureContainer>("TextureContainer",
                 sol::base_classes, sol::bases<Node>(),
@@ -383,6 +392,7 @@ namespace Amara {
                 "h", &TextureContainer::height,
                 "width", &TextureContainer::width,
                 "height", &TextureContainer::height,
+                "rect", sol::property(&TextureContainer::getRectangle),
                 "left", sol::readonly(&TextureContainer::left),
                 "right", sol::readonly(&TextureContainer::right),
                 "top", sol::readonly(&TextureContainer::top),

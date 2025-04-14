@@ -267,6 +267,9 @@ namespace Amara {
                 for (int i = 0; i < str.size(); ++i) {
                     char32_t codepoint = str[i];
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
+                        Glyph glyph;
+                        glyph.renderable = false;
+                        line->glyphs.push_back(glyph);
                         continue;
                     }
                     Glyph glyph = glyphCache[codepoint];
@@ -281,6 +284,8 @@ namespace Amara {
                         continue;
                     }
                     if (codepoint == U'\r') { // Carriage return handling
+                        glyph.renderable = false;
+                        line->glyphs.push_back(glyph);
                         continue;
                     }
 
@@ -293,7 +298,11 @@ namespace Amara {
                         line->height = lineHeight;
                         line->y = cursorY;
 
-                        if (codepoint == U'\n') continue;
+                        if (codepoint == U'\n') {
+                            glyph.renderable = false;
+                            line->glyphs.push_back(glyph);
+                            continue;
+                        }
                         else glyph.x = 0;
                     }
                     
@@ -315,6 +324,9 @@ namespace Amara {
                 for (int i = 0; i < str.size(); ++i) {
                     char32_t codepoint = str[i];
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
+                        Glyph glyph;
+                        glyph.renderable = false;
+                        word.glyphs.push_back(glyph);
                         continue;
                     }
                     
@@ -345,12 +357,17 @@ namespace Amara {
                         word.glyphs.push_back(glyph);
                         continue;
                     }
-                    if (codepoint == U'\r') { // Carriage return handling
+                    if (codepoint == U'\r') { // Carriage return handling-
+                        glyph.renderable = false;
+                        word.glyphs.push_back(glyph);
                         continue;  
                     }
 
                     if (codepoint == U'\n') {
                         layout.height += line->height + lineSpacing;
+
+                        glyph.renderable = false;
+                        word.glyphs.push_back(glyph);
 
                         line->merge(word);
 

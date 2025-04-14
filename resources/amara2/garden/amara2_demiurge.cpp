@@ -19,6 +19,8 @@ namespace Amara {
         bool demiurgic = true;
         bool paused = false;
 
+        std::string base_dir_path;
+
         Demiurge() {}
 
         void override_existence() {
@@ -37,6 +39,10 @@ namespace Amara {
             Props::animations = &animations;
             Props::controls = &controls;
             Props::audio = &audio;
+
+            if (!base_dir_path.empty()) {
+                Props::files->setBasePath(base_dir_path);
+            }
         }
 
         void removeWorld(Amara::World* world) {

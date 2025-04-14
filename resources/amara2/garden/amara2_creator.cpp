@@ -120,6 +120,7 @@ namespace Amara {
             }
             else {
                 override_existence();
+                Props::files->setBasePath(base_dir_path);
                 Props::lua()["Creator"] = this;
             }
         }
@@ -137,6 +138,11 @@ namespace Amara {
             // Causes all future created worlds to be isolated.
             currentDemiurge = createDemiurge();
         }
+        void startDemiurgicUniverse(std::string path) {
+            startDemiurgicUniverse();
+            currentDemiurge->base_dir_path = path;
+        }
+
         void destroyDemiurgicUniverse() {
             if (currentDemiurge) {
                 currentDemiurge->destroyAllWorlds();
@@ -144,11 +150,13 @@ namespace Amara {
             }
             currentDemiurge = nullptr;
         }
+
         void pauseDemiurgicUniverse() {
             if (currentDemiurge) {
                 currentDemiurge->paused = true;
             }
         }
+
         void resumeDemiurgicUniverse() {
             if (currentDemiurge) {
                 currentDemiurge->paused = false;
@@ -257,7 +265,10 @@ namespace Amara {
                 sol::base_classes, sol::bases<Demiurge>(),
                 "worlds", sol::readonly(&Creator::worlds),
                 "new_worlds", sol::readonly(&Creator::new_worlds),
-                "startDemiurgicUniverse", &Creator::startDemiurgicUniverse,
+                "startDemiurgicUniverse", sol::overload(
+                    sol::resolve<void(std::string)>( &Creator::startDemiurgicUniverse ),
+                    sol::resolve<void()>( &Creator::startDemiurgicUniverse )
+                ),
                 "makePresenceKnown", &Creator::makePresenceKnown,
                 "newDemiurgicUniverse", &Creator::newDemiurgicUniverse,
                 "destroyDemiurgicUniverse", &Creator::destroyDemiurgicUniverse,
