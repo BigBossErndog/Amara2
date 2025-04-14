@@ -4,7 +4,7 @@ namespace Amara {
         bool demiurgic = false;
 
         float fps = 0;
-        float targetFPS = -1;
+        float targetFPS = 60;
         double deltaTime = 0;
 
         std::string platform;

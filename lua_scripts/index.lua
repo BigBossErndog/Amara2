@@ -66,36 +66,10 @@
         -- end,
         onCreate = function(self)
             self:createChild("scenes/TestScene")
-            -- local world = self.world;
-            -- local display = world.display;
-            -- world.x = display.x
-            -- world.y = display.y
-            -- world.w = display.w
-            -- world.h = display.h
+        end,
+        onUpdate = function(self, deltaTime)
+            print(Game.fps)
         end
-        -- onCreate = function(self)
-        --     local textCont = self:createChild("TextureContainer", {
-        --         width = 256,
-        --         height = 256,
-        --         alpha = 0.5,
-        --         -- visible = false,
-        --         paused = true,
-        --         canvasLocked = true
-        --     })
-    
-        --     local a_rate = 2 * math.pi * 0.01
-        --     local d_rate = 1
-        --     for i = 1, (128*128) do
-        --         textCont:createChild("Sprite", {
-        --             texture = "goldenFlower",
-        --             x = math.sin(a_rate * i) * d_rate * i,
-        --             y = math.cos(a_rate * i) * d_rate * i
-        --         })as
-        --     end
-        -- end,a
-        -- onUpdate = function(self, deltaTime)
-        --     -- print(Game.fps)
-        -- end
     })
 
 --     firstworld.onPreload = function(self)

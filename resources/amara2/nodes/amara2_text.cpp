@@ -13,7 +13,7 @@ namespace Amara {
 
         Amara::AlignmentEnum alignment = Amara::AlignmentEnum::Left;
 
-        Vector2 origin = { 0.5, 0.5 };
+        Vector2 origin = { 0, 0 };
 
         int textwidth = 0;
         int textheight = 0;

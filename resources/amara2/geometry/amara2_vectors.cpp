@@ -95,7 +95,7 @@ namespace Amara {
 
         Vector2& operator= (nlohmann::json config);
         Vector2& operator= (sol::object obj);
-
+        
         static Vector2 Left;
         static Vector2 Right;
         static Vector2 Top;

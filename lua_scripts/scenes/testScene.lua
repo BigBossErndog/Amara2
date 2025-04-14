@@ -40,8 +40,6 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
-        -- Game:setTargetFPS(60)
-
         self:createChild("Sprite"):configure({
             texture = "bigThing"
         })
@@ -81,14 +79,12 @@ return NodeFactory:create("Scene"):configure({
         self.props.txt = self:createChild("Text", {
             text = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9",
             font = "font",
-            alignment = Align.Center,
             wrapMode = WrapMode.ByWord,
             wrapWidth = 128,
             lineSpacing = 10,
             fixedToCamera = true,
             color = Colors.Yellow,
-            origin = "right",
-            alignment = Align.Left,
+            origin = 0.5
         })
 
         local controlRight = Controls:scheme("right")
