@@ -158,7 +158,7 @@ namespace Amara {
 
         virtual void act(double deltaTime) {
             Amara::Action::act(deltaTime);
-
+            
             if (hasStarted) {
                 if (sprite == nullptr || sprite->spritesheet == nullptr) {
                     debug_log("Error: No sprite provided for animation.");
@@ -214,6 +214,14 @@ namespace Amara {
                     if (!anim->completed) return true;
                 }
                 return false;
+            });
+            sprite_type["animation"] = sol::property([](Amara::Sprite& s) -> sol::object {
+                for (Amara::Node* node: s.children) {
+                    if (!node->is_animation || node->destroyed) continue;
+                    Amara::Animation* anim = node->as<Amara::Animation*>();
+                    if (!anim->completed) return anim->get_lua_object();
+                }
+                return sol::nil;
             });
         }
     };

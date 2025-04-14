@@ -40,23 +40,31 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
-        self:createChild("Sprite"):configure({
+        local map = self:createChild("Sprite"):configure({
             texture = "bigThing"
         })
+        self.camera:setBounds(
+            map.x - map.w/2,
+            map.y - map.h/2,
+            map.w,
+            map.h
+        )
 
         local textCont = self:createChild("TextureContainer", {
-            width = 128,
-            height = 128,
+            width = 256,
+            height = 256,
             -- alpha = 0.5,
             -- visible = false,
-            paused = true,
-            canvasLocked = true,
+            -- paused = true,
+            -- canvasLocked = true,
             -- fixedToCamera = true,
-            origin = Position.Top,
+            -- origin = Position.Top,
             tint = Colors.Red,
-            y = self.camera.topBorder
+            -- y = self.camera.topBorder
         })
         self.props.textCont = textCont
+
+        print(textCont.left, textCont.top)
         
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
@@ -68,24 +76,34 @@ return NodeFactory:create("Scene"):configure({
             })
         end
 
-        local f = self:createChild("Sprite", {
-            texture = "freaker",
-            animation = "runningDown"
-        })
-        
-        self.props.f = f;
-        f.frame = 3
-
-        self.props.txt = self:createChild("Text", {
+        self.props.txt = textCont:createChild("Text", {
             text = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9",
             font = "font",
             wrapMode = WrapMode.ByWord,
             wrapWidth = 128,
             lineSpacing = 10,
-            fixedToCamera = true,
+            -- fixedToCamera = true,
             color = Colors.Yellow,
-            origin = 0.5
+            x = textCont.right,
+            y = textCont.bottom,
+            origin = 1,
+            alignment = Align.Left
         })
+
+        print(self.props.txt.pos)
+
+        local f = textCont:createChild("Sprite", {
+            texture = "freaker",
+            animation = "runningDown",
+        })
+        local f = self:createChild("Sprite", {
+            texture = "freaker",
+            animation = "runningDown",
+            -- origin = 0
+        })
+        
+        self.props.f = f;
+        f.frame = 3
 
         local controlRight = Controls:scheme("right")
         controlRight:setKeys({ Key.Right, Key.D })

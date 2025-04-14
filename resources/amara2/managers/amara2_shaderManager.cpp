@@ -101,7 +101,7 @@ namespace Amara {
                 if (temp) glDeleteShader(shaderID);
             }
 
-            if (json_has(config, "fragement")) {
+            if (json_has(config, "fragment")) {
                 bool temp = false;
                 std::string shader_key = json_extract(config, "fragment");
                 unsigned int shaderID = 0;
@@ -205,8 +205,6 @@ namespace Amara {
         }
         
         static void bindLua(sol::state& lua) {
-            ShaderProgram::bindLua(lua);
-            
             lua.new_usertype<ShaderManager>("ShaderManager",
                 #ifdef AMARA_OPENGL
                 "createShaderProgram", sol::resolve<ShaderProgram*(std::string, sol::object)>(&ShaderManager::createShaderProgram),

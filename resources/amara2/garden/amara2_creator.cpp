@@ -3,7 +3,6 @@ namespace Amara {
     public:
         sol::state lua;
 
-        std::vector<World*> worlds;
         std::vector<World*> copy_worlds_list;
 
         std::vector<World*> new_worlds;
@@ -17,6 +16,7 @@ namespace Amara {
         double frameTarget = 0;
 
         World* currentWorld = nullptr;
+        Demiurge* currentDemiurge = nullptr;
 
         Creator(): Demiurge() {
             demiurgic = false;
@@ -91,6 +91,11 @@ namespace Amara {
                 new_world->luaConfigure(config);
             }
 
+            if (currentDemiurge) {
+                new_world->demiurge = currentDemiurge;
+                currentDemiurge->addWorld(new_world);
+            }
+
             return new_world;
         }
         virtual World* createWorld() override {
@@ -102,9 +107,6 @@ namespace Amara {
             for (auto it = worlds.begin(); it != worlds.end();) {
                 world = *it;
                 if (world->destroyed) {
-                    if (world->demiurge) {
-                        world->destroyDemiurge();
-                    }
                     it = worlds.erase(it);
                     continue;
                 }
@@ -117,26 +119,14 @@ namespace Amara {
             new_worlds.clear();
         }
 
-        void destroyAllWorlds() {
-            for (Amara::World* world: worlds) world->destroy();
-        }
-
         void update_properties() {
             if (currentWorld && currentWorld->demiurge) {
                 currentWorld->demiurge->override_existence();
             }
             else {
                 override_existence();
+                Props::lua()["Creator"] = this;
             }
-        }
-
-        void makeDemiurgic(Amara::World* world, Amara::Demiurge* demiurge) {
-            world->demiurge = demiurge;
-        }
-
-        void makeDemiurgic(Amara::World* world) {
-            if (world->demiurge) return;
-            makeDemiurgic(world, createDemiurge());
         }
 
         Amara::Demiurge* createDemiurge() {
@@ -144,6 +134,20 @@ namespace Amara {
             new_demiurge->setup();
             new_demiurge->true_creator = this;
             return new_demiurge;
+        }
+
+        void startDemiurgicUniverse() {
+            destroyDemiurgicUniverse();
+
+            // Causes all future created worlds to be isolated.
+            currentDemiurge = createDemiurge();
+        }
+        void destroyDemiurgicUniverse() {
+            if (currentDemiurge) {
+                currentDemiurge->destroyAllWorlds();
+                delete currentDemiurge;
+            }
+            currentDemiurge = nullptr;
         }
 
         void startCreation(std::string path) {
@@ -229,6 +233,7 @@ namespace Amara {
             bindLua_Geometry(lua);
 
             Color::bindLua(lua);
+            ShaderProgram::bindLua(lua);
             
             GameManager::bindLua(lua);
             ControlManager::bindLua(lua);
@@ -246,11 +251,10 @@ namespace Amara {
                 sol::base_classes, sol::bases<Demiurge>(),
                 "worlds", sol::readonly(&Creator::worlds),
                 "new_worlds", sol::readonly(&Creator::new_worlds),
-                "makeDemiurgic", sol::overload(
-                    sol::resolve<void(Amara::World*, Amara::Demiurge*)>(&Creator::makeDemiurgic),
-                    sol::resolve<void(Amara::World*, Amara::Demiurge*)>(&Creator::makeDemiurgic)
-                ),
-                "createDemiurge", &Creator::createDemiurge
+                "startDemiurgicUniverse", &Creator::startDemiurgicUniverse,
+                "makePresenceKnown", &Creator::makePresenceKnown,
+                "newDemiurgicUniverse", &Creator::newDemiurgicUniverse,
+                "destroyDemiurgicUniverse", &Creator::destroyDemiurgicUniverse
             );
         }
         

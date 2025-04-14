@@ -42,6 +42,7 @@ namespace Amara {
         float virtualHeight = -1;
 
         Rectangle viewport;
+        Rectangle rec_windowed_size;
         
         int vsync = 0;
         bool headless = true;
@@ -62,8 +63,10 @@ namespace Amara {
         GPUHandler gpuHandler;
         RenderBatch renderBatch;
 
+        #ifdef AMARA_OPENGL
         ShaderProgram* defaultShaderProgram = nullptr;
-
+        #endif
+        
         World(): Node() {
             set_base_node_id("World");
             world = this;
@@ -319,9 +322,8 @@ namespace Amara {
         }
 
         void setScreenMode(ScreenModeEnum _sm) {
-            screenMode = _sm;
-
             if (window) {
+                screenMode = _sm;
                 switch (screenMode) {
                     case ScreenModeEnum::Windowed: {
                         SDL_SetWindowFullscreen(window, false);
@@ -351,6 +353,28 @@ namespace Amara {
                         Props::breakWorld();
                         break;
                 }
+            }
+            else {
+                if (screenMode == ScreenModeEnum::Fullscreen || screenMode == ScreenModeEnum::BorderlessFullscreen) {
+                    if (_sm == ScreenModeEnum::Windowed || _sm == ScreenModeEnum::BorderlessWindowed) {
+                        pos.x = rec_windowed_size.x;
+                        pos.y = rec_windowed_size.y;
+                        windowW = rec_windowed_size.w;
+                        windowH = rec_windowed_size.h;
+                        window_dim = Rectangle( pos.x, pos.y, windowW, windowH );
+                    }
+                }
+                else if (screenMode == ScreenModeEnum::Windowed || screenMode == ScreenModeEnum::BorderlessWindowed) {
+                    if (_sm == ScreenModeEnum::Fullscreen || _sm == ScreenModeEnum::BorderlessFullscreen) {
+                        rec_windowed_size = Rectangle( pos.x, pos.y, windowW, windowH );
+                        pos.x = display.x;
+                        pos.y = display.y;
+                        windowW = display.w;
+                        windowH = display.h;
+                        window_dim = Rectangle( pos.x, pos.y, windowW, windowH );
+                    }
+                }
+                screenMode = _sm;
             }
         }
 
@@ -565,13 +589,18 @@ namespace Amara {
                                 graphics = g;
                                 Props::graphics = g;
 
+                                SDL_GL_MakeCurrent(window, glContext);
+
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
 
                                 Props::renderBatch = &renderBatch;
                                 renderBatch.init();
 
+                                update_properties();
+
                                 prepareGLShaders();
+                                
                                 setShaderProgram("default");
                                 Props::currentShaderProgram = shaderProgram;
                                 Props::defaultShaderProgram = shaderProgram;
@@ -778,6 +807,8 @@ namespace Amara {
         }
 
         void presentRenderer() {
+            update_properties();
+
             if (graphics == GraphicsEnum::Render2D && renderer) {
                 SDL_RenderPresent(renderer);
             }
@@ -817,9 +848,13 @@ namespace Amara {
                 SDL_DestroyWindow(window);
                 window = nullptr;
             }
+
+            if (demiurge) {
+                removeFromDemiurge();
+            }
         }
 
-        void destroyDemiurge();
+        void removeFromDemiurge();
         
         static void bindLua(sol::state& lua) {
             lua.new_usertype<World>("World",

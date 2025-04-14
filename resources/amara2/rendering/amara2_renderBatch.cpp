@@ -61,7 +61,7 @@ namespace Amara {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             #endif
         }
-        
+
         #ifdef AMARA_OPENGL
         void newCycle() {
             vertices.clear();
@@ -164,6 +164,7 @@ namespace Amara {
                 GLint location = glGetUniformLocation(Props::currentShaderProgram->programID, "_texture");
                 if (location == -1) {
                     debug_log("Error: Uniform '_texture' not found in shader: \"", Props::currentShaderProgram->key, "\".");
+                    Props::breakWorld();
                 }
                 glUniform1i(location, 0);
 

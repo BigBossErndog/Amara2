@@ -105,19 +105,7 @@ namespace Amara {
 
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
-            if (json_has(config, "origin")) {
-                nlohmann::json originData = config["origin"];
-                if (originData.is_string()) {
-                    origin = stringToPosition(originData.get<std::string>());
-                }
-                else if (originData.is_number()) {
-                    origin = Vector2( originData.get<float>(), originData.get<float>() );
-                }
-                else if (originData.is_object()) {
-                    if (json_has(originData, "x")) origin.x = originData["x"];
-                    if (json_has(originData, "y")) origin.y = originData["y"];
-                }
-            }
+            if (json_has(config, "origin")) origin = config["origin"];
 
             if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
             if (json_has(config, "cropRight")) cropRight = config["cropRight"];
@@ -275,6 +263,17 @@ namespace Amara {
             #endif
         }
 
+        float getWidth() {
+            if (spritesheet) return frameWidth*scale.x;
+            if (image) return imageWidth*scale.x;
+            return 0;
+        }
+        float getHeight() {
+            if (spritesheet) return frameHeight*scale.y;
+            if (image) return imageHeight*scale.y;
+            return 0;
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Sprite>("Sprite",
                 sol::base_classes, sol::bases<Node>(),
@@ -296,7 +295,11 @@ namespace Amara {
                 "setOrigin", sol::overload(
                     sol::resolve<sol::object(float, float)>(&Sprite::setOrigin),
                     sol::resolve<sol::object(float)>(&Sprite::setOrigin)
-                )
+                ),
+                "w", sol::property(&Sprite::getWidth),
+                "h", sol::property(&Sprite::getHeight),
+                "width", sol::property(&Sprite::getWidth),
+                "height", sol::property(&Sprite::getHeight)
             );
         }
     };

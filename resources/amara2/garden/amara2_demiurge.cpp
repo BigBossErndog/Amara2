@@ -14,6 +14,8 @@ namespace Amara {
         ControlManager controls;
         AudioMaster audio;
 
+        std::vector<World*> worlds;
+
         bool demiurgic = true;
 
         Demiurge() {}
@@ -36,6 +38,19 @@ namespace Amara {
             Props::audio = &audio;
         }
 
+        void removeWorld(Amara::World* world) {
+            for (auto it = worlds.begin(); it != worlds.end(); it++) {
+                if (*it == world) {
+                    worlds.erase(it);
+                    break;
+                }
+            }
+        }
+
+        void addWorld(Amara::World* world) {
+            worlds.push_back(world);
+        }
+
         void setup() {
             factory.prepareEntities();
             factory.registerNode<World>("World");
@@ -49,6 +64,15 @@ namespace Amara {
 
         virtual World* createWorld(sol::object config);
         virtual World* createWorld();
+
+        void destroyAllWorlds() {
+            for (Amara::World* world: worlds) world->destroy();
+        }
+
+        virtual void newDemiurgicUniverse() {
+            debug_log("Note: Demiurgic presence. Universe creation disabled.");
+            debug_log("Control will be handed over in target builds.");
+        }
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Demiurge>("Demiurge",
@@ -74,10 +98,8 @@ namespace Amara {
         }
     };
 
-    void Amara::World::destroyDemiurge() {
-        if (demiurge) {
-            delete demiurge;
-            demiurge = nullptr;
-        }
+    void Amara::World::removeFromDemiurge() {
+        if (demiurge) demiurge->removeWorld(this);
+        demiurge = nullptr;
     }
 }

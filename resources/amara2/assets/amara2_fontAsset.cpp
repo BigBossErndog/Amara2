@@ -298,7 +298,7 @@ namespace Amara {
                     }
                     
                     glyph.x = cursorX + glyph.xoffset;
-                    glyph.y = glyph.yoffset;
+                    glyph.y = fontSize + glyph.yoffset;
                     cursorX += glyph.xadvance;
                     line->width += glyph.xadvance;
 
@@ -357,7 +357,7 @@ namespace Amara {
                         word = TextLine();
 
                         cursorX = 0;
-                        cursorY += fontSize;
+                        cursorY += fontSize + lineSpacing;
                         line = &layout.newLine();
                         line->height = lineHeight;
                         line->y = cursorY;
@@ -365,7 +365,7 @@ namespace Amara {
                     }
 
                     glyph.x = cursorX + glyph.xoffset;
-                    glyph.y = glyph.yoffset;
+                    glyph.y = fontSize + glyph.yoffset;
                     cursorX += glyph.xadvance;
 
                     word.text += codepoint;

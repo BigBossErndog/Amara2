@@ -73,19 +73,9 @@ namespace Amara {
 
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
-            if (json_has(config, "origin")) {
-                nlohmann::json originData = config["origin"];
-                if (originData.is_string()) {
-                    origin = stringToPosition(originData.get<std::string>());
-                }
-                else if (originData.is_number()) {
-                    origin = Vector2( originData.get<float>(), originData.get<float>() );
-                }
-                else if (originData.is_object()) {
-                    if (json_has(originData, "x")) origin.x = originData["x"];
-                    if (json_has(originData, "y")) origin.y = originData["y"];
-                }
-            }
+            if (json_has(config, "origin")) origin = config["origin"];
+
+            update_size();
             
             return Amara::Node::configure(config);
         }
@@ -138,12 +128,16 @@ namespace Amara {
 
             container_viewport = Rectangle( 0, 0, static_cast<float>(width), static_cast<float>(height) );
 
+            update_size();
+
+            update_canvas = true;
+        }
+
+        void update_size() {
             left = -width/2.0;
             right = width/2.0;
             top = -height/2.0;
             bottom = height/2.0;
-
-            update_canvas = true;
         }
 
         void paintOnce() {

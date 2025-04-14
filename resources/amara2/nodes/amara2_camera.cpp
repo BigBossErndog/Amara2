@@ -16,10 +16,13 @@ namespace Amara {
         Vector2 zoom = { 1, 1 };
 
         Vector2 center = { 0, 0 };
-        float leftBorder = 0;
-        float rightBorder = 0;
-        float topBorder = 0;
-        float bottomBorder = 0;
+        float left = 0;
+        float right = 0;
+        float top = 0;
+        float bottom = 0;
+
+        bool hasBounds = false;
+        Rectangle bounds;
 
         Amara::Node* followTarget = nullptr;
         Vector2 lerp = { 0, 0 };
@@ -78,11 +81,7 @@ namespace Amara {
                 height = ((viewport.h / passOn.scale.y) / passOn.zoom.y)/passOn.window_zoom.y;
             }
 
-            center = Vector2( scroll.x, scroll.y );
-            leftBorder = center.x - (width/zoom.x)/2.0;
-            rightBorder = center.x + (width/zoom.x)/2.0;
-            topBorder = center.y - (height/zoom.y)/2.0;
-            bottomBorder = center.y + (height/zoom.y)/2.0;
+            update_bounds();
         }
 
         virtual void run(double deltaTime) override {
@@ -98,11 +97,54 @@ namespace Amara {
                 else scroll.y = ty;
             }
 
-            center = Vector2( scroll.x, scroll.y );
-            leftBorder = center.x - (width/zoom.x)/2.0;
-            rightBorder = center.x + (width/zoom.x)/2.0;
-            topBorder = center.y - (height/zoom.y)/2.0;
-            bottomBorder = center.y + (height/zoom.y)/2.0;
+            update_bounds();
+        }
+
+        void update_borders() {
+            center = scroll;
+            left = center.x - (width/zoom.x)/2.0;
+            right = center.x + (width/zoom.x)/2.0;
+            top = center.y - (height/zoom.y)/2.0;
+            bottom = center.y + (height/zoom.y)/2.0;
+        }
+
+        void update_bounds() {
+            update_borders();
+
+            if (hasBounds) {
+                if (bounds.w < right - left) {
+                    scroll.x = bounds.x + bounds.w/2;
+                }
+                else {
+                    if (left < bounds.x) scroll.x = bounds.x + (right - left)/2;
+                    if (right > bounds.x + bounds.w) scroll.x = bounds.x + bounds.w - (right - left)/2;
+                }
+                if (bounds.h < top - bottom) {
+                    scroll.y = bounds.y + bounds.h/2;
+                }
+                else {
+                    if (top < bounds.y) scroll.y = bounds.y + (bottom - top)/2;
+                    if (bottom > bounds.y + bounds.h) scroll.y = bounds.y + bounds.h - (bottom - top)/2;
+                }
+            }
+        }
+
+        sol::object setBounds(sol::object _bounds) {
+            hasBounds = true;
+            bounds = _bounds;
+            return get_lua_object();
+        }
+        sol::object setBounds(const Rectangle& _bounds) {
+            hasBounds = true;
+            bounds = _bounds;
+            return get_lua_object();
+        }
+        sol::object setBounds(float _x, float _y, float _w, float _h) {
+            return setBounds(Rectangle( _x, _y, _w, _h ));
+        }
+        sol::object removeBounds() {
+            hasBounds = false;
+            return get_lua_object();
         }
 
         sol::object focusOn(float _x, float _y) {
@@ -248,10 +290,10 @@ namespace Amara {
                 "lerpX", sol::property([](Camera& cam) { return cam.lerp.x; }, [](Camera& cam, float val) { cam.lerp.x = val; }),
                 "lerpY", sol::property([](Camera& cam) { return cam.lerp.y; }, [](Camera& cam, float val) { cam.lerp.y = val; }),
                 "center", sol::readonly(&Camera::center),
-                "leftBorder", sol::readonly(&Camera::leftBorder),
-                "rightBorder", sol::readonly(&Camera::rightBorder),
-                "topBorder", sol::readonly(&Camera::topBorder),
-                "bottomBorder", sol::readonly(&Camera::bottomBorder),
+                "left", sol::readonly(&Camera::left),
+                "right", sol::readonly(&Camera::right),
+                "top", sol::readonly(&Camera::top),
+                "bottom", sol::readonly(&Camera::bottom),
                 "startFollow", sol::overload(
                     sol::resolve<sol::object(Amara::Node*)>(&Camera::startFollow),
                     sol::resolve<sol::object(Amara::Node*, float, float)>(&Camera::startFollow),
@@ -262,7 +304,14 @@ namespace Amara {
                 "focusOn", sol::overload(
                     sol::resolve<sol::object(float, float)>(&Camera::focusOn),
                     sol::resolve<sol::object(Amara::Node*)>(&Camera::focusOn)
-                )
+                ),
+                "setBounds", sol::overload(
+                    sol::resolve<sol::object(const Rectangle&)>(&Camera::setBounds),
+                    sol::resolve<sol::object(float, float, float, float)>(&Camera::setBounds),
+                    sol::resolve<sol::object(sol::object)>(&Camera::setBounds)
+                ),
+                "removeBounds", &Camera::removeBounds,
+                "bounds", sol::readonly(&Camera::bounds)
             );
         }
     };

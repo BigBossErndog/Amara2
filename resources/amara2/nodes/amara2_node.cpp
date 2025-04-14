@@ -431,6 +431,9 @@ namespace Amara {
             }
             return true;
         }
+        Amara::ShaderProgram* createShaderProgram() {
+
+        }
         #endif
 
         virtual Amara::Node* addChild(Amara::Node* node) {
@@ -489,14 +492,18 @@ namespace Amara {
 
             if (parent) parent->removeChild(this);
 
+            destroyChildren();
+
+            Props::queue_garbage(this);
+        }
+        void destroyChildren() {
             Amara::Node* child;
             for (auto it = children.begin(); it != children.end();) {
                 child = *it;
                 child->destroy();
 				++it;
 			}
-
-            Props::queue_garbage(this);
+            children.clear();
         }
 
         sol::object bringToFront() {
@@ -635,8 +642,6 @@ namespace Amara {
                 "nodeID", sol::readonly(&Node::nodeID),
                 "parent", sol::readonly(&Node::parent),
                 "props", &Node::props,
-                "bind", &Node::props,
-                "call", &Node::props,
                 "pos", &Node::pos,
                 "x", sol::property([](Node& e, float val) { e.pos.x = val; }, [](Node& e) { return e.pos.x; }),
                 "y", sol::property([](Node& e, float val) { e.pos.y = val; }, [](Node& e) { return e.pos.y; }),
@@ -685,6 +690,7 @@ namespace Amara {
                 "addChild", &Node::addChild,
                 "destroyed", sol::readonly(&Node::destroyed),
                 "destroy", &Node::destroy,
+                "destroyChildren", &Node::destroyChildren,
                 "depthSortSelfEnabled", &Node::depthSortSelfEnabled,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
                 "bringToFront", &Node::bringToFront,
@@ -692,6 +698,7 @@ namespace Amara {
                 "switchParent", &Node::switchParent,
                 #ifdef AMARA_OPENGL
                 "setShaderProgram", &Node::setShaderProgram,
+                "shaderProgram", sol::readonly(&Node::shaderProgram),
                 #endif
                 "stopActing", &Node::stopActing,
                 "string", [](Amara::Node* e){

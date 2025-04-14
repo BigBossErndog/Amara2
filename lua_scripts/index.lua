@@ -38,8 +38,8 @@
     --         height = 720,
     --         virtualWidth = 640,
     --         virtualHeight = 360,
-    --         -- graphics = Graphics.OpenGL
-    --         graphics = Graphics.Render2D,
+    --         graphics = Graphics.Render2D
+    --         -- graphics = Graphics.Render2D,
     --     },
     --     entryScene = "scenes/TestScene",
     -- })
@@ -48,13 +48,13 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            screenMode = ScreenMode.BorderlessFullscreen,
+            screenMode = ScreenMode.Windowed,
             width = 1280,
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
             -- graphics = Graphics.OpenGL
-            graphics = Graphics.Render2D,
+            graphics = Graphics.OpenGL,
             -- transparent = true,
             -- alwaysOnTop = true,
             -- clickThrough = true,
@@ -68,7 +68,7 @@
             self:createChild("scenes/TestScene")
         end,
         onUpdate = function(self, deltaTime)
-            print(Game.fps)
+            -- print(Game.fps)
         end
     })
 

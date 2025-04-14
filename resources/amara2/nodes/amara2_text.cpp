@@ -86,19 +86,7 @@ namespace Amara {
 
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
-            if (json_has(config, "origin")) {
-                nlohmann::json originData = config["origin"];
-                if (originData.is_string()) {
-                    origin = stringToPosition(originData.get<std::string>());
-                }
-                else if (originData.is_number()) {
-                    origin = Vector2( originData.get<float>(), originData.get<float>() );
-                }
-                else if (originData.is_object()) {
-                    if (json_has(originData, "x")) origin.x = originData["x"];
-                    if (json_has(originData, "y")) origin.y = originData["y"];
-                }
-            }
+            if (json_has(config, "origin")) origin = config["origin"];
 
             return this;
         }
@@ -328,6 +316,8 @@ namespace Amara {
                 ),
                 "align", &Text::align,
                 "alignment", sol::readonly(&Text::alignment),
+                "wrapMode", sol::readonly(&Text::wrapMode),
+                "wrapWidth", sol::readonly(&Text::wrapWidth),
                 "setWrapWidth", &Text::setWrapWidth,
                 "setWrapMode", &Text::setWrapMode,
                 "setWrap", &Text::setWrap,
