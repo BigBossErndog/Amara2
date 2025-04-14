@@ -47,6 +47,7 @@ namespace Amara {
         bool resizable = 0;
         bool transparent = false;
         bool alwaysOnTop = false;
+        bool clickThrough = false;
 
         bool exception_thrown = false;
         
@@ -263,6 +264,9 @@ namespace Amara {
             if (json_has(config, "alwaysOnTop")) {
                 setAlwaysOnTop(config["alwaysOnTop"]);
             }
+            if (json_has(config, "clickThrough")) {
+                clickThrough = config["clickThrough"];
+            }
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
@@ -339,8 +343,16 @@ namespace Amara {
         }
 
         void setAlwaysOnTop(bool _t) {
-            transparent = _t;
+            alwaysOnTop = _t;
             if (window) SDL_SetWindowAlwaysOnTop(window, _t);
+        }
+
+        void setClickThrough(bool enabled) {
+            if (clickThrough == enabled || window == nullptr) return;
+            
+            clickThrough = enabled;
+
+            debug_log("INFO: Click through has not been implemented.");
         }
 
         void setup_new_window() {
@@ -535,6 +547,12 @@ namespace Amara {
                 rec_pos = pos;
 
                 Props::graphics = graphics;
+
+                if (clickThrough) {
+                    clickThrough = false;
+                    setClickThrough(true);
+                }
+                setAlwaysOnTop(alwaysOnTop);
 
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
             }

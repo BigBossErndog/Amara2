@@ -47,12 +47,19 @@
     #if defined(_WIN32)
         #include <windows.h>
     #elif defined(__linux__)
+        #include <SDL_syswm.h>
+        #include <X11/Xlib.h>
+        #include <X11/extensions/shape.h>
     #elif defined(__ANDROID__)
     #elif defined(__APPLE__)
+        #include <SDL_syswm.h>
         #include <TargetConditionals.h>
         #if TARGET_OS_IPHONE
         #else
         #endif
+
+        struct NSView;
+        struct NSWindow;
     #else
     #endif
 
