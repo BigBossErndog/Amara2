@@ -37,6 +37,8 @@ namespace Amara {
                 return tween->to(lua_data);
             }
 
+            target_data = nlohmann::json::object();
+
             if (lua_data["onComplete"].valid()) {
                 onComplete = lua_data["onComplete"];
                 lua_data["onComplete"] = sol::nil;
@@ -60,9 +62,19 @@ namespace Amara {
             if (lua_data["repeats"].valid()) {
                 repeats = lua_data["repeats"].get<int>();
             }
+            if (lua_data["color"].valid()) {
+                Amara::Color color = lua_to_json(lua_data["color"]);
+                target_data["color"] = color.toJSON();
+                lua_data["color"] = sol::nil;
+            }
+            if (lua_data["tint"].valid()) {
+                Amara::Color color = lua_to_json(lua_data["tint"]);
+                target_data["tint"] = color.toJSON();
+                lua_data["tint"] = sol::nil;
+            }
 
             nlohmann::json data = lua_to_json(lua_data);
-            target_data = nlohmann::json::object();
+            
             for (auto it = data.begin(); it != data.end(); ++it) {
                 if (it.value().is_null()) continue;
                 target_data[it.key()] = it.value();
@@ -122,7 +134,14 @@ namespace Amara {
 
                 if (lua_actor_table.valid()) {
                     for (auto it = target_data.begin(); it != target_data.end(); ++it) {
-                        lua_actor_table.set(it.key(), ease(start_data[it.key()], target_data[it.key()], progress, easing));
+                        if (it.value().is_number()) {
+                            lua_actor_table.set(it.key(), ease((double)start_data[it.key()], (double)target_data[it.key()], progress, easing));
+                        }
+                        else if (string_equal(it.key(), "color") || string_equal(it.key(), "tint")) {
+                            Amara::Color start_color = start_data[it.key()];
+                            Amara::Color target_color = target_data[it.key()];
+                            lua_actor_table.set(it.key(), json_to_lua(ease(start_color, target_color, progress, easing).toJSON()));
+                        }
                     }
                 }
 

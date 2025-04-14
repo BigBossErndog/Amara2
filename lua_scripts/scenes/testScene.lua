@@ -81,9 +81,9 @@ return NodeFactory:create("Scene"):configure({
             lineSpacing = 10,
             -- fixedToCamera = true,
             color = Colors.Yellow,
-            x = textCont.right,
-            y = textCont.bottom,
-            origin = 1,
+            x = textCont.left,
+            y = textCont.top,
+            -- origin = 1,
             alignment = Align.Left
         })
 
