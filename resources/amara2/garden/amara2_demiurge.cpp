@@ -73,4 +73,11 @@ namespace Amara {
             scripts.clear();
         }
     };
+
+    void Amara::World::destroyDemiurge() {
+        if (demiurge) {
+            delete demiurge;
+            demiurge = nullptr;
+        }
+    }
 }

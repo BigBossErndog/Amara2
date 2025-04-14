@@ -462,10 +462,10 @@ namespace Amara {
 
         void switchParent(Amara::Node* other) {
             if (destroyed || other->destroyed || other == parent) return;
-            if (other->parent == this) {
+            if (other->parent && other->parent == this) {
                 other->switchParent(parent);
             }
-            parent->removeChild(this);
+            if (parent) parent->removeChild(this);
             other->addChild(this);
         }
 

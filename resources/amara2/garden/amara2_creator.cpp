@@ -103,10 +103,12 @@ namespace Amara {
                 world = *it;
                 if (world->destroyed) {
                     if (world->demiurge) {
-                        Amara::Demiurge* demiurge = world->demiurge;
-                        delete demiurge;
-                        world->demiurge = nullptr;
+                        world->destroyDemiurge();
                     }
+                    it = worlds.erase(it);
+                    continue;
+                }
+                if (world->parent) {
                     it = worlds.erase(it);
                     continue;
                 }

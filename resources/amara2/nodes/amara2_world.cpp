@@ -29,7 +29,7 @@ namespace Amara {
         SDL_GPUDevice* gpuDevice = nullptr;
 
         GraphicsEnum graphics;
-
+        
         Amara::Color backgroundColor = Amara::Color::Transparent;
 
         Rectangle display;
@@ -818,6 +818,8 @@ namespace Amara {
                 window = nullptr;
             }
         }
+
+        void destroyDemiurge();
         
         static void bindLua(sol::state& lua) {
             lua.new_usertype<World>("World",
