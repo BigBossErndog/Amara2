@@ -48,7 +48,7 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            screenMode = ScreenMode.Windowed,
+            screenMode = ScreenMode.BorderlessFullscreen,
             width = 1280,
             height = 720,
             virtualWidth = 640,
@@ -56,7 +56,8 @@
             -- graphics = Graphics.OpenGL
             graphics = Graphics.OpenGL,
             transparent = true,
-            alwaysOnTop = true
+            alwaysOnTop = true,
+            clickThrough = true
         },
         -- entryScene = "scenes/TestScene",
         -- onPreload = function(self)
@@ -64,12 +65,12 @@
         -- end,
         onCreate = function(self)
             self:createChild("scenes/TestScene")
-            local world = self.world;
-            local display = world.display;
-            world.x = display.x
-            world.y = display.y
-            world.w = display.w
-            world.h = display.h
+            -- local world = self.world;
+            -- local display = world.display;
+            -- world.x = display.x
+            -- world.y = display.y
+            -- world.w = display.w
+            -- world.h = display.h
         end
         -- onCreate = function(self)
         --     local textCont = self:createChild("TextureContainer", {

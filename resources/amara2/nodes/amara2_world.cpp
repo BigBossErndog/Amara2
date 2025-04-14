@@ -1,6 +1,6 @@
 namespace Amara {
     class Demiurge;
-
+    
     class World: public Node {
     public:
         Amara::Demiurge* demiurge = nullptr;
@@ -349,10 +349,48 @@ namespace Amara {
 
         void setClickThrough(bool enabled) {
             if (clickThrough == enabled || window == nullptr) return;
-            
+
             clickThrough = enabled;
 
-            debug_log("INFO: Click through has not been implemented.");
+            if (enabled) {
+                SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
+                if (!window_props) {
+                    debug_log("Warning: Failed to get window properties: ", SDL_GetError());
+                    return;
+                }
+
+                #ifdef _WIN32
+                    HWND hwnd = (HWND)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+                    if (hwnd) {
+                        // Ensure SetWindowLongPtr is available (might need different versions for 32/64 bit)
+                        #ifdef _WIN64
+                            LONG_PTR currentStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+                        #else
+                            LONG_PTR currentStyle = GetWindowLong(hwnd, GWL_EXSTYLE); // Use GetWindowLong for 32-bit
+                        #endif
+
+                        LONG_PTR newStyle;
+                        if (enabled) {
+                            newStyle = currentStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT;
+                        } else {
+                            newStyle = currentStyle & ~(WS_EX_LAYERED | WS_EX_TRANSPARENT);
+                        }
+
+                        if (newStyle != currentStyle) {
+                            #ifdef _WIN64
+                                SetWindowLongPtr(hwnd, GWL_EXSTYLE, newStyle);
+                            #else
+                                SetWindowLong(hwnd, GWL_EXSTYLE, newStyle); // Use SetWindowLong for 32-bit
+                            #endif
+                        }
+                    } else {
+                        debug_log("Warning: Failed to get HWND for click-through setup.");
+                    }
+                #endif
+            }
+
+            Props::clickThroughEnabled = enabled;
+            Props::clickThroughState = enabled;
         }
 
         void setup_new_window() {
@@ -362,6 +400,11 @@ namespace Amara {
             window_dim = Rectangle( pos.x, pos.y, windowW, windowH );
 
             setScreenMode(screenMode);
+        }
+
+        void setWindowTitle(std::string _t) {
+            if (window) SDL_SetWindowTitle(window, _t.c_str());
+            windowTitle = _t;
         }
 
         bool create_graphics_window(int flags) {
@@ -771,7 +814,12 @@ namespace Amara {
                 "screenMode", sol::readonly(&World::screenMode),
                 "setScreenMode", &World::setScreenMode,
                 "transparent", sol::readonly(&World::transparent),
-                "alwaysOnTop", sol::readonly(&World::alwaysOnTop)
+                "alwaysOnTop", sol::readonly(&World::alwaysOnTop),
+                "setAlwaysOnTop", &World::setAlwaysOnTop,
+                "clickThrough", sol::readonly(&World::clickThrough),
+                "setClickThrough", &World::setClickThrough,
+                "windowTitle", sol::readonly(&World::windowTitle),
+                "setWindowTitle", &World::setWindowTitle
             );
 
             sol::usertype<Node> node_type = lua["Node"];

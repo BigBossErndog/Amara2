@@ -65,6 +65,9 @@ namespace Amara {
         static Rectangle master_viewport;
         static Rectangle display;
 
+        static bool clickThroughEnabled;
+        static bool clickThroughState;
+
         static PassOnProps passOn;
 
         static GraphicsEnum graphics;
@@ -155,6 +158,9 @@ namespace Amara {
     Amara::World* Props::render_origin = nullptr;
     Rectangle Props::master_viewport;
     Rectangle Props::display;
+
+    bool Props::clickThroughEnabled = false;
+    bool Props::clickThroughState = false;
     
     PassOnProps Props::passOn;
 
