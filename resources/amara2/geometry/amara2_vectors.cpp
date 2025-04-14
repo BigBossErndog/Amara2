@@ -185,9 +185,22 @@ namespace Amara {
         }
 
         Vector3& operator= (nlohmann::json config) {
-            if (json_has(config, "x")) x = config["x"];
-            if (json_has(config, "y")) y = config["y"];
-            if (json_has(config, "z")) z = config["z"];
+            if (config.is_array()) {
+                if (config.size() == 3) {
+                    x = config[0];
+                    y = config[1];
+                    z = config[2];
+                }
+                else if (config.size() == 2) {
+                    x = config[0];
+                    y = config[1];
+                }
+            }
+            if (config.is_object()) {
+                if (json_has(config, "x")) x = config["x"];
+                if (json_has(config, "y")) y = config["y"];
+                if (json_has(config, "z")) z = config["z"];
+            }
             return *this;
         }
         Vector3& operator= (sol::object obj);
@@ -259,10 +272,29 @@ namespace Amara {
         }
 
         Vector4& operator= (nlohmann::json config) {
-            if (json_has(config, "x")) x = config["x"];
-            if (json_has(config, "y")) y = config["y"];
-            if (json_has(config, "z")) z = config["z"];
-            if (json_has(config, "w")) w = config["w"];
+            if (config.is_array()) {
+                if (config.size() == 4) {
+                    x = config[0];
+                    y = config[1];
+                    z = config[2];
+                    w = config[3];
+                }
+                else if (config.size() == 3) {
+                    x = config[0];
+                    y = config[1];
+                    z = config[2];
+                }
+                else if (config.size() == 2) {
+                    x = config[0];
+                    y = config[1];
+                }
+            }
+            if (config.is_object()) {
+                if (json_has(config, "x")) x = config["x"];
+                if (json_has(config, "y")) y = config["y"];
+                if (json_has(config, "z")) z = config["z"];
+                if (json_has(config, "w")) w = config["w"];
+            }
             return *this;
         }
         Vector4& operator= (sol::object obj);
@@ -288,22 +320,10 @@ namespace Amara {
             float _m31, float _m32, float _m33, float _m34,
             float _m41, float _m42, float _m43, float _m44
         ) {
-            m11 = _m11;
-            m12 = _m12;
-            m13 = _m13;
-            m14 = _m14;
-            m21 = _m21;
-            m22 = _m22;
-            m23 = _m23;
-            m24 = _m24;
-            m31 = _m31;
-            m32 = _m32;
-            m33 = _m33;
-            m34 = _m34;
-            m41 = _m41;
-            m42 = _m42;
-            m43 = _m43;
-            m44 = _m44;
+            m11 = _m11; m12 = _m12; m13 = _m13; m14 = _m14;
+            m21 = _m21; m22 = _m22; m23 = _m23; m24 = _m24;
+            m31 = _m31; m32 = _m32; m33 = _m33; m34 = _m34;
+            m41 = _m41; m42 = _m42; m43 = _m43; m44 = _m44;
         }
 
         float m11, m12, m13, m14;

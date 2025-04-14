@@ -164,6 +164,12 @@ namespace Amara {
             if (json_has(config, "x")) x = config["x"];
             if (json_has(config, "y")) y = config["y"];
         }
+        else if (config.is_array()) {
+            if (config.size() == 2) {
+                x = config[0];
+                y = config[1];
+            }
+        }
         return *this;
     }
 
