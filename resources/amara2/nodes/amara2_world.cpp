@@ -20,6 +20,9 @@ namespace Amara {
         float windowH = 360;
         Rectangle window_dim = { pos.x, pos.y, windowW, windowH };
 
+        bool windowMoved = false;
+        bool windowResized = false;
+
         ScreenModeEnum screenMode = ScreenModeEnum::Windowed;
 
         #ifdef AMARA_OPENGL
@@ -97,6 +100,8 @@ namespace Amara {
                 int wx, wy;
                 SDL_GetWindowPosition(window, &wx, &wy);
                 float fwx = static_cast<int>(wx), fwy = static_cast<int>(wy);
+                if (fwx != rec_pos.x || fwy != rec_pos.y) windowMoved = true;
+                
                 if (rec_pos.x != pos.x || rec_pos.y != pos.y) {
                     fwx += pos.x - rec_pos.x;
                     fwy += pos.y - rec_pos.y;
@@ -108,7 +113,9 @@ namespace Amara {
 
                 int ww, wh;
                 SDL_GetWindowSize(window, &ww, &wh);
-                float fww = static_cast<int>(ww), fwh = static_cast<int>(wh);
+                float fww = static_cast<float>(ww), fwh = static_cast<float>(wh);
+                if (window_dim.w != fww || window_dim.h != fwh) windowResized = true;
+
                 if (window_dim.w != windowW || window_dim.h != windowH) {
                     fww += windowW - window_dim.w;
                     fwh += windowH - window_dim.h;
@@ -885,7 +892,9 @@ namespace Amara {
                 "setClickThrough", &World::setClickThrough,
                 "windowTitle", sol::readonly(&World::windowTitle),
                 "setWindowTitle", &World::setWindowTitle,
-                "backgroundColor", &World::backgroundColor
+                "backgroundColor", &World::backgroundColor,
+                "windowMoved", sol::readonly(&World::windowMoved),
+                "windowResized", sol::readonly(&World::windowResized)
             );
 
             sol::usertype<Node> node_type = lua["Node"];

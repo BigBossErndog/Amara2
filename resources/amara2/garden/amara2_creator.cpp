@@ -33,16 +33,11 @@ namespace Amara {
             lua.open_libraries(
                 sol::lib::base,
                 sol::lib::package,
-                sol::lib::coroutine,
                 sol::lib::string,
-                sol::lib::os,
                 sol::lib::math,
                 sol::lib::table,
                 sol::lib::debug,
-                sol::lib::io,
                 sol::lib::bit32,
-                sol::lib::ffi,
-                sol::lib::jit,
                 sol::lib::utf8
             );
             
@@ -173,6 +168,8 @@ namespace Amara {
             scripts.run(path);
             game.hasQuit = Props::lua_exception_thrown;
             
+            std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
+
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
                 inputManager.handleEvents(worlds, game);
 
@@ -181,8 +178,6 @@ namespace Amara {
                 }
 
                 if (!inputManager.logicBlocking) {
-                    std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
-                    
                     copy_worlds_list = worlds;
                     for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
                         currentWorld = *it;
@@ -198,7 +193,8 @@ namespace Amara {
                     }
 
                     cleanDestroyedWorlds();
-                    
+                    std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
+
                     for (auto it = worlds.begin(); it != worlds.end(); it++) {
                         currentWorld = *it;
                         if (currentWorld->headless) continue;
