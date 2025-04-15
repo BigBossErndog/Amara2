@@ -22,7 +22,8 @@ namespace Amara {
         Image,
         Spritesheet,
         Audio,
-        Font
+        Font,
+        TiledTilemap
     };
 
     enum class BlendMode {

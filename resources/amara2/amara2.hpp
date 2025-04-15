@@ -44,6 +44,8 @@
     #define STB_TRUETYPE_IMPLEMENTATION
     #include <stb_truetype.h>
 
+    #include <tinyxml2.h>
+
     #if defined(_WIN32)
         #include <windows.h>
     #elif defined(__linux__)
@@ -123,6 +125,7 @@
     #include "assets/amara2_asset.cpp"
     #include "assets/amara2_imageAsset.cpp"
     #include "assets/amara2_fontAsset.cpp"
+    #include "assets/amara2_tiledTilemapAsset.cpp"
 
     #ifdef AMARA_OPENGL
     #include "rendering/shaders/amara2_shaderProgram.cpp"

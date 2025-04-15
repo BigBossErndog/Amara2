@@ -210,7 +210,9 @@ namespace Amara {
 
                         currentWorld->prepareRenderer();
                         currentWorld->draw(Props::master_viewport);
-                        currentWorld->presentRenderer();
+                    }
+                    for (Amara::World* world: worlds) {
+                        world->presentRenderer();
                     }
 
                     currentWorld = nullptr;

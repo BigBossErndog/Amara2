@@ -71,6 +71,12 @@ namespace Amara {
                     if (success) Props::assets->add(task.key, fontAsset);
                     break;
                 }
+                case AssetEnum::TiledTilemap: {
+                    Tiled_TilemapAsset* tilemapAsset = createAsset<Tiled_TilemapAsset>(task.key);
+                    success = tilemapAsset->loadTmx(task.path);
+                    if (success) Props::assets->add(task.key, tilemapAsset);
+                    break;
+                }
                 default:
                     break;
             }
@@ -110,6 +116,21 @@ namespace Amara {
             task.type = AssetEnum::Font;
 
             queueTask(task);
+            return get_lua_object();
+        }
+
+        sol::object tiledTilemap(std::string key, std::string path) {
+            LoadTask task;
+            task.key = key;
+            task.path = path;
+            task.type = AssetEnum::TiledTilemap;
+
+            queueTask(task);
+            return get_lua_object();
+        }
+
+        sol::object setMaxFailAttempts(int _r) {
+            maxFailAttempts = _r;
             return get_lua_object();
         }
 
@@ -177,7 +198,8 @@ namespace Amara {
                 "image", &Loader::image,
                 "spritesheet", &Loader::spritesheet,
                 "font", &Loader::font,
-                "setLoadRate", &Loader::setLoadRate
+                "setLoadRate", &Loader::setLoadRate,
+                "setMaxFailAttempts", &Loader::setMaxFailAttempts
             );
             
             sol::usertype<Node> node_type = lua["Node"];

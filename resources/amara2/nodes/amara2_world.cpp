@@ -33,7 +33,7 @@ namespace Amara {
 
         GraphicsEnum graphics;
         
-        Amara::Color backgroundColor = Amara::Color::Transparent;
+        Amara::Color backgroundColor = Amara::Color::Black;
 
         Rectangle display;
         Uint32 displayID = 0;
@@ -278,7 +278,10 @@ namespace Amara {
                 }
             }
             if (json_has(config, "transparent")) {
-                if (window == nullptr) transparent = config["transparent"];
+                if (window == nullptr) {
+                    transparent = config["transparent"];
+                    backgroundColor = Amara::Color::Transparent;
+                }
             }
             if (json_has(config, "alwaysOnTop")) {
                 setAlwaysOnTop(config["alwaysOnTop"]);
@@ -876,6 +879,7 @@ namespace Amara {
                 "vw", &World::virtualWidth,
                 "vh", &World::virtualHeight,
                 "assets", &World::assets,
+                "shaders", &World::shaders,
                 "base_dir_path", sol::readonly(&World::base_dir_path),
                 "display", sol::readonly(&World::display),
                 "displayID", sol::readonly(&World::displayID),

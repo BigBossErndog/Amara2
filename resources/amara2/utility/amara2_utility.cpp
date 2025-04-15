@@ -172,14 +172,67 @@ namespace Amara {
         }
 
         Amara::Color& configure(nlohmann::json config) {
-            if (json_has(config, "r")) r = config["r"];
-            else r = 0;
-            if (json_has(config, "g")) g = config["g"];
-            else g = 0;
-            if (json_has(config, "b")) b = config["b"];
-            else b = 0;
-            if (json_has(config, "a")) a = config["a"];
-            else a = 255;
+            if (config.is_string()) {
+                if (string_equal(config, "white")) {
+                    r = 255; g = 255; b = 255; a = 255;
+                }
+                else if (string_equal(config, "black")) {
+                    r = 0; g = 0; b = 0; a = 255;
+                }
+                else if (string_equal(config, "red")) {
+                    r = 255; g = 0; b = 0; a = 255;
+                }
+                else if (string_equal(config, "green")) {
+                    r = 0; g = 255; b = 0; a = 255;
+                }
+                else if (string_equal(config, "blue")) {
+                    r = 0; g = 0; b = 255; a = 255;
+                } 
+                else if (string_equal(config, "yellow")) {
+                    r = 255; g = 255; b = 0; a = 255;
+                }
+                else if (string_equal(config, "magenta")) {
+                    r = 255; g = 0; b = 255; a = 255;
+                }
+                else if (string_equal(config, "cyan")) {
+                    r = 0; g = 255; b = 255; a = 255;
+                }
+                else if (string_equal(config, "transparent")) {
+                    r = 0; g = 0; b = 0; a = 0;
+                }
+                else {
+                    // Color in hex format #FFFFFF
+                    std::string hex_color = config.get<std::string>();
+                    if (hex_color[0] == '#') {
+                        hex_color = hex_color.substr(1);
+
+                        if (hex_color.length() == 6) {
+                            r = std::stoi(hex_color.substr(0, 2), nullptr, 16);
+                            g = std::stoi(hex_color.substr(2, 2), nullptr, 16);
+                            b = std::stoi(hex_color.substr(4, 2), nullptr, 16);
+                            a = 255;
+                        } else if (hex_color.length() == 8) {
+                            r = std::stoi(hex_color.substr(0, 2), nullptr, 16);
+                            g = std::stoi(hex_color.substr(2, 2), nullptr, 16);
+                            b = std::stoi(hex_color.substr(4, 2), nullptr, 16);
+                            a = std::stoi(hex_color.substr(6, 2), nullptr, 16);
+                        }
+                    }
+                    else {
+                        r = 0; g = 0; b = 0; a = 255;
+                    }
+                }
+            }
+            else if (config.is_object()) {
+                if (json_has(config, "r")) r = config["r"];
+                else r = 0;
+                if (json_has(config, "g")) g = config["g"];
+                else g = 0;
+                if (json_has(config, "b")) b = config["b"];
+                else b = 0;
+                if (json_has(config, "a")) a = config["a"];
+                else a = 255;
+            }
             return *this;
         }
 
@@ -214,6 +267,22 @@ namespace Amara {
     Color Color::Magenta = {255, 0, 255, 255};
     Color Color::Cyan = {0, 255, 255, 255};
     Color Color::Transparent = {0, 0, 0, 0};
+
+    inline std::vector<unsigned char> base64_decode(const std::string& encoded_string) {
+        // TODO: Replace with a real Base64 decoding implementation ***
+        debug_log("Warning: Base64 decoding is not implemented!");
+        std::vector<unsigned char> decoded_data;
+        return decoded_data;
+    }
+
+    // Zlib/Gzip Decompression
+    inline std::vector<unsigned char> decompress_data(const std::vector<unsigned char>& compressed_data, const std::string& compression_type) {
+        // TODO: Replace with real zlib/gzip decompression if needed ***
+        if (compression_type == "zlib" || compression_type == "gzip") {
+             debug_log("Warning: ", compression_type, " decompression is not implemented!");
+        }
+        return compressed_data;
+    }
 
     void Color::bindLua(sol::state& lua) {
         sol::usertype<Color> color_type = lua.new_usertype<Color>("Color",

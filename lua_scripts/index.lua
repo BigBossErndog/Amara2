@@ -26,9 +26,6 @@
 
 -- Scripts:load("test","scripts/testScript")
 -- Scripts:run("test")
-
-    -- Game:setTargetFPS(60)
-
     -- Creator:createWorld({
     --     window = {
     --         windowTitle = "Amara2",

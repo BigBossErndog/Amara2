@@ -19,7 +19,10 @@ RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
 LINKER_FLAGS_WIN64 = -Wl,-Bstatic -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
 
-OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm
+OTHER_LIB_LINKS = -Lresources/libs/tinyxml2/build -ltinyxml2
+OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2
+
+OTHER_LIB = $(OTHER_LIB_LINKS) $(OTHER_LIB_PATHS)
 
 AMARA_PATH = -I ./resources/amara2
 
@@ -77,24 +80,24 @@ cpDLLsAlt:
 
 win: $(SRC_FILES)
 	rm -rf ./build/*
-	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
+	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLs
 
 win_alt: $(SRC_FILES)
-	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
+	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB) $(THEORA_WIN) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLsAlt
 
 win32: $(SRC_FILES)
 	make clearBuildWin
 	cp -R assets/ build/
 	cp -R videos/ build/
-	$(COMPILER) $(SRC_FILES) -m32 $(AMARA_PATH) $(OTHER_LIB_PATHS) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN32) $(SDL_LIBRARY_PATHS_WIN32) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(LINKER_FLAGS) -I resources/libs/SDL2-32/bin -o $(BUILD_EXECUTABLE_WIN)
+	$(COMPILER) $(SRC_FILES) -m32 $(AMARA_PATH) $(OTHER_LIB) $(THEORA_WIN) $(SDL_INCLUDE_PATHS_WIN32) $(SDL_LIBRARY_PATHS_WIN32) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) -lmingw32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -Wa,-mbig-obj $(LINKER_FLAGS) -I resources/libs/SDL2-32/bin -o $(BUILD_EXECUTABLE_WIN)
 	xcopy /s /e /i /y "dlls\win62\*.*" "$(BUILD_PATH)/"
 	md "$(BUILD_PATH)\saves"
 
 linux:
 	
-	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB_PATHS) $(SDL_INCLUDE_PATHS_LINUX) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_LINUX)
+	$(COMPILER) $(SRC_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_LINUX)
 	mkdir $(BUILD_PATH)/saves
 
 valgrind:

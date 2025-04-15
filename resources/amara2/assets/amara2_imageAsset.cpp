@@ -24,7 +24,7 @@ namespace Amara {
                 debug_log("Error: File not found at ", path);
                 return false;
             }
-
+            
             clearTexture();
 
             SDL_IOStream *rw = SDL_IOFromFile(path.c_str(), "rb");
