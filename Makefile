@@ -19,8 +19,8 @@ RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
 LINKER_FLAGS_WIN64 = -Wl,-Bstatic -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
 
-OTHER_LIB_LINKS = -Lresources/libs/tinyxml2/build -ltinyxml2
-OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2
+OTHER_LIB_LINKS = -Lresources/libs/tinyxml2/lib -ltinyxml2
+OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2/include
 
 OTHER_LIB = $(OTHER_LIB_LINKS) $(OTHER_LIB_PATHS)
 
