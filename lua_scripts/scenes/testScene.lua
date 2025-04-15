@@ -59,10 +59,10 @@ return NodeFactory:create("Scene"):configure({
             -- y = self.camera.topBorder
         })
         self.props.textCont = textCont
-        textCont:wait(3).tween:to({
+        textCont:wait(2).tween:to({
             rotation = 2*math.pi,
             duration = 2,
-            ease = Ease.SineInOut
+            ease = Ease.CubicInOut
         })
         
         local a_rate = 2 * math.pi * 0.01
