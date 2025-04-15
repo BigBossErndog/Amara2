@@ -34,7 +34,9 @@ namespace Amara {
             return nullptr;
         } else if (obj.get_type() == sol::type::boolean) {
             return obj.as<bool>();
-        } else if (obj.get_type() == sol::type::number) {
+        } else if (obj.is<int>()) {
+            return obj.as<int>();
+        } else if (obj.is<double>()) {
             return obj.as<double>();
         } else if (obj.get_type() == sol::type::string) {
             return obj.as<std::string>();

@@ -76,7 +76,8 @@ return NodeFactory:create("Scene"):configure({
         end
 
         self.props.txt = textCont:createChild("Text", {
-            text = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9",
+            -- text = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9",
+            text = 123,
             font = "font",
             wrapMode = WrapMode.ByWord,
             wrapWidth = 128,
@@ -114,11 +115,17 @@ return NodeFactory:create("Scene"):configure({
         local controlDown = Controls:scheme("down")
         controlDown:setKeys({ Key.Down, Key.S })
 
+        self.props.fpsTxt = self:createChild("Text", {
+            text = "FPS",
+            font = "font",
+            origin = 0.5
+        });
+
         self.camera:startFollow(f, 10)
     end,
 
     onUpdate = function(self, deltaTime)
-        -- self.props.txt:setText(math.floor(Game.fps), " FPS")
+        self.props.fpsTxt:setText(math.floor(Game.fps), " FPS")
         -- print(math.floor(Game.fps), " FPS")
         -- self.props.textCont.y = self.camera.topBorder
 

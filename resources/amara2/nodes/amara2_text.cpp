@@ -82,7 +82,14 @@ namespace Amara {
             if (json_has(config, "alignment")) align(static_cast<Amara::AlignmentEnum>(config["alignment"]));
             
             if (json_has(config, "font")) setFont(config["font"]);
-            if (json_has(config, "text")) setText(config["text"].get<std::string>());
+            if (json_has(config, "text")) {
+                if (config["text"].is_string()) setText(config["text"].get<std::string>());
+                if (config["text"].is_number()) {
+                    if (config["text"].is_number_integer()) setText(std::to_string(config["text"].get<int>()));
+                    else setText(std::to_string(config["text"].get<double>()));
+                }
+                else setText(std::string(config["text"].dump()));
+            }
 
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
