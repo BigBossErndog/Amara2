@@ -59,9 +59,10 @@ return NodeFactory:create("Scene"):configure({
             -- y = self.camera.topBorder
         })
         self.props.textCont = textCont
-        textCont.tween:to({
-            tint = Colors.Green,
-            duration = 10
+        textCont:wait(3).tween:to({
+            rotation = 2*math.pi,
+            duration = 2,
+            ease = Ease.SineInOut
         })
         
         local a_rate = 2 * math.pi * 0.01

@@ -482,10 +482,6 @@ namespace Amara {
             return false;
         }
 
-        bool setEnvironmentVar(std::string path) {
-            return setEnvironmentVar(path, false);
-        }
-
         static void bindLua(sol::state& lua) {
             lua.new_usertype<FileManager>("FileManager",
                 "fileExists", &FileManager::fileExists,
@@ -515,10 +511,7 @@ namespace Amara {
                 "run", &FileManager::run,
                 "compileScript", &FileManager::compileScript,
                 "execute", &FileManager::lua_execute,
-                "setEnvironmentVar", sol::overload(
-                    sol::resolve<bool(std::string, bool)>(&FileManager::setEnvironmentVar),
-                    sol::resolve<bool(std::string)>(&FileManager::setEnvironmentVar)
-                )
+                "setEnvironmentVar", &FileManager::setEnvironmentVar
             );
         }
     };

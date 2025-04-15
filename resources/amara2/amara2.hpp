@@ -152,6 +152,7 @@
     #include "nodes/amara2_scene.cpp"
 
     #include "actions/amara2_action.cpp"
+    #include "actions/amara2_waitAction.cpp"
     #include "actions/amara2_tween.cpp"
     #include "actions/amara2_stateMachine.cpp"
     #include "actions/amara2_loader.cpp"

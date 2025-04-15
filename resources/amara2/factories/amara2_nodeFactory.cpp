@@ -172,6 +172,7 @@ namespace Amara {
             registerNode<Amara::Scene>("Scene");
 
             registerNode<Amara::Action>("Action");
+            registerNode<Amara::WaitAction>("WaitAction");
             registerNode<Amara::Tween>("Tween");
             registerNode<Amara::StateMachine>("StateMachine");
             
@@ -205,9 +206,10 @@ namespace Amara {
             Amara::Scene::bindLua(lua);
             
             Amara::Action::bindLua(lua);
+            Amara::WaitAction::bindLua(lua);
             Amara::Tween::bindLua(lua);
             Amara::StateMachine::bindLua(lua);
-
+            
             Amara::Loader::bindLua(lua);
 
             Amara::Sprite::bindLua(lua);
