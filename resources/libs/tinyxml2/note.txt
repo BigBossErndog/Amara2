@@ -1,0 +1,1 @@
+Built from the tinyxml2 repo: https://github.com/leethomason/tinyxml2/

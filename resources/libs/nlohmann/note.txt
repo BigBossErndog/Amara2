@@ -1,0 +1,1 @@
+Extracted from the nlohmann/json repo: https://github.com/nlohmann/json
