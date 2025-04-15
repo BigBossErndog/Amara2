@@ -62,7 +62,7 @@ return NodeFactory:create("Scene"):configure({
         textCont:wait(2).tween:to({
             rotation = 2*math.pi,
             duration = 2,
-            ease = Ease.CubicInOut
+            ease = Ease.QuintInOut
         })
         
         local a_rate = 2 * math.pi * 0.01

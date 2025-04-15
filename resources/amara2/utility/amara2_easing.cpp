@@ -9,6 +9,18 @@ namespace Amara {
         CubicOut,
         CubicInOut,
 
+        QuadIn,
+        QuadOut,
+        QuadInOut,
+        
+        QuartIn,
+        QuartOut,
+        QuartInOut,
+
+        QuintIn,
+        QuintOut,
+        QuintInOut,
+
         BackIn,
         BackOut,
         BackInOut,
@@ -63,6 +75,39 @@ namespace Amara {
                 break;
             case Ease::CubicOut:
                 eased_progress = (progress - 1) * (progress - 1) * (progress - 1) + 1;
+                break;
+            case Ease::QuadIn:
+                eased_progress = progress * progress;
+                break;
+            case Ease::QuadOut:
+                eased_progress = 1 - (1 - progress) * (1 - progress);
+                break;
+            case Ease::QuadInOut:
+                eased_progress = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - pow(-2 * progress + 2, 2) / 2;
+                break;
+            case Ease::QuartIn:
+                eased_progress = progress * progress * progress * progress;
+                break;
+            case Ease::QuartOut:
+                eased_progress = 1 - pow(1 - progress, 4);
+                break;
+            case Ease::QuartInOut:
+                eased_progress = progress < 0.5
+                    ? 8 * progress * progress * progress * progress
+                    : 1 - pow(-2 * progress + 2, 4) / 2;
+                break;
+            case Ease::QuintIn:
+                eased_progress = progress * progress * progress * progress * progress;
+                break;
+            case Ease::QuintOut:
+                eased_progress = 1 - pow(1 - progress, 5);
+                break;
+            case Ease::QuintInOut:
+                eased_progress = progress < 0.5
+                ? 16 * progress * progress * progress * progress * progress
+                : 1 - pow(-2 * progress + 2, 5) / 2;
                 break;
             case Ease::CubicInOut:
                 eased_progress = progress < 0.5
@@ -189,6 +234,18 @@ namespace Amara {
             "CubicIn", Ease::CubicIn,
             "CubicOut", Ease::CubicOut,
             "CubicInOut", Ease::CubicInOut,
+
+            "QuadIn", Ease::QuadIn,
+            "QuadOut", Ease::QuadOut,
+            "QuadInOut", Ease::QuadInOut,
+            
+            "QuartIn", Ease::QuartIn,
+            "QuartOut", Ease::QuartOut,
+            "QuartInOut", Ease::QuartInOut,
+
+            "QuintIn", Ease::QuintIn,
+            "QuintOut", Ease::QuintOut,
+            "QuintInOut", Ease::QuintInOut,
 
             "BackIn", Ease::BackIn,
             "BackOut", Ease::BackOut,
