@@ -1,3 +1,6 @@
 [submodule "resources/libs/stb"]
 	path = resources/libs/stb
 	url = https://github.com/nothings/stb.git
+[submodule "resources/libs/nlohmann"]
+	path = resources/libs/nlohmann
+	url = https://github.com/nlohmann/json.git
