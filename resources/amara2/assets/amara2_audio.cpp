@@ -12,7 +12,7 @@ namespace Amara {
         }
 
         bool loadAudio(std::string _p) {
-            std::string path = Props::files->getAssetPath(_p);
+            std::string path = Props::system->getAssetPath(_p);
 
             if (string_endsWith(path, ".wav")) {
                 

@@ -45,15 +45,15 @@
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            screenMode = ScreenMode.Windowed,
+            screenMode = ScreenMode.BorderlessWindowed,
             width = 1280,
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
             -- graphics = Graphics.OpenGL
             graphics = Graphics.OpenGL,
-            -- transparent = true,
-            -- alwaysOnTop = true,
+            transparent = true,
+            alwaysOnTop = true,
             -- clickThrough = true,
         },
         -- entryScene = "scenes/TestScene",
@@ -61,12 +61,15 @@
         --     self.load:image("goldenFlower", "goldenFlower.png")
         -- end,
         onCreate = function(self)
-            self:createChild("scenes/TestScene")
-            self.world:setScreenMode(ScreenMode.BorderlessWindowed)
+            -- self:createChild("scenes/TestScene")
             self.x = self.display.x
             self.y = self.display.y
-            self.w = self.display.w
-            self.h = self.display.h
+            self.width = self.display.w
+            self.height = self.display.h
+
+            -- self.backgroundColor = "#000000"
+
+            System:openWebsite("https://www.google.com")
         end,
         onUpdate = function(self, deltaTime)
             -- print(Game.fps)

@@ -46,6 +46,8 @@ namespace Amara {
             return obj.as<Vector2>().toJSON();
         } else if (obj.is<Vector3>()) {
             return obj.as<Vector3>().toJSON();
+        } else if (obj.is<Vector4>()) {
+            return obj.as<Vector4>().toJSON();
         } else if (obj.is<Rectangle>()) {
             return obj.as<Rectangle>().toJSON();
         } else if (obj.get_type() == sol::type::table) {
@@ -113,9 +115,9 @@ namespace Amara {
         return lua_to_json(obj).dump();
     }
 
-    sol::object string_to_lua_object(sol::state_view lua, const std::string& luaString) {
+    sol::object string_to_lua_object(const std::string& luaString) {
         std::string luaCode = "return " + luaString;
-        sol::protected_function_result result = lua.do_string(luaCode);
+        sol::protected_function_result result = Props::lua().do_string(luaCode);
         
         if (result.valid()) {
             sol::object obj = result;
@@ -198,6 +200,8 @@ namespace Amara {
     }
     Vector4& Vector4::operator= (sol::object obj) {
         if (obj.is<Vector4>()) *this = obj.as<Vector4>();
+        else if (obj.is<Vector3>()) *this = obj.as<Vector3>();
+        else if (obj.is<Vector2>()) *this = obj.as<Vector2>();
         else *this = lua_to_json(obj);
         return *this;
     }
@@ -205,6 +209,12 @@ namespace Amara {
         if (obj.is<Rectangle>()) *this = obj.as<Rectangle>();
         else *this = lua_to_json(obj);
         return *this;
+    }
+
+    Color& Color::operator= (sol::object obj) {
+        if (obj.is<Color>()) *this = obj.as<Color>();
+        else *this = lua_to_json(obj);
+        return *this; 
     }
 
     void bindLua_LuaUtilityFunctions(sol::state& lua) {

@@ -107,7 +107,7 @@ namespace Amara {
         }
 
         virtual nlohmann::json toJSON() {
-            return nlohmann::json::object({
+            nlohmann::json data = nlohmann::json::object({
                 { "id", id },
                 { "nodeID", nodeID },
                 { "baseNodeID", baseNodeID },
@@ -129,6 +129,12 @@ namespace Amara {
                 { "depthSortSelfEnabled", depthSortSelfEnabled },
                 { "depthSortChildrenEnabled", depthSortChildrenEnabled }
             });
+
+            if (shaderProgram) {
+                data["shaderProgram"] = shaderProgram->key;
+            }
+
+            return data;
         }
 
         sol::object toData() {
@@ -140,7 +146,7 @@ namespace Amara {
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
                 if (string_endsWith(path, ".json")) {
-                    configure(Props::files->readJSON(path));
+                    configure(Props::system->readJSON(path));
                 }
                 else if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
                     configure(lua_to_json(Props::scripts->run(path)));
@@ -184,6 +190,8 @@ namespace Amara {
             if (json_has(config, "depthSortSelfEnabled")) depthSortSelfEnabled = config["depthSortSelfEnabled"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
 
+            if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
+
             if (json_has(config, "props")) {
                 nlohmann::json data = config["props"];
                 if (data.is_object()) {
@@ -220,7 +228,7 @@ namespace Amara {
             if (config.is<std::string>()) {
                 std::string path = config.as<std::string>();
                 if (string_endsWith(path, ".json")) {
-                    luaConfigure(json_to_lua(Props::files->readJSON(path)));
+                    luaConfigure(json_to_lua(Props::system->readJSON(path)));
                     return get_lua_object();
                 }
                 if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
@@ -584,15 +592,6 @@ namespace Amara {
             return goTo(Vector2(_x, _y));
         }
 
-        sol::object setScale(float _x, float _y) {
-            scale.x = _x;
-            scale.y = _y;
-            return get_lua_object();
-        }
-        sol::object setScale(float _g) {
-            return setScale(_g, _g);
-        }
-
         sol::object rotate(float _r) {
             rotation += _r;
             return get_lua_object();
@@ -646,7 +645,7 @@ namespace Amara {
                 "nodeID", sol::readonly(&Node::nodeID),
                 "parent", sol::readonly(&Node::parent),
                 "props", &Node::props,
-                "pos", &Node::pos,
+                "pos", sol::property([](Node& e, sol::object val) { e.pos = val; }, [](Node& e) { return e.pos; }),
                 "x", sol::property([](Node& e, float val) { e.pos.x = val; }, [](Node& e) { return e.pos.x; }),
                 "y", sol::property([](Node& e, float val) { e.pos.y = val; }, [](Node& e) { return e.pos.y; }),
                 "z", sol::property([](Node& e, float val) { e.pos.z = val; }, [](Node& e) { return e.pos.z; }),
@@ -665,10 +664,6 @@ namespace Amara {
                 "scale", &Node::scale,
                 "scaleX", sol::property([](Node& e, float val) { e.scale.x = val; }, [](Node& e) { return e.scale.x; }),
                 "scaleY", sol::property([](Node& e, float val) { e.scale.y = val; }, [](Node& e) { return e.scale.y; }),
-                "setScale", sol::overload(
-                    sol::resolve<sol::object(float, float)>(&Node::setScale),
-                    sol::resolve<sol::object(float)>(&Node::setScale)
-                ),
                 "rotation", &Node::rotation,
                 "rotate", &Node::rotate,
                 "cameraFollowOffset", &Node::cameraFollowOffset,
@@ -701,8 +696,7 @@ namespace Amara {
                 "sendToBack", &Node::sendToBack,
                 "switchParent", &Node::switchParent,
                 #ifdef AMARA_OPENGL
-                "setShaderProgram", &Node::setShaderProgram,
-                "shaderProgram", sol::readonly(&Node::shaderProgram),
+                "shaderProgram", sol::property([](Node& e, std::string val) { e.setShaderProgram(val); }, [](Node& e) { if (e.shaderProgram) { return e.shaderProgram->key; } else { return std::string(""); } }),
                 #endif
                 "stopActing", &Node::stopActing,
                 "string", [](Amara::Node* e) {

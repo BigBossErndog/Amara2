@@ -18,9 +18,9 @@ namespace Amara {
         #endif
         
         bool loadImage(std::string _p) {
-            path = Props::files->getAssetPath(_p);
+            path = Props::system->getAssetPath(_p);
 
-            if (!Props::files->fileExists(path)) {
+            if (!Props::system->fileExists(path)) {
                 debug_log("Error: File not found at ", path);
                 return false;
             }

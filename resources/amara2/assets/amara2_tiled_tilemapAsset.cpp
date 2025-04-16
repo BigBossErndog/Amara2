@@ -211,7 +211,7 @@ namespace Amara {
     }
 
     bool Tiled_TilemapAsset::loadTmx(const std::string& tmxPath) {
-        path = Props::files->getAssetPath(tmxPath);
+        path = Props::system->getAssetPath(tmxPath);
 
         SDL_IOStream* rw = SDL_IOFromFile(path.c_str(), "rb");
         if (!rw) {
@@ -285,7 +285,7 @@ namespace Amara {
             const char* source = tsElement->Attribute("source");
 
             if (source) {
-                debug_log("Error: External tilesets (TSX files) are not supported.");
+                debug_log("Error: External tilesets (TSX system) are not supported.");
                 debug_log("       Found reference to '", source, "' in map '", path, "'.");
                 debug_log("       Please embed the tileset directly into the TMX file.");
                 debug_log("       ( Edit -> Preferences -> Embed tilesets, then Export As .tmx )");

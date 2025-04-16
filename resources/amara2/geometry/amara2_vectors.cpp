@@ -400,7 +400,7 @@ namespace Amara {
             }
         );
         lua.new_usertype<Vector3>("Vector3",
-            sol::constructors<Vector3(), Vector3(float, float, float)>(),
+            sol::constructors<Vector3(), Vector3(float, float, float), Vector3(const Vector2&, float)>(),
             sol::base_classes, sol::bases<Vector2>(),
             "z", &Vector3::z,
             sol::meta_function::addition, sol::overload(

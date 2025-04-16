@@ -130,8 +130,13 @@ namespace Amara {
         }
 
         sol::object setBounds(sol::object _bounds) {
-            hasBounds = true;
-            bounds = _bounds;
+            if (!_bounds.is<sol::nil_t>()) {
+                hasBounds = true;
+                bounds = _bounds;
+            }
+            else {
+                hasBounds = false;
+            }
             return get_lua_object();
         }
         sol::object setBounds(const Rectangle& _bounds) {
@@ -311,7 +316,8 @@ namespace Amara {
                     sol::resolve<sol::object(sol::object)>(&Camera::setBounds)
                 ),
                 "removeBounds", &Camera::removeBounds,
-                "bounds", sol::readonly(&Camera::bounds)
+                "bounds", sol::property([](Camera& cam) -> sol::object { if (cam.hasBounds) { return sol::make_object(Props::lua(), cam.bounds); } else { return sol::nil; } }, [](Camera& cam, sol::object obj) { return cam.setBounds(obj); }),
+                "hasBounds", sol::readonly(&Camera::hasBounds)
             );
         }
     };

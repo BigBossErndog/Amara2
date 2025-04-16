@@ -66,7 +66,7 @@ return NodeFactory:create("Scene"):configure({
             repeats = -1,
             yoyo = true
         })
-        textCont.rect = map.rect
+        -- textCont.rect = map.rect
         
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
@@ -102,6 +102,9 @@ return NodeFactory:create("Scene"):configure({
             animation = "runningDown",
             -- origin = 0
         })
+
+        f.pos = textCont.center
+        -- f:goTo(textCont.center)
         
         self.props.f = f;
         f.frame = 3
@@ -173,16 +176,16 @@ return NodeFactory:create("Scene"):configure({
 
         if Keyboard:justPressed(Key.F5) then
             if self.world.screenMode == ScreenMode.Windowed or self.world.screenMode == ScreenMode.BorderlessWindowed then
-                self.world:setScreenMode(ScreenMode.Fullscreen)
+                self.world.screenMode = ScreenMode.Fullscreen
             else 
-                self.world:setScreenMode(ScreenMode.Windowed)
+                self.world.screenMode = ScreenMode.Windowed
             end
         end
         if Keyboard:justPressed(Key.F11) then
             if self.world.screenMode == ScreenMode.Windowed or self.world.screenMode == ScreenMode.BorderlessWindowed then
-                self.world:setScreenMode(ScreenMode.BorderlessFullscreen)
+                self.world.screenMode = ScreenMode.BorderlessFullscreen
             else 
-                self.world:setScreenMode(ScreenMode.BorderlessWindowed)
+                self.world.screenMode = ScreenMode.BorderlessWindowed
             end
         end
     end

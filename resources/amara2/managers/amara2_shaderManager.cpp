@@ -82,9 +82,9 @@ namespace Amara {
                     shaderID = getShader(shader_key);
                 }
                 else if (!shader_key.empty()) {
-                    std::string filePath = Props::files->getAssetPath(shader_key);
-                    if (Props::files->fileExists(filePath)) {
-                        std::string source = Props::files->readFile(filePath);
+                    std::string filePath = Props::system->getAssetPath(shader_key);
+                    if (Props::system->fileExists(filePath)) {
+                        std::string source = Props::system->readFile(filePath);
                         shaderID = compileGLShader("", source, ShaderTypeEnum::Vertex);
                         temp = true;
                     }
@@ -109,9 +109,9 @@ namespace Amara {
                     shaderID = getShader(shader_key);
                 }
                 else if (!shader_key.empty()) {
-                    std::string filePath = Props::files->getAssetPath(shader_key);
-                    if (Props::files->fileExists(filePath)) {
-                        std::string source = Props::files->readFile(filePath);
+                    std::string filePath = Props::system->getAssetPath(shader_key);
+                    if (Props::system->fileExists(filePath)) {
+                        std::string source = Props::system->readFile(filePath);
                         shaderID = compileGLShader("", source, ShaderTypeEnum::Fragment);
                         temp = true;
                     }
@@ -192,8 +192,8 @@ namespace Amara {
                 return false;
             }
             
-            std::string filePath = Props::files->getAssetPath(path);
-            std::string source = Props::files->readFile(filePath);
+            std::string filePath = Props::system->getAssetPath(path);
+            std::string source = Props::system->readFile(filePath);
 
             #ifdef AMARA_OPENGL
             unsigned int shader = compileGLShader(key, source, type);

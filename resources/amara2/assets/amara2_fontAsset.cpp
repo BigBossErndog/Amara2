@@ -106,10 +106,10 @@ namespace Amara {
         #endif
 
         bool loadFont(std::string _p, int _size) {
-            path = Props::files->getAssetPath(_p);
+            path = Props::system->getAssetPath(_p);
             fontSize = _size;
 
-            if (!Props::files->fileExists(path)) {
+            if (!Props::system->fileExists(path)) {
                 debug_log("Error: File not found at ", path);
                 return false;
             }
@@ -249,7 +249,7 @@ namespace Amara {
                 addGlyphToTexture(glyphID);
             }
         }
-
+        
         void packGlyphsFromString(std::string str) {
             packGlyphsFromString(Amara::String::utf8_to_utf32(str));
         }

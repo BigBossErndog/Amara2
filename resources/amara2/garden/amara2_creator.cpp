@@ -120,7 +120,7 @@ namespace Amara {
             }
             else {
                 override_existence();
-                Props::files->setBasePath(base_dir_path);
+                Props::system->setBasePath(base_dir_path);
                 Props::lua()["Creator"] = this;
             }
         }
@@ -253,7 +253,7 @@ namespace Amara {
             
             GameManager::bindLua(lua);
             ControlManager::bindLua(lua);
-            FileManager::bindLua(lua);
+            SystemManager::bindLua(lua);
             AssetManager::bindLua(lua);
             NodeFactory::bindLua(lua);
             ScriptFactory::bindLua(lua);

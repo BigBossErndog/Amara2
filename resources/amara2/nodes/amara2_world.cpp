@@ -8,7 +8,7 @@ namespace Amara {
         AssetManager assets;
         ShaderManager shaders;
 
-        std::string base_dir_path = Props::files->getBasePath();
+        std::string base_dir_path = Props::system->getBasePath();
 
         SDL_Window* window = nullptr;
         Uint32 windowID = 0;
@@ -723,7 +723,7 @@ namespace Amara {
 
         virtual void run(double deltaTime) override {
             if (!base_dir_path.empty()) {
-                Props::files->setBasePath(base_dir_path);
+                Props::system->setBasePath(base_dir_path);
             }
             Amara::Node::run(deltaTime);
 
@@ -896,16 +896,17 @@ namespace Amara {
                 "centerWindow", &World::centerWindow,
                 "resizeWindow", &World::resizeWindow,
                 "fitToDisplay", &World::fitToDisplay,
-                "screenMode", sol::readonly(&World::screenMode),
-                "setScreenMode", &World::setScreenMode,
-                "transparent", sol::readonly(&World::transparent),
-                "alwaysOnTop", sol::readonly(&World::alwaysOnTop),
-                "setAlwaysOnTop", &World::setAlwaysOnTop,
-                "clickThrough", sol::readonly(&World::clickThrough),
-                "setClickThrough", &World::setClickThrough,
-                "windowTitle", sol::readonly(&World::windowTitle),
-                "setWindowTitle", &World::setWindowTitle,
-                "backgroundColor", &World::backgroundColor,
+                "screenMode", sol::property([](const Amara::World& world) { return world.screenMode; }, &World::setScreenMode),
+                "transparent", sol::property([](const Amara::World& world) { return world.transparent; }, [](Amara::World& world, sol::object value) {
+                    debug_log("Error: Transparency can only be set in World configuration table.");
+                    Props::breakWorld();
+                }),
+                "alwaysOnTop", sol::property([](const Amara::World& world) { return world.alwaysOnTop; }, &World::setAlwaysOnTop),
+                "clickThrough", sol::property([](const Amara::World& world) { return world.clickThrough; }, &World::setClickThrough),
+                "windowTitle", sol::property([](const Amara::World& world) { return world.windowTitle; }, &World::setWindowTitle),
+                "backgroundColor", sol::property([](const Amara::World& world) { return world.backgroundColor; }, [](Amara::World& world, sol::object value) {
+                    world.backgroundColor = value;
+                }),
                 "windowMoved", sol::readonly(&World::windowMoved),
                 "windowResized", sol::readonly(&World::windowResized),
                 "depth", sol::property(

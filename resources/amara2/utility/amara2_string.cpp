@@ -145,5 +145,39 @@ namespace Amara {
         
             return utf32;
         }
+
+        static std::string utf32_to_utf8(const std::u32string& utf32) {
+            std::string utf8;
+            for (char32_t codepoint : utf32) {
+                // Check for invalid codepoints (surrogates or out of range)
+                if (codepoint > 0x10FFFF) {
+                    throw std::runtime_error("Invalid UTF-32: Codepoint out of Unicode range.");
+                }
+                if (codepoint >= 0xD800 && codepoint <= 0xDFFF) {
+                    throw std::runtime_error("Invalid UTF-32: Surrogate codepoints are not valid.");
+                }
+
+                if (codepoint <= 0x7F) {
+                    // 1-byte sequence (ASCII)
+                    utf8 += static_cast<char>(codepoint);
+                } else if (codepoint <= 0x7FF) {
+                    // 2-byte sequence
+                    utf8 += static_cast<char>(0xC0 | (codepoint >> 6));            // 110xxxxx
+                    utf8 += static_cast<char>(0x80 | (codepoint & 0x3F));         // 10xxxxxx
+                } else if (codepoint <= 0xFFFF) {
+                    // 3-byte sequence
+                    utf8 += static_cast<char>(0xE0 | (codepoint >> 12));           // 1110xxxx
+                    utf8 += static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));  // 10xxxxxx
+                    utf8 += static_cast<char>(0x80 | (codepoint & 0x3F));         // 10xxxxxx
+                } else { // codepoint <= 0x10FFFF
+                    // 4-byte sequence
+                    utf8 += static_cast<char>(0xF0 | (codepoint >> 18));           // 11110xxx
+                    utf8 += static_cast<char>(0x80 | ((codepoint >> 12) & 0x3F)); // 10xxxxxx
+                    utf8 += static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));  // 10xxxxxx
+                    utf8 += static_cast<char>(0x80 | (codepoint & 0x3F));         // 10xxxxxx
+                }
+            }
+            return utf8;
+        }
     };
 }

@@ -58,15 +58,33 @@ namespace Amara {
         }
 
         Rectangle& operator= (const nlohmann::json& config) {
-            if (json_has(config, "x")) x = config["x"];
-            if (json_has(config, "y")) y = config["y"];
-            if (json_has(config, "w")) w = config["w"];
-            if (json_has(config, "h")) h = config["h"];
-            if (json_has(config, "width")) w = config["width"];
-            if (json_has(config, "height")) h = config["height"];
+            if (config.is_array()) {
+                if (config.size() == 4) {
+                    x = config[0];
+                    y = config[1];
+                    w = config[2];
+                    h = config[3];
+                }
+                else if (config.size() == 2) {
+                    x = config[0];
+                    y = config[1];
+                }
+            }
+            else if (config.is_object()) {
+                if (json_has(config, "x")) x = config["x"];
+                if (json_has(config, "y")) y = config["y"];
+                if (json_has(config, "w")) w = config["w"];
+                if (json_has(config, "h")) h = config["h"];
+                if (json_has(config, "width")) w = config["width"];
+                if (json_has(config, "height")) h = config["height"];
+            }
             return *this;
         }
         Rectangle& operator= (sol::object obj);
+
+        Vector2 getCenter() {
+            return Vector2(x + w/2, y + h/2);
+        }
     };
 
     struct Quad {
@@ -234,9 +252,12 @@ namespace Amara {
             sol::base_classes, sol::bases<Vector2>(),
             "w", &Rectangle::w,
             "h", &Rectangle::h,
+            "width", &Rectangle::w,
+            "height", &Rectangle::h,
             "string", [](const Rectangle& r) {
                 return std::string(r);
-            }
+            },
+            "center", sol::property(&Rectangle::getCenter)
         );
     }
 }

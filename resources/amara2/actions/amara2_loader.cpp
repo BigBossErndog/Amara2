@@ -41,11 +41,11 @@ namespace Amara {
             if (existing) {
                 if (replaceExisting) {
                     debug_log("Note: Asset \"", task.key, "\" already exists. Overwriting Asset.");
-                    debug_log("(Use node.load:setReplaceExisting(false) to disable overwriting of assets.)");
+                    debug_log("(Use \"node.load.replaceExisting = false\" to disable overwriting of assets.)");
                 }
                 else {
                     debug_log("Note: Asset \"", task.key, "\" already exists. Ignoring load task.");
-                    debug_log("(Use node.load:setReplaceExisting(true) to enable overwriting of assets.)");
+                    debug_log("(Use \"node.load.replaceExisting = true\" to enable overwriting of assets.)");
                     return true;
                 }
             }
@@ -129,21 +129,6 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::object setMaxFailAttempts(int _r) {
-            maxFailAttempts = _r;
-            return get_lua_object();
-        }
-
-        sol::object setReplaceExisting(bool _r) {
-            replaceExisting = _r;
-            return get_lua_object();
-        }
-
-        sol::object setLoadRate(int _r) {
-            loadRate = _r;
-            return get_lua_object();
-        }
-
         void queueTask(const LoadTask& task) {
             if (loadRate > 0) tasks.push_back(task);
             else processTask(task);
@@ -194,12 +179,13 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Loader>("Loader",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
-                "setReplaceExisting", &Loader::setReplaceExisting,
+                "replaceExisting", &Loader::replaceExisting,
                 "image", &Loader::image,
                 "spritesheet", &Loader::spritesheet,
                 "font", &Loader::font,
-                "setLoadRate", &Loader::setLoadRate,
-                "setMaxFailAttempts", &Loader::setMaxFailAttempts
+                "tiledTilemap", &Loader::tiledTilemap,
+                "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
+                "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; })
             );
             
             sol::usertype<Node> node_type = lua["Node"];

@@ -129,14 +129,6 @@ namespace Amara {
             }
             return get_lua_object();
         }
-        
-        sol::object setOrigin(float _x, float _y) {
-            origin = Vector2( _x, _y );
-            return get_lua_object();
-        }
-        sol::object setOrigin(float _o) {
-            return setOrigin(_o, _o);
-        }
 
         virtual void drawSelf(const Rectangle& v) override {
             if (image == nullptr) return;
@@ -291,17 +283,21 @@ namespace Amara {
             return rect;
         }
 
+        Vector2 getCenter() {
+            return getRectangle().getCenter();
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Sprite>("Sprite",
                 sol::base_classes, sol::bases<Node>(),
                 "setTexture", &Sprite::setTexture,
-                "tint", &Sprite::tint,
+                "tint", sol::property([](Amara::Sprite& t) -> Amara::Color { return t.tint; }, [](Amara::Sprite& t, sol::object v) { t.tint = v; }),
                 "blendMode", &Sprite::blendMode,
                 "frame", &Sprite::frame,
                 "animate",  sol::resolve<sol::object(sol::object)>(&Sprite::animate),
                 "stopAnimating", &Sprite::stopAnimating,
-                "imagew", sol::readonly(&Sprite::imageWidth),
-                "imageh", sol::readonly(&Sprite::imageHeight),
+                "imageWidth", sol::readonly(&Sprite::imageWidth),
+                "imageHeight", sol::readonly(&Sprite::imageHeight),
                 "framew", sol::readonly(&Sprite::frameWidth),
                 "frameh", sol::readonly(&Sprite::frameHeight),
                 "cropLeft", &Sprite::cropLeft,
@@ -309,15 +305,14 @@ namespace Amara {
                 "cropTop", &Sprite::cropTop,
                 "cropBottom", &Sprite::cropBottom,
                 "origin", &Sprite::origin,
-                "setOrigin", sol::overload(
-                    sol::resolve<sol::object(float, float)>(&Sprite::setOrigin),
-                    sol::resolve<sol::object(float)>(&Sprite::setOrigin)
-                ),
+                "originX", sol::property([](Amara::Sprite& t) -> float { return t.origin.x; }, [](Amara::Sprite& t, float v) { t.origin.x = v; }),
+                "originY", sol::property([](Amara::Sprite& t) -> float { return t.origin.y; }, [](Amara::Sprite& t, float v) { t.origin.y = v; }),
                 "w", sol::property(&Sprite::getWidth),
                 "h", sol::property(&Sprite::getHeight),
                 "width", sol::property(&Sprite::getWidth),
                 "height", sol::property(&Sprite::getHeight),
-                "rect", sol::property(&Sprite::getRectangle, &Sprite::fitRectangle)
+                "rect", sol::property(&Sprite::getRectangle, &Sprite::fitRectangle),
+                "center", sol::property(&Sprite::getCenter)
             );
         }
     };

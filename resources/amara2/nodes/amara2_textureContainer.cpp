@@ -145,14 +145,6 @@ namespace Amara {
             canvasLocked = true;
         }
 
-        sol::object setOrigin(float _x, float _y) {
-            origin = Vector2( _x, _y );
-            return get_lua_object();
-        }
-        sol::object setOrigin(float _o) {
-            return setOrigin(_o, _o);
-        }
-
         virtual void drawCanvasContents(const Rectangle& v) {
             if (depthSortChildrenEnabled) sortChildren();
             drawChildren(v);
@@ -382,7 +374,7 @@ namespace Amara {
                 height*scale.y
             );
         }
-
+        
         Rectangle fitRectangle(const Rectangle& rect) {
             pos.x = rect.x + rect.w*origin.x;
             pos.y = rect.y + rect.h*origin.y;
@@ -391,16 +383,21 @@ namespace Amara {
             return rect;
         }
 
+        Vector2 getCenter() {
+            return getRectangle().getCenter();
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<TextureContainer>("TextureContainer",
                 sol::base_classes, sol::bases<Node>(),
-                "tint", &TextureContainer::tint,
+                "tint", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.tint; }, [](Amara::TextureContainer& t, sol::object v) { t.tint = v; }),
                 "blendMode", &TextureContainer::blendMode,
                 "w", &TextureContainer::width,
                 "h", &TextureContainer::height,
                 "width", &TextureContainer::width,
                 "height", &TextureContainer::height,
                 "rect", sol::property(&TextureContainer::getRectangle, &TextureContainer::fitRectangle),
+                "center", sol::property(&TextureContainer::getCenter),
                 "cropLeft", &TextureContainer::cropLeft,
                 "cropRight", &TextureContainer::cropRight,
                 "cropTop", &TextureContainer::cropTop,
@@ -410,10 +407,8 @@ namespace Amara {
                 "top", sol::readonly(&TextureContainer::top),
                 "bottom", sol::readonly(&TextureContainer::bottom),
                 "origin", &TextureContainer::origin,
-                "setOrigin", sol::overload(
-                    sol::resolve<sol::object(float, float)>(&TextureContainer::setOrigin),
-                    sol::resolve<sol::object(float)>(&TextureContainer::setOrigin)
-                ),
+                "originX", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.x; }, [](Amara::TextureContainer& t, float v) { t.origin.x = v; }),
+                "originY", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.y; }, [](Amara::TextureContainer& t, float v) { t.origin.y = v; }),
                 "canvasLocked", &TextureContainer::canvasLocked,
                 "paintOnce", &TextureContainer::paintOnce
             );

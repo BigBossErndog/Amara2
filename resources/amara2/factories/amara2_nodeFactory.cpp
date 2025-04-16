@@ -35,9 +35,9 @@ namespace Amara {
                 return false;
             }
             
-            std::string script_path = Props::files->getScriptPath(path);
+            std::string script_path = Props::system->getScriptPath(path);
 
-            if (!Props::files->fileExists(script_path)) {
+            if (!Props::system->fileExists(script_path)) {
                 debug_log("Error: Failed to load Node \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
@@ -46,11 +46,11 @@ namespace Amara {
                 readScripts[key] = script_path;
             }
             else if (string_endsWith(script_path, ".luac")) {
-                compiledScripts[key] = Props::files->load_script(script_path);
+                compiledScripts[key] = Props::system->load_script(script_path);
             }
             else if (string_endsWith(script_path, ".amara")) {
                 NodeDescriptor desc;
-                nlohmann::json data = Props::files->readJSON(script_path);
+                nlohmann::json data = Props::system->readJSON(script_path);
                 desc.data = data;
                 
                 desc.nodeID = data["nodeID"];
@@ -87,11 +87,11 @@ namespace Amara {
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
-                    sol::object result = Props::files->run(readScripts[key]);
+                    sol::object result = Props::system->run(readScripts[key]);
                     return prepNode(result.as<Amara::Node*>(), key);
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to create Node \"", key, "\" from script \"", Props::files->getScriptPath(readScripts[key]), "\".");
+                    debug_log("Failed to create Node \"", key, "\" from script \"", Props::system->getScriptPath(readScripts[key]), "\".");
                     Props::breakWorld();
                     return nullptr;
                 }
@@ -105,16 +105,16 @@ namespace Amara {
                 return prepNode(node, key);
             }
             
-            std::string script_path = Props::files->getScriptPath(key);
-            if (Props::files->fileExists(script_path)) {
+            std::string script_path = Props::system->getScriptPath(key);
+            if (Props::system->fileExists(script_path)) {
                 if (string_endsWith(script_path, ".lua") || string_endsWith(script_path, ".luac")) {
-                    sol::object result = Props::files->run(script_path);
+                    sol::object result = Props::system->run(script_path);
                     Amara::Node* node = result.as<Amara::Node*>();
                     return prepNode(node, node->baseNodeID);
                 }
                 else if (string_endsWith(script_path, ".amara")) {
                     NodeDescriptor desc;
-                    nlohmann::json data = Props::files->readJSON(script_path);
+                    nlohmann::json data = Props::system->readJSON(script_path);
                     desc.data = data;
                     
                     desc.nodeID = data["nodeID"];

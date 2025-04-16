@@ -1,9 +1,9 @@
 namespace Amara {
-    class FileManager {
+    class SystemManager {
     public:
         std::string basePath;
 
-        FileManager() {
+        SystemManager() {
             getBasePath();
         }
 
@@ -384,44 +384,6 @@ namespace Amara {
             return execute(ss.str());
         }
 
-        bool isPathInRegistry(const std::string& path) {
-            #if defined(_WIN32) 
-                HKEY hKey;
-                const char* regPath = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
-            
-                // Open registry key
-                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
-                    debug_log("Error: Unable to access environment variables.");
-                    return false;
-                }
-            
-                // Get required buffer size
-                DWORD bufferSize = 0;
-                if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, nullptr, &bufferSize) != ERROR_SUCCESS) {
-                    debug_log("Error: Unable to access environment variables.");
-                    RegCloseKey(hKey);
-                    return false;
-                }
-            
-                // Use vector for dynamic buffer
-                std::vector<char> buffer(bufferSize);
-                if (RegQueryValueEx(hKey, "Path", nullptr, nullptr, reinterpret_cast<LPBYTE>(buffer.data()), &bufferSize) != ERROR_SUCCESS) {
-                    debug_log("Error: Unable to access environment variables.");
-                    RegCloseKey(hKey);
-                    return false;
-                }
-            
-                // Close registry key
-                RegCloseKey(hKey);
-            
-                // Convert to std::string and check if the path exists
-                std::string currentPath(buffer.data());
-                return currentPath.find(path) != std::string::npos;
-            #else
-                return false;
-            #endif
-        }
-
         bool isPathInEnvironment(const std::string& path) {
             #if defined(_WIN32)
                 // Get the required buffer size
@@ -449,10 +411,6 @@ namespace Amara {
         bool setEnvironmentVar(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
             #if defined(_WIN32)
-                if (isPathInRegistry(filePath.string())) {
-                    debug_log("Info: Path \"", filePath.string(), "\" is already set in registry.");
-                    return true;
-                }
                 if (isPathInEnvironment(filePath.string())) {
                     debug_log("Info: Path \"", filePath.string(), "\" is already set in environment.");
                     return true;
@@ -482,36 +440,71 @@ namespace Amara {
             return false;
         }
 
+        bool openWebsite(std::string url) {
+            std::string command;
+            int result = -1;
+
+            #if defined(_WIN32)
+                command = "start \"\" \"" + url + "\"";
+                debug_log("SystemManager: Executing command: ", command);
+                result = std::system(command.c_str());
+            #elif defined(__APPLE__)
+                command = "open \"" + url + "\"";
+                debug_log("SystemManager: Executing command: ", command);
+                result = std::system(command.c_str());
+            #elif defined(__linux__) && !defined(__EMSCRIPTEN__)
+                command = "xdg-open \"" + url + "\"";
+                debug_log("SystemManager: Executing command: ", command);
+                result = std::system(command.c_str());
+            #elif defined(__EMSCRIPTEN__)
+                debug_log("SystemManager: Opening URL via Emscripten: ", url);
+                emscripten_open_url_in_new_tab(url.c_str());
+                return true;
+            #else
+                debug_log("Error: System.openWebsite is not supported on this platform.");
+                return false;
+            #endif
+
+            #if !defined(__EMSCRIPTEN__)
+            if (result != 0) {
+                debug_log("Warning: Failed to open website with url: ", url, "'");
+                return false;
+            }
+            return true;
+            #endif
+        }
+
         static void bindLua(sol::state& lua) {
-            lua.new_usertype<FileManager>("FileManager",
-                "fileExists", &FileManager::fileExists,
-                "readFile", &FileManager::readFile,
-                "readJSON", &FileManager::luaReadJSON,
-                "writeFile", &FileManager::luaWriteFile,
-                "deleteFile", &FileManager::deleteFile,
-                "createDirectory", &FileManager::createDirectory,
-                "isDirectory", &FileManager::isDirectory,
-                "isDirectoryEmpty", &FileManager::isDirectoryEmpty,
-                "getDirectoryContents", &FileManager::luaGetDirectoryContents,
-                "getFilesInDirectory", &FileManager::luaGetFilesInDirectory,
-                "getSubDirectories", &FileManager::luaGetSubDirectories,
-                "getBasePath", &FileManager::getBasePath,
-                "setBasePath", &FileManager::setBasePath,
-                "resetBasePath", &FileManager::resetBasePath,
-                "getRelativePath", &FileManager::getRelativePath,
-                "getFileName", &FileManager::getFileName,
-                "getDirectoryName", &FileManager::getDirectoryName,
-                "getFileExtension", &FileManager::getFileExtension,
-                "removeFileExtension", &FileManager::removeFileExtension,
-                "mergePaths", &FileManager::mergePaths,
+            lua.new_usertype<SystemManager>("SystemManager",
+                "fileExists", &SystemManager::fileExists,
+                "readFile", &SystemManager::readFile,
+                "readJSON", &SystemManager::luaReadJSON,
+                "writeFile", &SystemManager::luaWriteFile,
+                "deleteFile", &SystemManager::deleteFile,
+                "createDirectory", &SystemManager::createDirectory,
+                "isDirectory", &SystemManager::isDirectory,
+                "isDirectoryEmpty", &SystemManager::isDirectoryEmpty,
+                "getDirectoryContents", &SystemManager::luaGetDirectoryContents,
+                "getFilesInDirectory", &SystemManager::luaGetFilesInDirectory,
+                "getSubDirectories", &SystemManager::luaGetSubDirectories,
+                "getBasePath", &SystemManager::getBasePath,
+                "setBasePath", &SystemManager::setBasePath,
+                "resetBasePath", &SystemManager::resetBasePath,
+                "getRelativePath", &SystemManager::getRelativePath,
+                "getFileName", &SystemManager::getFileName,
+                "getDirectoryName", &SystemManager::getDirectoryName,
+                "getFileExtension", &SystemManager::getFileExtension,
+                "removeFileExtension", &SystemManager::removeFileExtension,
+                "mergePaths", &SystemManager::mergePaths,
                 "copy", sol::overload(
-                    sol::resolve<bool(std::string, std::string, bool)>(&FileManager::copy),
-                    sol::resolve<bool(std::string, std::string)>(&FileManager::copy)
+                    sol::resolve<bool(std::string, std::string, bool)>(&SystemManager::copy),
+                    sol::resolve<bool(std::string, std::string)>(&SystemManager::copy)
                 ),
-                "run", &FileManager::run,
-                "compileScript", &FileManager::compileScript,
-                "execute", &FileManager::lua_execute,
-                "setEnvironmentVar", &FileManager::setEnvironmentVar
+                "run", &SystemManager::run,
+                "compileScript", &SystemManager::compileScript,
+                "execute", &SystemManager::lua_execute,
+                "setEnvironmentVar", &SystemManager::setEnvironmentVar,
+                "openWebsite", &SystemManager::openWebsite
             );
         }
     };

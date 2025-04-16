@@ -170,6 +170,7 @@ namespace Amara {
             configure(config);
             return *this; 
         }
+        Color& operator= (sol::object config);
 
         Amara::Color& configure(nlohmann::json config) {
             if (config.is_string()) {

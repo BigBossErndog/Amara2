@@ -6,7 +6,7 @@ namespace Amara {
     class NodeFactory;
     class ScriptFactory;
     class AnimationFactory;
-    class FileManager;
+    class SystemManager;
     class AssetManager;
     class ShaderManager;
     class RenderBatch;
@@ -99,7 +99,7 @@ namespace Amara {
 
         static NodeFactory* factory;
         static ScriptFactory* scripts;
-        static FileManager* files;
+        static SystemManager* system;
         static AssetManager* assets;
         static AnimationFactory* animations;
         static ShaderManager* shaders;
@@ -187,7 +187,7 @@ namespace Amara {
     
     NodeFactory* Props::factory = nullptr;
     ScriptFactory* Props::scripts = nullptr;
-    FileManager* Props::files = nullptr;
+    SystemManager* Props::system = nullptr;
     AssetManager* Props::assets = nullptr;
     AnimationFactory* Props::animations = nullptr;
     ShaderManager* Props::shaders = nullptr;

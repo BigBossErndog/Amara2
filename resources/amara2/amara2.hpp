@@ -120,7 +120,7 @@
 
     #include "managers/amara2_gameManager.cpp"
 
-    #include "managers/amara2_fileManager.cpp"
+    #include "managers/amara2_systemManager.cpp"
     
     #include "assets/amara2_asset.cpp"
     #include "assets/amara2_imageAsset.cpp"

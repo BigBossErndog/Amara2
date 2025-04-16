@@ -6,7 +6,7 @@ namespace Amara {
         Creator* true_creator = nullptr;
 
         GameManager game;
-        FileManager files;
+        SystemManager system;
         
         ScriptFactory scripts;
         NodeFactory factory;
@@ -26,14 +26,14 @@ namespace Amara {
         void override_existence() {
             Props::lua()["Creator"] = this;
             Props::lua()["Game"] = &game;
-            Props::lua()["Files"] = &files;
+            Props::lua()["System"] = &system;
             Props::lua()["NodeFactory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
             Props::lua()["Animations"] = &animations;
             Props::lua()["Controls"] = &controls;
             Props::lua()["AudioMaster"] = &audio;
             
-            Props::files = &files;
+            Props::system = &system;
             Props::factory = &factory;
             Props::scripts = &scripts;
             Props::animations = &animations;
@@ -41,7 +41,7 @@ namespace Amara {
             Props::audio = &audio;
 
             if (!base_dir_path.empty()) {
-                Props::files->setBasePath(base_dir_path);
+                Props::system->setBasePath(base_dir_path);
             }
         }
 
@@ -84,7 +84,7 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Demiurge>("Demiurge",
                 "game", &Demiurge::game,
-                "files", &Demiurge::files,
+                "system", &Demiurge::system,
                 "factory", &Demiurge::factory,
                 "scripts", &Demiurge::scripts,
                 "createWorld", [](Amara::Demiurge& d, sol::object key) -> sol::object {

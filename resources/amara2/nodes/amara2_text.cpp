@@ -153,29 +153,17 @@ namespace Amara {
             updateText();
             return get_lua_object();
         }
-        sol::object setWrap(int width, Amara::WrapModeEnum _mode) {
-            wrapMode = _mode;
-            return setWrapWidth(width);
-        }
 
-        sol::object setLineSpacing(int _spacing) {
+        int setLineSpacing(int _spacing) {
             lineSpacing = _spacing;
             updateText();
-            return get_lua_object();
+            return _spacing;
         }
 
-        sol::object setOrigin(float _x, float _y) {
-            origin = Vector2( _x, _y );
-            return get_lua_object();
-        }
-        sol::object setOrigin(float _o) {
-            return setOrigin(_o, _o);
-        }
-
-        sol::object align(AlignmentEnum _alignment) {
+        AlignmentEnum align(AlignmentEnum _alignment) {
             alignment = _alignment;
             updateText();
-            return get_lua_object();
+            return alignment;
         }
 
         void drawSelf(const Rectangle& v) override {
@@ -328,6 +316,10 @@ namespace Amara {
             return rect;
         }
 
+        Vector2 getCenter() {
+            return getRectangle().getCenter();
+        }
+
         void resetProgress() {
             progress = 0;
         }
@@ -343,31 +335,35 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
-                "tint", &Text::tint,
+                "tint", sol::property([](Amara::Text& t) -> Amara::Color { return t.tint; }, [](Amara::Text& t, sol::object v) { t.tint = v; }),
                 "blendMode", &Text::blendMode,
                 "w", sol::readonly(&Text::textwidth),
                 "h", sol::readonly(&Text::textheight),
                 "rect", sol::property(&Text::getRectangle, &Text::fitRectangle),
+                "center", sol::property(&Text::getCenter),
                 "length", sol::property(&Text::length),
                 "width", sol::readonly(&Text::textwidth),
                 "height", sol::readonly(&Text::textheight),
-                "text", sol::readonly(&Text::text),
+                "text", sol::property(
+                    [](Amara::Text& t) -> std::string { return t.text; },
+                    [](Amara::Text& t, std::string v) { t.setText(v); }
+                ),
                 "setText", sol::resolve<sol::object(sol::variadic_args)>(&Text::setText),
-                "setFont", &Text::setFont,
+                "font", sol::property(
+                    [](Amara::Text& t) -> std::string { return t.font->key; },
+                    [](Amara::Text& t, std::string key) { 
+                        if (t.setFont(key)) return t.font->key;
+                        else return std::string("");
+                    }
+                ),
                 "length", sol::property(&Text::length),
                 "origin", &Text::origin,
-                "setOrigin", sol::overload(
-                    sol::resolve<sol::object(float, float)>(&Text::setOrigin),
-                    sol::resolve<sol::object(float)>(&Text::setOrigin)
-                ),
-                "align", &Text::align,
-                "alignment", sol::readonly(&Text::alignment),
-                "wrapMode", sol::readonly(&Text::wrapMode),
-                "wrapWidth", sol::readonly(&Text::wrapWidth),
-                "setWrapWidth", &Text::setWrapWidth,
-                "setWrapMode", &Text::setWrapMode,
-                "setWrap", &Text::setWrap,
-                "setLineSpacing", &Text::setLineSpacing,
+                "originX", sol::property([](Amara::Text& t) -> float { return t.origin.x; }, [](Amara::Text& t, float v) { t.origin.x = v; }),
+                "originY", sol::property([](Amara::Text& t) -> float { return t.origin.y; }, [](Amara::Text& t, float v) { t.origin.y = v; }),
+                "alignment", sol::property([](Amara::Text& t) -> int { return static_cast<int>(t.alignment); }, [](Amara::Text& t, int v) { t.align(static_cast<Amara::AlignmentEnum>(v)); }),
+                "lineSpacing", sol::property([](Amara::Text& t) -> int { return t.lineSpacing; }, [](Amara::Text& t, int v) { t.setLineSpacing(v); }),
+                "wrapMode", sol::property([](Amara::Text& t) -> int { return static_cast<int>(t.wrapMode); }, [](Amara::Text& t, int v) { t.setWrapMode(static_cast<Amara::WrapModeEnum>(v)); }),
+                "wrapWidth", sol::property([](Amara::Text& t) -> int { return t.wrapWidth; }, [](Amara::Text& t, int v) { t.setWrapWidth(v); }),
                 "progress", sol::readonly(&Text::progress),
                 "progressText", &Text::progressText,
                 "resetProgress", &Text::resetProgress
