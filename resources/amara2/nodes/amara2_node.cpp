@@ -127,7 +127,8 @@ namespace Amara {
                 { "paused", paused },
                 { "visible", visible },
                 { "depthSortSelfEnabled", depthSortSelfEnabled },
-                { "depthSortChildrenEnabled", depthSortChildrenEnabled }
+                { "depthSortChildrenEnabled", depthSortChildrenEnabled },
+                { "props", lua_to_json(props) }
             });
 
             if (shaderProgram) {

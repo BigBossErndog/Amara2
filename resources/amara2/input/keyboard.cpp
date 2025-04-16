@@ -3,11 +3,19 @@ namespace Amara {
     public:
         std::unordered_map<SDL_Keycode, Button> keys;
 
+        SDL_Keycode lastKeyPressed = SDLK_UNKNOWN;
+        bool keyPressed = false;
+
+        SDL_Keycode lastKeyReleased = SDLK_UNKNOWN;
+        bool keyReleased = false;
+
         void press(SDL_Keycode code) {
             if (keys.find(code) == keys.end()) {
                 keys[code] = Button();
             }
             keys[code].press();
+            lastKeyPressed = code;
+            keyPressed = true;
         }
 
         void release(SDL_Keycode code) {
@@ -15,9 +23,14 @@ namespace Amara {
                 keys[code] = Button();
             }
             keys[code].release();
+            lastKeyReleased = code;
+            keyReleased = true;
         }
 
         void manage(double deltaTime) {
+            keyPressed = false;
+            keyReleased = false;
+            
             for (auto it = keys.begin(); it != keys.end(); it++) {
                 Button& key = it->second;
                 key.manage(deltaTime);
@@ -57,7 +70,11 @@ namespace Amara {
                 "isDown", &KeyboardManager::isDown,
                 "justPressed", &KeyboardManager::justPressed,
                 "justReleased", &KeyboardManager::justReleased,
-                "timeHeld", &KeyboardManager::timeHeld
+                "timeHeld", &KeyboardManager::timeHeld,
+                "keyPressed", &KeyboardManager::keyPressed,
+                "keyReleased", &KeyboardManager::keyReleased,
+                "lastKeyPressed", &KeyboardManager::lastKeyPressed,
+                "lastKeyReleased", &KeyboardManager::lastKeyReleased
             );
 
             sol::table keycode_enum = lua.create_table();

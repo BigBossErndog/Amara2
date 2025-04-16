@@ -283,7 +283,7 @@ namespace Amara {
                         vsync = -1;
                     }
                 }
-                if (renderer) SDL_SetRenderVSync(renderer, vsync);
+                setVsync(vsync);
             }
             if (resizeWindow && window != nullptr) {
                 SDL_SetWindowSize(window, windowW, windowH);
@@ -420,6 +420,11 @@ namespace Amara {
         void setClickThrough(bool enabled) {
             clickThrough = enabled;
             setClickThroughState(enabled);
+        }
+
+        void setVsync(int _vsync) {
+            vsync = _vsync;
+            if (renderer) SDL_SetRenderVSync(renderer, vsync);
         }
 
         void setClickThroughState(bool enabled) {
@@ -586,7 +591,6 @@ namespace Amara {
                         }
                         else {
                             Props::renderer = renderer;
-                            if (vsync != 0) SDL_SetRenderVSync(renderer, vsync);
 
                             renderer_created = true;
                             graphics = g;
@@ -678,6 +682,8 @@ namespace Amara {
                     setClickThrough(true);
                 }
                 setAlwaysOnTop(alwaysOnTop);
+
+                if (vsync != 0) setVsync(vsync);
 
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
             }
@@ -918,6 +924,7 @@ namespace Amara {
                     debug_log("Error: Transparency can only be set in World configuration table.");
                     Props::breakWorld();
                 }),
+                "vsync", sol::property([](const Amara::World& world) { return world.vsync; }, &World::setVsync),
                 "alwaysOnTop", sol::property([](const Amara::World& world) { return world.alwaysOnTop; }, &World::setAlwaysOnTop),
                 "clickThrough", sol::property([](const Amara::World& world) { return world.clickThrough; }, &World::setClickThrough),
                 "windowTitle", sol::property([](const Amara::World& world) { return world.windowTitle; }, &World::setWindowTitle),

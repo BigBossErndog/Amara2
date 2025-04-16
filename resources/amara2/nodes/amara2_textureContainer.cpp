@@ -275,7 +275,7 @@ namespace Amara {
             if (!Shape::checkCollision(
                 Rectangle(destRect), Rectangle(
                     v.x - diag_distance, v.y - diag_distance,
-                    v.w + diag_distance*2, v.w + diag_distance*2
+                    v.w + diag_distance*2, v.h + diag_distance*2
                 )
             )) return;
             

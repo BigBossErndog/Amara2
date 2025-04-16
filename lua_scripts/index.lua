@@ -48,12 +48,13 @@
             screenMode = ScreenMode.Windowed,
             width = 1280,
             height = 720,
-            virtualWidth = 256,
-            virtualHeight = 256,
+            virtualWidth = 640,
+            virtualHeight = 360,
             -- graphics = Graphics.OpenGL
             graphics = Graphics.OpenGL,
             resizable = true,
             transparent = true,
+            vsync = true
             -- alwaysOnTop = true,
             -- clickThrough = true,
         },

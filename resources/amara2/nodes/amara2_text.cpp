@@ -192,6 +192,7 @@ namespace Amara {
 
             SDL_FRect srcRect, destRect;
             Rectangle dim;
+            float diag_distance;
 
             SDL_FPoint dorigin = { 0, 0 };
 
@@ -242,6 +243,14 @@ namespace Amara {
                     destRect.y = vcenter.y + dim.y*totalZoom.y;
                     destRect.w = dim.w * totalZoom.x;
                     destRect.h = dim.h * totalZoom.y;
+
+                    diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
+                    if (!Shape::checkCollision(
+                        Rectangle(destRect), Rectangle(
+                            v.x - diag_distance, v.y - diag_distance,
+                            v.w + diag_distance*2, v.h + diag_distance*2
+                        )
+                    )) return;
 
                     if (font->texture && Props::renderer) {
                         SDL_RenderTextureRotated(
