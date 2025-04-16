@@ -125,7 +125,7 @@
     #include "assets/amara2_asset.cpp"
     #include "assets/amara2_imageAsset.cpp"
     #include "assets/amara2_fontAsset.cpp"
-    #include "assets/amara2_tiledTilemapAsset.cpp"
+    #include "assets/amara2_tiled_tilemapAsset.cpp"
 
     #ifdef AMARA_OPENGL
     #include "rendering/shaders/amara2_shaderProgram.cpp"

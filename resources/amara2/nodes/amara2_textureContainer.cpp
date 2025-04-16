@@ -383,6 +383,14 @@ namespace Amara {
             );
         }
 
+        Rectangle fitRectangle(const Rectangle& rect) {
+            pos.x = rect.x + rect.w*origin.x;
+            pos.y = rect.y + rect.h*origin.y;
+            scale.x = rect.w / static_cast<float>(width);
+            scale.y = rect.h / static_cast<float>(height);
+            return rect;
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<TextureContainer>("TextureContainer",
                 sol::base_classes, sol::bases<Node>(),
@@ -392,7 +400,11 @@ namespace Amara {
                 "h", &TextureContainer::height,
                 "width", &TextureContainer::width,
                 "height", &TextureContainer::height,
-                "rect", sol::property(&TextureContainer::getRectangle),
+                "rect", sol::property(&TextureContainer::getRectangle, &TextureContainer::fitRectangle),
+                "cropLeft", &TextureContainer::cropLeft,
+                "cropRight", &TextureContainer::cropRight,
+                "cropTop", &TextureContainer::cropTop,
+                "cropBottom", &TextureContainer::cropBottom,
                 "left", sol::readonly(&TextureContainer::left),
                 "right", sol::readonly(&TextureContainer::right),
                 "top", sol::readonly(&TextureContainer::top),

@@ -200,7 +200,14 @@ namespace Amara {
             headless = false;
 
             create_window_on_start = !Props::integrate_new_windows;
-
+            if (json_has(config, "w")) {
+                windowW = config["w"];
+                resizeWindow = true;
+            }
+            if (json_has(config, "h")) {
+                windowH = config["h"];
+                resizeWindow = true;
+            }
             if (json_has(config, "width")) {
                 windowW = config["width"];
                 resizeWindow = true;
@@ -876,6 +883,8 @@ namespace Amara {
                 sol::base_classes, sol::bases<Node>(),
                 "w", &World::windowW,
                 "h", &World::windowH,
+                "width", &World::windowW,
+                "height", &World::windowH,
                 "vw", &World::virtualWidth,
                 "vh", &World::virtualHeight,
                 "assets", &World::assets,

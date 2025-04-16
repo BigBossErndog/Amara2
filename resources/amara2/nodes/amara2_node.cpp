@@ -57,6 +57,8 @@ namespace Amara {
         bool visible = true;
         bool actuated = false;
 
+        double lifetime = 0;
+
         bool is_camera = false;
         bool is_scene = false;
         bool is_action = false;
@@ -343,6 +345,8 @@ namespace Amara {
             
             if (!destroyed) runChildren(deltaTime);
             clean_node_list(children);
+
+            lifetime += deltaTime;
         }
 
         bool finishedLoading();
@@ -701,7 +705,7 @@ namespace Amara {
                 "shaderProgram", sol::readonly(&Node::shaderProgram),
                 #endif
                 "stopActing", &Node::stopActing,
-                "string", [](Amara::Node* e){
+                "string", [](Amara::Node* e) {
                     return std::string(*e);
                 }
             );

@@ -320,6 +320,13 @@ namespace Amara {
                 textheight*scale.y
             );
         }
+        Rectangle fitRectangle(const Rectangle& rect) {
+            pos.x = rect.x + rect.w*origin.x;
+            pos.y = rect.y + rect.h*origin.y;
+            scale.x = rect.w / static_cast<float>(textwidth);
+            scale.y = rect.h / static_cast<float>(textheight);
+            return rect;
+        }
 
         void resetProgress() {
             progress = 0;
@@ -340,7 +347,7 @@ namespace Amara {
                 "blendMode", &Text::blendMode,
                 "w", sol::readonly(&Text::textwidth),
                 "h", sol::readonly(&Text::textheight),
-                "rect", sol::property(&Text::getRectangle),
+                "rect", sol::property(&Text::getRectangle, &Text::fitRectangle),
                 "length", sol::property(&Text::length),
                 "width", sol::readonly(&Text::textwidth),
                 "height", sol::readonly(&Text::textheight),

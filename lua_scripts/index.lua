@@ -40,20 +40,20 @@
     --     },
     --     entryScene = "scenes/TestScene",
     -- })
-    
+
     Creator:createWorld({
         window = {
             windowTitle = "Amara2",
             -- resizable = true,
-            -- screenMode = ScreenMode.Fullscreen,
+            screenMode = ScreenMode.Windowed,
             width = 1280,
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
             -- graphics = Graphics.OpenGL
-            -- graphics = Graphics.OpenGL,
-            transparent = true,
-            alwaysOnTop = true,
+            graphics = Graphics.OpenGL,
+            -- transparent = true,
+            -- alwaysOnTop = true,
             -- clickThrough = true,
         },
         -- entryScene = "scenes/TestScene",
@@ -62,6 +62,11 @@
         -- end,
         onCreate = function(self)
             self:createChild("scenes/TestScene")
+            self.world:setScreenMode(ScreenMode.BorderlessWindowed)
+            self.x = self.display.x
+            self.y = self.display.y
+            self.w = self.display.w
+            self.h = self.display.h
         end,
         onUpdate = function(self, deltaTime)
             -- print(Game.fps)

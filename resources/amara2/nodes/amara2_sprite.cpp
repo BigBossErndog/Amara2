@@ -283,6 +283,14 @@ namespace Amara {
             );
         }
 
+        Rectangle fitRectangle(const Rectangle& rect) {
+            pos.x = rect.x + rect.w*origin.x;
+            pos.y = rect.y + rect.h*origin.y;
+            scale.x = rect.w / static_cast<float>(getWidth());
+            scale.y = rect.h / static_cast<float>(getHeight());
+            return rect;
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Sprite>("Sprite",
                 sol::base_classes, sol::bases<Node>(),
@@ -309,7 +317,7 @@ namespace Amara {
                 "h", sol::property(&Sprite::getHeight),
                 "width", sol::property(&Sprite::getWidth),
                 "height", sol::property(&Sprite::getHeight),
-                "rect", sol::property(&Sprite::getRectangle)
+                "rect", sol::property(&Sprite::getRectangle, &Sprite::fitRectangle)
             );
         }
     };

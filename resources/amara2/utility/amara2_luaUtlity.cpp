@@ -112,6 +112,22 @@ namespace Amara {
 
         return lua_to_json(obj).dump();
     }
+
+    sol::object string_to_lua_object(sol::state_view lua, const std::string& luaString) {
+        std::string luaCode = "return " + luaString;
+        sol::protected_function_result result = lua.do_string(luaCode);
+        
+        if (result.valid()) {
+            sol::object obj = result;
+            return obj;
+        } 
+        else {
+            sol::error err = result;
+            debug_log("Error: Failed to parse or execute Lua string: ", luaString);
+            debug_log(err.what());
+            return sol::nil;
+        }
+    }
     
     template <typename T>
     sol::table vector_to_lua(const std::vector<T>& vec) {

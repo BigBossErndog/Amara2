@@ -4,7 +4,7 @@ NodeFactory:add("Test", function()
     e.onCreate = function(self)
         print(self, "was created!")
     end
-    e.bind.hello = function(self, msg)
+    e.props.hello = function(self, msg)
         print("Hello from", self, "!")
     end
 

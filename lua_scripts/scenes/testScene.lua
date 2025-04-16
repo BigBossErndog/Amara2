@@ -42,7 +42,7 @@ return NodeFactory:create("Scene"):configure({
     onCreate = function(self)
         local map = self:createChild("Sprite"):configure({
             texture = "bigThing",
-            alpha = 0.5
+            -- alpha = 0.5
         })
         self.camera:setBounds(map.rect)
 
@@ -56,14 +56,17 @@ return NodeFactory:create("Scene"):configure({
             -- fixedToCamera = true,
             -- origin = Position.Top,
             tint = Colors.Red,
-            -- y = self.camera.topBorder
+            y = map.height*map.origin.y - 128,
         })
         self.props.textCont = textCont
         textCont:wait(2).tween:to({
             rotation = 2*math.pi,
-            duration = 2,
-            ease = Ease.QuintInOut
+            duration = 10,
+            ease = Ease.QuintInOut,
+            repeats = -1,
+            yoyo = true
         })
+        textCont.rect = map.rect
         
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1

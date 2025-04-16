@@ -28,10 +28,10 @@ namespace Amara {
         float width = 0.0f;  // For Rectangle, Ellipse, Text
         float height = 0.0f; // For Rectangle, Ellipse, Text
         float rotation = 0.0f;
-        unsigned int gid = 0; // Optional tile GID (object represented by a tile)
+        unsigned int gid = 0; // Tile GID if object is represented by a tile
         bool visible = true;
 
-        Tiled_ObjectType objectType = Tiled_ObjectType::Rectangle; // Default
+        Tiled_ObjectType objectType = Tiled_ObjectType::Rectangle;
 
         // Shape data for Polygon and Polyline
         std::vector<std::pair<float, float>> points;
@@ -65,7 +65,6 @@ namespace Amara {
         Tiled_Properties properties;
     };
 
-    // --- Image Layer Structures ---
     struct Tiled_Image {
         std::string source;           // Relative path from TMX file
         std::string transparentColor; // Stored as string (e.g., "#FF00FF")
@@ -123,7 +122,7 @@ namespace Amara {
         std::vector<Tiled_TileLayer> layers;
         std::vector<Tiled_ObjectGroup> objectGroups; // Added
         std::vector<Tiled_ImageLayer> imageLayers;   // Added
-        Tiled_Properties mapProperties;             // Added for map-level properties
+        Tiled_Properties mapProperties;              // Added for map-level properties
 
         Tiled_TilemapAsset() {
             type = AssetEnum::TiledTilemap;
@@ -133,7 +132,6 @@ namespace Amara {
         bool loadTmx(const std::string& tmxPath);
 
         const Tiled_Tileset* findTilesetForGid(unsigned int gid) const {
-            // ... (implementation remains the same)
             for (auto it = tilesets.rbegin(); it != tilesets.rend(); ++it) {
                 if (gid >= it->firstGid) {
                     return &(*it);
@@ -142,13 +140,9 @@ namespace Amara {
             return nullptr;
         }
 
-        // Helper function to parse properties (can be placed inside the class or outside in the namespace)
         static Tiled_Properties parseProperties(tinyxml2::XMLElement* parentElement);
-        // Helper function to parse points string (can be placed inside the class or outside)
         static std::vector<std::pair<float, float>> parsePointsString(const std::string& pointsStr);
     };
-
-    // --- Helper Function Implementations ---
 
     Tiled_Properties Tiled_TilemapAsset::parseProperties(tinyxml2::XMLElement* parentElement) {
         Tiled_Properties props;
@@ -159,24 +153,22 @@ namespace Amara {
 
         for (tinyxml2::XMLElement* propElement = propertiesElement->FirstChildElement("property"); propElement != nullptr; propElement = propElement->NextSiblingElement("property")) {
             const char* name = propElement->Attribute("name");
-            const char* type = propElement->Attribute("type"); // Optional
-            const char* value = propElement->Attribute("value"); // May be null if value is element text
+            const char* type = propElement->Attribute("type");
+            const char* value = propElement->Attribute("value");
 
             if (name) {
                 Tiled_Property prop;
                 prop.name = name;
-                if (type) prop.type = type; else prop.type = "string"; // Default type
+                if (type) prop.type = type; else prop.type = "string";
 
                 if (value) {
                     prop.value = value;
                 } else {
-                    // Handle multi-line string properties where value is the text content
                     const char* textValue = propElement->GetText();
-                    prop.value = textValue ? textValue : ""; // Use empty string if no text
-                    // Ensure type is string if it was inferred from text content
+                    prop.value = textValue ? textValue : "";
                     if (!type) prop.type = "string";
                 }
-                props[prop.name] = prop; // Add or overwrite property
+                props[prop.name] = prop;
             } else {
                 debug_log("Warning: Property element missing 'name' attribute. Skipping.");
             }
@@ -189,13 +181,13 @@ namespace Amara {
         std::stringstream ss(pointsStr);
         std::string pairStr;
 
-        while (std::getline(ss, pairStr, ' ')) { // Split by space
+        while (std::getline(ss, pairStr, ' ')) {
             std::stringstream ssPair(pairStr);
             std::string coordStr;
             float x = 0.0f, y = 0.0f;
             int coordIndex = 0;
 
-            while (std::getline(ssPair, coordStr, ',')) { // Split by comma
+            while (std::getline(ssPair, coordStr, ',')) {
                 try {
                     if (coordIndex == 0) {
                         x = std::stof(coordStr);
@@ -209,7 +201,7 @@ namespace Amara {
                 }
                 coordIndex++;
             }
-            if (coordIndex >= 2) { // Ensure we got at least x and y
+            if (coordIndex >= 2) { // Ensure we have at least x and y
                  points.push_back({x, y});
             } else if (!pairStr.empty()) {
                  debug_log("Warning: Incomplete coordinate pair '", pairStr, "' in points string '", pointsStr, "'. Skipping.");
@@ -218,75 +210,114 @@ namespace Amara {
         return points;
     }
 
-
-    // --- loadTmx Implementation ---
     bool Tiled_TilemapAsset::loadTmx(const std::string& tmxPath) {
         path = Props::files->getAssetPath(tmxPath);
 
         SDL_IOStream* rw = SDL_IOFromFile(path.c_str(), "rb");
+        if (!rw) {
+            debug_log("Error: Failed to open TMX file: ", path, " - ", SDL_GetError());
+            return false;
+        }
+
         Sint64 fileSize_s64 = SDL_GetIOSize(rw);
-        // ... (Error checking for fileSize_s64, size limits) ...
+        if (fileSize_s64 <= 0) {
+             SDL_CloseIO(rw);
+             debug_log("Error: Invalid or empty TMX file: ", path);
+             return false;
+        }
+
         size_t fileSize = static_cast<size_t>(fileSize_s64);
         char* buffer = new (std::nothrow) char[fileSize + 1];
-        // ... (Error checking for buffer allocation) ...
+        if (!buffer) {
+            SDL_CloseIO(rw);
+            debug_log("Error: Failed to allocate memory for TMX file buffer: ", path);
+            return false;
+        }
+
         size_t bytesRead = SDL_ReadIO(rw, buffer, fileSize);
         SDL_CloseIO(rw);
-        // ... (Error checking for bytesRead) ...
+
+        if (bytesRead != fileSize) {
+            delete[] buffer;
+            debug_log("Error: Failed to read entire TMX file: ", path);
+            return false;
+        }
         buffer[fileSize] = '\0';
+
         tinyxml2::XMLDocument doc;
         tinyxml2::XMLError parseResult = doc.Parse(buffer, fileSize);
         delete[] buffer;
         buffer = nullptr;
-        // ... (Error checking for parseResult) ...
-        tinyxml2::XMLElement* mapRoot = doc.RootElement();
-        // ... (Error checking for mapRoot) ...
 
-        // --- Parse Map Attributes ---
+        if (parseResult != tinyxml2::XML_SUCCESS) {
+            debug_log("Error: Failed to parse TMX file XML: ", path, " - Error Code: ", parseResult);
+            return false;
+        }
+
+        tinyxml2::XMLElement* mapRoot = doc.RootElement();
+        if (!mapRoot || !string_equal(mapRoot->Name(), "map")) {
+             debug_log("Error: Invalid TMX file format. Missing <map> root element in: ", path);
+             return false;
+        }
+
         mapRoot->QueryUnsignedAttribute("width", &width);
         mapRoot->QueryUnsignedAttribute("height", &height);
         mapRoot->QueryUnsignedAttribute("tilewidth", &tileWidth);
         mapRoot->QueryUnsignedAttribute("tileheight", &tileHeight);
-        // ... (Parse orientation, renderOrder) ...
-        const char* orient = nullptr;
-        mapRoot->QueryStringAttribute("orientation", &orient);
-        if (orient) orientation = orient;
-        const char* render = nullptr;
-        mapRoot->QueryStringAttribute("renderorder", &render);
-        if (render) renderOrder = render;
 
-        debug_log("Loading TMX: ", path, " (", width, "x", height, " tiles, ", tileWidth, "x", tileHeight, " pixels)");
+        const char* orient = mapRoot->Attribute("orientation");
+        if (orient) orientation = orient; else orientation = "orthogonal";
 
-        // --- Parse Map Properties ---
+        const char* render = mapRoot->Attribute("renderorder");
+        if (render) renderOrder = render; else renderOrder = "right-down";
+
         mapProperties = parseProperties(mapRoot);
-        if (!mapProperties.empty()) {
-             debug_log("Parsed ", mapProperties.size(), " map properties.");
-        }
 
-        // --- Parse Tilesets ---
-        tilesets.clear(); // Clear any previous data
+        tilesets.clear();
         for (tinyxml2::XMLElement* tsElement = mapRoot->FirstChildElement("tileset"); tsElement != nullptr; tsElement = tsElement->NextSiblingElement("tileset")) {
-            // ... (Existing tileset parsing logic remains largely the same) ...
-            // You might want to add parsing for tileset properties or embedded images here if needed
-            // currentTileset.properties = parseProperties(tsElement);
-            // tinyxml2::XMLElement* imgElement = tsElement->FirstChildElement("image");
-            // if (imgElement) { /* parse image attributes */ }
             Tiled_Tileset currentTileset;
             tsElement->QueryUnsignedAttribute("firstgid", &currentTileset.firstGid);
-            if (currentTileset.firstGid == 0) { /* Warning */ continue; }
+            if (currentTileset.firstGid == 0) {
+                debug_log("Warning: Tileset found with firstgid=0 in map '", path, "'. Skipping this tileset entry.");
+                continue;
+            }
+
             const char* source = tsElement->Attribute("source");
-            if (source) { /* Warning, skip external */ continue; }
-            const char* tsName = nullptr;
-            tsElement->QueryStringAttribute("name", &tsName);
+
+            if (source) {
+                debug_log("Error: External tilesets (TSX files) are not supported.");
+                debug_log("       Found reference to '", source, "' in map '", path, "'.");
+                debug_log("       Please embed the tileset directly into the TMX file.");
+                debug_log("       ( Edit -> Preferences -> Embed tilesets, then Export As .tmx )");
+                tilesets.clear();
+                layers.clear();
+                objectGroups.clear();
+                imageLayers.clear();
+                mapProperties.clear();
+                width = height = tileWidth = tileHeight = 0;
+
+                return false;
+            }
+
+            const char* tsName = tsElement->Attribute("name");
             if (tsName) currentTileset.name = tsName;
+
             tsElement->QueryUnsignedAttribute("tilewidth", &currentTileset.tileWidth);
             tsElement->QueryUnsignedAttribute("tileheight", &currentTileset.tileHeight);
             tsElement->QueryUnsignedAttribute("tilecount", &currentTileset.tileCount);
             tsElement->QueryUnsignedAttribute("columns", &currentTileset.columns);
             tsElement->QueryUnsignedAttribute("spacing", &currentTileset.spacing);
             tsElement->QueryUnsignedAttribute("margin", &currentTileset.margin);
+
+            // TODO: Parse <image> tag within embedded <tileset> if needed later
+            // tinyxml2::XMLElement* imgElement = tsElement->FirstChildElement("image");
+            // if (imgElement) { ... }
+
+            // TODO: Parse <tile> specific properties/animations within <tileset> if needed later
+
             tilesets.push_back(currentTileset);
-            debug_log("Added tileset: ", currentTileset.name, " (", currentTileset.tileCount, " tiles)");
         }
+
         std::sort(tilesets.begin(), tilesets.end(), [](const Tiled_Tileset& a, const Tiled_Tileset& b) {
             return a.firstGid < b.firstGid;
         });
@@ -301,71 +332,114 @@ namespace Amara {
 
             if (string_equal(elementName, "layer")) {
                 Tiled_TileLayer currentLayer;
-                const char* layerName = nullptr;
-                element->QueryStringAttribute("name", &layerName);
+                const char* layerName = element->Attribute("name");
                 if (layerName) currentLayer.name = layerName;
-                
-                unsigned int layerWidth = 0, layerHeight = 0;
-                element->QueryUnsignedAttribute("width", &layerWidth);
-                element->QueryUnsignedAttribute("height", &layerHeight);
-                if (layerWidth != width || layerHeight != height) { /* Warning */ }
+
                 currentLayer.width = width;
                 currentLayer.height = height;
+
                 element->QueryFloatAttribute("opacity", &currentLayer.opacity);
                 element->QueryBoolAttribute("visible", &currentLayer.visible);
 
                 currentLayer.properties = parseProperties(element);
 
                 tinyxml2::XMLElement* dataElement = element->FirstChildElement("data");
-                if (!dataElement) { /* Warning, skip */ continue; }
+                if (!dataElement) {
+                    debug_log("Warning: Tile layer '", currentLayer.name, "' in map '", path, "' is missing <data> element. Skipping layer.");
+                    continue;
+                }
 
-                // ... (Existing data parsing logic: encoding, compression, text processing) ...
                 const char* encoding = dataElement->Attribute("encoding");
                 const char* compression = dataElement->Attribute("compression");
                 const char* dataText = dataElement->GetText();
-                if (!dataText) { /* Warning, skip */ continue; }
 
-                std::string dataString = dataText;
-                dataString.erase(std::remove_if(dataString.begin(), dataString.end(), ::isspace), dataString.end());
+                if (!dataText && !encoding) {
+                    // Handle XML case where dataText might be null
+                }
+                else if (!dataText || std::string(dataText).empty()) {
+                     debug_log("Warning: Tile layer '", currentLayer.name, "' in map '", path, "' has empty <data> content. Skipping layer.");
+                     continue;
+                }
+
+                std::string dataString;
+                if (dataText) {
+                    dataString = dataText;
+                    if (encoding) {
+                         dataString.erase(std::remove_if(dataString.begin(), dataString.end(), ::isspace), dataString.end());
+                    }
+                }
+
                 currentLayer.data.reserve(width * height);
 
                 if (!encoding) {
-                    // XML encoding
-                     for (tinyxml2::XMLElement* tileElement = dataElement->FirstChildElement("tile"); tileElement != nullptr; tileElement = tileElement->NextSiblingElement("tile")) {
+                    // XML encoding (<tile gid="..."/> elements)
+                    unsigned int tileCount = 0;
+                    for (tinyxml2::XMLElement* tileElement = dataElement->FirstChildElement("tile"); tileElement != nullptr; tileElement = tileElement->NextSiblingElement("tile")) {
                         unsigned int gid = 0;
                         tileElement->QueryUnsignedAttribute("gid", &gid);
                         currentLayer.data.push_back(gid);
+                        tileCount++;
                     }
-                    if (currentLayer.data.size() != width * height) { /* Warning */ }
+                    if (tileCount != width * height) {
+                        debug_log("Warning: XML tile layer '", currentLayer.name, "' in map '", path, "' has ", tileCount, " tiles, expected ", width * height, ".");
+                    }
                 }
-                else if (string_equal(std::string(encoding), "csv")) {
+                else if (string_equal(encoding, "csv")) {
                     std::stringstream ss(dataString);
                     std::string value;
+                    unsigned int tileCount = 0;
                     while (std::getline(ss, value, ',')) {
-                        try { currentLayer.data.push_back(std::stoul(value)); }
-                        catch (...) { /* Error handling */ currentLayer.data.push_back(0); }
+                        try {
+                            currentLayer.data.push_back(std::stoul(value));
+                        } catch (const std::invalid_argument& e) {
+                            debug_log("Warning: Invalid GID '", value, "' in CSV data for layer '", currentLayer.name, "'. Using 0.");
+                            currentLayer.data.push_back(0);
+                        } catch (const std::out_of_range& e) {
+                            debug_log("Warning: GID '", value, "' out of range in CSV data for layer '", currentLayer.name, "'. Using 0.");
+                            currentLayer.data.push_back(0);
+                        }
+                        tileCount++;
                     }
-                     if (currentLayer.data.size() != width * height) { /* Warning */ }
+                    if (tileCount != width * height) {
+                         debug_log("Warning: CSV tile layer '", currentLayer.name, "' in map '", path, "' has ", tileCount, " tiles, expected ", width * height, ".");
+                    }
                 }
-                else if (string_equal(std::string(encoding), "base64")) {
-                    // ... Base64 decoding and decompression ...
+                else if (string_equal(encoding, "base64")) {
                     std::vector<unsigned char> decoded_data = base64_decode(dataString);
-                    if (decoded_data.empty() && !dataString.empty()) { /* Error, skip */ continue; }
+                    if (decoded_data.empty() && !dataString.empty()) {
+                        debug_log("Error: Base64 decoding failed for layer '", currentLayer.name, "' in map '", path, "'. Skipping layer.");
+                        continue;
+                    }
+
                     std::vector<unsigned char> decompressed_data = decoded_data;
                     if (compression) {
                         decompressed_data = decompress_data(decoded_data, std::string(compression));
-                        if (decompressed_data.empty() && !decoded_data.empty()) { /* Error, skip */ continue; }
+                        if (decompressed_data.empty() && !decoded_data.empty()) {
+                            debug_log("Error: Decompression ('", compression, "') failed for layer '", currentLayer.name, "' in map '", path, "'. Skipping layer.");
+                            continue;
+                        }
                     }
-                    size_t expected_bytes = width * height * 4;
-                    if (decompressed_data.size() != expected_bytes) { /* Warning */ }
-                    for (size_t i = 0; (i + 3) < decompressed_data.size(); i += 4) {
-                        unsigned int gid = decompressed_data[i] | (decompressed_data[i + 1] << 8) | (decompressed_data[i + 2] << 16) | (decompressed_data[i + 3] << 24);
+
+                    size_t expected_bytes = static_cast<size_t>(width) * height * 4;
+                    if (decompressed_data.size() != expected_bytes) {
+                        debug_log("Warning: Decompressed data size mismatch for layer '", currentLayer.name, "' in map '", path, "'. Expected ", expected_bytes, " bytes, got ", decompressed_data.size(), ".");
+                    }
+
+                    unsigned int tileCount = 0;
+                    for (size_t i = 0; (i + 3) < decompressed_data.size() && tileCount < (width * height); i += 4) {
+                        unsigned int gid = static_cast<unsigned int>(decompressed_data[i]) |
+                                           (static_cast<unsigned int>(decompressed_data[i + 1]) << 8) |
+                                           (static_cast<unsigned int>(decompressed_data[i + 2]) << 16) |
+                                           (static_cast<unsigned int>(decompressed_data[i + 3]) << 24);
                         currentLayer.data.push_back(gid);
+                        tileCount++;
                     }
-                    if (currentLayer.data.size() != width * height) { /* Warning */ }
+                     if (tileCount != width * height) {
+                         debug_log("Warning: Base64 tile layer '", currentLayer.name, "' in map '", path, "' processed ", tileCount, " tiles, expected ", width * height, ".");
+                    }
                 }
                 else {
-                    debug_log("Error: Unsupported layer data encoding '", encoding, "' for layer '", currentLayer.name, "'. Skipping layer.");
+                    debug_log("Error: Unsupported layer data encoding '", encoding, "' for layer '", currentLayer.name, "' in map '", path, "'. Skipping layer.");
                     continue;
                 }
 
@@ -373,43 +447,37 @@ namespace Amara {
             }
             else if (string_equal(elementName, "objectgroup")) {
                 Tiled_ObjectGroup currentGroup;
-                const char* groupName = nullptr;
-                element->QueryStringAttribute("name", &groupName);
+                const char* groupName = element->Attribute("name");
                 if (groupName) currentGroup.name = groupName;
 
-                const char* colorStr = nullptr;
-                element->QueryStringAttribute("color", &colorStr);
+                const char* colorStr = element->Attribute("color");
                 if (colorStr) currentGroup.color = colorStr;
 
                 element->QueryFloatAttribute("opacity", &currentGroup.opacity);
                 element->QueryBoolAttribute("visible", &currentGroup.visible);
                 element->QueryFloatAttribute("offsetx", &currentGroup.offsetX);
-                element->QueryFloatAttribute("offsety", &currentGroup.offsetY);
+                element->QueryFloatAttribute("offsety", &currentGroup.offsetY); 
 
-                const char* drawOrderStr = nullptr;
-                element->QueryStringAttribute("draworder", &drawOrderStr);
+                const char* drawOrderStr = element->Attribute("draworder");
                 if (drawOrderStr) currentGroup.drawOrder = drawOrderStr;
+                else currentGroup.drawOrder = "topdown";
 
-                // Parse Group Properties
                 currentGroup.properties = parseProperties(element);
 
-                // Parse Objects within the group
                 for (tinyxml2::XMLElement* objElement = element->FirstChildElement("object"); objElement != nullptr; objElement = objElement->NextSiblingElement("object")) {
                     Tiled_Object currentObject;
-                    objElement->QueryUnsignedAttribute("id", &currentObject.id); // ID is unique within the map
-                    const char* objName = nullptr;
-                    objElement->QueryStringAttribute("name", &objName);
+                    objElement->QueryUnsignedAttribute("id", &currentObject.id);
+                    const char* objName = objElement->Attribute("name");
                     if (objName) currentObject.name = objName;
-                    const char* objType = nullptr;
-                    objElement->QueryStringAttribute("type", &objType);
+                    const char* objType = objElement->Attribute("type");
                     if (objType) currentObject.type = objType;
 
                     objElement->QueryFloatAttribute("x", &currentObject.x);
                     objElement->QueryFloatAttribute("y", &currentObject.y);
-                    objElement->QueryFloatAttribute("width", &currentObject.width);   // May be 0
-                    objElement->QueryFloatAttribute("height", &currentObject.height); // May be 0
+                    objElement->QueryFloatAttribute("width", &currentObject.width);
+                    objElement->QueryFloatAttribute("height", &currentObject.height);
                     objElement->QueryFloatAttribute("rotation", &currentObject.rotation);
-                    objElement->QueryUnsignedAttribute("gid", &currentObject.gid); // May be 0
+                    objElement->QueryUnsignedAttribute("gid", &currentObject.gid);
                     objElement->QueryBoolAttribute("visible", &currentObject.visible);
 
                     currentObject.properties = parseProperties(objElement);
@@ -431,46 +499,28 @@ namespace Amara {
                             if (points) currentObject.points = parsePointsString(points);
                         } else if (string_equal(shapeName, "text")) {
                             currentObject.objectType = Tiled_ObjectType::Text;
-                            
-                            const char* fontFamily = nullptr;
-                            shapeElement->QueryStringAttribute("fontfamily", &fontFamily);
+                            const char* fontFamily = shapeElement->Attribute("fontfamily");
                             if (fontFamily) currentObject.text_fontfamily = fontFamily;
-
                             shapeElement->QueryIntAttribute("pixelsize", &currentObject.text_pixelsize);
                             shapeElement->QueryBoolAttribute("wrap", &currentObject.text_wrap);
-
-                            const char* color = nullptr;
-                            shapeElement->QueryStringAttribute("color", &color);
-                            if (color) currentObject.text_color = color; // Stored as string (e.g., #AARRGGBB or #RRGGBB)
-
-                            const char* halign = nullptr;
-                            shapeElement->QueryStringAttribute("halign", &halign);
-                            if (halign) currentObject.text_halign = halign;
-
-                            const char* valign = nullptr;
-                            shapeElement->QueryStringAttribute("valign", &valign);
-                            if (valign) currentObject.text_valign = valign;
-
+                            const char* color = shapeElement->Attribute("color");
+                            if (color) currentObject.text_color = color;
+                            const char* halign = shapeElement->Attribute("halign");
+                            if (halign) currentObject.text_halign = halign; else currentObject.text_halign = "left";
+                            const char* valign = shapeElement->Attribute("valign");
+                            if (valign) currentObject.text_valign = valign; else currentObject.text_valign = "top";
                             shapeElement->QueryBoolAttribute("bold", &currentObject.text_bold);
                             shapeElement->QueryBoolAttribute("italic", &currentObject.text_italic);
                             shapeElement->QueryBoolAttribute("underline", &currentObject.text_underline);
                             shapeElement->QueryBoolAttribute("strikeout", &currentObject.text_strikeout);
                             shapeElement->QueryBoolAttribute("kerning", &currentObject.text_kerning);
-
                             const char* text = shapeElement->GetText();
                             if (text) currentObject.text_content = text;
                         }
-                    } 
+                    }
                     else {
-                        // No shape element, defaults to Rectangle unless it's a Tile object
-                        if (currentObject.gid == 0) {
-                             currentObject.objectType = Tiled_ObjectType::Rectangle;
-                        } else {
-                             // If GID is set, it is considered a Tile object,
-                             // but keep Rectangle type unless specific handling is needed.
-                             // Width/Height might come from the tile itself later.
-                             currentObject.objectType = Tiled_ObjectType::Rectangle;
-                        }
+                        // No shape element: Default to Rectangle if no GID, otherwise it's a Tile object (which we treat as Rectangle visually)
+                        currentObject.objectType = Tiled_ObjectType::Rectangle;
                     }
 
                     currentGroup.objects.push_back(currentObject);
@@ -479,52 +529,55 @@ namespace Amara {
             }
             else if (string_equal(elementName, "imagelayer")) {
                 Tiled_ImageLayer currentImageLayer;
-                currentImageLayer.mapDirectory = path;
+                // Store the directory for resolving relative image paths later
+                size_t lastSlash = path.find_last_of("/\\");
+                currentImageLayer.mapDirectory = (lastSlash == std::string::npos) ? "" : path.substr(0, lastSlash + 1);
 
-                const char* imgLayerName = nullptr;
-                element->QueryStringAttribute("name", &imgLayerName);
+                const char* imgLayerName = element->Attribute("name");
                 if (imgLayerName) currentImageLayer.name = imgLayerName;
 
-                element->QueryFloatAttribute("offsetx", &currentImageLayer.offsetX);
-                element->QueryFloatAttribute("offsety", &currentImageLayer.offsetY);
-                element->QueryFloatAttribute("opacity", &currentImageLayer.opacity);
-                element->QueryBoolAttribute("visible", &currentImageLayer.visible);
+                element->QueryFloatAttribute("offsetx", &currentImageLayer.offsetX); // Defaults to 0.0
+                element->QueryFloatAttribute("offsety", &currentImageLayer.offsetY); // Defaults to 0.0
+                element->QueryFloatAttribute("opacity", &currentImageLayer.opacity); // Defaults to 1.0
+                element->QueryBoolAttribute("visible", &currentImageLayer.visible); // Defaults to true
 
                 currentImageLayer.properties = parseProperties(element);
 
                 tinyxml2::XMLElement* imgElement = element->FirstChildElement("image");
                 if (imgElement) {
-                    const char* imgSrc = nullptr;
-                    imgElement->QueryStringAttribute("source", &imgSrc);
+                    const char* imgSrc = imgElement->Attribute("source");
                     if (imgSrc) currentImageLayer.image.source = imgSrc;
 
-                    const char* transColor = nullptr;
-                    imgElement->QueryStringAttribute("trans", &transColor);
+                    const char* transColor = imgElement->Attribute("trans");
                     if (transColor) currentImageLayer.image.transparentColor = transColor;
 
                     imgElement->QueryIntAttribute("width", &currentImageLayer.image.width);
                     imgElement->QueryIntAttribute("height", &currentImageLayer.image.height);
-                }
-                else {
-                    debug_log("Warning: Image layer '", currentImageLayer.name, "' is missing the <image> element. Skipping image info.");
+                } else {
+                    debug_log("Warning: Image layer '", currentImageLayer.name, "' in map '", path, "' is missing the <image> element. Skipping image info.");
                 }
 
                 imageLayers.push_back(currentImageLayer);
             }
-            // --- Handle other potential top-level elements ---
+            // --- Group Layer Parsing (Optional/Future) ---
             // else if (string_equal(elementName, "group")) {
-            //     // TODO: Handle nested groups if needed (recursive parsing)
-            //     debug_log("Warning: Nested layer groups are not fully supported yet.");
+            //     // TODO: Handle nested groups recursively if needed
+            //     debug_log("Info: Skipping nested layer group '", element->Attribute("name"), "' (not fully supported).");
             // }
-            // else if (!string_equal(elementName, "tileset") && !string_equal(elementName, "properties")) {
-            //     // Ignore tilesets (parsed earlier) and properties (parsed earlier)
-            //     debug_log("Info: Skipping unsupported top-level map element: ", elementName);
+            // --- Ignore other known elements ---
+            // else if (string_equal(elementName, "tileset") || string_equal(elementName, "properties")) {
+            //     // Already handled or part of other elements
+            // }
+            // --- Warn about unknown elements ---
+            // else {
+            //     debug_log("Info: Skipping unknown top-level map element: <", elementName, "> in map '", path, "'.");
             // }
         }
 
         if (tilesets.empty()) {
-            debug_log("Warning: No tilesets found or loaded for map: ", path);
+            debug_log("Warning: No embedded tilesets were successfully loaded for map: ", path);
         }
+
         return true;
     }
 }
