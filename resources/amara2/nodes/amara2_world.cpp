@@ -222,8 +222,25 @@ namespace Amara {
             if (json_has(config, "virtualHeight")) {
                 virtualHeight = config["virtualHeight"];
             }
+            if (json_has(config, "virtualSize")) {
+                if (config["virtualSize"].is_number()) {
+                    virtualWidth = config["virtualSize"];
+                    virtualHeight = config["virtualSize"];
+                }
+                else if (config["virtualSize"].is_object()) {
+                    nlohmann::json size = config["virtualSize"];
+                    if (json_has(config, "w")) virtualWidth = config["virtualSize"]["w"];
+                    if (json_has(config, "h")) virtualHeight = config["virtualSize"]["h"];
+                    if (json_has(config, "width")) virtualWidth = config["virtualSize"]["width"];
+                    if (json_has(config, "height")) virtualHeight = config["virtualSize"]["height"];
+                }
+                else if (config["virtualSize"].is_array())  {
+                    virtualWidth = config["virtualSize"][0];
+                    virtualHeight = config["virtualSize"][1];
+                }
+            }
             if (json_has(config, "resizable")) {
-                bool resizable = config["resizable"];
+                resizable = config["resizable"];
                 if (window) SDL_SetWindowResizable(window, resizable);
             }
             if (json_is(config, "singleWindowApplication")) {
@@ -909,6 +926,12 @@ namespace Amara {
                 }),
                 "windowMoved", sol::readonly(&World::windowMoved),
                 "windowResized", sol::readonly(&World::windowResized),
+                "resizable", sol::property([](const Amara::World& world) { return world.resizable; }, [](Amara::World& world, bool value) {
+                    world.resizable = value;
+                    if (world.window) {
+                        SDL_SetWindowResizable(world.window, value);
+                    }
+                }),
                 "depth", sol::property(
                     [](const Amara::World& world) {
                         return world.depth;
