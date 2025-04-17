@@ -5,7 +5,7 @@ return NodeFactory:create("Scene"):configure({
         self.load:spritesheet("freaker", "freaker.png", 32, 64)
         self.load:font("font", "KLEINTEN.ttf", 10)
         
-        Animations:add({
+        self.animations:add({
             key = "runningDown",
             texture = "freaker",
             startFrame = 3,
@@ -13,7 +13,7 @@ return NodeFactory:create("Scene"):configure({
             frameRate = 12,
             repeats = -1
         })
-        Animations:add({
+        self.animations:add({
             key = "runningUp",
             texture = "freaker",
             startFrame = 10 + 3,
@@ -21,7 +21,7 @@ return NodeFactory:create("Scene"):configure({
             frameRate = 12,
             repeats = -1
         })
-        Animations:add({
+        self.animations:add({
             key = "runningLeft",
             texture = "freaker",
             startFrame = 20 + 3,
@@ -29,7 +29,7 @@ return NodeFactory:create("Scene"):configure({
             frameRate = 12,
             repeats = -1
         })
-        Animations:add({
+        self.animations:add({
             key = "runningRight",
             texture = "freaker",
             startFrame = 30 + 3,

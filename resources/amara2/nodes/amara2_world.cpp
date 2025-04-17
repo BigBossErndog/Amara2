@@ -7,6 +7,7 @@ namespace Amara {
         
         AssetManager assets;
         ShaderManager shaders;
+        AudioMaster audio;
 
         std::string base_dir_path = Props::system->getBasePath();
 
@@ -136,10 +137,8 @@ namespace Amara {
             Props::world = this;
             Props::assets = &assets;
             Props::shaders = &shaders;
-
-            Props::lua()["Assets"] = &assets;
-            Props::lua()["Shaders"] = &shaders;
-
+            Props::audio = &audio;
+            
             if (window) {
                 #ifdef AMARA_OPENGL
                 Props::glContext = NULL;

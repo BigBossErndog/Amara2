@@ -12,7 +12,6 @@ namespace Amara {
         NodeFactory factory;
         AnimationFactory animations;
         ControlManager controls;
-        AudioMaster audio;
 
         std::vector<World*> worlds;
 
@@ -29,16 +28,13 @@ namespace Amara {
             Props::lua()["System"] = &system;
             Props::lua()["NodeFactory"] = &factory;
             Props::lua()["Scripts"] = &scripts;
-            Props::lua()["Animations"] = &animations;
             Props::lua()["Controls"] = &controls;
-            Props::lua()["AudioMaster"] = &audio;
             
             Props::system = &system;
             Props::factory = &factory;
             Props::scripts = &scripts;
             Props::animations = &animations;
             Props::controls = &controls;
-            Props::audio = &audio;
 
             if (!base_dir_path.empty()) {
                 Props::system->setBasePath(base_dir_path);

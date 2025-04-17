@@ -476,6 +476,18 @@ namespace Amara {
 			}
         }
 
+        Amara::Node* findChild(std::string gid) {
+            Amara::Node* child;
+			for (auto it = children.begin(); it != children.end();) {
+                child = *it;
+				if (string_equal(child->id, gid)) {
+					return child;
+				}
+				++it;
+			}
+            return nullptr;
+        }
+
         void switchParent(Amara::Node* other) {
             if (destroyed || other->destroyed || other == parent) return;
             if (other->parent && other->parent == this) {
@@ -702,7 +714,13 @@ namespace Amara {
                 "stopActing", &Node::stopActing,
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
-                }
+                },
+
+                "assets", sol::property([](Node& e) { return Props::assets; }),
+                "shaders", sol::property([](Node& e) { return Props::shaders; }),
+                "audio", sol::property([](Node& e) { return Props::audio; }),
+                "animations", sol::property([](Node& e) { return Props::animations; }),
+                "controls", sol::property([](Node& e) { return Props::controls; })
             );
 
             lua.new_usertype<std::vector<Amara::Node*>>("NodeVector",
