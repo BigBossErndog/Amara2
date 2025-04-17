@@ -147,7 +147,13 @@ return NodeFactory:create("Scene"):configure({
             y = self.camera.top + 30,
             -- color = Colors.Yellow
         });
-        txt.text = "hello ${color=\"yellow\"} world"
+        txt.text = "Hello ${manipulator=\"wave\"}world${reset = true} and America!"
+        txt:setManipulator("wave", function(index, lifeTime)
+            return {
+                offsetY = math.sin(index*0.5 + lifeTime*5),
+                color = "green"
+            }
+        end)
         -- self:createChild("Text", {
         --     text = "hello",
         --     font = "font",

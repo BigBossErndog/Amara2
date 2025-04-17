@@ -84,6 +84,10 @@ namespace Amara {
                     uniforms[name] = Vector4(value["x"], value["y"], value["z"], value["w"]);
                     return;
                 }
+                if (json_has(value, "x", "y", "w", "h")) {
+                    uniforms[name] = Vector4(value["x"], value["y"], value["w"], value["h"]);
+                    return;
+                }
             }
         }
 

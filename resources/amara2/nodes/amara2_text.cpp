@@ -2,13 +2,15 @@ namespace Amara {
     class Text;
 
     struct Text_TempProps {
-        int x = 0;
-        int y = 0;
+        float offsetX = 0;
+        float offsetY = 0;
 
         float alpha = 1;
 
         Amara::Color color = Amara::Color::White;
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
+
+        sol::protected_function manipulator = sol::nil;
 
         void set(Amara::Text* text);
     };
@@ -21,7 +23,7 @@ namespace Amara {
         Amara::FontAsset* font = nullptr;
         
         int progress = 0;
-
+        
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
         Amara::Color tint = Amara::Color::White;
 
@@ -41,6 +43,9 @@ namespace Amara {
 
         Text_TempProps temp_props;
         bool in_drawing = false;
+
+        std::unordered_map<std::string, sol::function> manipulators;
+        sol::protected_function currentManipulator;
 
         #ifdef AMARA_OPENGL
         std::array<float, 16> vertices = {
@@ -84,12 +89,27 @@ namespace Amara {
             Amara::Node::configure(config);
 
             if (in_drawing) {
-                if (json_has(config, "x")) temp_props.x = json_extract(config, "x");
-                if (json_has(config, "y")) temp_props.y = json_extract(config, "y");
-                if (json_has(config, "alpha")) temp_props.alpha = json_extract(config, "alpha");
-                if (json_has(config, "tint")) temp_props.color = json_extract(config, "tint");
-                if (json_has(config, "color")) temp_props.color = json_extract(config, "color");
-                if (json_has(config, "blendMode")) temp_props.blendMode = static_cast<Amara::BlendMode>(json_extract(config, "blendMode").get<int>());
+                if (json_is(config, "reset")) {
+                    temp_props.set(this);
+                }
+                else {
+                    if (json_has(config, "offsetX")) temp_props.offsetX = config["offsetX"];
+                    if (json_has(config, "offsetY")) temp_props.offsetY = config["offsetY"];
+                    if (json_has(config, "alpha")) temp_props.alpha = config["alpha"];
+                    if (json_has(config, "tint")) temp_props.color = config["tint"];
+                    if (json_has(config, "color")) temp_props.color = config["color"];
+                    if (json_has(config, "blendMode")) temp_props.blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
+                    if (json_has(config, "manipulator")) {
+                        std::string manipulator_name = config["manipulator"];
+                        if (manipulators.find(manipulator_name) != manipulators.end()) {
+                            temp_props.manipulator = manipulators[manipulator_name];
+                        }
+                        else {
+                            debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
+                            Props::breakWorld();
+                        }
+                    }
+                }
                 return this;
             }
             
@@ -244,13 +264,28 @@ namespace Amara {
                         }
                         continue;
                     }
+                    if (temp_props.manipulator.valid()) {
+                        try {
+                            sol::protected_function_result result = temp_props.manipulator(count, lifeTime, (char)glyph.codepoint);
+                            if (!result.valid()) {
+                                sol::error err = result;
+                                throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                            }
+                            else {
+                                configure(lua_to_json(result));
+                            }
+                        } catch (const std::exception& e) {
+                            debug_log(e.what());
+                            Props::breakWorld();
+                        }
+                    }
 
                     Vector3 glyphPos = Vector3(
                         rotateAroundAnchor(
                             anchoredPos, 
                             Vector2( 
-                                anchoredPos.x + (line.x + glyph.x + temp_props.x - layout.width*origin.x)*passOn.scale.x*scale.x,
-                                anchoredPos.y + (line.y + glyph.y + temp_props.y - layout.height*origin.y)*passOn.scale.y*scale.y
+                                anchoredPos.x + (line.x + glyph.x + temp_props.offsetX - layout.width*origin.x)*passOn.scale.x*scale.x,
+                                anchoredPos.y + (line.y + glyph.y + temp_props.offsetY - layout.height*origin.y)*passOn.scale.y*scale.y
                             ),
                             passOn.rotation + rotation
                         ),
@@ -412,6 +447,28 @@ namespace Amara {
             scale.y = _h / static_cast<float>(textheight);
         }
 
+        sol::object setManipulator(sol::function manipulator) {
+            currentManipulator = manipulator;
+            return get_lua_object();
+        }
+
+        sol::object setManipulator(std::string manipulator_name, sol::function manipulator) {
+            manipulators[manipulator_name] = manipulator;
+            return get_lua_object();
+        }
+
+        sol::object removeManipulator() {
+            currentManipulator = sol::nil;
+            return get_lua_object();
+        }
+
+        sol::object removeManipulator(std::string manipulator_name) {
+            if (manipulators.find(manipulator_name) != manipulators.end()) {
+                manipulators.erase(manipulator_name);
+            }
+            return get_lua_object();
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
@@ -455,17 +512,28 @@ namespace Amara {
                 "wrapWidth", sol::property([](Amara::Text& t) -> int { return t.wrapWidth; }, [](Amara::Text& t, int v) { t.setWrapWidth(v); }),
                 "progress", sol::readonly(&Text::progress),
                 "progressText", &Text::progressText,
-                "resetProgress", &Text::resetProgress
+                "resetProgress", &Text::resetProgress,
+                "setManipulator", sol::overload(
+                    sol::resolve<sol::object(sol::function)>(&Text::setManipulator),
+                    sol::resolve<sol::object(std::string, sol::function)>(&Text::setManipulator)
+                ),
+                "removeManipulator", sol::overload(
+                    sol::resolve<sol::object()>(&Text::removeManipulator),
+                    sol::resolve<sol::object(std::string)>(&Text::removeManipulator)
+                ),
+                "manipulator", &Text::currentManipulator
             );
         }
     };
 
     void Text_TempProps::set(Amara::Text* text) {
-        x = 0;
-        y = 0;
+        offsetX = 0;
+        offsetY = 0;
         alpha = 1;
 
         color = text->tint;
         blendMode = text->blendMode;
+
+        manipulator = text->currentManipulator;
     }
 }
