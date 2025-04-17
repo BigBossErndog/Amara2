@@ -162,6 +162,37 @@ namespace Amara {
     
         return ss.str();
     }
+
+    const char* lua_table_to_string = R"(
+        function(val, name, skipnewlines, depth)
+            skipnewlines = skipnewlines or false
+            depth = depth or 0
+
+            local tmp = string.rep(" ", depth)
+
+            if name then tmp = tmp .. name .. " = " end
+
+            if type(val) == "table" then
+                tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
+
+                for k, v in pairs(val) do
+                    tmp =  tmp .. table.to_string(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
+                end
+
+                tmp = tmp .. string.rep(" ", depth) .. "}"
+            elseif type(val) == "number" then
+                tmp = tmp .. tostring(val)
+            elseif type(val) == "string" then
+                tmp = tmp .. string.format("%q", val)
+            elseif type(val) == "boolean" then
+                tmp = tmp .. (val and "true" or "false")
+            else
+                tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
+            end
+
+            return tmp
+        end
+    )";
     
     void lua_debug_log(sol::variadic_args args) {
         std::ostringstream ss;
@@ -243,5 +274,6 @@ namespace Amara {
         });
 
         sol::table table_metatable = lua["table"];
+        table_metatable.set_function("to_string", string_to_lua_object(lua_table_to_string));
     }
 }

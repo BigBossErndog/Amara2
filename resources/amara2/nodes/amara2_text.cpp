@@ -164,7 +164,16 @@ namespace Amara {
         }
 
         sol::object setText(sol::variadic_args input) {
-            setText(lua_string_concat(input));
+            std::ostringstream ss;
+            for (auto arg : input) {
+                if (arg.is<std::string>()) ss << arg.get<std::string>();
+                else if (arg.is<sol::table>()) {
+                    sol::object result = Props::lua()["table"]["to_string"](arg);
+                    ss << "$" << result.as<std::string>();
+                }
+                else ss << lua_to_string(arg);
+            }
+            setText(ss.str());
             return get_lua_object();
         }
 
