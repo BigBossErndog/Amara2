@@ -141,13 +141,13 @@ return NodeFactory:create("Scene"):configure({
 
         local txt = self:createChild("Text", {
             font = "font",
-            origin = 0,
+            origin = 0.5,
             fixedToCamera = true,
-            x = self.camera.left + 10,
-            y = self.camera.top + 30,
+            x = self.camera.center.x,
+            y = self.camera.center.y - 48,
             -- color = Colors.Yellow
         });
-        -- txt.text = "Hello ${manipulator=\"wave\", color=\"green\"}world${reset = true}! I am ${manipulator=\"wave\", color=\"yellow\"}Amara${reset = true}!"
+        txt.text = "Hello ${green_shake}world${reset}, I am ${yellow_wave}Amara${reset}!"
         
         txt:setText(
             "Hello ", 
@@ -161,8 +161,18 @@ return NodeFactory:create("Scene"):configure({
             "!"
         )
         txt:setManipulator("wave", function(index, lifeTime, character)
+        -- )
+        txt:setManipulator("yellow_wave", function(index, lifeTime, character)
             return {
-                offsetY = math.sin(index + lifeTime*5)
+                offsetY = math.sin(index + lifeTime*5),
+                color = "yellow"
+            }
+        end)
+        txt:setManipulator("green_shake", function(index, lifeTime, character)
+            return {
+                offsetX = math.random(),
+                offsetY = math.random(),
+                color = "green"
             }
         end)
         local tbl = {reset="hello"};

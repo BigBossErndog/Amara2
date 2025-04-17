@@ -276,22 +276,6 @@ namespace Amara {
     Color Color::Cyan = {0, 255, 255, 255};
     Color Color::Transparent = {0, 0, 0, 0};
 
-    inline std::vector<unsigned char> base64_decode(const std::string& encoded_string) {
-        // TODO: Replace with a real Base64 decoding implementation ***
-        debug_log("Warning: Base64 decoding is not implemented!");
-        std::vector<unsigned char> decoded_data;
-        return decoded_data;
-    }
-
-    // Zlib/Gzip Decompression
-    inline std::vector<unsigned char> decompress_data(const std::vector<unsigned char>& compressed_data, const std::string& compression_type) {
-        // TODO: Replace with real zlib/gzip decompression if needed ***
-        if (compression_type == "zlib" || compression_type == "gzip") {
-             debug_log("Warning: ", compression_type, " decompression is not implemented!");
-        }
-        return compressed_data;
-    }
-
     void Color::bindLua(sol::state& lua) {
         sol::usertype<Color> color_type = lua.new_usertype<Color>("Color",
             sol::constructors<Color(Uint8, Uint8, Uint8, Uint8), Color(Uint8, Uint8, Uint8)>(),
@@ -312,5 +296,21 @@ namespace Amara {
             "Cyan", Color::Cyan,
             "Transparent", Color::Transparent
         );
+    }
+
+    inline std::vector<unsigned char> base64_decode(const std::string& encoded_string) {
+        // TODO: Replace with a real Base64 decoding implementation ***
+        debug_log("Warning: Base64 decoding is not implemented!");
+        std::vector<unsigned char> decoded_data;
+        return decoded_data;
+    }
+
+    // Zlib/Gzip Decompression
+    inline std::vector<unsigned char> decompress_data(const std::vector<unsigned char>& compressed_data, const std::string& compression_type) {
+        // TODO: Replace with real zlib/gzip decompression if needed ***
+        if (compression_type == "zlib" || compression_type == "gzip") {
+             debug_log("Warning: ", compression_type, " decompression is not implemented!");
+        }
+        return compressed_data;
     }
 }

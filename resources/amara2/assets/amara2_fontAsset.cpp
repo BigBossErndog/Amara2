@@ -262,16 +262,25 @@ namespace Amara {
 
         nlohmann::json getTextConfig(int& i, const std::u32string& str) {
             i += 1;
+            int start = i;
+            
             std::string config_str;
+            std::string contents_str;
             while (i < str.size()) {
                 config_str += str[i];
                 if (str[i] == U'}') {
                     break;
                 }
+                else if (i - start > 0 ) {
+                    contents_str += str[i];
+                }
                 i += 1;
             }
+            
             sol::object sol_config = string_to_lua_object(config_str);
-            return lua_to_json(sol_config);
+            nlohmann::json config = lua_to_json(sol_config);
+            if (!config.is_null()) return config;
+            else return contents_str;
         }
 
         TextLayout generateLayout(const std::u32string& str, int wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing) {

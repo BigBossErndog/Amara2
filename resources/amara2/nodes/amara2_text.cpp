@@ -44,7 +44,7 @@ namespace Amara {
         Text_TempProps temp_props;
         bool in_drawing = false;
 
-        std::unordered_map<std::string, sol::function> manipulators;
+        std::unordered_map<std::string, sol::protected_function> manipulators;
         sol::protected_function currentManipulator;
 
         #ifdef AMARA_OPENGL
@@ -89,7 +89,20 @@ namespace Amara {
             Amara::Node::configure(config);
 
             if (in_drawing) {
-                if (json_is(config, "reset")) {
+                if (config.is_string()) {
+                    std::string manipulator_name = config;
+                    if (string_equal(manipulator_name, "reset")) {
+                        temp_props.set(this);
+                    }
+                    else if (manipulators.find(manipulator_name) != manipulators.end()) {
+                        temp_props.manipulator = manipulators[manipulator_name];
+                    }
+                    else {
+                        debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
+                        Props::breakWorld();
+                    }
+                }
+                else if (json_is(config, "reset")) {
                     temp_props.set(this);
                 }
                 else {
@@ -112,6 +125,8 @@ namespace Amara {
                 }
                 return this;
             }
+
+            if (config.is_string()) setManipulator(config);
             
             if (json_has(config, "tint")) tint = config["tint"];
             if (json_has(config, "color")) tint = config["color"];
@@ -466,6 +481,17 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object setManipulator(std::string manipulator_name) {
+            if (manipulators.find(manipulator_name) != manipulators.end()) {
+                currentManipulator = manipulators[manipulator_name];
+            }
+            else {
+                debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
+                Props::breakWorld();
+            }
+            return get_lua_object();
+        }
+
         sol::object removeManipulator() {
             currentManipulator = sol::nil;
             return get_lua_object();
@@ -524,7 +550,8 @@ namespace Amara {
                 "resetProgress", &Text::resetProgress,
                 "setManipulator", sol::overload(
                     sol::resolve<sol::object(sol::function)>(&Text::setManipulator),
-                    sol::resolve<sol::object(std::string, sol::function)>(&Text::setManipulator)
+                    sol::resolve<sol::object(std::string, sol::function)>(&Text::setManipulator),
+                    sol::resolve<sol::object(std::string)>(&Text::setManipulator)
                 ),
                 "removeManipulator", sol::overload(
                     sol::resolve<sol::object()>(&Text::removeManipulator),
