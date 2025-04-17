@@ -29,7 +29,7 @@ namespace Amara {
 
             if (onPrepare.valid()) {
                 try {
-                    sol::protected_function_result result = onPrepare(actor);
+                    sol::protected_function_result result = onPrepare(actor->get_lua_object());
                     if (!result.valid()) {
                         sol::error err = result;
                         throw std::runtime_error("Lua Error: " + std::string(err.what()));  
@@ -47,7 +47,7 @@ namespace Amara {
             }
             if (hasStarted && !completed && onAct.valid()) {
                 try {
-                    sol::protected_function_result result = onAct(actor, deltaTime);
+                    sol::protected_function_result result = onAct(actor->get_lua_object(), deltaTime, get_lua_object());
                     if (!result.valid()) {
                         sol::error err = result;
                         throw std::runtime_error("Lua Error: " + std::string(err.what()));  
@@ -92,7 +92,7 @@ namespace Amara {
             completed = true;
             if (onComplete.valid()) {
                 try {
-                    sol::protected_function_result result = onComplete(actor);
+                    sol::protected_function_result result = onComplete(actor->get_lua_object());
                     if (!result.valid()) {
                         sol::error err = result;
                         throw std::runtime_error("Lua Error: " + std::string(err.what()));  

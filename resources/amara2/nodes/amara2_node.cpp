@@ -63,6 +63,7 @@ namespace Amara {
         bool is_scene = false;
         bool is_action = false;
         bool is_load_task = false;
+        bool is_autoprogress = false;
 
         bool is_animation = false;
 
@@ -222,6 +223,7 @@ namespace Amara {
                         else if (string_equal("onCreate", key)) luaCreate = func;
                         else if (string_equal("onUpdate", key)) luaUpdate = func;
                         else if (string_equal("onDestroy", key)) luaDestroy = func;
+                        luaConfigure(key, val);
                     }
                 }
             }

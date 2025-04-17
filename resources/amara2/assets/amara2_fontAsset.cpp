@@ -53,7 +53,16 @@ namespace Amara {
         }
 
         int size() {
-            return text.size();
+            return glyphs.size();
+        }
+
+        int display_size() {
+            if (glyphs.size() == 0) return 0;
+            int size = 0;
+            for (Glyph glyph : glyphs) {
+                if (glyph.renderable) size += 1;
+            }
+            return size;
         }
     };
 
@@ -80,6 +89,22 @@ namespace Amara {
         }
         TextLine& getLastLine() {
             return lines.back();
+        }
+
+        int size() {
+            int count = 0;
+            for (TextLine line : lines) {
+                count += line.size();
+            }
+            return count;
+        }
+
+        int display_size() {
+            int count = 0;
+            for (TextLine line : lines) {
+                count += line.display_size();
+            }
+            return count;
         }
     };
     
@@ -263,7 +288,7 @@ namespace Amara {
         nlohmann::json getTextConfig(int& i, const std::u32string& str) {
             i += 1;
             int start = i;
-            
+
             std::string config_str;
             std::string contents_str;
             while (i < str.size()) {

@@ -160,7 +160,10 @@
     #include "actions/amara2_waitAction.cpp"
     #include "actions/amara2_tween.cpp"
     #include "actions/amara2_stateMachine.cpp"
+
     #include "actions/amara2_loader.cpp"
+    
+    #include "actions/amara2_autoProgress.cpp"
     
     #include "nodes/amara2_sprite.cpp"
     #include "actions/amara2_animation.cpp"

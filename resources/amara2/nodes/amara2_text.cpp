@@ -174,8 +174,8 @@ namespace Amara {
 
             converted_text = Amara::String::utf8_to_utf32(str);  // Convert UTF-8 string to UTF-32
 
-            progress = converted_text.size();
             updateText();
+            progress = layout.display_size();
         }
 
         sol::object setText(sol::variadic_args input) {
@@ -277,14 +277,11 @@ namespace Amara {
 
             for (const TextLine& line : layout.lines) {
                 for (const Glyph& glyph : line.glyphs) {
+                    if (count >= progress) break;
+
                     if (!glyph.renderable) {
                         if (glyph.is_config) {
                             configure(glyph.config);
-                        }
-
-                        count += 1;
-                        if (count >= progress) {
-                            return;
                         }
                         continue;
                     }
@@ -393,9 +390,6 @@ namespace Amara {
                     #endif
 
                     count += 1;
-                    if (count >= progress) {
-                        break;
-                    }
                 }
             }
 
@@ -457,13 +451,17 @@ namespace Amara {
         }
         bool progressText(int speed) {
             progress += speed;
-            if (progress >= converted_text.size()) {
-                progress = converted_text.size();
-                return false;
+            if (progress >= layout.display_size()) {
+                progress = layout.display_size();
+                return true;
             }
-            return true;
+            return false;
         }
 
+        sol::object autoProgress(double speed); // speed = characters per second
+        sol::object autoProgress(sol::table sol_config);
+        sol::object skipProgress();
+        
         float setWidth(float _w) {
             scale.x = _w / static_cast<float>(textwidth);
         }
@@ -545,7 +543,7 @@ namespace Amara {
                 "lineSpacing", sol::property([](Amara::Text& t) -> int { return t.lineSpacing; }, [](Amara::Text& t, int v) { t.setLineSpacing(v); }),
                 "wrapMode", sol::property([](Amara::Text& t) -> int { return static_cast<int>(t.wrapMode); }, [](Amara::Text& t, int v) { t.setWrapMode(static_cast<Amara::WrapModeEnum>(v)); }),
                 "wrapWidth", sol::property([](Amara::Text& t) -> int { return t.wrapWidth; }, [](Amara::Text& t, int v) { t.setWrapWidth(v); }),
-                "progress", sol::readonly(&Text::progress),
+                "progress", &Text::progress,
                 "progressText", &Text::progressText,
                 "resetProgress", &Text::resetProgress,
                 "setManipulator", sol::overload(
@@ -557,7 +555,12 @@ namespace Amara {
                     sol::resolve<sol::object()>(&Text::removeManipulator),
                     sol::resolve<sol::object(std::string)>(&Text::removeManipulator)
                 ),
-                "manipulator", &Text::currentManipulator
+                "manipulator", &Text::currentManipulator,
+                "autoProgress", sol::overload(
+                    sol::resolve<sol::object(double)>(&Text::autoProgress),
+                    sol::resolve<sol::object(sol::table)>(&Text::autoProgress)
+                ),
+                "skipProgress", &Text::skipProgress
             );
         }
     };
