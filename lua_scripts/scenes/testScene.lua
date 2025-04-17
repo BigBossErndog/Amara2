@@ -139,52 +139,41 @@ return NodeFactory:create("Scene"):configure({
             color = Colors.Red
         });
 
-        local txt = self:createChild("Text", {
+        self.props.prog = self:createChild("Text", {
+            text = "Hello ${green_shake}world${reset}, I am ${yellow_wave}Amara${reset}!",
             font = "font",
             origin = 0.5,
             fixedToCamera = true,
             x = self.camera.center.x,
-            y = self.camera.center.y - 48,
-            -- color = Colors.Yellow
+            y = self.camera.center.y - 48
         });
-        txt.text = "Hello ${green_shake}world${reset}, I am ${yellow_wave}Amara${reset}!"
-        
-        txt:setText(
-            "Hello ", 
-            { manipulator="wave", color="green" },
-            "world",
-            { reset=true },
-            "! I am ",
-            { manipulator="wave", color="yellow" },
-            "Amara",
-            { reset=true },
-            "!"
-        )
-        txt:setManipulator("wave", function(index, lifeTime, character)
-        -- )
-        txt:setManipulator("yellow_wave", function(index, lifeTime, character)
+        self.props.prog.progress = 0;
+        self.props.prog:wait(3):whenDone(function(self, deltaTime, progressor)
+            local progressor = self:autoProgress(12)
+            print(progressor)
+            progressor:configure({
+                speed = 12,
+                onAct = function(self, deltaTime, progressor)
+                    if Keyboard:justPressed(Key.Space) then
+                        self:skipProgress()
+                    end
+                end
+            })
+        end)
+
+        self.props.prog:setManipulator("yellow_wave", function(index, lifeTime, character)
             return {
                 offsetY = math.sin(index + lifeTime*5),
                 color = "yellow"
             }
         end)
-        txt:setManipulator("green_shake", function(index, lifeTime, character)
+        self.props.prog:setManipulator("green_shake", function(index, lifeTime, character)
             return {
                 offsetX = math.random(),
                 offsetY = math.random(),
                 color = "green"
             }
         end)
-        local tbl = {reset="hello"};
-        -- self:createChild("Text", {
-        --     text = "hello",
-        --     font = "font",
-        --     origin = 0,
-        --     fixedToCamera = true,
-        --     x = self.camera.left + 10,
-        --     y = self.camera.top + 30
-        -- })
-        -- print(self.props.fpsTxt.width, self.props.fpsTxt.height)
 
         self.camera:startFollow(f, 10)
     end,
