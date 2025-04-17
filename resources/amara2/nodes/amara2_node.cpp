@@ -57,7 +57,7 @@ namespace Amara {
         bool visible = true;
         bool actuated = false;
 
-        double lifetime = 0;
+        double lifeTime = 0;
 
         bool is_camera = false;
         bool is_scene = false;
@@ -355,7 +355,7 @@ namespace Amara {
             if (!destroyed) runChildren(deltaTime);
             clean_node_list(children);
 
-            lifetime += deltaTime;
+            lifeTime += deltaTime;
         }
 
         bool finishedLoading();

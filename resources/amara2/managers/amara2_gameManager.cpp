@@ -7,6 +7,8 @@ namespace Amara {
         float targetFPS = 60;
         double deltaTime = 0;
 
+        double lifeTime = 0;
+
         std::string platform;
 
         std::vector<nlohmann::json> arguments;
@@ -68,7 +70,7 @@ namespace Amara {
                 return { 
                     static_cast<float>(rect.x),
                     static_cast<float>(rect.y), 
-                    static_cast<float>(rect.w), 
+                    static_cast<float>(rect.w),
                     static_cast<float>(rect.h)
                 };
             }

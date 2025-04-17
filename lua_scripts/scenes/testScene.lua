@@ -162,7 +162,7 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onUpdate = function(self, deltaTime)
-        -- self.props.fpsTxt:setText(math.floor(Game.fps), " FPS")
+        self.props.fpsTxt:setText(math.floor(Game.fps), " FPS")
         -- self.props.fpsTxt:bringToFront()
         -- print(math.floor(Game.fps), " FPS")
         -- self.props.textCont.y = self.camera.topBorder

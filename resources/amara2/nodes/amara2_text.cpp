@@ -362,7 +362,7 @@ namespace Amara {
             scale.y = rect.h / static_cast<float>(textheight);
             return rect;
         }
-
+        
         sol::object fitWithin(const Rectangle& rect) {
             if (rect.w == 0 || rect.h == 0) return get_lua_object();
 

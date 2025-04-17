@@ -228,6 +228,11 @@ namespace Amara {
                     Props::deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
                     game.fps = 1 / game.deltaTime;
                     rec_tick = current_tick;
+
+                    game.lifeTime += game.deltaTime;
+                    if (currentDemiurge) {
+                        currentDemiurge->game.lifeTime += game.lifeTime;
+                    }
                 }
             }
 

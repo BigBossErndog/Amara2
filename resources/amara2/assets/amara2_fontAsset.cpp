@@ -260,7 +260,21 @@ namespace Amara {
             packGlyphsFromString(Amara::String::utf8_to_utf32(str));
         }
 
-        TextLayout generateLayout(std::u32string str, int wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing) {
+        nlohmann::json getTextConfig(int& i, const std::u32string& str) {
+            i += 1;
+            std::string config_str;
+            while (i < str.size()) {
+                config_str += str[i];
+                if (str[i] == U'}') {
+                    break;
+                }
+                i += 1;
+            }
+            sol::object sol_config = string_to_lua_object(config_str);
+            return lua_to_json(sol_config);
+        }
+
+        TextLayout generateLayout(const std::u32string& str, int wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing) {
             TextLayout layout = TextLayout();
             layout.text = str;
 
@@ -277,18 +291,8 @@ namespace Amara {
                         Glyph glyph;
                         glyph.renderable = false;
                         glyph.is_config = true;
-                        
-                        i += 1;
-                        std::string config_str;
-                        while (i < str.size()) {
-                            config_str += str[i];
-                            if (str[i] == U'}') {
-                                break;
-                            }
-                            i += 1;
-                        }
-                        sol::object sol_config = string_to_lua_object(config_str);
-                        glyph.config = lua_to_json(sol_config);
+
+                        glyph.config = getTextConfig(i, str);
 
                         line->glyphs.push_back(glyph);
                         continue;
@@ -357,19 +361,9 @@ namespace Amara {
                         glyph.renderable = false;
                         glyph.is_config = true;
                         
-                        i += 1;
-                        std::string config_str;
-                        while (i < str.size()) {
-                            config_str += str[i];
-                            if (str[i] == U'}') {
-                                break;
-                            }
-                            i += 1;
-                        }
-                        sol::object sol_config = string_to_lua_object(config_str);
-                        glyph.config = lua_to_json(sol_config);
+                        glyph.config = getTextConfig(i, str);
 
-                        word.glyphs.push_back(glyph);
+                        line->glyphs.push_back(glyph);
                         continue;
                     }
 
