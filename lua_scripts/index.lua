@@ -50,8 +50,8 @@
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
-            graphics = Graphics.OpenGL,
-            -- graphics = Graphics.Render2D,
+            -- graphics = Graphics.OpenGL,
+            graphics = Graphics.Render2D,
             resizable = true,
             transparent = true,
             vsync = true

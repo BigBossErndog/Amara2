@@ -148,12 +148,10 @@ return NodeFactory:create("Scene"):configure({
             y = self.camera.center.y - 48
         });
         self.props.prog.progress = 0;
-        self.props.prog:wait(3):whenDone(function(self, deltaTime, progressor)
-            local progressor = self:autoProgress(12)
-            print(progressor)
-            progressor:configure({
+        self.props.prog:wait(2):whenDone(function(self)
+            self:autoProgress({
                 speed = 12,
-                onAct = function(self, deltaTime, progressor)
+                onAct = function(self)
                     if Keyboard:justPressed(Key.Space) then
                         self:skipProgress()
                     end
