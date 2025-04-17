@@ -490,6 +490,34 @@ namespace Amara {
             return nullptr;
         }
 
+        Amara::Node* getChild(std::string gid) {
+            std::string findKey;
+            std::string nextKey;
+            bool forwardSlash = false;
+
+            for (char c: gid) {
+                if (forwardSlash) {
+                    nextKey += c;
+                }
+                else if (c == '/') {
+                    forwardSlash = true;
+                }
+                else findKey += c;
+            }
+
+            Amara::Node* found = findChild(findKey);
+            if (found != nullptr) {
+                if (forwardSlash) return found->getChild(nextKey);
+                else return found;
+            }
+            return nullptr;
+        }
+        sol::object luaGetChild(std::string gid) {
+            Amara::Node* child = getChild(gid);
+            if (child) return child->get_lua_object();
+            return sol::nil;
+        }
+
         void switchParent(Amara::Node* other) {
             if (destroyed || other->destroyed || other == parent) return;
             if (other->parent && other->parent == this) {
@@ -704,6 +732,7 @@ namespace Amara {
                 "onDestroy", &Node::luaDestroy,
                 "createChild", &Node::luaCreateChild,
                 "addChild", &Node::addChild,
+                "getChild", &Node::luaGetChild,
                 "destroyed", sol::readonly(&Node::destroyed),
                 "destroy", &Node::destroy,
                 "destroyChildren", &Node::destroyChildren,

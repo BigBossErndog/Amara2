@@ -174,6 +174,10 @@ return NodeFactory:create("Scene"):configure({
         end)
 
         self.camera:startFollow(f, 10)
+
+        self.props.checker = self:createChild("Node");
+        self.props.checker:createChild("Node", { id = "child1" }):createChild("Node", { id = "child2" }):createChild("Node", { id = "3" })
+        print(self.props.checker:getChild("child1/child2"))
     end,
 
     onUpdate = function(self, deltaTime)
