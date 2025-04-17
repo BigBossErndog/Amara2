@@ -33,6 +33,7 @@ namespace Amara {
                         config["texture"] = list[i];
                         add(config);
                     }
+                    return true;
                 }
                 return false;
             }
@@ -123,6 +124,10 @@ namespace Amara {
             return true;
         }
 
+        bool lua_add(sol::object config) {
+            return add(lua_to_json(config));
+        }
+
         AnimationData* get(std::string textureKey, std::string animKey) {
             if (textureMap.find(textureKey) == textureMap.end()) {
                 return nullptr;
@@ -133,11 +138,7 @@ namespace Amara {
             }
             return &(texAnims.animations[animKey]);
         }
-
-        bool lua_add(sol::object config) {
-            return add(lua_to_json(config));
-        }
-
+        
         static void bindLua(sol::state& lua) {
             lua.new_usertype<AnimationFactory>("AnimationFactory",
                 "add", &AnimationFactory::lua_add

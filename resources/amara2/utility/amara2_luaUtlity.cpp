@@ -135,7 +135,7 @@ namespace Amara {
     sol::table vector_to_lua(const std::vector<T>& vec) {
         sol::state& lua = Props::lua();
         sol::table lua_table = lua.create_table();
-    
+        
         for (size_t i = 0; i < vec.size(); ++i) {
             lua_table[i + 1] = vec[i];
         }

@@ -107,6 +107,7 @@ return NodeFactory:create("Scene"):configure({
         local f = self:createChild("Sprite", {
             texture = "freaker",
             animation = "runningDown",
+            tint = Colors.Green
             -- origin = 0
         })
 
@@ -134,15 +135,35 @@ return NodeFactory:create("Scene"):configure({
             origin = 0,
             fixedToCamera = true,
             x = self.camera.left + 10,
-            y = self.camera.top + 10
+            y = self.camera.top + 10,
+            color = Colors.Red
         });
+
+        local txt = self:createChild("Text", {
+            font = "font",
+            origin = 0,
+            fixedToCamera = true,
+            x = self.camera.left + 10,
+            y = self.camera.top + 30,
+            -- color = Colors.Yellow
+        });
+        txt.text = "hello ${color=\"yellow\"} world"
+        -- self:createChild("Text", {
+        --     text = "hello",
+        --     font = "font",
+        --     origin = 0,
+        --     fixedToCamera = true,
+        --     x = self.camera.left + 10,
+        --     y = self.camera.top + 30
+        -- })
+        -- print(self.props.fpsTxt.width, self.props.fpsTxt.height)
 
         self.camera:startFollow(f, 10)
     end,
 
     onUpdate = function(self, deltaTime)
-        self.props.fpsTxt:setText(math.floor(Game.fps), " FPS")
-        self.props.fpsTxt:bringToFront()
+        -- self.props.fpsTxt:setText(math.floor(Game.fps), " FPS")
+        -- self.props.fpsTxt:bringToFront()
         -- print(math.floor(Game.fps), " FPS")
         -- self.props.textCont.y = self.camera.topBorder
 

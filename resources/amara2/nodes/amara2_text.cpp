@@ -1,4 +1,18 @@
 namespace Amara {
+    class Text;
+
+    struct Text_TempProps {
+        int x = 0;
+        int y = 0;
+
+        float alpha = 1;
+
+        Amara::Color color = Amara::Color::White;
+        Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
+
+        void set(Amara::Text* text);
+    };
+
     class Text: public Amara::Node {
     public:
         std::string text;
@@ -24,6 +38,9 @@ namespace Amara {
         int lineSpacing = 0;
 
         TextLayout layout;
+
+        Text_TempProps temp_props;
+        bool in_drawing = false;
 
         #ifdef AMARA_OPENGL
         std::array<float, 16> vertices = {
@@ -66,6 +83,16 @@ namespace Amara {
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Node::configure(config);
 
+            if (in_drawing) {
+                if (json_has(config, "x")) temp_props.x = json_extract(config, "x");
+                if (json_has(config, "y")) temp_props.y = json_extract(config, "y");
+                if (json_has(config, "alpha")) temp_props.alpha = json_extract(config, "alpha");
+                if (json_has(config, "tint")) temp_props.color = json_extract(config, "tint");
+                if (json_has(config, "color")) temp_props.color = json_extract(config, "color");
+                if (json_has(config, "blendMode")) temp_props.blendMode = static_cast<Amara::BlendMode>(json_extract(config, "blendMode").get<int>());
+                return this;
+            }
+            
             if (json_has(config, "tint")) tint = config["tint"];
             if (json_has(config, "color")) tint = config["color"];
             if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
@@ -84,7 +111,7 @@ namespace Amara {
             if (json_has(config, "font")) setFont(config["font"]);
             if (json_has(config, "text")) {
                 if (config["text"].is_string()) setText(config["text"].get<std::string>());
-                if (config["text"].is_number()) {
+                else if (config["text"].is_number()) {
                     if (config["text"].is_number_integer()) setText(std::to_string(config["text"].get<int>()));
                     else setText(std::to_string(config["text"].get<double>()));
                 }
@@ -110,8 +137,7 @@ namespace Amara {
         void setText(std::string str) {
             text = str;
 
-            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-            converted_text = converter.from_bytes(str);  // Convert UTF-8 string to UTF-32
+            converted_text = Amara::String::utf8_to_utf32(str);  // Convert UTF-8 string to UTF-32
 
             progress = converted_text.size();
             updateText();
@@ -169,6 +195,9 @@ namespace Amara {
         void drawSelf(const Rectangle& v) override {
             if (font == nullptr || converted_text.empty()) return;
 
+            temp_props.set(this);
+            in_drawing = true;
+
             Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
             Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
 
@@ -200,14 +229,15 @@ namespace Amara {
 
             if (font->texture && Props::renderer) {
                 SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
-                SDL_SetTextureColorMod(font->texture, tint.r, tint.g, tint.b);
-                SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * 255);
-                setSDLBlendMode(font->texture, blendMode);
             }
 
             for (const TextLine& line : layout.lines) {
                 for (const Glyph& glyph : line.glyphs) {
                     if (!glyph.renderable) {
+                        if (glyph.is_config) {
+                            configure(glyph.config);
+                        }
+
                         count += 1;
                         if (count >= progress) {
                             return;
@@ -219,8 +249,8 @@ namespace Amara {
                         rotateAroundAnchor(
                             anchoredPos, 
                             Vector2( 
-                                anchoredPos.x + (line.x + glyph.x - layout.width*origin.x)*passOn.scale.x*scale.x,
-                                anchoredPos.y + (line.y + glyph.y - layout.height*origin.y)*passOn.scale.y*scale.y
+                                anchoredPos.x + (line.x + glyph.x + temp_props.x - layout.width*origin.x)*passOn.scale.x*scale.x,
+                                anchoredPos.y + (line.y + glyph.y + temp_props.y - layout.height*origin.y)*passOn.scale.y*scale.y
                             ),
                             passOn.rotation + rotation
                         ),
@@ -253,6 +283,11 @@ namespace Amara {
                     )) return;
 
                     if (font->texture && Props::renderer) {
+                        SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
+                        SDL_SetTextureColorMod(font->texture, temp_props.color.r, temp_props.color.g, temp_props.color.b);
+                        SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * temp_props.alpha * 255);
+                        setSDLBlendMode(font->texture, temp_props.blendMode);
+
                         SDL_RenderTextureRotated(
                             Props::renderer, 
                             font->texture,
@@ -290,19 +325,22 @@ namespace Amara {
                         Props::renderBatch->pushQuad(
                             Props::currentShaderProgram,
                             font->glTextureID,
-                            vertices, passOn.alpha * alpha, tint,
+                            vertices, passOn.alpha * alpha * temp_props.alpha,
+                            temp_props.color,
                             v, passOn.insideFrameBuffer,
-                            blendMode
+                            temp_props.blendMode
                         );
                     }
                     #endif
 
                     count += 1;
                     if (count >= progress) {
-                        return;
+                        break;
                     }
                 }
             }
+
+            in_drawing = false;
         }
 
         int length() {
@@ -378,11 +416,12 @@ namespace Amara {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
                 "tint", sol::property([](Amara::Text& t) -> Amara::Color { return t.tint; }, [](Amara::Text& t, sol::object v) { t.tint = v; }),
+                "color", sol::property([](Amara::Text& t) -> Amara::Color { return t.tint; }, [](Amara::Text& t, sol::object v) { t.tint = v; }),
                 "blendMode", &Text::blendMode,
-                "w", sol::property(&Text::textwidth, &Text::setWidth),
-                "h", sol::property(&Text::textheight, &Text::setHeight),
-                "width", sol::property(&Text::textwidth, &Text::setWidth),
-                "height", sol::property(&Text::textheight, &Text::setHeight),
+                "w", sol::property([](Amara::Text& t) -> float { return t.textwidth; }, &Text::setWidth),
+                "h", sol::property([](Amara::Text& t) -> float { return t.textheight; }, &Text::setHeight),
+                "width", sol::property([](Amara::Text& t) -> float { return t.textwidth; }, &Text::setWidth),
+                "height", sol::property([](Amara::Text& t) -> float { return t.textheight; }, &Text::setHeight),
                 "rect", sol::property(&Text::getRectangle, &Text::stretchTo),
                 "stretchTo", &Text::stretchTo,
                 "fitWithin", &Text::fitWithin,
@@ -420,4 +459,13 @@ namespace Amara {
             );
         }
     };
+
+    void Text_TempProps::set(Amara::Text* text) {
+        x = 0;
+        y = 0;
+        alpha = 1;
+
+        color = text->tint;
+        blendMode = text->blendMode;
+    }
 }

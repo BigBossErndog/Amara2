@@ -1,5 +1,7 @@
 namespace Amara {
     struct Glyph {
+        char32_t codepoint;
+        
         float x = 0, y = 0; // Position to render
         float u0 = 0, v0 = 0, u1 = 0, v1 = 0; // Texture coordinates
         int width = 0, height = 0;
@@ -8,6 +10,9 @@ namespace Amara {
         int xadvance;
 
         bool renderable = true;
+
+        bool is_config = false;
+        nlohmann::json config;
     };
 
     class TextLine {
@@ -18,7 +23,7 @@ namespace Amara {
 
         std::u32string text;
         std::vector<Glyph> glyphs;
-
+        
         int x = 0, y = 0; // Position to render
         int width = 0, height = 0;
 
@@ -214,6 +219,7 @@ namespace Amara {
             
             // Store glyph metadata
             Glyph glyph;
+            glyph.codepoint = codepoint;
             glyph.src = Rectangle(
                 (float)currentX,
                 (float)currentY,
@@ -266,6 +272,28 @@ namespace Amara {
             if (wrapMode == WrapModeEnum::ByCharacter) {
                 for (int i = 0; i < str.size(); ++i) {
                     char32_t codepoint = str[i];
+
+                    if (codepoint == U'$' && i < str.size() - 1 && str[i + 1] == U'{') {
+                        Glyph glyph;
+                        glyph.renderable = false;
+                        glyph.is_config = true;
+                        
+                        i += 1;
+                        std::string config_str;
+                        while (i < str.size()) {
+                            config_str += str[i];
+                            if (str[i] == U'}') {
+                                break;
+                            }
+                            i += 1;
+                        }
+                        sol::object sol_config = string_to_lua_object(config_str);
+                        glyph.config = lua_to_json(sol_config);
+
+                        line->glyphs.push_back(glyph);
+                        continue;
+                    }
+
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
                         Glyph glyph;
                         glyph.renderable = false;
@@ -323,6 +351,28 @@ namespace Amara {
 
                 for (int i = 0; i < str.size(); ++i) {
                     char32_t codepoint = str[i];
+
+                    if (codepoint == U'$' && i < str.size() - 1 && str[i + 1] == U'{') {
+                        Glyph glyph;
+                        glyph.renderable = false;
+                        glyph.is_config = true;
+                        
+                        i += 1;
+                        std::string config_str;
+                        while (i < str.size()) {
+                            config_str += str[i];
+                            if (str[i] == U'}') {
+                                break;
+                            }
+                            i += 1;
+                        }
+                        sol::object sol_config = string_to_lua_object(config_str);
+                        glyph.config = lua_to_json(sol_config);
+
+                        word.glyphs.push_back(glyph);
+                        continue;
+                    }
+
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
                         Glyph glyph;
                         glyph.renderable = false;

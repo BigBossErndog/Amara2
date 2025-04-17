@@ -525,7 +525,9 @@ namespace Amara {
             Amara::Node* child;
             for (auto it = children.begin(); it != children.end();) {
                 child = *it;
-                child->destroy();
+                if (child->parent == this && !child->destroyed) {
+                    child->destroy();
+                }
 				++it;
 			}
             children.clear();
@@ -544,7 +546,7 @@ namespace Amara {
                 if (node == this) foundSelf = true;
                 else if (foundSelf) {
                     family[i - 1] = node;
-                    family[i] = node;
+                    family[i] = this;
                     if (!node->destroyed && node->depth > depth) {
                         depth = node->depth;
                     }
@@ -567,7 +569,7 @@ namespace Amara {
                 if (node == this) foundSelf = true;
                 else if (foundSelf) {
                     family[i + 1] = node;
-                    family[i] = node;
+                    family[i] = this;
                     if (!node->destroyed && node->depth < depth) {
                         depth = node->depth;
                     }

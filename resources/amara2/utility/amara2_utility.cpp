@@ -172,6 +172,13 @@ namespace Amara {
         }
         Color& operator= (sol::object config);
 
+        explicit operator std::string() const {
+            return "Color(" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + ", " + std::to_string(a) + ")";
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Color& color) {
+            return os << static_cast<std::string>(color);
+        }
+
         Amara::Color& configure(nlohmann::json config) {
             if (config.is_string()) {
                 if (string_equal(config, "white")) {
