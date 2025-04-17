@@ -21,8 +21,8 @@ namespace Amara {
 
         SDL_Texture* canvasTexture = nullptr;
         
-        int width = 0;
-        int height = 0;
+        int width =  128;
+        int height = 128;
         int rec_width = -1;
         int rec_height = -1;
 
@@ -375,12 +375,39 @@ namespace Amara {
             );
         }
         
-        Rectangle fitRectangle(const Rectangle& rect) {
+        Rectangle stretchTo(const Rectangle& rect) {
+            rotation = 0;
             pos.x = rect.x + rect.w*origin.x;
             pos.y = rect.y + rect.h*origin.y;
             scale.x = rect.w / static_cast<float>(width);
             scale.y = rect.h / static_cast<float>(height);
             return rect;
+        }
+
+        sol::object fitWithin(const Rectangle& rect) {
+            if (rect.w == 0 || rect.h == 0) return get_lua_object();
+
+            rotation = 0;
+
+            float horFactor = rect.w / static_cast<float>(width);
+            float verFactor = rect.h / static_cast<float>(height);
+            
+            if (horFactor < verFactor) {
+                scale.x = horFactor;
+                scale.y = horFactor;
+            }
+            else {
+                scale.x = verFactor;
+                scale.y = verFactor;
+            }
+
+            float scaledWidth  = width  * scale.x;
+            float scaledHeight = height * scale.y;
+
+            pos.x = rect.x + (rect.w - scaledWidth)/2 + scaledWidth*origin.x;
+            pos.y = rect.y + (rect.h - scaledHeight)/2 + scaledHeight*origin.y;
+            
+            return get_lua_object();
         }
 
         Vector2 getCenter() {
@@ -396,7 +423,9 @@ namespace Amara {
                 "h", &TextureContainer::height,
                 "width", &TextureContainer::width,
                 "height", &TextureContainer::height,
-                "rect", sol::property(&TextureContainer::getRectangle, &TextureContainer::fitRectangle),
+                "rect", sol::property(&TextureContainer::getRectangle, &TextureContainer::stretchTo),
+                "stretchTo", &TextureContainer::stretchTo,
+                "fitWithin", &TextureContainer::fitWithin,
                 "center", sol::property(&TextureContainer::getCenter),
                 "cropLeft", &TextureContainer::cropLeft,
                 "cropRight", &TextureContainer::cropRight,

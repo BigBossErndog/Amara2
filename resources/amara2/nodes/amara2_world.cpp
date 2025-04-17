@@ -484,6 +484,21 @@ namespace Amara {
             windowTitle = _t;
         }
 
+        void minimizeWindow() {
+            if (window) SDL_MinimizeWindow(window);
+        }
+
+        void maximizeWindow() {
+            if (!resizable) {
+                debug_log("Warning: Non-resizable windows cannot be maximized.");
+            }
+            else if (window) SDL_MaximizeWindow(window);
+        }
+
+        void restoreWindow() {
+            if (window) SDL_RestoreWindow(window);
+        }
+
         bool create_graphics_window(int flags) {
             if (window != nullptr) return false;
 
@@ -939,6 +954,9 @@ namespace Amara {
                         SDL_SetWindowResizable(world.window, value);
                     }
                 }),
+                "minimizeWindow", &World::minimizeWindow,
+                "maximizeWindow", &World::maximizeWindow,
+                "restoreWindow", &World::restoreWindow,
                 "depth", sol::property(
                     [](const Amara::World& world) {
                         return world.depth;

@@ -42,6 +42,13 @@ return NodeFactory:create("Scene"):configure({
     onCreate = function(self)
         local map = self:createChild("Sprite"):configure({
             texture = "bigThing",
+            fixedToCamera = true
+            -- alpha = 0.5
+        })
+        map:fitWithin(self.camera.view)
+        
+        map = self:createChild("Sprite"):configure({
+            texture = "bigThing",
             -- alpha = 0.5
         })
         self.camera:setBounds(map.rect)
@@ -55,8 +62,7 @@ return NodeFactory:create("Scene"):configure({
             -- canvasLocked = true,
             -- fixedToCamera = true,
             -- origin = Position.Top,
-            tint = Colors.Red,
-            y = map.height*map.origin.y - 128,
+            tint = Colors.Red
         })
         self.props.textCont = textCont
         textCont:wait(2).tween:to({
@@ -66,6 +72,7 @@ return NodeFactory:create("Scene"):configure({
             repeats = -1,
             yoyo = true
         })
+        textCont:fitWithin(self.camera.view)
         -- textCont.rect = map.rect
         
         local a_rate = 2 * math.pi * 0.01
@@ -124,7 +131,10 @@ return NodeFactory:create("Scene"):configure({
         self.props.fpsTxt = self:createChild("Text", {
             text = "FPS",
             font = "font",
-            origin = 0.5
+            origin = 0,
+            fixedToCamera = true,
+            x = self.camera.left + 10,
+            y = self.camera.top + 10
         });
 
         self.camera:startFollow(f, 10)
@@ -132,6 +142,7 @@ return NodeFactory:create("Scene"):configure({
 
     onUpdate = function(self, deltaTime)
         self.props.fpsTxt:setText(math.floor(Game.fps), " FPS")
+        self.props.fpsTxt:bringToFront()
         -- print(math.floor(Game.fps), " FPS")
         -- self.props.textCont.y = self.camera.topBorder
 

@@ -317,12 +317,38 @@ namespace Amara {
                 textheight*scale.y
             );
         }
-        Rectangle fitRectangle(const Rectangle& rect) {
+        Rectangle stretchTo(const Rectangle& rect) {
             pos.x = rect.x + rect.w*origin.x;
             pos.y = rect.y + rect.h*origin.y;
             scale.x = rect.w / static_cast<float>(textwidth);
             scale.y = rect.h / static_cast<float>(textheight);
             return rect;
+        }
+
+        sol::object fitWithin(const Rectangle& rect) {
+            if (rect.w == 0 || rect.h == 0) return get_lua_object();
+
+            rotation = 0;
+
+            float horFactor = rect.w / static_cast<float>(textwidth);
+            float verFactor = rect.h / static_cast<float>(textheight);
+            
+            if (horFactor < verFactor) {
+                scale.x = horFactor;
+                scale.y = horFactor;
+            }
+            else {
+                scale.x = verFactor;
+                scale.y = verFactor;
+            }
+
+            float scaledWidth  = textwidth  * scale.x;
+            float scaledHeight = textheight * scale.y;
+
+            pos.x = rect.x + (rect.w - scaledWidth)/2 + scaledWidth*origin.x;
+            pos.y = rect.y + (rect.h - scaledHeight)/2 + scaledHeight*origin.y;
+            
+            return get_lua_object();
         }
 
         Vector2 getCenter() {
@@ -341,21 +367,36 @@ namespace Amara {
             return true;
         }
 
+        float setWidth(float _w) {
+            scale.x = _w / static_cast<float>(textwidth);
+        }
+        float setHeight(float _h) {
+            scale.y = _h / static_cast<float>(textheight);
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
                 "tint", sol::property([](Amara::Text& t) -> Amara::Color { return t.tint; }, [](Amara::Text& t, sol::object v) { t.tint = v; }),
                 "blendMode", &Text::blendMode,
-                "w", sol::readonly(&Text::textwidth),
-                "h", sol::readonly(&Text::textheight),
-                "rect", sol::property(&Text::getRectangle, &Text::fitRectangle),
+                "w", sol::property(&Text::textwidth, &Text::setWidth),
+                "h", sol::property(&Text::textheight, &Text::setHeight),
+                "width", sol::property(&Text::textwidth, &Text::setWidth),
+                "height", sol::property(&Text::textheight, &Text::setHeight),
+                "rect", sol::property(&Text::getRectangle, &Text::stretchTo),
+                "stretchTo", &Text::stretchTo,
+                "fitWithin", &Text::fitWithin,
                 "center", sol::property(&Text::getCenter),
                 "length", sol::property(&Text::length),
-                "width", sol::readonly(&Text::textwidth),
-                "height", sol::readonly(&Text::textheight),
                 "text", sol::property(
                     [](Amara::Text& t) -> std::string { return t.text; },
-                    [](Amara::Text& t, std::string v) { t.setText(v); }
+                    [](Amara::Text& t, sol::object v) {
+                        if (v.is<std::string>()) t.setText(v.as<std::string>());
+                        else {
+                            t.setText(lua_to_string(v));
+                        }
+                        return t.text;
+                    }
                 ),
                 "setText", sol::resolve<sol::object(sol::variadic_args)>(&Text::setText),
                 "font", sol::property(

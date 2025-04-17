@@ -265,6 +265,12 @@ namespace Amara {
             if (image) return imageHeight*scale.y;
             return 0;
         }
+        float setWidth(float _w) {
+            scale.x = _w / static_cast<float>(getWidth());
+        }
+        float setHeight(float _h) {
+            scale.y = _h / static_cast<float>(getHeight());
+        }
 
         Rectangle getRectangle() {
             return Rectangle(
@@ -275,12 +281,41 @@ namespace Amara {
             );
         }
 
-        Rectangle fitRectangle(const Rectangle& rect) {
+        Rectangle stretchTo(const Rectangle& rect) {
             pos.x = rect.x + rect.w*origin.x;
             pos.y = rect.y + rect.h*origin.y;
             scale.x = rect.w / static_cast<float>(getWidth());
             scale.y = rect.h / static_cast<float>(getHeight());
             return rect;
+        }
+
+        sol::object fitWithin(const Rectangle& rect) {
+            if (rect.w == 0 || rect.h == 0) return get_lua_object();
+
+            rotation = 0;
+
+            float width = getWidth()/scale.x;
+            float height = getHeight()/scale.y;
+
+            float horFactor = rect.w / width;
+            float verFactor = rect.h / height;
+            
+            if (horFactor < verFactor) {
+                scale.x = horFactor;
+                scale.y = horFactor;
+            }
+            else {
+                scale.x = verFactor;
+                scale.y = verFactor;
+            }
+
+            float scaledWidth  = width  * scale.x;
+            float scaledHeight = height * scale.y;
+
+            pos.x = rect.x + (rect.w - scaledWidth)/2 + scaledWidth*origin.x;
+            pos.y = rect.y + (rect.h - scaledHeight)/2 + scaledHeight*origin.y;
+            
+            return get_lua_object();
         }
 
         Vector2 getCenter() {
@@ -298,8 +333,8 @@ namespace Amara {
                 "stopAnimating", &Sprite::stopAnimating,
                 "imageWidth", sol::readonly(&Sprite::imageWidth),
                 "imageHeight", sol::readonly(&Sprite::imageHeight),
-                "framew", sol::readonly(&Sprite::frameWidth),
-                "frameh", sol::readonly(&Sprite::frameHeight),
+                "frameWidth", sol::readonly(&Sprite::frameWidth),
+                "frameHeight", sol::readonly(&Sprite::frameHeight),
                 "cropLeft", &Sprite::cropLeft,
                 "cropRight", &Sprite::cropRight,
                 "cropTop", &Sprite::cropTop,
@@ -309,9 +344,11 @@ namespace Amara {
                 "originY", sol::property([](Amara::Sprite& t) -> float { return t.origin.y; }, [](Amara::Sprite& t, float v) { t.origin.y = v; }),
                 "w", sol::property(&Sprite::getWidth),
                 "h", sol::property(&Sprite::getHeight),
-                "width", sol::property(&Sprite::getWidth),
-                "height", sol::property(&Sprite::getHeight),
-                "rect", sol::property(&Sprite::getRectangle, &Sprite::fitRectangle),
+                "width", sol::property(&Sprite::getWidth, &Sprite::setWidth),
+                "height", sol::property(&Sprite::getHeight, &Sprite::setHeight),
+                "rect", sol::property(&Sprite::getRectangle, &Sprite::stretchTo),
+                "stretchTo", &Sprite::stretchTo,
+                "fitWithin", &Sprite::fitWithin,
                 "center", sol::property(&Sprite::getCenter)
             );
         }
