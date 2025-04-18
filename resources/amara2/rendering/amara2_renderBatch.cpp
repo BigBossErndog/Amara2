@@ -12,7 +12,7 @@ namespace Amara {
         #endif
 
         Amara::Rectangle viewport;
-        bool insideFrameBuffer = false;
+        bool insideTextureContainer = false;
 
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
 
@@ -85,14 +85,14 @@ namespace Amara {
             float _alpha,
             const Color& _tint,
             const Amara::Rectangle& _viewport,
-            bool _insideFrameBuffer,
+            bool _insideTextureContainer,
             Amara::BlendMode _blendMode
         ) {
             if (vertices.empty() ||
                 shaderProgram != _shaderProgram ||
                 glTextureID != _glTextureID ||
                 viewport != _viewport ||
-                insideFrameBuffer != _insideFrameBuffer ||
+                insideTextureContainer != _insideTextureContainer ||
                 blendMode != _blendMode
             ) {
                 flush();
@@ -111,7 +111,7 @@ namespace Amara {
                 }
                 glTextureID = _glTextureID;
                 viewport = _viewport;
-                insideFrameBuffer = _insideFrameBuffer;
+                insideTextureContainer = _insideTextureContainer;
                 blendMode = _blendMode;
             }
 
@@ -151,7 +151,7 @@ namespace Amara {
             if (glTextureID != 0 && shaderProgram != nullptr && Props::graphics == Amara::GraphicsEnum::OpenGL && Props::glContext != NULL) {
                 glDisable(GL_DEPTH_TEST);
 
-                if (!insideFrameBuffer && Props::current_window != nullptr) {
+                if (!insideTextureContainer && Props::current_window != nullptr) {
                      int window_h = static_cast<int>(Props::window_dim.h);
                      glViewport(
                          static_cast<GLint>(viewport.x),

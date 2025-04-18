@@ -34,7 +34,7 @@ namespace Amara {
 
         Vector2 window_zoom = { 1, 1 };
 
-        bool insideFrameBuffer = false;
+        bool insideTextureContainer = false;
 
         float volume = 1;
 

@@ -225,7 +225,7 @@ namespace Amara {
         }
 
         virtual void drawObjects(const Rectangle& v) override {
-            if (fixedToCamera && !Props::passOn.insideFrameBuffer) {
+            if (fixedToCamera && !Props::passOn.insideTextureContainer) {
                 Props::passOn.reset();
             }
             passOn = Props::passOn;
@@ -334,7 +334,7 @@ namespace Amara {
                         destRect.y + dorigin.y
                     ),
                     passOn.rotation + rotation
-                ), passOn.insideFrameBuffer);
+                ), passOn.insideTextureContainer);
 
                 vertices = {
                     destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
@@ -347,7 +347,7 @@ namespace Amara {
                     Props::currentShaderProgram,
                     glCanvasID,
                     vertices, passOn.alpha * alpha, tint,
-                    v, passOn.insideFrameBuffer,
+                    v, passOn.insideTextureContainer,
                     blendMode
                 );
             }
@@ -363,7 +363,7 @@ namespace Amara {
 
             PassOnProps rec_props = Props::passOn;
             PassOnProps new_props;
-            new_props.insideFrameBuffer = true;
+            new_props.insideTextureContainer = true;
 
             Props::passOn = new_props;
 

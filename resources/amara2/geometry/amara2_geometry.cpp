@@ -64,8 +64,8 @@ namespace Amara {
     }
 
     #ifdef AMARA_OPENGL
-    Quad glTranslateQuad(const Rectangle& v, const Quad& q, bool insideFrameBuffer) {
-        if (!insideFrameBuffer) {
+    Quad glTranslateQuad(const Rectangle& v, const Quad& q, bool insideTextureContainer) {
+        if (!insideTextureContainer) {
             return {
                 { -1.0f + (q.p1.x/v.w)*2, -1.0f + (1.0f - q.p1.y/v.h)*2 },
                 { -1.0f + (q.p2.x/v.w)*2, -1.0f + (1.0f - q.p2.y/v.h)*2 },
