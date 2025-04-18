@@ -29,7 +29,7 @@ namespace Amara {
 
             if (onPrepare.valid()) {
                 try {
-                    sol::protected_function_result result = onPrepare(actor->get_lua_object());
+                    sol::protected_function_result result = onPrepare(actor->get_lua_object(), get_lua_object());
                     if (!result.valid()) {
                         sol::error err = result;
                         throw std::runtime_error("Lua Error: " + std::string(err.what()));  
@@ -92,10 +92,10 @@ namespace Amara {
             completed = true;
             if (onComplete.valid()) {
                 try {
-                    sol::protected_function_result result = onComplete(actor->get_lua_object());
+                    sol::protected_function_result result = onComplete(actor->get_lua_object(), get_lua_object());
                     if (!result.valid()) {
                         sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());

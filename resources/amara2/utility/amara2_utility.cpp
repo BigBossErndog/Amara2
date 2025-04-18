@@ -37,7 +37,7 @@ namespace Amara {
         return false;
     }
 
-    nlohmann::json json_extract(nlohmann::json data, std::string key) {
+    nlohmann::json json_extract(nlohmann::json& data, std::string key) {
         if (json_has(data, key)) {
             nlohmann::json value = data[key];
             data.erase(key);

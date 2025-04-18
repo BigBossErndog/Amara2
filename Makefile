@@ -76,11 +76,13 @@ cpDLLsAlt:
 	xcopy /s /e /i /y "dlls\win64\*.*" "$(BUILD_PATH)\"
 	if not exist "$(BUILD_PATH)\saves" md "$(BUILD_PATH)\saves"
 
+# Using MinGW clang++
 win: $(ENTRY_FILES)
 	rm -rf ./build/*
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLs
 
+# Using MinGW clang++
 win_alt: $(ENTRY_FILES)
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(THEORA_WIN) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLsAlt

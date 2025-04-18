@@ -147,7 +147,7 @@ namespace Amara {
 
                 if (onUpdate.valid()) {
                     try {
-                        sol::protected_function_result result = onUpdate(actor);
+                        sol::protected_function_result result = onUpdate(actor, deltaTime, get_lua_object());
                         if (!result.valid()) {
                             sol::error err = result;
                             throw std::runtime_error("Lua Error: " + std::string(err.what()));  

@@ -7,6 +7,28 @@ namespace Amara {
         TessControl = GL_TESS_CONTROL_SHADER,
         TessEvaluation = GL_TESS_EVALUATION_SHADER
     };
+
+    ShaderTypeEnum shaderTypeFromString(std::string key) {
+        if (string_equal(key, "vertex")) return ShaderTypeEnum::Vertex;
+        if (string_equal(key, "fragment")) return ShaderTypeEnum::Fragment;
+        if (string_equal(key, "geometry")) return ShaderTypeEnum::Geometry;
+        if (string_equal(key, "compute")) return ShaderTypeEnum::Compute;
+        if (string_equal(key, "tessControl")) return ShaderTypeEnum::TessControl;
+        if (string_equal(key, "tessEvaluation")) return ShaderTypeEnum::TessEvaluation;
+        return ShaderTypeEnum::Vertex;
+    }
+
+    std::string shaderTypeToString(ShaderTypeEnum type) {
+        switch (type) {
+            case ShaderTypeEnum::Vertex: return "vertex";
+            case ShaderTypeEnum::Fragment: return "fragment";
+            case ShaderTypeEnum::Geometry: return "geometry";
+            case ShaderTypeEnum::Compute: return "compute";
+            case ShaderTypeEnum::TessControl: return "tessControl";
+            case ShaderTypeEnum::TessEvaluation: return "tessEvaluation";
+            default: return "undefined";
+        }
+    }
     
     class ShaderManager {
     public:
@@ -83,6 +105,38 @@ namespace Amara {
             }
             unsigned int shaderProgramID = glCreateProgram();
 
+            bool has_compute_shader = false;
+
+            if (json_has(config, "compute")) {
+                bool temp = false;
+                std::string shader_key = json_extract(config, "compute");
+                unsigned int shaderID = 0;
+                if (hasShader(shader_key)) {
+                    shaderID = getShader(shader_key);
+                }
+                else if (!shader_key.empty()) {
+                    std::string filePath = Props::system->getAssetPath(shader_key);
+                    if (Props::system->fileExists(filePath)) {
+                        std::string source = Props::system->readFile(filePath);
+                        shaderID = compileGLShader("", source, ShaderTypeEnum::Compute);
+                        temp = true;
+                    }
+                    else {
+                        debug_log("Error: Compute shader not found: ", shader_key);
+                        return nullptr;
+                    }
+                }
+                if (shaderID != 0) {
+                    glAttachShader(shaderProgramID, shaderID);
+                    has_compute_shader = true;
+                }
+                else {
+                    debug_log("Error: Unable to compile compute shader: ", shader_key);
+                    return nullptr;
+                }
+                if (temp) glDeleteShader(shaderID);
+            }
+
             if (json_has(config, "vertex")) {
                 bool temp = false;
                 std::string shader_key = json_extract(config, "vertex");
@@ -109,6 +163,10 @@ namespace Amara {
                 }
                 if (temp) glDeleteShader(shaderID);
             }
+            else if (!has_compute_shader) {
+                debug_log("Error: No vertex shader specified.");
+                return nullptr;
+            }
 
             if (json_has(config, "fragment")) {
                 bool temp = false;
@@ -132,6 +190,38 @@ namespace Amara {
                 if (shaderID != 0) glAttachShader(shaderProgramID, shaderID);
                 else {
                     debug_log("Error: Unable to compile fragment shader: ", shader_key);
+                    return nullptr;
+                }
+                if (temp) glDeleteShader(shaderID);
+            }
+            else if (!has_compute_shader) {
+                debug_log("Error: No fragment shader specified.");
+                return nullptr;
+            }
+            
+            for (auto it = config.begin(); it != config.end(); ++it) {
+                bool temp = false;
+                ShaderTypeEnum type = shaderTypeFromString(it.key());
+                std::string shader_key = it.value();
+                unsigned int shaderID = 0;
+                if (hasShader(shader_key)) {
+                    std::string filePath = Props::system->getAssetPath(shader_key);
+                    if (Props::system->fileExists(filePath)) {
+                        std::string source = Props::system->readFile(filePath);
+                        shaderID = compileGLShader("", source, type);
+                    }
+                    else {
+                        debug_log("Error: Shader not found: ", shader_key);
+                        return nullptr;
+                    }
+                }
+                else if (!shader_key.empty()) {
+                    debug_log("Error: Shader not found: ", shader_key);
+                    return nullptr;
+                }
+                if (shaderID != 0) glAttachShader(shaderProgramID, shaderID);
+                else {
+                    debug_log("Error: Unable to compile ", it.key() ," shader: ", shader_key);
                     return nullptr;
                 }
                 if (temp) glDeleteShader(shaderID);
@@ -163,14 +253,18 @@ namespace Amara {
                 debug_log("Error: Cannot create shader program without an OpenGL context.");
                 return nullptr;
             }
+
+            ShaderProgram* shaderProgram = createShaderProgram(config);
+            if (shaderProgram == nullptr) {
+                debug_log("Error: Failed to create shader program \"", key, "\".");
+                return nullptr;
+            }
             if (hasShaderProgram(key)) {
                 debug_log("Note: Shader program with key \"", key, "\" already exists. Overwriting.");
                 ShaderProgram* existing = glPrograms[key];
                 existing->destroy();
                 delete existing;
             }
-
-            ShaderProgram* shaderProgram = createShaderProgram(config);
             shaderProgram->key = key;
 
             glPrograms[key] = shaderProgram;
