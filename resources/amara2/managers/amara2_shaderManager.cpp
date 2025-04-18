@@ -46,6 +46,11 @@ namespace Amara {
         }
 
         unsigned int compileGLShader(std::string key, std::string source, ShaderTypeEnum type) {
+            if (Props::graphics != GraphicsEnum::OpenGL) {
+                debug_log("Error: Cannot compile shader without an OpenGL context.");
+                Props::breakWorld();                
+                return 0;
+            }
             unsigned int shader = glCreateShader((unsigned int)type);
             if (shader == 0) {
                 debug_log("Error: Failed to create shader of type ", (int)type);
@@ -72,6 +77,11 @@ namespace Amara {
         }
 
         ShaderProgram* createShaderProgram(nlohmann::json config) {
+            if (Props::graphics != GraphicsEnum::OpenGL) {
+                debug_log("Error: Cannot create shader program without an OpenGL context.");
+                Props::breakWorld();                
+                return nullptr;
+            }
             unsigned int shaderProgramID = glCreateProgram();
 
             if (json_has(config, "vertex")) {
@@ -150,7 +160,13 @@ namespace Amara {
         }
 
         ShaderProgram* createShaderProgram(std::string key, nlohmann::json config) {
+            if (Props::graphics != GraphicsEnum::OpenGL) {
+                debug_log("Error: Cannot create shader program without an OpenGL context.");
+                Props::breakWorld();
+                return nullptr;
+            }
             if (hasShaderProgram(key)) {
+                debug_log("Note: Shader program with key \"", key, "\" already exists. Overwriting.");
                 ShaderProgram* existing = glPrograms[key];
                 existing->destroy();
                 delete existing;

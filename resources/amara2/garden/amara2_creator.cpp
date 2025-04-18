@@ -259,11 +259,11 @@ namespace Amara {
             GameManager::bindLua(lua);
             ControlManager::bindLua(lua);
             SystemManager::bindLua(lua);
+            ScriptFactory::bindLua(lua);
+            ShaderManager::bindLua(lua);
+            AnimationFactory::bindLua(lua);
             AssetManager::bindLua(lua);
             NodeFactory::bindLua(lua);
-            ScriptFactory::bindLua(lua);
-            AnimationFactory::bindLua(lua);
-            ShaderManager::bindLua(lua);
             AudioMaster::bindLua(lua);
 
             Demiurge::bindLua(lua);

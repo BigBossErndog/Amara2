@@ -13,8 +13,8 @@ namespace Amara {
 
         Vector2 origin = { 0.5, 0.5 };
         
-        int imageWidth = 0;
-        int imageHeight = 0;
+        int textureWidth = 0;
+        int textureHeight = 0;
         
         int frameWidth = 0;
         int frameHeight = 0;
@@ -56,8 +56,8 @@ namespace Amara {
                 debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
                 return false;
             }
-            imageWidth = image->width;
-            imageHeight = image->height;
+            textureWidth = image->width;
+            textureHeight = image->height;
 
             spritesheet = image->as<SpritesheetAsset*>();
             if (spritesheet) {
@@ -141,8 +141,8 @@ namespace Amara {
             Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
             Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
 
-            float imgw = (spritesheet ? frameWidth : imageWidth);
-            float imgh = (spritesheet ? frameHeight : imageHeight);
+            float imgw = (spritesheet ? frameWidth : textureWidth);
+            float imgh = (spritesheet ? frameHeight : textureHeight);
 
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(
@@ -161,8 +161,8 @@ namespace Amara {
 
             if (spritesheet) {
                 int fixedFrame = frame % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
-                srcRect.x = static_cast<float>((fixedFrame % (imageWidth / frameWidth)) * frameWidth + cropLeft);
-                srcRect.y = static_cast<float>(floor(fixedFrame / (imageWidth / frameWidth)) * frameHeight + cropTop);
+                srcRect.x = static_cast<float>((fixedFrame % (textureWidth / frameWidth)) * frameWidth + cropLeft);
+                srcRect.y = static_cast<float>(floor(fixedFrame / (textureWidth / frameWidth)) * frameHeight + cropTop);
                 srcRect.w = static_cast<float>(frameWidth - cropLeft - cropRight);
                 srcRect.h = static_cast<float>(frameHeight - cropTop - cropBottom);
             }
@@ -170,8 +170,8 @@ namespace Amara {
                 srcRect = {
                     static_cast<float>(cropLeft),
                     static_cast<float>(cropTop),
-                    static_cast<float>(imageWidth - cropLeft - cropRight),
-                    static_cast<float>(imageHeight - cropTop - cropBottom)
+                    static_cast<float>(textureWidth - cropLeft - cropRight),
+                    static_cast<float>(textureHeight - cropTop - cropBottom)
                 };
             }
 
@@ -223,10 +223,10 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             else if (image->glTextureID != 0 && Props::glContext != NULL) {
                 Quad srcQuad = Quad(
-                    { srcRect.x/imageWidth, srcRect.y/imageHeight },
-                    { (srcRect.x+srcRect.w)/imageWidth, srcRect.y/imageHeight },
-                    { (srcRect.x+srcRect.w)/imageWidth, (srcRect.y+srcRect.h)/imageHeight },
-                    { srcRect.x/imageWidth, (srcRect.y+srcRect.h)/imageHeight }
+                    { srcRect.x/textureWidth, srcRect.y/textureHeight },
+                    { (srcRect.x+srcRect.w)/textureWidth, srcRect.y/textureHeight },
+                    { (srcRect.x+srcRect.w)/textureWidth, (srcRect.y+srcRect.h)/textureHeight },
+                    { srcRect.x/textureWidth, (srcRect.y+srcRect.h)/textureHeight }
                 );
                 Quad destQuad = glTranslateQuad(v, rotateQuad(
                     Quad(destRect),
@@ -257,12 +257,12 @@ namespace Amara {
 
         float getWidth() {
             if (spritesheet) return frameWidth*scale.x;
-            if (image) return imageWidth*scale.x;
+            if (image) return textureWidth*scale.x;
             return 0;
         }
         float getHeight() {
             if (spritesheet) return frameHeight*scale.y;
-            if (image) return imageHeight*scale.y;
+            if (image) return textureHeight*scale.y;
             return 0;
         }
         float setWidth(float _w) {
@@ -326,13 +326,14 @@ namespace Amara {
             lua.new_usertype<Sprite>("Sprite",
                 sol::base_classes, sol::bases<Node>(),
                 "setTexture", &Sprite::setTexture,
+                "texture", sol::property([](Amara::Sprite& t) -> std::string { return t.image ? t.image->key : ""; }, [](Amara::Sprite& t, std::string v) { t.setTexture(v); }),
                 "tint", sol::property([](Amara::Sprite& t) -> Amara::Color { return t.tint; }, [](Amara::Sprite& t, sol::object v) { t.tint = v; }),
                 "blendMode", &Sprite::blendMode,
                 "frame", &Sprite::frame,
                 "animate",  sol::resolve<sol::object(sol::object)>(&Sprite::animate),
                 "stopAnimating", &Sprite::stopAnimating,
-                "imageWidth", sol::readonly(&Sprite::imageWidth),
-                "imageHeight", sol::readonly(&Sprite::imageHeight),
+                "textureWidth", sol::readonly(&Sprite::textureWidth),
+                "textureHeight", sol::readonly(&Sprite::textureHeight),
                 "frameWidth", sol::readonly(&Sprite::frameWidth),
                 "frameHeight", sol::readonly(&Sprite::frameHeight),
                 "cropLeft", &Sprite::cropLeft,

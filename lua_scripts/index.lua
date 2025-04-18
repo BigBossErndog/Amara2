@@ -50,8 +50,8 @@
             height = 720,
             virtualWidth = 640,
             virtualHeight = 360,
-            -- graphics = Graphics.OpenGL,
-            graphics = Graphics.Render2D,
+            graphics = Graphics.OpenGL,
+            -- graphics = Graphics.Render2D,
             resizable = true,
             transparent = true,
             vsync = true
@@ -59,10 +59,16 @@
             -- clickThrough = true,
         },
         -- entryScene = "scenes/TestScene",
-        -- onPreload = function(self)
-        --     self.load:image("goldenFlower", "goldenFlower.png")
-        -- end,
+        onPreload = function(self)
+            -- self.load:image("goldenFlower", "goldenFlower.png")
+            
+        end,
         onCreate = function(self)
+            -- self.shaders:createShaderProgram("outlineShader", {
+            --     vertex = "defaultVert",
+            --     fragment = "shaders/outline.frag"
+            -- })
+            -- self:setShaderProgram("outlineShader")
             self:createChild("scenes/TestScene")
             -- self.x = self.display.x
             -- self.y = self.display.y

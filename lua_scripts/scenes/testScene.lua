@@ -4,7 +4,7 @@ return NodeFactory:create("Scene"):configure({
         self.load:image("bigThing", "CrossroadCommune-EXT.png")
         self.load:spritesheet("freaker", "freaker.png", 32, 64)
         self.load:font("font", "KLEINTEN.ttf", 10)
-        
+
         self.animations:add({
             key = "runningDown",
             texture = "freaker",

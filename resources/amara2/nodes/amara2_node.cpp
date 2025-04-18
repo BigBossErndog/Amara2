@@ -742,7 +742,8 @@ namespace Amara {
                 "sendToBack", &Node::sendToBack,
                 "switchParent", &Node::switchParent,
                 #ifdef AMARA_OPENGL
-                "shaderProgram", sol::property([](Node& e, std::string val) { e.setShaderProgram(val); }, [](Node& e) { if (e.shaderProgram) { return e.shaderProgram->key; } else { return std::string(""); } }),
+                "shaderProgram", sol::readonly(&Node::shaderProgram),
+                "setShaderProgram", &Node::setShaderProgram,
                 #endif
                 "stopActing", &Node::stopActing,
                 "string", [](Amara::Node* e) {
