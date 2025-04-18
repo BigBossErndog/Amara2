@@ -8,8 +8,8 @@ BUILD_EXECUTABLE_LINUX = $(BUILD_PATH)/$(BUILD_NAME).game
 
 COMPILER = clang++
 
-SDL_INCLUDE_PATHS_WIN64 = -Iresources\libs\SDL3-3.2.8\x86_64-w64-mingw32\include
-SDL_LIBRARY_PATHS_WIN64 = -Lresources\libs\SDL3-3.2.8\x86_64-w64-mingw32\lib
+SDL_INCLUDE_PATHS_WIN64 = -Iresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/include
+SDL_LIBRARY_PATHS_WIN64 = -Lresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/lib
 SDL_PATHS_WIN64 = $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) 
 SDL_LINKER_FLAGS_WIN64 = -lSDL3
 
@@ -28,6 +28,7 @@ AMARA_PATH = -I ./resources/amara2
 
 # INCLUDE_DEPTH = 1000
 # EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)
+EXTRA_OPTIONS = '-DAMARA_TEST_PATH="../"'
 
 COMPILER_FLAGS = -w -Wall -m64 -std=c++17
 # COMPILER_FLAGS = -w -Wl,-subsystem,windows

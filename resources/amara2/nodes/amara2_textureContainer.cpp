@@ -146,6 +146,17 @@ namespace Amara {
             update_canvas = true;
         }
 
+        Rectangle getCanvasSize() {
+            return Rectangle(0, 0, static_cast<float>(width), static_cast<float>(height));
+        }
+
+        void setCanvasSize(const Rectangle& rect) {
+            width = rect.w;
+            height = rect.h;
+            pos.x = rect.x + width*origin.x;
+            pos.y = rect.y + height*origin.y;
+        }
+
         void update_size() {
             left = -width/2.0;
             right = width/2.0;
@@ -436,6 +447,7 @@ namespace Amara {
                 "h", &TextureContainer::height,
                 "width", &TextureContainer::width,
                 "height", &TextureContainer::height,
+                "canvas", sol::property(&TextureContainer::getCanvasSize, &TextureContainer::setCanvasSize),
                 "rect", sol::property(&TextureContainer::getRectangle, &TextureContainer::stretchTo),
                 "stretchTo", &TextureContainer::stretchTo,
                 "fitWithin", &TextureContainer::fitWithin,

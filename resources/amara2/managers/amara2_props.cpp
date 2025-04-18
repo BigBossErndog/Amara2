@@ -137,11 +137,10 @@ namespace Amara {
             lua_state = &_lua;
         }
     };
-
-    #ifdef AMARA_FINAL_BUILD
-        std::string Props::context_path = "./";
+    #ifdef AMARA_TEST_PATH
+    std::string Props::context_path = AMARA_TEST_PATH;
     #else
-        std::string Props::context_path = "../";
+    std::string Props::context_path = "./";
     #endif
     std::string Props::lua_script_path = "./lua_scripts";
     std::string Props::assets_path = "./assets";

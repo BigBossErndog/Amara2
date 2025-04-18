@@ -180,8 +180,33 @@ namespace Amara {
                 } else {
                     debug_log("Error: Path does not exist or is not a directory \"", dirPath.string(), "\".");
                 }
-            } catch (const std::filesystem::filesystem_error& e) {
+            } 
+            catch (const std::filesystem::filesystem_error& e) {
                 debug_log("Error: Failed to delete directory \"", dirPath.string(), "\".");
+            }
+            return false;
+        }
+
+        bool clearDirectory(std::string path) {
+            std::filesystem::path dirPath = getRelativePath(path);
+            try {
+                if (std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath)) {
+                    std::vector<std::string> contents = getDirectoryContents(dirPath.string());
+                    for (const auto& file : contents) {
+                        if (std::filesystem::is_regular_file(file)) {
+                            deleteFile(file);
+                        }
+                        else if (std::filesystem::is_directory(file)) {
+                            clearDirectory(file);
+                        }
+                    }
+                    return true;
+                } else {
+                    debug_log("Error: Cannot clear directory, target path is not a directory \"", path, "\".");
+                }
+            } 
+            catch (const std::filesystem::filesystem_error& e) {
+                debug_log("Error: Failed to clear directory \"", path, "\".");
             }
             return false;
         }
@@ -197,7 +222,8 @@ namespace Amara {
             return basePath;
         }
         std::string setBasePath(std::string path) {
-            basePath = path;
+            resetBasePath();
+            basePath = getRelativePath(path);
             return getBasePath();
         }
         std::string resetBasePath() {

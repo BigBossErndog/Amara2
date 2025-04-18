@@ -78,8 +78,7 @@ namespace Amara {
 
         ShaderProgram* createShaderProgram(nlohmann::json config) {
             if (Props::graphics != GraphicsEnum::OpenGL) {
-                debug_log("Error: Cannot create shader program without an OpenGL context.");
-                Props::breakWorld();                
+                debug_log("Error: Cannot create shader program without an OpenGL context.");               
                 return nullptr;
             }
             unsigned int shaderProgramID = glCreateProgram();
@@ -162,7 +161,6 @@ namespace Amara {
         ShaderProgram* createShaderProgram(std::string key, nlohmann::json config) {
             if (Props::graphics != GraphicsEnum::OpenGL) {
                 debug_log("Error: Cannot create shader program without an OpenGL context.");
-                Props::breakWorld();
                 return nullptr;
             }
             if (hasShaderProgram(key)) {

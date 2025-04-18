@@ -147,7 +147,7 @@ return NodeFactory:create("Scene"):configure({
         root:setShaderProgram("outlineShader")
 
         self.props.prog = root:createChild("Text", {
-            text = "Hello ${green_shake}world${reset}, I am ${yellow_wave}Amara${reset}!",
+            text = "Hello ${green_shake}world${end}, I am ${yellow_wave}Amara${end}!",
             font = "font",
             origin = 0,
             -- fixedToCamera = true,

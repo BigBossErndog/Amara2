@@ -10,6 +10,8 @@ namespace Amara {
         int frameWidth = 0;
         int frameHeight = 0;
 
+        sol::object config;
+
         int fontSize = 0;
     };
     
@@ -77,6 +79,20 @@ namespace Amara {
                     if (success) Props::assets->add(task.key, tilemapAsset);
                     break;
                 }
+                case AssetEnum::ShaderProgram: {
+                    #ifdef AMARA_OPENGL
+                    if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+                        ShaderProgram* shaderProgram = Props::shaders->createShaderProgram(task.key, task.config);
+                        if (shaderProgram) success = true;
+                    }
+                    else {
+                        debug_log("Error: Could not load shader program. Graphics.OpenGL is not set.");
+                    }
+                    #else
+                    debug_log("Error: Could not load shader program. OpenGL is not enabled this build.");
+                    #endif
+                    break;
+                }
                 default:
                     break;
             }
@@ -124,6 +140,16 @@ namespace Amara {
             task.key = key;
             task.path = path;
             task.type = AssetEnum::TiledTilemap;
+
+            queueTask(task);
+            return get_lua_object();
+        }
+
+        sol::object shaderProgram(std::string key, sol::object config) {
+            LoadTask task;
+            task.key = key;
+            task.type = AssetEnum::ShaderProgram;
+            task.config = config;
 
             queueTask(task);
             return get_lua_object();
@@ -184,6 +210,7 @@ namespace Amara {
                 "spritesheet", &Loader::spritesheet,
                 "font", &Loader::font,
                 "tiledTilemap", &Loader::tiledTilemap,
+                "shaderProgram", &Loader::shaderProgram,
                 "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
                 "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; })
             );

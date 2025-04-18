@@ -60,14 +60,14 @@
         },
         -- entryScene = "scenes/TestScene",
         onPreload = function(self)
+            self.load:shaderProgram("outlineShader", {
+                vertex = "defaultVert",
+                fragment = "shaders/outline.frag"
+            })
             -- self.load:image("goldenFlower", "goldenFlower.png")
             
         end,
         onCreate = function(self)
-            self.shaders:createShaderProgram("outlineShader", {
-                vertex = "defaultVert",
-                fragment = "shaders/outline.frag"
-            })
             -- self:setShaderProgram("outlineShader")
             self:createChild("scenes/TestScene")
             -- self.x = self.display.x

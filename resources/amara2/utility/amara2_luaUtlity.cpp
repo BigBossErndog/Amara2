@@ -124,9 +124,6 @@ namespace Amara {
             return obj;
         } 
         else {
-            sol::error err = result;
-            debug_log("Error: Failed to parse or execute Lua string: ", luaString);
-            debug_log(err.what());
             return sol::nil;
         }
     }

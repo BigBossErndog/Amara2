@@ -324,6 +324,11 @@ namespace Amara {
                 configure_window(config["window"]);
             }
 
+            if (json_has(config, "basePath")) {
+                base_dir_path = config["basePath"];
+                Props::system->setBasePath(base_dir_path);
+            }
+
             if (json_has(config, "entryScene")) {
                 entryScenes.push_back(config["entryScene"]);
             }
@@ -665,6 +670,8 @@ namespace Amara {
                                 shaderProgram->applyShader();
                             }
                         }
+                        #else
+                        debug_log("Error: OpenGL is not enabled in this build. Please rebuild project with OpenGL enabled.");
                         #endif
                         break;
                     case Amara::GraphicsEnum::None:
