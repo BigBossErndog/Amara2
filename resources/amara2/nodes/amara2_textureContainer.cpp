@@ -225,7 +225,7 @@ namespace Amara {
         }
 
         virtual void drawObjects(const Rectangle& v) override {
-            if (fixedToCamera) {
+            if (fixedToCamera && !Props::passOn.insideFrameBuffer) {
                 Props::passOn.reset();
             }
             passOn = Props::passOn;

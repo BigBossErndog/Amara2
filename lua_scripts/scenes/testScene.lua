@@ -150,7 +150,7 @@ return NodeFactory:create("Scene"):configure({
             text = "Hello ${green_shake}world${end}, I am ${yellow_wave}Amara${end}!",
             font = "font",
             origin = 0,
-            -- fixedToCamera = true,
+            fixedToCamera = true,
             x = self.camera.center.x,
             y = self.camera.center.y - 48
         });

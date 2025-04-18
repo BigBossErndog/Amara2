@@ -292,7 +292,7 @@ namespace Amara {
         virtual void update(double deltaTime) {}
         virtual void update_properties() {}
         virtual void pass_on_properties() {
-            if (fixedToCamera) {
+            if (fixedToCamera && !Props::passOn.insideFrameBuffer) {
                 Props::passOn.reset();
             }
             passOn = Props::passOn;
@@ -388,7 +388,7 @@ namespace Amara {
             drawObjects(v);
         }
         virtual void drawObjects(const Rectangle& v) {
-            if (fixedToCamera) {
+            if (fixedToCamera && !Props::passOn.insideFrameBuffer) {
                 Props::passOn.reset();
             }
             passOn = Props::passOn;
