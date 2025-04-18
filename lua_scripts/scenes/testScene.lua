@@ -139,14 +139,22 @@ return NodeFactory:create("Scene"):configure({
             color = Colors.Red
         });
 
-        self.props.prog = self:createChild("Text", {
+        local root = self:createChild("TextureContainer", {
+            width = 1280,
+            height = 1280,
+            fixedToCamera = true
+        })
+        root:setShaderProgram("outlineShader")
+
+        self.props.prog = root:createChild("Text", {
             text = "Hello ${green_shake}world${reset}, I am ${yellow_wave}Amara${reset}!",
             font = "font",
-            origin = 0.5,
-            fixedToCamera = true,
+            origin = 0,
+            -- fixedToCamera = true,
             x = self.camera.center.x,
             y = self.camera.center.y - 48
         });
+        self.props.prog.x = -math.round(self.props.prog.width/2)
         self.props.prog.progress = 0;
         self.props.prog:wait(2):whenDone(function(self)
             self:autoProgress({

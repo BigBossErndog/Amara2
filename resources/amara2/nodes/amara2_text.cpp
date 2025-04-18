@@ -457,7 +457,7 @@ namespace Amara {
             }
             return false;
         }
-
+        
         sol::object autoProgress(double speed); // speed = characters per second
         sol::object autoProgress(sol::table sol_config);
         sol::object skipProgress();

@@ -47,7 +47,7 @@ namespace Amara {
             set_base_node_id("TextureContainer");
         }
 
-        virtual nlohmann::json toJSON() {
+        virtual nlohmann::json toJSON() override {
             nlohmann::json data = Amara::Node::toJSON();
 
             data["tint"] = tint.toJSON();
@@ -55,6 +55,14 @@ namespace Amara {
 
             data["width"] = width;
             data["height"] = height;
+
+            data["originX"] = origin.x;
+            data["originY"] = origin.y;
+
+            data["cropLeft"] = cropLeft;
+            data["cropRight"] = cropRight;
+            data["cropTop"] = cropTop;
+            data["cropBottom"] = cropBottom;
             
             data["canvasLocked"] = canvasLocked;
 
@@ -74,6 +82,11 @@ namespace Amara {
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
             if (json_has(config, "origin")) origin = config["origin"];
+
+            if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
+            if (json_has(config, "cropRight")) cropRight = config["cropRight"];
+            if (json_has(config, "cropTop")) cropTop = config["cropTop"];
+            if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
 
             update_size();
             

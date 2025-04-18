@@ -64,10 +64,10 @@
             
         end,
         onCreate = function(self)
-            -- self.shaders:createShaderProgram("outlineShader", {
-            --     vertex = "defaultVert",
-            --     fragment = "shaders/outline.frag"
-            -- })
+            self.shaders:createShaderProgram("outlineShader", {
+                vertex = "defaultVert",
+                fragment = "shaders/outline.frag"
+            })
             -- self:setShaderProgram("outlineShader")
             self:createChild("scenes/TestScene")
             -- self.x = self.display.x
