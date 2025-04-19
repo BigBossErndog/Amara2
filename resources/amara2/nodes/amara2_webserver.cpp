@@ -160,5 +160,12 @@ namespace Amara {
                 }
             }
         }
+
+        static void bindLua(sol::state& lua) {
+            lua.new_usertype<WebServer>("WebServer",
+                "start", &WebServer::start,
+                "stop", &WebServer::stop
+            );
+        }
     };
 }

@@ -225,6 +225,9 @@ namespace Amara {
                         else if (string_equal("onDestroy", key)) luaDestroy = func;
                         luaConfigure(key, val);
                     }
+                    else if (val.is<sol::userdata>()) {
+                        luaConfigure(it.first.as<std::string>(), val);
+                    }
                 }
             }
 

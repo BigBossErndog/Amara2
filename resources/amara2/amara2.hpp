@@ -145,6 +145,7 @@
     #include "nodes/amara2_node.cpp"
 
     #include "nodes/amara2_group.cpp"
+    #include "nodes/amara2_copyNode.cpp"
 
     #ifdef AMARA_WEB_SERVER
         #include "nodes/amara2_webServer.cpp"

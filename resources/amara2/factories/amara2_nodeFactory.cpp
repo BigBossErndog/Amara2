@@ -166,6 +166,7 @@ namespace Amara {
         void prepareEntities() {
             registerNode<Amara::Node>("Node");
             registerNode<Amara::Group>("Group");
+            registerNode<Amara::CopyNode>("CopyNode");
 
             registerNode<Amara::Text>("Text");
 
@@ -188,6 +189,10 @@ namespace Amara {
 
             registerNode<Amara::Audio>("Audio");
             registerNode<Amara::AudioGroup>("AudioGroup");
+
+            #ifdef AMARA_WEB_SERVER
+            registerNode<Amara::WebServer>("WebServer");
+            #endif
             
             registerNode<Amara::World>("World");
         }
@@ -204,6 +209,7 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             Amara::Node::bindLua(lua);
             Amara::Group::bindLua(lua);
+            Amara::CopyNode::bindLua(lua);
 
             Amara::Text::bindLua(lua);
             
@@ -226,6 +232,10 @@ namespace Amara {
             
             Amara::Audio::bindLua(lua);
             Amara::AudioGroup::bindLua(lua);
+
+            #ifdef AMARA_WEB_SERVER
+            Amara::WebServer::bindLua(lua);
+            #endif
 
             Amara::World::bindLua(lua);
 
