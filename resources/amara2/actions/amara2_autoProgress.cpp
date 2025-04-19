@@ -75,7 +75,7 @@ namespace Amara {
             }
         }
 
-        Amara::Node* action = addChild(new AutoProgress());
+        Amara::Node* action = createChild("AutoProgress");
         action->luaConfigure(sol_config);
 
         return action->get_lua_object();
@@ -84,7 +84,7 @@ namespace Amara {
         nlohmann::json config = nlohmann::json::object();
         config["speed"] = speed;
 
-        return autoProgress(json_to_lua(config));
+        return autoProgress(json_to_lua(gameProps->lua, config));
     }
     sol::object Amara::Text::skipProgress() {
         for (Amara::Node* node: children) {

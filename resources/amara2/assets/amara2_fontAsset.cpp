@@ -108,7 +108,7 @@ namespace Amara {
         }
     };
     
-    class FontAsset: public Asset {
+    class FontAsset: public Amara::Asset {
     public:
         static const int atlasWidth = 2048;
         static const int atlasHeight = 2048;
@@ -125,10 +125,15 @@ namespace Amara {
         int baseline = 0;
         float lineHeight = 0;
 
-        unsigned char *fontBuffer;
+        unsigned char *fontBuffer = nullptr;
         stbtt_fontinfo font;
 
         int fontSize = 0;
+
+        FontAsset(Amara::GameProps* _gameProps): Amara::Asset(_gameProps) {
+            type = Amara::AssetEnum::Font;
+            key = "FontAsset";
+        }
 
         SDL_Texture* texture = nullptr;
         #ifdef AMARA_OPENGL
@@ -136,10 +141,10 @@ namespace Amara {
         #endif
 
         bool loadFont(std::string _p, int _size) {
-            path = Props::system->getAssetPath(_p);
+            path = gameProps->system->getAssetPath(_p);
             fontSize = _size;
-
-            if (!Props::system->fileExists(path)) {
+            
+            if (!gameProps->system->fileExists(path)) {
                 debug_log("Error: File not found at ", path);
                 return false;
             }
@@ -158,20 +163,20 @@ namespace Amara {
             SDL_CloseIO(rw);
 
             stbtt_InitFont(&font, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));
-
+            
             scale = stbtt_ScaleForMappingEmToPixels(&font, fontSize);
 
             stbtt_GetFontVMetrics(&font, &ascent, &descent, &lineGap);
             baseline = (int)(ascent * scale);
 
             lineHeight = (ascent - descent + lineGap) * scale;
-
-            if (Props::graphics == GraphicsEnum::Render2D && Props::renderer) {
-                texture = SDL_CreateTexture(Props::renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, atlasWidth, atlasHeight);
+            
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
+                texture = SDL_CreateTexture(gameProps->renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, atlasWidth, atlasHeight);
                 return true;
             }
             #ifdef AMARA_OPENGL
-            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 glGenTextures(1, &glTextureID);
 
                 if (glTextureID == 0) {
@@ -229,12 +234,12 @@ namespace Amara {
                 rgbaBitmap[i * 4 + 3] = alpha;  // A
             }
             
-            if (Props::graphics == GraphicsEnum::Render2D && Props::renderer) {
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 SDL_Rect destRect = { currentX, currentY, width, height };
                 SDL_UpdateTexture(texture, &destRect, rgbaBitmap, width * 4);
             }
             #ifdef AMARA_OPENGL
-            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
                 glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                 glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, currentY, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgbaBitmap);
@@ -302,7 +307,7 @@ namespace Amara {
                 i += 1;
             }
             
-            sol::object sol_config = string_to_lua_object(config_str);
+            sol::object sol_config = string_to_lua_object(gameProps->lua, config_str);
             nlohmann::json config = lua_to_json(sol_config);
             if (!config.is_null()) return config;
             else return contents_str;
@@ -499,7 +504,7 @@ namespace Amara {
             }
             #ifdef AMARA_OPENGL
             if (glTextureID != 0) {
-                Props::queue_texture_garbage(glTextureID);
+                gameProps->queue_texture_garbage(glTextureID);
                 glTextureID = 0;
             }
             #endif

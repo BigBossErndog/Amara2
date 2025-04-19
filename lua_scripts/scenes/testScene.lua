@@ -1,10 +1,9 @@
 return NodeFactory:create("Scene"):configure({
-    onPreload = function(self) 
+    onPreload = function(self)
         self.load:image("goldenFlower", "goldenFlower.png")
         self.load:image("bigThing", "CrossroadCommune-EXT.png")
         self.load:spritesheet("freaker", "freaker.png", 32, 64)
         self.load:font("font", "KLEINTEN.ttf", 10)
-
         self.animations:add({
             key = "runningDown",
             texture = "freaker",
@@ -72,9 +71,9 @@ return NodeFactory:create("Scene"):configure({
             repeats = -1,
             yoyo = true
         })
-        textCont:fitWithin(self.camera.view)
-        -- textCont.rect = map.rect
-        -- copy.target = textCont
+        -- textCont:fitWithin(self.camera.view)
+        -- -- textCont.rect = map.rect
+        -- -- copy.target = textCont
 
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
@@ -112,7 +111,7 @@ return NodeFactory:create("Scene"):configure({
             -- origin = 0
         })
 
-        f.pos = textCont.center
+        -- f.pos = textCont.center
         -- f:goTo(textCont.center)
         
         self.props.f = f;

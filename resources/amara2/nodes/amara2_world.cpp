@@ -6,10 +6,11 @@ namespace Amara {
         Amara::Demiurge* demiurge = nullptr;
         
         AssetManager assets;
+        AnimationFactory animations;
         ShaderManager shaders;
         AudioMaster audio;
 
-        std::string base_dir_path = Props::system->getBasePath();
+        std::string base_dir_path;
 
         SDL_Window* window = nullptr;
         Uint32 windowID = 0;
@@ -27,7 +28,7 @@ namespace Amara {
         ScreenModeEnum screenMode = ScreenModeEnum::Windowed;
 
         #ifdef AMARA_OPENGL
-            SDL_GLContext glContext;
+        SDL_GLContext glContext = NULL;
         #endif
         SDL_Renderer* renderer = nullptr;
         SDL_GPUDevice* gpuDevice = nullptr;
@@ -77,6 +78,18 @@ namespace Amara {
             passOnPropsEnabled = false;
         }
 
+        virtual void init() override {
+            renderBatch.gameProps = gameProps;
+            assets.gameProps = gameProps;
+            animations.gameProps = gameProps;
+            shaders.gameProps = gameProps;
+            audio.gameProps = gameProps;
+
+            base_dir_path = gameProps->system->getBasePath();
+            
+            Amara::Node::init();
+        }
+
         void update_window() {
             if (window != nullptr) {
                 displayID = SDL_GetDisplayForWindow(window);
@@ -91,12 +104,12 @@ namespace Amara {
                         );
                     }
                 }
-                Props::display = display;
-                Props::displayID = displayID;
+                gameProps->display = display;
+                gameProps->displayID = displayID;
                 
-                Props::current_window = window;
+                gameProps->current_window = window;
                 viewport = Rectangle( 0, 0, windowW, windowH );
-                Props::master_viewport = viewport;
+                gameProps->master_viewport = viewport;
 
                 int wx, wy;
                 SDL_GetWindowPosition(window, &wx, &wy);
@@ -125,43 +138,44 @@ namespace Amara {
                 windowW = fww;
                 windowH = fwh;
                 window_dim = Rectangle( pos.x, pos.y, windowW, windowH );
-                Props::window_dim = window_dim;
+                gameProps->window_dim = window_dim;
             }
             else {
                 viewport = Rectangle( pos.x, pos.y, windowW, windowH );
-                display = Props::display;
+                display = gameProps->display;
             }
         }
 
         virtual void update_properties() override {
-            Props::world = this;
-            Props::assets = &assets;
-            Props::shaders = &shaders;
-            Props::audio = &audio;
+            gameProps->world = this;
+            gameProps->assets = &assets;
+            gameProps->animations = &animations;
+            gameProps->shaders = &shaders;
+            gameProps->audio = &audio;
             
             if (window) {
                 #ifdef AMARA_OPENGL
-                Props::glContext = NULL;
+                gameProps->glContext = NULL;
                 #endif
-                Props::renderer = nullptr;
-                Props::gpuDevice = nullptr;
+                gameProps->renderer = nullptr;
+                gameProps->gpuDevice = nullptr;
 
                 #ifdef AMARA_OPENGL
                 if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
-                    Props::glContext = glContext;
+                    gameProps->glContext = glContext;
                 }
                 #endif
                 if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
-                    Props::renderer = renderer;
+                    gameProps->renderer = renderer;
                 }
                 if (gpuDevice != nullptr) {
-                    Props::gpuDevice = gpuDevice;
+                    gameProps->gpuDevice = gpuDevice;
                 }
-                Props::graphics = graphics;
-                Props::gpuHandler = &gpuHandler;
-                Props::renderBatch = &renderBatch;
+                gameProps->graphics = graphics;
+                gameProps->gpuHandler = &gpuHandler;
+                gameProps->renderBatch = &renderBatch;
 
-                Props::transparent_window = transparent;
+                gameProps->transparent_window = transparent;
             }
             update_window();
             
@@ -198,7 +212,7 @@ namespace Amara {
             bool resizeWindow = false;
             headless = false;
 
-            create_window_on_start = !Props::integrate_new_windows;
+            create_window_on_start = !gameProps->integrate_new_windows;
             if (json_has(config, "w")) {
                 windowW = config["w"];
                 resizeWindow = true;
@@ -243,7 +257,7 @@ namespace Amara {
                 if (window) SDL_SetWindowResizable(window, resizable);
             }
             if (json_is(config, "singleWindowApplication")) {
-                Props::integrate_new_windows = true;
+                gameProps->integrate_new_windows = true;
             }
             if (json_has(config, "headless")) {
                 create_window_on_start = !config["headless"].get<bool>();
@@ -266,7 +280,7 @@ namespace Amara {
                 }
                 else {
                     debug_log("Error: Invalid graphics setting.");
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
             if (json_has(config, "vsync")) {
@@ -289,12 +303,12 @@ namespace Amara {
             }
             if (json_has(config, "screenMode")) {
                 if (demiurge) {
-                    debug_log("Note: Demiurgic presence. Screen Mode Overridden: ", graphics_to_string(Props::graphics));
+                    debug_log("Note: Demiurgic presence. Screen Mode Overridden: ", graphics_to_string(gameProps->graphics));
                     debug_log("Control will be handed over in target builds.");
                 }
                 else if (config["screenMode"].is_null()) {
                     debug_log("Error: Invalid screen mode setting.");
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
                 else {
                     setScreenMode(config["screenMode"]);
@@ -326,7 +340,7 @@ namespace Amara {
 
             if (json_has(config, "basePath")) {
                 base_dir_path = config["basePath"];
-                Props::system->setBasePath(base_dir_path);
+                gameProps->system->setBasePath(base_dir_path);
             }
 
             if (json_has(config, "entryScene")) {
@@ -358,7 +372,7 @@ namespace Amara {
             resizeWindow(display.w, display.h);
             centerWindow();
         }
-
+        
         void setScreenMode(ScreenModeEnum _sm) {
             if (window) {
                 screenMode = _sm;
@@ -388,7 +402,7 @@ namespace Amara {
                     }
                     default:
                         debug_log("Error: Invalid graphics renderer setting given.");
-                        Props::breakWorld();
+                        gameProps->breakWorld();
                         break;
                 }
             }
@@ -609,7 +623,7 @@ namespace Amara {
                             debug_log("Error: Failed to create 2D Renderer. ", SDL_GetError());
                         }
                         else {
-                            Props::renderer = renderer;
+                            gameProps->renderer = renderer;
 
                             renderer_created = true;
                             graphics = g;
@@ -617,7 +631,7 @@ namespace Amara {
                         break;
                     case Amara::GraphicsEnum::OpenGL:
                         #ifdef AMARA_OPENGL
-                        if (Props::glContext != NULL) {
+                        if (gameProps->glContext != NULL) {
                             debug_log("Error: Multiple OpenGL worlds is currently not supported.");
                             continue;
                         }
@@ -635,28 +649,32 @@ namespace Amara {
                             }
                             else {
                                 try {
-                                    if (!Props::glFunctionsLoaded) LoadOpenGLFunctions();
+                                    if (!gameProps->glFunctionsLoaded) LoadOpenGLFunctions();
                                 }
                                 catch (...) {
                                     debug_log("Error: Failed to load OpenGL API.");
                                     SDL_GL_DestroyContext(glContext);
                                     if (window) SDL_DestroyWindow(window);
+                                    glContext = NULL;
+                                    window = nullptr;
+                                    renderer_created = false;
+                                    continue;
                                 }
                             }
                             if (renderer_created) {
-                                Props::glFunctionsLoaded = true;
-                                Props::render_origin = this;
-                                Props::glContext = glContext;
+                                gameProps->glFunctionsLoaded = true;
+                                gameProps->render_origin = this;
+                                gameProps->glContext = glContext;
 
                                 graphics = g;
-                                Props::graphics = g;
+                                gameProps->graphics = g;
 
                                 SDL_GL_MakeCurrent(window, glContext);
 
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
 
-                                Props::renderBatch = &renderBatch;
+                                gameProps->renderBatch = &renderBatch;
                                 renderBatch.init();
 
                                 update_properties();
@@ -664,8 +682,8 @@ namespace Amara {
                                 prepareGLShaders();
                                 
                                 setShaderProgram("default");
-                                Props::currentShaderProgram = shaderProgram;
-                                Props::defaultShaderProgram = shaderProgram;
+                                gameProps->currentShaderProgram = shaderProgram;
+                                gameProps->defaultShaderProgram = shaderProgram;
                                 defaultShaderProgram = shaderProgram;
                                 shaderProgram->applyShader();
                             }
@@ -681,8 +699,8 @@ namespace Amara {
                     default:
                         if (create_gpu_device(g)) {
                             renderer_created = true;
-                            Props::render_origin = this;
-                            Props::gpuDevice = gpuDevice;
+                            gameProps->render_origin = this;
+                            gameProps->gpuDevice = gpuDevice;
                             graphics = g;
                         }
                         break;
@@ -696,7 +714,7 @@ namespace Amara {
                 pos.y = static_cast<int>(wy);
                 rec_pos = pos;
 
-                Props::graphics = graphics;
+                gameProps->graphics = graphics;
 
                 if (clickThrough) {
                     clickThrough = false;
@@ -708,9 +726,9 @@ namespace Amara {
 
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
             }
-            else if (graphics == GraphicsEnum::None && Props::current_window != nullptr) {
-                pos.x = (Props::master_viewport.w - windowW) / 2.0f;
-                pos.y = (Props::master_viewport.h - windowH) / 2.0f;
+            else if (graphics == GraphicsEnum::None && gameProps->current_window != nullptr) {
+                pos.x = (gameProps->master_viewport.w - windowW) / 2.0f;
+                pos.y = (gameProps->master_viewport.h - windowH) / 2.0f;
             }
             else {
                 debug_log("Error: Failed to create window. ", SDL_GetError());
@@ -732,16 +750,16 @@ namespace Amara {
                     glContext = NULL;
                 }
                 #endif
-                Props::breakWorld();
+                gameProps->breakWorld();
                 return;
             }
         }
 
         #ifdef AMARA_OPENGL
         void prepareGLShaders() {
-            Props::shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
-            Props::shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
-            Props::shaders->createShaderProgram("default", {
+            gameProps->shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
+            gameProps->shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
+            gameProps->shaders->createShaderProgram("default", {
                 { "vertex", "defaultVert" },
                 { "fragment", "defaultFrag" }
             });
@@ -755,7 +773,7 @@ namespace Amara {
                 }
             }
             else if (demiurge) {
-                debug_log("Note: Demiurgic presence. Rendering Mode Overridden: ", graphics_to_string(Props::graphics));
+                debug_log("Note: Demiurgic presence. Rendering Mode Overridden: ", graphics_to_string(gameProps->graphics));
                 debug_log("Control will be handed over in target builds.");
             }
             
@@ -767,20 +785,21 @@ namespace Amara {
 
         virtual void run(double deltaTime) override {
             if (!base_dir_path.empty()) {
-                Props::system->setBasePath(base_dir_path);
+                gameProps->system->setBasePath(base_dir_path);
             }
+
             Amara::Node::run(deltaTime);
 
             if (actuated && !created_entry_scenes) {
                 for (std::string key: entryScenes) {
-                    createChild(key);        
+                    createChild(key);
                 }
                 created_entry_scenes = true;
             }
 
-            if (window) Props::display = viewport;
+            if (window) gameProps->display = viewport;
             
-            if (Props::lua_exception_thrown) {
+            if (gameProps->lua_exception_thrown) {
                 exception_thrown = true;
             }
         }
@@ -800,10 +819,10 @@ namespace Amara {
                 else {
                     zoom = viewport.w / virtualWidth;
                 }
-                Props::passOn.window_zoom = Vector2( zoom, zoom );
+                gameProps->passOn.window_zoom = Vector2( zoom, zoom );
             }
 
-            passOn = Props::passOn;
+            passOn = gameProps->passOn;
             passOnPropsEnabled = false;  
         }
         
@@ -811,12 +830,12 @@ namespace Amara {
             update_properties();
             basePassOnProps();
 
-            passOn = Props::passOn;
-            passOnPropsEnabled = false;  
+            passOn = gameProps->passOn;
+            passOnPropsEnabled = false;
 
             #ifdef AMARA_OPENGL
             if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
-                Props::currentShaderProgram = nullptr;
+                gameProps->currentShaderProgram = nullptr;
             }
             #endif
             
@@ -829,18 +848,18 @@ namespace Amara {
             if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
                 SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
                 SDL_RenderClear(renderer);
-                Props::master_viewport = viewport;
-                Props::graphics = graphics;
+                gameProps->master_viewport = viewport;
+                gameProps->graphics = graphics;
             }
             #ifdef AMARA_OPENGL
             else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
-                Props::gpuHandler = &gpuHandler;
-                Props::glContext = glContext;
-                Props::renderBatch = &renderBatch;
-                Props::master_viewport = viewport;
-                Props::graphics = graphics;
+                gameProps->gpuHandler = &gpuHandler;
+                gameProps->glContext = glContext;
+                gameProps->renderBatch = &renderBatch;
+                gameProps->master_viewport = viewport;
+                gameProps->graphics = graphics;
 
-                Props::renderBatch->newCycle();
+                gameProps->renderBatch->newCycle();
 
                 SDL_GL_MakeCurrent(window, glContext);
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -852,22 +871,22 @@ namespace Amara {
                 );
                 glClear(GL_COLOR_BUFFER_BIT);
 
-                Props::defaultShaderProgram = defaultShaderProgram;
+                gameProps->defaultShaderProgram = defaultShaderProgram;
             }
             #endif
             else if (gpuDevice) {
-                Props::gpuHandler = &gpuHandler;
-                Props::master_viewport = viewport;
-                Props::graphics = graphics;
+                gameProps->gpuHandler = &gpuHandler;
+                gameProps->master_viewport = viewport;
+                gameProps->graphics = graphics;
 
-                gpuHandler.commandBuffer = SDL_AcquireGPUCommandBuffer(Props::gpuDevice);
+                gpuHandler.commandBuffer = SDL_AcquireGPUCommandBuffer(gameProps->gpuDevice);
                 if (gpuHandler.commandBuffer == NULL) {
                     debug_log("Error: AcquireGPUCommandBuffer failed: ", SDL_GetError());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
-                if (!SDL_WaitAndAcquireGPUSwapchainTexture(gpuHandler.commandBuffer, Props::current_window, &gpuHandler.swapChainTexture, NULL, NULL)) {
+                if (!SDL_WaitAndAcquireGPUSwapchainTexture(gpuHandler.commandBuffer, gameProps->current_window, &gpuHandler.swapChainTexture, NULL, NULL)) {
                     debug_log("Error: WaitAndAcquireGPUSwapchainTexture failed: ", SDL_GetError());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
         }
@@ -884,7 +903,7 @@ namespace Amara {
             }
             #endif
             else if (gpuDevice) {
-                Props::gpuHandler = &gpuHandler;
+                gameProps->gpuHandler = &gpuHandler;
                 SDL_SubmitGPUCommandBuffer(gpuHandler.commandBuffer);
             }
         }
@@ -894,6 +913,7 @@ namespace Amara {
 
             assets.clear();
             shaders.clear();
+            animations.clear();
             renderBatch.destroy();
 
             #ifdef AMARA_OPENGL
@@ -943,7 +963,7 @@ namespace Amara {
                 "screenMode", sol::property([](const Amara::World& world) { return world.screenMode; }, &World::setScreenMode),
                 "transparent", sol::property([](const Amara::World& world) { return world.transparent; }, [](Amara::World& world, sol::object value) {
                     debug_log("Error: Transparency can only be set in World configuration table.");
-                    Props::breakWorld();
+                    world.gameProps->breakWorld();
                 }),
                 "vsync", sol::property([](const Amara::World& world) { return world.vsync; }, &World::setVsync),
                 "alwaysOnTop", sol::property([](const Amara::World& world) { return world.alwaysOnTop; }, &World::setAlwaysOnTop),
@@ -982,9 +1002,9 @@ namespace Amara {
         }
     };
 
-    void Props::breakWorld() {
-        if (Props::world) {
-            Props::world->destroy();
+    void GameProps::breakWorld() {
+        if (world) {
+            world->destroy();
         }
     }
 }

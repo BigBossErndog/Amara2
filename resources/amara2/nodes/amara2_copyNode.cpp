@@ -36,7 +36,7 @@ namespace Amara {
             if (copyTarget != nullptr) {
                 update_properties();
                 copyTarget->draw(v);
-                Props::passOn = passOn;
+                gameProps->passOn = passOn;
             }
 
             children_copy_list = children;
@@ -52,7 +52,7 @@ namespace Amara {
                 update_properties();
 				child->draw(v);
 
-                Props::passOn = passOn;
+                gameProps->passOn = passOn;
 				++it;
 			}
         }

@@ -118,7 +118,6 @@ namespace Amara {
             GraphicsEnum::OpenGL,
             #endif
             GraphicsEnum::VulkanMetalDirectX
-            
         };
     #else
         std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {

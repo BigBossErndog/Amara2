@@ -36,6 +36,8 @@ namespace Amara {
         std::unordered_map<std::string, unsigned int> glShaders;
         std::unordered_map<std::string, ShaderProgram*> glPrograms;
 
+        Amara::GameProps* gameProps = nullptr;
+
         ShaderManager() {
             glShaders.clear();
             glPrograms.clear();
@@ -68,9 +70,9 @@ namespace Amara {
         }
 
         unsigned int compileGLShader(std::string key, std::string source, ShaderTypeEnum type) {
-            if (Props::graphics != GraphicsEnum::OpenGL) {
+            if (gameProps->graphics != GraphicsEnum::OpenGL) {
                 debug_log("Error: Cannot compile shader without an OpenGL context.");
-                Props::breakWorld();                
+                gameProps->breakWorld();                
                 return 0;
             }
             unsigned int shader = glCreateShader((unsigned int)type);
@@ -99,7 +101,7 @@ namespace Amara {
         }
 
         ShaderProgram* createShaderProgram(nlohmann::json config) {
-            if (Props::graphics != GraphicsEnum::OpenGL) {
+            if (gameProps->graphics != GraphicsEnum::OpenGL) {
                 debug_log("Error: Cannot create shader program without an OpenGL context.");               
                 return nullptr;
             }
@@ -115,9 +117,9 @@ namespace Amara {
                     shaderID = getShader(shader_key);
                 }
                 else if (!shader_key.empty()) {
-                    std::string filePath = Props::system->getAssetPath(shader_key);
-                    if (Props::system->fileExists(filePath)) {
-                        std::string source = Props::system->readFile(filePath);
+                    std::string filePath = gameProps->system->getAssetPath(shader_key);
+                    if (gameProps->system->fileExists(filePath)) {
+                        std::string source = gameProps->system->readFile(filePath);
                         shaderID = compileGLShader("", source, ShaderTypeEnum::Compute);
                         temp = true;
                     }
@@ -145,9 +147,9 @@ namespace Amara {
                     shaderID = getShader(shader_key);
                 }
                 else if (!shader_key.empty()) {
-                    std::string filePath = Props::system->getAssetPath(shader_key);
-                    if (Props::system->fileExists(filePath)) {
-                        std::string source = Props::system->readFile(filePath);
+                    std::string filePath = gameProps->system->getAssetPath(shader_key);
+                    if (gameProps->system->fileExists(filePath)) {
+                        std::string source = gameProps->system->readFile(filePath);
                         shaderID = compileGLShader("", source, ShaderTypeEnum::Vertex);
                         temp = true;
                     }
@@ -176,9 +178,9 @@ namespace Amara {
                     shaderID = getShader(shader_key);
                 }
                 else if (!shader_key.empty()) {
-                    std::string filePath = Props::system->getAssetPath(shader_key);
-                    if (Props::system->fileExists(filePath)) {
-                        std::string source = Props::system->readFile(filePath);
+                    std::string filePath = gameProps->system->getAssetPath(shader_key);
+                    if (gameProps->system->fileExists(filePath)) {
+                        std::string source = gameProps->system->readFile(filePath);
                         shaderID = compileGLShader("", source, ShaderTypeEnum::Fragment);
                         temp = true;
                     }
@@ -205,9 +207,9 @@ namespace Amara {
                 std::string shader_key = it.value();
                 unsigned int shaderID = 0;
                 if (hasShader(shader_key)) {
-                    std::string filePath = Props::system->getAssetPath(shader_key);
-                    if (Props::system->fileExists(filePath)) {
-                        std::string source = Props::system->readFile(filePath);
+                    std::string filePath = gameProps->system->getAssetPath(shader_key);
+                    if (gameProps->system->fileExists(filePath)) {
+                        std::string source = gameProps->system->readFile(filePath);
                         shaderID = compileGLShader("", source, type);
                     }
                     else {
@@ -249,7 +251,7 @@ namespace Amara {
         }
 
         ShaderProgram* createShaderProgram(std::string key, nlohmann::json config) {
-            if (Props::graphics != GraphicsEnum::OpenGL) {
+            if (gameProps->graphics != GraphicsEnum::OpenGL) {
                 debug_log("Error: Cannot create shader program without an OpenGL context.");
                 return nullptr;
             }
@@ -300,8 +302,8 @@ namespace Amara {
                 return false;
             }
             
-            std::string filePath = Props::system->getAssetPath(path);
-            std::string source = Props::system->readFile(filePath);
+            std::string filePath = gameProps->system->getAssetPath(path);
+            std::string source = gameProps->system->readFile(filePath);
 
             #ifdef AMARA_OPENGL
             unsigned int shader = compileGLShader(key, source, type);

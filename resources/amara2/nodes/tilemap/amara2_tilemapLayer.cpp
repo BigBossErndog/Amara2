@@ -1,6 +1,6 @@
 namespace Amara {
     // Assuming you have loaded the asset:
-    // Amara::Tiled_TilemapAsset* mapAsset = Props::assets->get("your_map_key")->as<Amara::Tiled_TilemapAsset*>();
+    // Amara::Tiled_TilemapAsset* mapAsset = gameProps->assets->get("your_map_key")->as<Amara::Tiled_TilemapAsset*>();
     // Amara::Node* parentNode; // The node where you'll add the tile sprites
 
     void renderTileLayer(Amara::Tiled_TilemapAsset* mapAsset, int layerIndex, Amara::Node* parentNode) {
@@ -62,7 +62,7 @@ namespace Amara {
 
                 // Assuming you have the tileset image asset key (e.g., from tileset->name)
                 std::string tilesetImageKey = tileset->name; // Example convention
-                Amara::ImageAsset* tilesetImage = Amara::Props::assets->get(tilesetImageKey)->as<Amara::ImageAsset*>();
+                Amara::ImageAsset* tilesetImage = Amara::gameProps->assets->get(tilesetImageKey)->as<Amara::ImageAsset*>();
 
                 if (!tilesetImage) {
                     Amara::debug_log("Warning: Tileset image asset not found: ", tilesetImageKey);

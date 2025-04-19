@@ -1,7 +1,11 @@
 namespace Amara {
     class MessageBox {
     public:
+        Amara::GameProps* gameProps = nullptr;
+
         std::unordered_map<std::string, std::vector<sol::function>> messageBox;
+
+        MessageBox() = default;
     
         void send() {
 
@@ -16,7 +20,7 @@ namespace Amara {
 
         void run() {
             if (!messageBox.empty()) {
-                MessageQueue* messages = Props::messages;
+                MessageQueue* messages = gameProps->messages;
 
                 for (
                     auto it = messages->begin();
@@ -26,7 +30,7 @@ namespace Amara {
                     if (messageBox.find(msg.key) != messageBox.end()) {
                         std::vector<sol::function>& list = messageBox[msg.key];
                         for (sol::function& callback: list) { 
-                            callback(*this, json_to_lua(msg.data));
+                            callback(*this, json_to_lua(gameProps->lua, msg.data));
                         }
                     }
                     if (msg.sender == this) {

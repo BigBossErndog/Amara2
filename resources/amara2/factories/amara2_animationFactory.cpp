@@ -20,6 +20,14 @@ namespace Amara {
     public:
         std::unordered_map<std::string, TextureAnimations> textureMap;
 
+        Amara::GameProps* gameProps = nullptr;
+
+        AnimationFactory() = default;
+
+        void clear() {
+            textureMap.clear();
+        }
+
         bool add(nlohmann::json config) {
             if (json_has(config, "textures")) {
                 nlohmann::json list = config["textures"];
@@ -88,14 +96,14 @@ namespace Amara {
                 else {
                     debug_log("Error: Animation couldn't be created from ", config.dump());
                     debug_log("Note: endFrame or numFrame must be defined.");
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                     return false;
                 }
             }
             else {
                 debug_log("Error: Animation couldn't be created from ", config.dump());
                 debug_log("Note: Animation frames must be defined.");
-                Props::breakWorld();
+                gameProps->breakWorld();
                 return false;
             }
 
@@ -104,7 +112,7 @@ namespace Amara {
                 if (anim.frameRate <= 0) {
                     debug_log("Error: Animation couldn't be created from ", config.dump());
                     debug_log("Note: frameRate must be more than 0.");
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                     return false;
                 }
             }

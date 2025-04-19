@@ -124,7 +124,7 @@ namespace Amara {
         std::vector<Tiled_ImageLayer> imageLayers;   // Added
         Tiled_Properties mapProperties;              // Added for map-level properties
 
-        Tiled_TilemapAsset() {
+        Tiled_TilemapAsset(Amara::GameProps* _gameProps): Amara::Asset(_gameProps) {
             type = AssetEnum::TiledTilemap;
             typeKey = "Tiled_TilemapAsset";
         }
@@ -211,7 +211,7 @@ namespace Amara {
     }
 
     bool Tiled_TilemapAsset::loadTmx(const std::string& tmxPath) {
-        path = Props::system->getAssetPath(tmxPath);
+        path = gameProps->system->getAssetPath(tmxPath);
 
         SDL_IOStream* rw = SDL_IOFromFile(path.c_str(), "rb");
         if (!rw) {

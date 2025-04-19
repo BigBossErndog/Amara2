@@ -82,9 +82,9 @@ namespace Amara {
         virtual void init() override {
             Amara::Node::init();
             
-            passOn = Props::passOn;
+            passOn = gameProps->passOn;
             if (sizeTethered) {
-                viewport = Props::master_viewport;
+                viewport = gameProps->master_viewport;
                 width = ((viewport.w / passOn.scale.x) / passOn.zoom.x)/passOn.window_zoom.x;
                 height = ((viewport.h / passOn.scale.y) / passOn.zoom.y)/passOn.window_zoom.y;
             }
@@ -217,7 +217,7 @@ namespace Amara {
         }
 
         virtual void pass_on_properties() override {
-            passOn = Props::passOn;
+            passOn = gameProps->passOn;
 
             if (passOnPropsEnabled) {
                 passOn.anchor = Vector3( 
@@ -232,28 +232,28 @@ namespace Amara {
                 passOn.rotation += rotation;
 
                 passOn.scale = Vector2(
-                    Props::passOn.scale.x * scale.x,
-                    Props::passOn.scale.y * scale.y
+                    gameProps->passOn.scale.x * scale.x,
+                    gameProps->passOn.scale.y * scale.y
                 );
 
                 passOn.scroll = Vector2(
-                    Props::passOn.scroll.x + scroll.x,
-                    Props::passOn.scroll.y + scroll.y
+                    gameProps->passOn.scroll.x + scroll.x,
+                    gameProps->passOn.scroll.y + scroll.y
                 );
 
                 passOn.zoom = Vector2(
-                    Props::passOn.zoom.x * zoom.x,
-                    Props::passOn.zoom.y * zoom.y
+                    gameProps->passOn.zoom.x * zoom.x,
+                    gameProps->passOn.zoom.y * zoom.y
                 );
 
-                Props::passOn = passOn;
+                gameProps->passOn = passOn;
             }
         }
         
         virtual void drawChildren(const Rectangle& v) override {
             children_copy_list = parent->children;
             SDL_Rect setv = Rectangle::makeSDLRect(v);
-            SDL_SetRenderViewport(Props::renderer, &setv);
+            SDL_SetRenderViewport(gameProps->renderer, &setv);
 
             if (sizeTethered) {
                 viewport = v;
@@ -282,7 +282,7 @@ namespace Amara {
                 update_properties();
 				if (!child->is_camera) child->draw(viewport);
 
-                Props::passOn = passOn;
+                gameProps->passOn = passOn;
 				++it;
 			}
         }
@@ -334,7 +334,7 @@ namespace Amara {
                     sol::resolve<sol::object(sol::object)>(&Camera::setBounds)
                 ),
                 "removeBounds", &Camera::removeBounds,
-                "bounds", sol::property([](Camera& cam) -> sol::object { if (cam.hasBounds) { return sol::make_object(Props::lua(), cam.bounds); } else { return sol::nil; } }, [](Camera& cam, sol::object obj) { return cam.setBounds(obj); }),
+                "bounds", sol::property([](Camera& cam) -> sol::object { if (cam.hasBounds) { return sol::make_object(cam.gameProps->lua, cam.bounds); } else { return sol::nil; } }, [](Camera& cam, sol::object obj) { return cam.setBounds(obj); }),
                 "hasBounds", sol::readonly(&Camera::hasBounds)
             );
         }

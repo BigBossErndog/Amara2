@@ -8,7 +8,7 @@ namespace Amara {
 
         SDL_Keycode lastKeyReleased = SDLK_UNKNOWN;
         bool keyReleased = false;
-
+        
         void press(SDL_Keycode code) {
             if (keys.find(code) == keys.end()) {
                 keys[code] = Button();

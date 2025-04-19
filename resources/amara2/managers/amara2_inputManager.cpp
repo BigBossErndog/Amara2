@@ -6,6 +6,8 @@ namespace Amara {
 
         KeyboardManager keyboard;
 
+        InputManager() = default;
+
         void handleEvents(
             std::vector<Amara::World*>& worlds,
             GameManager& game

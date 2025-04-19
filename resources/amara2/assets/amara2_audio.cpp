@@ -6,14 +6,14 @@ namespace Amara {
 
     class AudioAsset: public Amara::Asset {
     public:
-        AudioAsset(): Amara::Asset() {
+        AudioAsset(Amara::GameProps* _gameProps): Amara::Asset(_gameProps) {
             type = AssetEnum::Audio;
             typeKey = "AudioAsset";
         }
 
         bool loadAudio(std::string _p) {
-            std::string path = Props::system->getAssetPath(_p);
-
+            std::string path = gameProps->system->getAssetPath(_p);
+            
             if (string_endsWith(path, ".wav")) {
                 
             }
@@ -22,7 +22,7 @@ namespace Amara {
             }
 
             debug_log("Error: Audio file is not supported ", _p);
-            Props::breakWorld();
+            gameProps->breakWorld();
             return false;
         }
     };

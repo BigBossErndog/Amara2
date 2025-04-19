@@ -15,6 +15,8 @@ namespace Amara {
 
         bool hasQuit = false;
 
+        Amara::GameProps* gameProps = nullptr;
+
         GameManager() {
             #if defined(__EMSCRIPTEN__)
                 platform = "web";
@@ -33,7 +35,6 @@ namespace Amara {
             #else
                 platform = "unknown";
             #endif
-            Props::platform = platform;
         }
         
         void setTargetFPS(float _fps) {
@@ -56,7 +57,7 @@ namespace Amara {
         }
 
         int get_lua_stack_size() {
-            return lua_gettop(Props::lua().lua_state());
+            return lua_gettop(gameProps->lua.lua_state());
         }
 
         Uint32 getDisplayIDForPoint(Vector2 p) {
@@ -88,7 +89,7 @@ namespace Amara {
                 "get_lua_stack_size", &GameManager::get_lua_stack_size,
                 "arguments", sol::property([](const GameManager& g) -> sol::object {
                     if (g.arguments.size() == 0) return sol::nil;
-                    return json_to_lua(g.arguments);
+                    return json_to_lua(g.gameProps->lua, g.arguments);
                 }),
                 "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint
             );

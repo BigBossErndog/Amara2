@@ -36,7 +36,7 @@ namespace Amara {
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
         }
@@ -54,7 +54,7 @@ namespace Amara {
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
         }
@@ -99,7 +99,7 @@ namespace Amara {
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
 

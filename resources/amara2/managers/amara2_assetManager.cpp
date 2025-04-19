@@ -1,8 +1,12 @@
 namespace Amara {
     class AssetManager {
     public:
+        Amara::GameProps* gameProps = nullptr;
+
         std::unordered_map<std::string, Amara::Asset*> assets;
         
+        AssetManager() = default;
+
         Amara::Asset* get(std::string key) {
             if (assets.find(key) != assets.end()) {
                 return assets[key];
@@ -30,7 +34,7 @@ namespace Amara {
         void destroyAsset(Amara::Asset* asset) {
             if (asset->destroyed) return;
             asset->destroy();
-            Props::queue_asset_garbage(asset);
+            gameProps->queue_asset_garbage(asset);
         }
 
         void clear() {
@@ -40,7 +44,7 @@ namespace Amara {
             }
             assets.clear();
         }
-
+        
         static void bindLua(sol::state& lua) {
             lua.new_usertype<AssetManager>("AssetManager",
                 "has", &AssetManager::has

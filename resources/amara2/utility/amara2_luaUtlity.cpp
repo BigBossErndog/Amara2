@@ -1,8 +1,7 @@
 namespace Amara {
     class Node;
 
-    sol::object json_to_lua(nlohmann::json json) {
-        sol::state& lua = Props::lua();
+    sol::object json_to_lua(sol::state& lua, nlohmann::json json) {
         if (json.is_null()) {
             return sol::make_object(lua, sol::nil);
         } else if (json.is_boolean()) {
@@ -14,14 +13,14 @@ namespace Amara {
         } else if (json.is_array()) {
             sol::table arr = lua.create_table();
             for (size_t i = 0; i < json.size(); ++i) {
-                arr[i + 1] = json_to_lua(json[i]);
+                arr[i + 1] = json_to_lua(lua, json[i]);
             }
             return sol::make_object(lua, arr);
         } else if (json.is_object()) {
             sol::table tbl = lua.create_table();
             for (auto& item : json.items()) {
                 std::string key = item.key();
-                tbl[key] = json_to_lua(item.value());
+                tbl[key] = json_to_lua(lua, item.value());
             }
             return sol::make_object(lua, tbl);
         }
@@ -115,9 +114,9 @@ namespace Amara {
         return lua_to_json(obj).dump();
     }
 
-    sol::object string_to_lua_object(const std::string& luaString) {
+    sol::object string_to_lua_object(sol::state& lua, const std::string& luaString) {
         std::string luaCode = "return " + luaString;
-        sol::protected_function_result result = Props::lua().do_string(luaCode);
+        sol::protected_function_result result = lua.do_string(luaCode);
         
         if (result.valid()) {
             sol::object obj = result;
@@ -129,8 +128,7 @@ namespace Amara {
     }
     
     template <typename T>
-    sol::table vector_to_lua(const std::vector<T>& vec) {
-        sol::state& lua = Props::lua();
+    sol::table vector_to_lua(sol::state& lua, const std::vector<T>& vec) {
         sol::table lua_table = lua.create_table();
         
         for (size_t i = 0; i < vec.size(); ++i) {
@@ -271,6 +269,6 @@ namespace Amara {
         });
 
         sol::table table_metatable = lua["table"];
-        table_metatable.set_function("to_string", string_to_lua_object(lua_table_to_string));
+        table_metatable.set_function("to_string", string_to_lua_object(lua, lua_table_to_string));
     }
 }

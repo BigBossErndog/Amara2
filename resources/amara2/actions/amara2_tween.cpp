@@ -24,7 +24,7 @@ namespace Amara {
 
         sol::object from(sol::table lua_data) {
             if (!target_data.is_null()) {
-                Amara::Tween* tween = addChild(new Tween())->as<Amara::Tween*>();
+                Amara::Tween* tween = createChild("Tween")->as<Amara::Tween*>();
                 return tween->from(lua_data);
             }
             start_data = lua_to_json(lua_data);
@@ -33,7 +33,7 @@ namespace Amara {
         
         sol::object to(sol::table lua_data) {
             if (!target_data.is_null()) {
-                Amara::Tween* tween = addChild(new Tween())->as<Amara::Tween*>();
+                Amara::Tween* tween = createChild("Tween")->as<Amara::Tween*>();
                 return tween->to(lua_data);
             }
 
@@ -114,7 +114,7 @@ namespace Amara {
                 }
                 else if (lua_actor_table.valid()) {
                     for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                        lua_actor_table.set(it.key(), json_to_lua(it.value()));
+                        lua_actor_table.set(it.key(), json_to_lua(gameProps->lua, it.value()));
                     }
                 }
                 clean_data();
@@ -154,7 +154,7 @@ namespace Amara {
                         }
                     } catch (const std::exception& e) {
                         debug_log(e.what());
-                        Props::breakWorld();
+                        gameProps->breakWorld();
                     }
                 }
 
@@ -194,7 +194,7 @@ namespace Amara {
 
             sol::usertype<Amara::Node> node_type = lua["Node"];
             node_type["tween"] = sol::property([](Amara::Node& e) -> sol::object {
-                Amara::Tween* tween = e.addChild(new Tween())->as<Amara::Tween*>();
+                Amara::Tween* tween = e.createChild("Tween")->as<Amara::Tween*>();
                 return tween->get_lua_object();
             });
         }

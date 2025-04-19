@@ -45,12 +45,12 @@ namespace Amara {
             image = nullptr;
             spritesheet = nullptr;
 
-            if (!Props::assets->has(key)) {
+            if (!gameProps->assets->has(key)) {
                 debug_log("Error: Asset \"", key, "\" was not found.");
                 return false;
             }
 
-            image = Props::assets->get(key)->as<ImageAsset*>();
+            image = gameProps->assets->get(key)->as<ImageAsset*>();
             
             if (image == nullptr) {
                 debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
@@ -200,7 +200,7 @@ namespace Amara {
                 )
             )) return;
 
-            if (image->texture && Props::renderer) {
+            if (image->texture && gameProps->renderer) {
                 // 2D Rendering
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
                 SDL_SetTextureColorMod(image->texture, tint.r, tint.g, tint.b);
@@ -208,7 +208,7 @@ namespace Amara {
                 setSDLBlendMode(image->texture, blendMode);
 
                 SDL_RenderTextureRotated(
-                    Props::renderer, 
+                    gameProps->renderer, 
                     image->texture,
                     &srcRect,
                     &destRect,
@@ -217,11 +217,11 @@ namespace Amara {
                     SDL_FLIP_NONE
                 );
             }
-            else if (image->gpuTexture && Props::gpuDevice) {
+            else if (image->gpuTexture && gameProps->gpuDevice) {
                 // GPU Rendering
             }
             #ifdef AMARA_OPENGL
-            else if (image->glTextureID != 0 && Props::glContext != NULL) {
+            else if (image->glTextureID != 0 && gameProps->glContext != NULL) {
                 Quad srcQuad = Quad(
                     { srcRect.x/textureWidth, srcRect.y/textureHeight },
                     { (srcRect.x+srcRect.w)/textureWidth, srcRect.y/textureHeight },
@@ -244,8 +244,8 @@ namespace Amara {
                     destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
                 };
 
-                Props::renderBatch->pushQuad(
-                    Props::currentShaderProgram,
+                gameProps->renderBatch->pushQuad(
+                    gameProps->currentShaderProgram,
                     image->glTextureID,
                     vertices, passOn.alpha * alpha, tint,
                     v, passOn.insideTextureContainer,

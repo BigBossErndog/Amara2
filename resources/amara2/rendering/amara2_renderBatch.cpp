@@ -27,12 +27,14 @@ namespace Amara {
         size_t rec_buffer_size_ebo = 0;
 
         int vertex_offset = 0;
+        
+        Amara::GameProps* gameProps = nullptr;
 
-        RenderBatch() {}
+        RenderBatch() = default;
 
         void init() {
             #ifdef AMARA_OPENGL
-            if (Props::graphics != GraphicsEnum::OpenGL || Props::glContext == NULL) return;
+            if (gameProps->graphics != GraphicsEnum::OpenGL || gameProps->glContext == NULL) return;
 
             glGenVertexArrays(1, &VAO);
             glBindVertexArray(VAO);
@@ -101,11 +103,11 @@ namespace Amara {
                 if (shaderProgram) {
                     shaderProgram->applyShader();
                 } else {
-                    shaderProgram = Props::defaultShaderProgram;
+                    shaderProgram = gameProps->defaultShaderProgram;
                     if (shaderProgram) shaderProgram->applyShader();
                     else {
                          debug_log("Error: No valid shader program available in RenderBatch::pushQuad.");
-                         Props::breakWorld();
+                         gameProps->breakWorld();
                          return;
                     }
                 }
@@ -148,11 +150,11 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
 
-            if (glTextureID != 0 && shaderProgram != nullptr && Props::graphics == Amara::GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            if (glTextureID != 0 && shaderProgram != nullptr && gameProps->graphics == Amara::GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 glDisable(GL_DEPTH_TEST);
 
-                if (!insideTextureContainer && Props::current_window != nullptr) {
-                     int window_h = static_cast<int>(Props::window_dim.h);
+                if (!insideTextureContainer && gameProps->current_window != nullptr) {
+                     int window_h = static_cast<int>(gameProps->window_dim.h);
                      glViewport(
                          static_cast<GLint>(viewport.x),
                          window_h - static_cast<GLint>(viewport.y + viewport.h),
@@ -257,7 +259,7 @@ namespace Amara {
 
         void destroy() {
             #ifdef AMARA_OPENGL
-            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 glBindVertexArray(0);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

@@ -1,7 +1,7 @@
 namespace Amara {
     class Asset {
     public:
-        Asset() = default;
+        Amara::GameProps* gameProps = nullptr;
 
         AssetEnum type = AssetEnum::None;
         std::string typeKey = "Base Asset";
@@ -9,6 +9,10 @@ namespace Amara {
         std::string path;
 
         bool destroyed = false;
+
+        Asset(Amara::GameProps* _gameProps) {
+            gameProps = _gameProps;
+        }
 
         explicit operator std::string() const {
             return string_concat(
@@ -26,7 +30,5 @@ namespace Amara {
         virtual void destroy() {
             destroyed = true;
         }
-
-        virtual ~Asset() {}
     };
 }

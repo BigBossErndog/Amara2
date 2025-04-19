@@ -99,7 +99,7 @@ namespace Amara {
                     }
                     else {
                         debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
-                        Props::breakWorld();
+                        gameProps->breakWorld();
                     }
                 }
                 else if (json_is(config, "end")) {
@@ -119,7 +119,7 @@ namespace Amara {
                         }
                         else {
                             debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
-                            Props::breakWorld();
+                            gameProps->breakWorld();
                         }
                     }
                 }
@@ -183,7 +183,7 @@ namespace Amara {
             for (auto arg : input) {
                 if (arg.is<std::string>()) ss << arg.get<std::string>();
                 else if (arg.is<sol::table>()) {
-                    sol::object result = Props::lua()["table"]["to_string"](arg);
+                    sol::object result = gameProps->lua["table"]["to_string"](arg);
                     ss << "$" << result.as<std::string>();
                 }
                 else ss << lua_to_string(arg);
@@ -194,12 +194,12 @@ namespace Amara {
 
         bool setFont(std::string key) {
             font = nullptr;
-            if (!Props::assets->has(key)) {
+            if (!gameProps->assets->has(key)) {
                 debug_log("Error: Asset \"", key, "\" was not found.");
                 return false;
             }
 
-            font = Props::assets->get(key)->as<Amara::FontAsset*>();
+            font = gameProps->assets->get(key)->as<Amara::FontAsset*>();
 
             if (font == nullptr) {
                 debug_log("Error: Asset \"", key, "\" is not a valid font asset.");
@@ -271,7 +271,7 @@ namespace Amara {
 
             int count = 0;
 
-            if (font->texture && Props::renderer) {
+            if (font->texture && gameProps->renderer) {
                 SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
             }
 
@@ -297,7 +297,7 @@ namespace Amara {
                             }
                         } catch (const std::exception& e) {
                             debug_log(e.what());
-                            Props::breakWorld();
+                            gameProps->breakWorld();
                         }
                     }
 
@@ -338,14 +338,14 @@ namespace Amara {
                         )
                     )) return;
 
-                    if (font->texture && Props::renderer) {
+                    if (font->texture && gameProps->renderer) {
                         SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
                         SDL_SetTextureColorMod(font->texture, temp_props.color.r, temp_props.color.g, temp_props.color.b);
                         SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * temp_props.alpha * 255);
                         setSDLBlendMode(font->texture, temp_props.blendMode);
 
                         SDL_RenderTextureRotated(
-                            Props::renderer, 
+                            gameProps->renderer, 
                             font->texture,
                             &srcRect,
                             &destRect,
@@ -355,7 +355,7 @@ namespace Amara {
                         );
                     }
                     #ifdef AMARA_OPENGL
-                    else if (font->glTextureID != 0 && Props::glContext != NULL) {
+                    else if (font->glTextureID != 0 && gameProps->glContext != NULL) {
                         Quad srcQuad = Quad(
                             { srcRect.x/font->atlasWidth, srcRect.y/font->atlasHeight },
                             { (srcRect.x+srcRect.w)/font->atlasWidth, srcRect.y/font->atlasHeight },
@@ -378,8 +378,8 @@ namespace Amara {
                             destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
                         };
 
-                        Props::renderBatch->pushQuad(
-                            Props::currentShaderProgram,
+                        gameProps->renderBatch->pushQuad(
+                            gameProps->currentShaderProgram,
                             font->glTextureID,
                             vertices, passOn.alpha * alpha * temp_props.alpha,
                             temp_props.color,
@@ -485,7 +485,7 @@ namespace Amara {
             }
             else {
                 debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
-                Props::breakWorld();
+                gameProps->breakWorld();
             }
             return get_lua_object();
         }

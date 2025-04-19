@@ -11,7 +11,7 @@ namespace Amara {
         }
 
         virtual void update_properties() override {
-            Props::scene = this;
+            gameProps->scene = this;
             Amara::Node::update_properties();
         }
 
@@ -44,7 +44,7 @@ namespace Amara {
                 update_properties();
 				child->draw(v);
 
-                Props::passOn = passOn;
+                gameProps->passOn = passOn;
 				++it;
 			}
         }

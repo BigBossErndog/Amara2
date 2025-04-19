@@ -14,7 +14,9 @@ namespace Amara {
         std::unordered_map<std::string, sol::function> compiledScripts;
         static inline std::unordered_map<std::string, std::function<sol::object(Node*)>> nodeRegistry;
 
-        sol::table props;
+        Amara::GameProps* gameProps = nullptr;
+
+        NodeFactory() = default;
 
         bool exists(std::string key) {
             if (factory.find(key) != factory.end()) return true;
@@ -35,9 +37,9 @@ namespace Amara {
                 return false;
             }
             
-            std::string script_path = Props::system->getScriptPath(path);
+            std::string script_path = gameProps->system->getScriptPath(path);
 
-            if (!Props::system->fileExists(script_path)) {
+            if (!gameProps->system->fileExists(script_path)) {
                 debug_log("Error: Failed to load Node \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
@@ -46,11 +48,11 @@ namespace Amara {
                 readScripts[key] = script_path;
             }
             else if (string_endsWith(script_path, ".luac")) {
-                compiledScripts[key] = Props::system->load_script(script_path);
+                compiledScripts[key] = gameProps->system->load_script(script_path);
             }
             else if (string_endsWith(script_path, ".amara")) {
                 NodeDescriptor desc;
-                nlohmann::json data = Props::system->readJSON(script_path);
+                nlohmann::json data = gameProps->system->readJSON(script_path);
                 desc.data = data;
                 
                 desc.nodeID = data["nodeID"];
@@ -64,6 +66,7 @@ namespace Amara {
 
         Amara::Node* prepNode(Amara::Node* node, std::string key) {
             node->nodeID = key;
+            node->gameProps = gameProps;
             node->init();
             return node;
         }
@@ -71,7 +74,8 @@ namespace Amara {
         Amara::Node* create(std::string key) {
             auto it = factory.find(key);
             if (it != factory.end() && it->second) {
-                return prepNode(it->second(), key);
+                Amara::Node* node = it->second();
+                return prepNode(node, key);
             }
             
             if (compiledScripts.find(key) != compiledScripts.end()) {
@@ -81,18 +85,18 @@ namespace Amara {
                 }
                 catch (const sol::error& e) {
                     debug_log("Failed to create Node \"", key, "\".");
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                     return nullptr;
                 }
             }
             else if (readScripts.find(key) != readScripts.end()) {
                 try {
-                    sol::object result = Props::system->run(readScripts[key]);
+                    sol::object result = gameProps->system->run(readScripts[key]);
                     return prepNode(result.as<Amara::Node*>(), key);
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to create Node \"", key, "\" from script \"", Props::system->getScriptPath(readScripts[key]), "\".");
-                    Props::breakWorld();
+                    debug_log("Failed to create Node \"", key, "\" from script \"", gameProps->system->getScriptPath(readScripts[key]), "\".");
+                    gameProps->breakWorld();
                     return nullptr;
                 }
             }
@@ -100,27 +104,29 @@ namespace Amara {
                 NodeDescriptor& desc = descriptors[key];
 
                 Amara::Node* node = create(desc.baseNodeID);
+                node->gameProps = gameProps;
                 if (node) node->configure(desc.data);
 
                 return prepNode(node, key);
             }
             
-            std::string script_path = Props::system->getScriptPath(key);
-            if (Props::system->fileExists(script_path)) {
+            std::string script_path = gameProps->system->getScriptPath(key);
+            if (gameProps->system->fileExists(script_path)) {
                 if (string_endsWith(script_path, ".lua") || string_endsWith(script_path, ".luac")) {
-                    sol::object result = Props::system->run(script_path);
+                    sol::object result = gameProps->system->run(script_path);
                     Amara::Node* node = result.as<Amara::Node*>();
                     return prepNode(node, node->baseNodeID);
                 }
                 else if (string_endsWith(script_path, ".amara")) {
                     NodeDescriptor desc;
-                    nlohmann::json data = Props::system->readJSON(script_path);
+                    nlohmann::json data = gameProps->system->readJSON(script_path);
                     desc.data = data;
                     
                     desc.nodeID = data["nodeID"];
                     desc.baseNodeID = data["baseNodeID"];
 
                     Amara::Node* node = create(desc.baseNodeID);
+                    node->gameProps = gameProps;
                     if (node) node->configure(desc.data);
 
                     return prepNode(node, key);
@@ -128,7 +134,7 @@ namespace Amara {
             }
             
             debug_log("Error: Node with key \"", key, "\" was not found.");
-            Props::breakWorld();
+            gameProps->breakWorld();
             return nullptr;
         }
         
@@ -155,15 +161,15 @@ namespace Amara {
         void registerNode(std::string key) {
             factory[key] = []() -> T* { return new T(); };
             
-            nodeRegistry[key] = [](Node* e) -> sol::object {
+            nodeRegistry[key] = [this](Node* e) -> sol::object {
                 if (T* derived = dynamic_cast<T*>(e)) {
-                    return sol::make_object(Props::lua(), derived);
+                    return sol::make_object(this->gameProps->lua, derived);
                 }
                 return sol::lua_nil;
             };
         }
 
-        void prepareEntities() {
+        void prepareNodes() {
             registerNode<Amara::Node>("Node");
             registerNode<Amara::Group>("Group");
             registerNode<Amara::CopyNode>("CopyNode");
@@ -227,7 +233,7 @@ namespace Amara {
 
             Amara::Sprite::bindLua(lua);
             Amara::Animation::bindLua(lua);
-
+            
             Amara::TextureContainer::bindLua(lua);
             
             Amara::Audio::bindLua(lua);
@@ -241,7 +247,6 @@ namespace Amara {
 
             lua.new_usertype<NodeFactory>("NodeFactory",
                 "load", &NodeFactory::load,
-                "props", &NodeFactory::props,
                 "add", &NodeFactory::add,
                 "create", &NodeFactory::luaCreate
             );
@@ -249,7 +254,7 @@ namespace Amara {
     };
 
     Amara::Node* Node::createChild(std::string key) {
-        Amara::Node* node = Props::factory->create(key);
+        Amara::Node* node = gameProps->factory->create(key);
         if (node) addChild(node);
         return node;
     }
@@ -271,16 +276,16 @@ namespace Amara {
     sol::object Node::get_lua_object() {
         if (luaobject.valid()) return luaobject;
 
-        luaobject = Props::factory->castLuaNode(this, baseNodeID);
+        luaobject = gameProps->factory->castLuaNode(this, baseNodeID);
         
-        props = Props::lua().create_table();
+        props = gameProps->lua.create_table();
 
-        sol::table props_meta = Props::lua().create_table();
+        sol::table props_meta = gameProps->lua.create_table();
         
         props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
             if (value.is<sol::function>()) {
                 sol::function callback = value.as<sol::function>();
-                sol::function func = sol::make_object(Props::lua(), [this, callback](sol::variadic_args va)->sol::object {
+                sol::function func = sol::make_object(gameProps->lua, [this, callback](sol::variadic_args va)->sol::object {
                     return callback(this->get_lua_object(), sol::as_args(va));
                 });
                 tbl.raw_set(key, func);

@@ -99,7 +99,7 @@ namespace Amara {
                 canvasTexture = nullptr;
             }
             #ifdef AMARA_OPENGL
-            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 if (glCanvasID != 0) {
                     glDeleteTextures(1, &glCanvasID);
                     glCanvasID = 0;
@@ -118,9 +118,9 @@ namespace Amara {
 
             deletePipeline();
 
-            if (Props::graphics == GraphicsEnum::Render2D && Props::renderer) {
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = SDL_CreateTexture(
-                    Props::renderer,
+                    gameProps->renderer,
                     SDL_PIXELFORMAT_RGBA32,
                     SDL_TEXTUREACCESS_TARGET,
                     width,
@@ -128,7 +128,7 @@ namespace Amara {
                 );
             }
             #ifdef AMARA_OPENGL
-            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 GLint prevBuffer = 0;
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
 
@@ -176,25 +176,25 @@ namespace Amara {
 
         void drawCanvas(const Rectangle& v) {
             SDL_Texture* rec_target = nullptr;
-            if (canvasTexture != nullptr && Props::renderer) {
-                rec_target = SDL_GetRenderTarget(Props::renderer);
-                SDL_SetRenderTarget(Props::renderer, canvasTexture);
-                SDL_SetRenderDrawColor(Props::renderer, 0, 0, 0, 0);
+            if (canvasTexture != nullptr && gameProps->renderer) {
+                rec_target = SDL_GetRenderTarget(gameProps->renderer);
+                SDL_SetRenderTarget(gameProps->renderer, canvasTexture);
+                SDL_SetRenderDrawColor(gameProps->renderer, 0, 0, 0, 0);
 
                 SDL_Rect setv = Rectangle::makeSDLRect(container_viewport);
-                SDL_SetRenderViewport(Props::renderer, &setv);
+                SDL_SetRenderViewport(gameProps->renderer, &setv);
 
-                SDL_RenderClear(Props::renderer);
+                SDL_RenderClear(gameProps->renderer);
             }
 
             #ifdef AMARA_OPENGL
             GLint prevBuffer = 0;
-            ShaderProgram* rec_shader = Props::currentShaderProgram;
+            ShaderProgram* rec_shader = gameProps->currentShaderProgram;
             
-            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                Props::renderBatch->flush();
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                gameProps->renderBatch->flush();
                 
-                Props::currentShaderProgram = Props::defaultShaderProgram;
+                gameProps->currentShaderProgram = gameProps->defaultShaderProgram;
                 
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
@@ -207,28 +207,28 @@ namespace Amara {
             
             drawCanvasContents(container_viewport);
 
-            if (canvasTexture && Props::renderer) {
-                SDL_SetRenderTarget(Props::renderer, rec_target);
+            if (canvasTexture && gameProps->renderer) {
+                SDL_SetRenderTarget(gameProps->renderer, rec_target);
                 SDL_Rect setv = Rectangle::makeSDLRect(v);
-                SDL_SetRenderViewport(Props::renderer, &setv);
+                SDL_SetRenderViewport(gameProps->renderer, &setv);
             }
             #ifdef AMARA_OPENGL
-            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                Props::renderBatch->flush();
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                gameProps->renderBatch->flush();
 
-                Props::currentShaderProgram = rec_shader;
+                gameProps->currentShaderProgram = rec_shader;
 
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
-                glViewport(v.x, Props::window_dim.h - v.y - v.h, v.w, v.h);
+                glViewport(v.x, gameProps->window_dim.h - v.y - v.h, v.w, v.h);
             }
             #endif
         }
 
         virtual void drawObjects(const Rectangle& v) override {
-            if (fixedToCamera && !Props::passOn.insideTextureContainer) {
-                Props::passOn.reset();
+            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
+                gameProps->passOn.reset();
             }
-            passOn = Props::passOn;
+            passOn = gameProps->passOn;
 
             if (rec_width != width || rec_height != height) {
                 createCanvas(width, height);
@@ -240,10 +240,10 @@ namespace Amara {
             }
 
             #ifdef AMARA_OPENGL
-            ShaderProgram* rec_shader = Props::currentShaderProgram;
-            if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                if (shaderProgram && shaderProgram != Props::currentShaderProgram) {
-                    Props::currentShaderProgram = shaderProgram;
+            ShaderProgram* rec_shader = gameProps->currentShaderProgram;
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                if (shaderProgram && shaderProgram != gameProps->currentShaderProgram) {
+                    gameProps->currentShaderProgram = shaderProgram;
                 }
             }
             #endif
@@ -303,14 +303,14 @@ namespace Amara {
                 )
             )) return;
             
-            if (canvasTexture && Props::renderer) {
+            if (canvasTexture && gameProps->renderer) {
                 SDL_SetTextureScaleMode(canvasTexture, SDL_SCALEMODE_NEAREST);
                 SDL_SetTextureColorMod(canvasTexture, tint.r, tint.g, tint.b);
                 SDL_SetTextureAlphaMod(canvasTexture, alpha * passOn.alpha * 255);
                 setSDLBlendMode(canvasTexture, blendMode);
 
                 SDL_RenderTextureRotated(
-                    Props::renderer, 
+                    gameProps->renderer, 
                     canvasTexture,
                     &srcRect,
                     &destRect,
@@ -320,7 +320,7 @@ namespace Amara {
                 );
             }
             #ifdef AMARA_OPENGL
-            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 Quad srcQuad = Quad(
                     { srcRect.x/width, srcRect.y/height },
                     { (srcRect.x+srcRect.w)/width, srcRect.y/height },
@@ -343,8 +343,8 @@ namespace Amara {
                     destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
                 };
 
-                Props::renderBatch->pushQuad(
-                    Props::currentShaderProgram,
+                gameProps->renderBatch->pushQuad(
+                    gameProps->currentShaderProgram,
                     glCanvasID,
                     vertices, passOn.alpha * alpha, tint,
                     v, passOn.insideTextureContainer,
@@ -353,7 +353,7 @@ namespace Amara {
             }
                 
             if (rec_shader && shaderProgram && shaderProgram != rec_shader) {
-                Props::currentShaderProgram = rec_shader;
+                gameProps->currentShaderProgram = rec_shader;
             }
             #endif
         }
@@ -361,11 +361,11 @@ namespace Amara {
         virtual void drawChildren(const Rectangle& v) {
             children_copy_list = children;
 
-            PassOnProps rec_props = Props::passOn;
+            PassOnProps rec_props = gameProps->passOn;
             PassOnProps new_props;
             new_props.insideTextureContainer = true;
 
-            Props::passOn = new_props;
+            gameProps->passOn = new_props;
 
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
@@ -378,11 +378,11 @@ namespace Amara {
                 update_properties();
 				child->draw(v);
 
-                Props::passOn = new_props;
+                gameProps->passOn = new_props;
 				++it;
 			}
 
-            Props::passOn = rec_props;
+            gameProps->passOn = rec_props;
         }
 
         virtual void destroy() override {

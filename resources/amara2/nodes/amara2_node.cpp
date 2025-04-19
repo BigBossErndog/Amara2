@@ -6,6 +6,8 @@ namespace Amara {
 
     class Node {
     public:
+        Amara::GameProps* gameProps = nullptr;
+
         std::string id;
         std::string nodeID;
         std::string baseNodeID;
@@ -97,12 +99,13 @@ namespace Amara {
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
         }
 
         virtual void init() {
+            messages.gameProps = gameProps;
             update_properties();
             get_lua_object();
         }
@@ -140,7 +143,7 @@ namespace Amara {
         }
 
         sol::object toData() {
-            return json_to_lua(toJSON());
+            return json_to_lua(gameProps->lua, toJSON());
         }
 
         virtual Amara::Node* configure(nlohmann::json config) {
@@ -148,10 +151,10 @@ namespace Amara {
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
                 if (string_endsWith(path, ".json")) {
-                    configure(Props::system->readJSON(path));
+                    configure(gameProps->system->readJSON(path));
                 }
                 else if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
-                    configure(lua_to_json(Props::scripts->run(path)));
+                    configure(lua_to_json(gameProps->scripts->run(path)));
                 }
                 return this;
             }
@@ -198,7 +201,7 @@ namespace Amara {
                 nlohmann::json data = config["props"];
                 if (data.is_object()) {
                     for (auto it = data.begin(); it != data.end(); ++it) {
-                        props[it.key()] = json_to_lua(it.value());
+                        props[it.key()] = json_to_lua(gameProps->lua,it.value());
                     }
                 }
             }
@@ -234,11 +237,11 @@ namespace Amara {
             if (config.is<std::string>()) {
                 std::string path = config.as<std::string>();
                 if (string_endsWith(path, ".json")) {
-                    luaConfigure(json_to_lua(Props::system->readJSON(path)));
+                    luaConfigure(json_to_lua(gameProps->lua, gameProps->system->readJSON(path)));
                     return get_lua_object();
                 }
                 if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
-                    luaConfigure(Props::scripts->run(path));
+                    luaConfigure(gameProps->scripts->run(path));
                     return get_lua_object();
                 }
             }
@@ -260,7 +263,7 @@ namespace Amara {
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
             else {
@@ -287,7 +290,7 @@ namespace Amara {
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
         }
@@ -295,10 +298,10 @@ namespace Amara {
         virtual void update(double deltaTime) {}
         virtual void update_properties() {}
         virtual void pass_on_properties() {
-            if (fixedToCamera && !Props::passOn.insideTextureContainer) {
-                Props::passOn.reset();
+            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
+                gameProps->passOn.reset();
             }
-            passOn = Props::passOn;
+            passOn = gameProps->passOn;
             
             if (passOnPropsEnabled) {
                 passOn.alpha *= alpha;
@@ -307,31 +310,30 @@ namespace Amara {
 
                 passOn.anchor = Vector3(
                     rotateAroundAnchor(
-                        Props::passOn.anchor, 
+                        gameProps->passOn.anchor, 
                         Vector2( 
-                            (Props::passOn.anchor.x + pos.x*Props::passOn.scale.x), 
-                            (Props::passOn.anchor.y + pos.y*Props::passOn.scale.y)
+                            (gameProps->passOn.anchor.x + pos.x*gameProps->passOn.scale.x), 
+                            (gameProps->passOn.anchor.y + pos.y*gameProps->passOn.scale.y)
                         ), 
-                        Props::passOn.rotation
+                        gameProps->passOn.rotation
                     ),
                     passOn.anchor.z + pos.z
                 );
 
                 passOn.scale = Vector2(
-                    Props::passOn.scale.x * scale.x,
-                    Props::passOn.scale.y * scale.y
+                    gameProps->passOn.scale.x * scale.x,
+                    gameProps->passOn.scale.y * scale.y
                 );
 
-                Props::passOn = passOn;
+                gameProps->passOn = passOn;
             }
         }
         void reset_pass_on_props() {
-            Props::passOn.reset();
+            gameProps->passOn.reset();
         }
  
         virtual void run(double deltaTime) {
             update_properties();
-            
             if (!actuated) {
                 preload();
                 create();
@@ -341,6 +343,7 @@ namespace Amara {
             messages.run();
 
             update(deltaTime);
+
             if (!destroyed && luaUpdate.valid()) {
                 try {
                     sol::protected_function_result result = luaUpdate(get_lua_object(), deltaTime);
@@ -350,10 +353,9 @@ namespace Amara {
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
-
             if (yDepthLocked) depth = pos.y;
             else if (zDepthLocked) depth = pos.z;
             
@@ -391,15 +393,15 @@ namespace Amara {
             drawObjects(v);
         }
         virtual void drawObjects(const Rectangle& v) {
-            if (fixedToCamera && !Props::passOn.insideTextureContainer) {
-                Props::passOn.reset();
+            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
+                gameProps->passOn.reset();
             }
-            passOn = Props::passOn;
+            passOn = gameProps->passOn;
 
             #ifdef AMARA_OPENGL
-            ShaderProgram* rec_shader = Props::currentShaderProgram;
-            if (Props::graphics == GraphicsEnum::OpenGL && shaderProgram && shaderProgram != Props::currentShaderProgram) {
-                Props::currentShaderProgram = shaderProgram;
+            ShaderProgram* rec_shader = gameProps->currentShaderProgram;
+            if (gameProps->graphics == GraphicsEnum::OpenGL && shaderProgram && shaderProgram != gameProps->currentShaderProgram) {
+                gameProps->currentShaderProgram = shaderProgram;
             }
             #endif
             
@@ -410,7 +412,7 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             if (rec_shader && shaderProgram && shaderProgram != rec_shader) {
-                Props::currentShaderProgram = rec_shader;
+                gameProps->currentShaderProgram = rec_shader;
             }
             #endif
         }
@@ -431,7 +433,7 @@ namespace Amara {
                 update_properties();
 				child->draw(v);
 
-                Props::passOn = passOn;
+                gameProps->passOn = passOn;
 				++it;
 			}
         }
@@ -440,9 +442,9 @@ namespace Amara {
 
         #ifdef AMARA_OPENGL
         bool setShaderProgram(std::string key) {
-            if (Props::graphics != GraphicsEnum::OpenGL || Props::glContext == NULL) return false;
+            if (gameProps->graphics != GraphicsEnum::OpenGL || gameProps->glContext == NULL) return false;
             
-            shaderProgram = Props::shaders->getShaderProgram(key);
+            shaderProgram = gameProps->shaders->getShaderProgram(key);
             if (shaderProgram == nullptr) {
                 debug_log("Error: Shader program \"", key, "\" not found.");
                 return false;
@@ -458,6 +460,7 @@ namespace Amara {
             if (destroyed) return node;
             
             update_properties();
+            node->gameProps = gameProps;
             node->world = world;
             node->scene = scene;
             node->parent = this;
@@ -544,7 +547,7 @@ namespace Amara {
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
-                    Props::breakWorld();
+                    gameProps->breakWorld();
                 }
             }
 
@@ -552,7 +555,7 @@ namespace Amara {
 
             destroyChildren();
 
-            Props::queue_garbage(this);
+            gameProps->queue_garbage(this);
         }
         void destroyChildren() {
             Amara::Node* child;
@@ -753,11 +756,11 @@ namespace Amara {
                     return std::string(*e);
                 },
 
-                "assets", sol::property([](Node& e) { return Props::assets; }),
-                "shaders", sol::property([](Node& e) { return Props::shaders; }),
-                "audio", sol::property([](Node& e) { return Props::audio; }),
-                "animations", sol::property([](Node& e) { return Props::animations; }),
-                "controls", sol::property([](Node& e) { return Props::controls; })
+                "assets", sol::property([](Node& e) { return e.gameProps->assets; }),
+                "shaders", sol::property([](Node& e) { return e.gameProps->shaders; }),
+                "audio", sol::property([](Node& e) { return e.gameProps->audio; }),
+                "animations", sol::property([](Node& e) { return e.gameProps->animations; }),
+                "controls", sol::property([](Node& e) { return e.gameProps->controls; })
             );
 
             lua.new_usertype<std::vector<Amara::Node*>>("NodeVector",

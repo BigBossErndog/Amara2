@@ -1,10 +1,14 @@
 namespace Amara {
     class ControlManager {
     public:
+        Amara::GameProps* gameProps = nullptr;
+
+        ControlManager() = default;
+
         std::unordered_map<std::string, ControlScheme> controls;
 
         ControlScheme* createScheme(std::string key) {
-            controls[key] = ControlScheme(key);
+            controls[key] = ControlScheme(key, gameProps);
             ControlScheme& scheme = controls[key];
 
             return &scheme;

@@ -3,10 +3,10 @@ namespace Amara {
     public:
         std::string basePath;
 
-        SystemManager() {
-            getBasePath();
-        }
+        Amara::GameProps* gameProps = nullptr;
 
+        SystemManager() = default;
+        
         bool fileExists(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
             return std::filesystem::exists(filePath);
@@ -37,7 +37,7 @@ namespace Amara {
             return nullptr;
         }
         sol::object luaReadJSON(std::string path) {
-            return json_to_lua(readJSON(path));
+            return json_to_lua(gameProps->lua, readJSON(path));
         }
 
         bool writeFile(std::string path, nlohmann::json input) {
@@ -136,7 +136,7 @@ namespace Amara {
             return contents;
         }
         sol::table luaGetDirectoryContents(std::string path) {
-            return vector_to_lua(getDirectoryContents(path));
+            return vector_to_lua(gameProps->lua, getDirectoryContents(path));
         }
 
         std::vector<std::string> getFilesInDirectory(std::string path) {
@@ -152,7 +152,7 @@ namespace Amara {
             return list;
         }
         sol::table luaGetFilesInDirectory(std::string path) {
-            return vector_to_lua(getFilesInDirectory(path));
+            return vector_to_lua(gameProps->lua, getFilesInDirectory(path));
         }
 
         std::vector<std::string> getSubDirectories(std::string path) {
@@ -168,7 +168,7 @@ namespace Amara {
             return list;
         }
         sol::table luaGetSubDirectories(std::string path) {
-            return vector_to_lua(getSubDirectories(path));
+            return vector_to_lua(gameProps->lua, getSubDirectories(path));
         }
 
         bool deleteDirectory(const std::string& path) {
@@ -215,7 +215,7 @@ namespace Amara {
             if (basePath.empty()) {
                 const char* c_basePath = SDL_GetBasePath();
                 std::filesystem::path exeDir = c_basePath;
-                std::filesystem::path contextPath = Props::context_path;
+                std::filesystem::path contextPath = gameProps->context_path;
                 std::filesystem::path finalContext = exeDir / contextPath;
                 basePath = finalContext.string();
             }
@@ -238,7 +238,7 @@ namespace Amara {
         }
 
         std::string getScriptPath(std::string path) {
-            std::filesystem::path filePath = getRelativePath(Props::lua_script_path) / (std::filesystem::path)path;
+            std::filesystem::path filePath = getRelativePath(gameProps->lua_script_path) / (std::filesystem::path)path;
             if (!fileExists(filePath.string())) {
                 path = filePath.string() + ".luac";
                 if (fileExists(path)) return path;
@@ -251,7 +251,7 @@ namespace Amara {
         }
 
         std::string getAssetPath(std::string path) {
-            std::filesystem::path filePath = getRelativePath(Props::assets_path) / (std::filesystem::path)path;
+            std::filesystem::path filePath = getRelativePath(gameProps->assets_path) / (std::filesystem::path)path;
             return filePath.string();
         }
 
@@ -322,16 +322,16 @@ namespace Amara {
         sol::object run(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
             try {
-                return Props::lua().script_file(filePath.string());
+                return gameProps->lua.script_file(filePath.string());
             }
             catch (const sol::error& e) {
-                Props::lua_exception_thrown = true;
+                gameProps->lua_exception_thrown = true;
             }
             return sol::nil;
         }
         sol::load_result load_script(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
-            return Props::lua().load_file(filePath.string());
+            return gameProps->lua.load_file(filePath.string());
         }
 
         bool compileScript(std::string path, std::string dest) {
@@ -340,7 +340,7 @@ namespace Amara {
                 debug_log("Error: Script not found \"", filePath.string(), "\".");
                 return false;
             }
-            sol::load_result script = Props::lua().load_file(filePath.string());
+            sol::load_result script = gameProps->lua.load_file(filePath.string());
 
             if (!script.valid()) {
                 sol::error err = script;
@@ -349,7 +349,7 @@ namespace Amara {
                 sol::function func = script;
 
                 try {
-                    sol::function dump = (Props::lua())["string"]["dump"];
+                    sol::function dump = (gameProps->lua)["string"]["dump"];
                     sol::object bytecode = dump(func, true);
                 
                     if (bytecode.is<std::string>()) {

@@ -10,7 +10,6 @@ namespace Amara {
         
         ScriptFactory scripts;
         NodeFactory factory;
-        AnimationFactory animations;
         ControlManager controls;
 
         std::vector<World*> worlds;
@@ -20,24 +19,25 @@ namespace Amara {
 
         std::string base_dir_path;
 
+        GameProps* gameProps = nullptr;
+
         Demiurge() {}
 
         void override_existence() {
-            Props::lua()["Creator"] = this;
-            Props::lua()["Game"] = &game;
-            Props::lua()["System"] = &system;
-            Props::lua()["NodeFactory"] = &factory;
-            Props::lua()["Scripts"] = &scripts;
-            Props::lua()["Controls"] = &controls;
+            gameProps->lua["Creator"] = this;
+            gameProps->lua["Game"] = &game;
+            gameProps->lua["System"] = &system;
+            gameProps->lua["NodeFactory"] = &factory;
+            gameProps->lua["Scripts"] = &scripts;
+            gameProps->lua["Controls"] = &controls;
             
-            Props::system = &system;
-            Props::factory = &factory;
-            Props::scripts = &scripts;
-            Props::animations = &animations;
-            Props::controls = &controls;
+            gameProps->system = &system;
+            gameProps->factory = &factory;
+            gameProps->scripts = &scripts;
+            gameProps->controls = &controls;
 
             if (!base_dir_path.empty()) {
-                Props::system->setBasePath(base_dir_path);
+                gameProps->system->setBasePath(base_dir_path);
             }
         }
 
@@ -54,8 +54,19 @@ namespace Amara {
             worlds.push_back(world);
         }
 
-        void setup() {
-            factory.prepareEntities();
+        void setup(GameProps* _gameProps) {
+            gameProps = _gameProps;
+
+            game.gameProps = gameProps;
+            factory.gameProps = gameProps;
+            scripts.gameProps = gameProps;
+            system.gameProps = gameProps;
+            factory.gameProps = gameProps;
+            controls.gameProps = gameProps;
+
+            system.getBasePath();
+
+            factory.prepareNodes();
             factory.registerNode<World>("World");
 
             game.demiurgic = demiurgic;
@@ -70,11 +81,19 @@ namespace Amara {
 
         void destroyAllWorlds() {
             for (Amara::World* world: worlds) world->destroy();
+            worlds.clear();
         }
 
         virtual void newDemiurgicUniverse() {
             debug_log("Note: Demiurgic presence. Universe creation disabled.");
             debug_log("Control will be handed over in target builds.");
+        }
+
+        void destroy() {
+            destroyAllWorlds();
+            controls.clearAllSchemes();
+            factory.clear();
+            scripts.clear();
         }
 
         static void bindLua(sol::state& lua) {
@@ -93,11 +112,6 @@ namespace Amara {
                     return sol::nil;
                 }
             );
-        }
-
-        virtual ~Demiurge() {
-            factory.clear();
-            scripts.clear();
         }
     };
 

@@ -21,25 +21,25 @@ namespace Amara {
 
         int loadRate = 0;
         int maxFailAttempts = 1;
-
+        
         bool replaceExisting = true;
 
-        Loader() {
+        Loader(): Amara::Action() {
             set_base_node_id("Loader");
             is_load_task = true;
         }
 
         template <typename T>
         T* createAsset(std::string key) {
-            if (Props::assets->has(key)) {
-                T* asset = Props::assets->get(key)->as<T*>();
+            if (gameProps->assets->has(key)) {
+                T* asset = gameProps->assets->get(key)->as<T*>();
                 if (asset) return asset;
             }
-            return new T();
+            return new T(gameProps);
         }
 
         bool processTask(const LoadTask& task) {
-            bool existing = Props::assets->has(task.key);
+            bool existing = gameProps->assets->has(task.key);
             if (existing) {
                 if (replaceExisting) {
                     debug_log("Note: Asset \"", task.key, "\" already exists. Overwriting Asset.");
@@ -58,31 +58,31 @@ namespace Amara {
                 case AssetEnum::Image: {
                     ImageAsset* imgAsset = createAsset<ImageAsset>(task.key);
                     success = imgAsset->loadImage(task.path);
-                    if (success) Props::assets->add(task.key, imgAsset);
+                    if (success) gameProps->assets->add(task.key, imgAsset);
                     break;
                 }
                 case AssetEnum::Spritesheet: {
                     SpritesheetAsset* sprAsset = createAsset<SpritesheetAsset>(task.key);
                     success = sprAsset->loadSpritesheet(task.path, task.frameWidth, task.frameHeight);
-                    if (success) Props::assets->add(task.key, sprAsset);
+                    if (success) gameProps->assets->add(task.key, sprAsset);
                     break;
                 }
                 case AssetEnum::Font: {
                     FontAsset* fontAsset = createAsset<FontAsset>(task.key);
                     success = fontAsset->loadFont(task.path, task.fontSize);
-                    if (success) Props::assets->add(task.key, fontAsset);
+                    if (success) gameProps->assets->add(task.key, fontAsset);
                     break;
                 }
                 case AssetEnum::TiledTilemap: {
                     Tiled_TilemapAsset* tilemapAsset = createAsset<Tiled_TilemapAsset>(task.key);
                     success = tilemapAsset->loadTmx(task.path);
-                    if (success) Props::assets->add(task.key, tilemapAsset);
+                    if (success) gameProps->assets->add(task.key, tilemapAsset);
                     break;
                 }
                 case AssetEnum::ShaderProgram: {
                     #ifdef AMARA_OPENGL
-                    if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
-                        ShaderProgram* shaderProgram = Props::shaders->createShaderProgram(task.key, task.config);
+                    if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                        ShaderProgram* shaderProgram = gameProps->shaders->createShaderProgram(task.key, task.config);
                         if (shaderProgram) success = true;
                     }
                     else {
@@ -218,7 +218,7 @@ namespace Amara {
             sol::usertype<Node> node_type = lua["Node"];
             node_type["load"] = sol::property([](Amara::Node& node) -> sol::object {
                 if (node.loader == nullptr) {
-                    node.loader = node.addChild(new Loader())->as<Amara::Loader*>();
+                    node.loader = node.createChild("Loader")->as<Amara::Loader*>();
                 }
                 return node.loader->get_lua_object();
             });

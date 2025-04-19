@@ -50,7 +50,7 @@ namespace Amara {
                         }
                     } catch (const std::exception& e) {
                         debug_log(e.what());
-                        Props::breakWorld();
+                        gameProps->breakWorld();
                     }
                 }
             }
@@ -215,7 +215,7 @@ namespace Amara {
             }
 
             if (event()) {
-                double t = time / Props::deltaTime;
+                double t = time / gameProps->deltaTime;
 
                 waitCounter += 1;
                 if (waitCounter >= t || skip) {
@@ -302,7 +302,7 @@ namespace Amara {
             sol::usertype<Node> node_type = lua["Node"];
             node_type["state"] = sol::property([](Amara::Node& node) -> sol::object {
                 if (node.stateMachine == nullptr) {
-                    node.stateMachine = node.addChild(new StateMachine())->as<Amara::StateMachine*>();
+                    node.stateMachine = node.createChild("StateMachine")->as<Amara::StateMachine*>();
                     node.stateMachine->is_action = false;
                 }
                 return node.stateMachine->get_lua_object();

@@ -1,11 +1,6 @@
 namespace Amara {
-    class ImageAsset: public Asset {
+    class ImageAsset: public Amara::Asset {
     public:
-        ImageAsset(): Asset() {
-            type = AssetEnum::Image;
-            typeKey = "ImageAsset";
-        }
-
         int width = 0;
         int height = 0;
         int channels = 0;
@@ -16,11 +11,16 @@ namespace Amara {
         #ifdef AMARA_OPENGL
         GLuint glTextureID = 0;
         #endif
+
+        ImageAsset(Amara::GameProps* _gameProps): Amara::Asset(_gameProps) {
+            type = AssetEnum::Image;
+            typeKey = "ImageAsset";
+        }
         
         bool loadImage(std::string _p) {
-            path = Props::system->getAssetPath(_p);
-
-            if (!Props::system->fileExists(path)) {
+            path = gameProps->system->getAssetPath(_p);
+            
+            if (!gameProps->system->fileExists(path)) {
                 debug_log("Error: File not found at ", path);
                 return false;
             }
@@ -47,8 +47,8 @@ namespace Amara {
                 return false;
             }
             
-            if (Props::graphics == GraphicsEnum::Render2D && Props::renderer) {
-                texture = SDL_CreateTexture(Props::renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, width, height);
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
+                texture = SDL_CreateTexture(gameProps->renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, width, height);
                 if (!texture) {
                     debug_log("Error: Failed to create texture: ", SDL_GetError());
                     stbi_image_free(imageData);
@@ -63,7 +63,7 @@ namespace Amara {
                 return true;
             }
             #ifdef AMARA_OPENGL
-            else if (Props::graphics == GraphicsEnum::OpenGL && Props::glContext != NULL) {
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 glGenTextures(1, &glTextureID);
                 
                 if (glTextureID == 0) {
@@ -89,7 +89,7 @@ namespace Amara {
                 return true;
             }
             #endif
-            else if (Props::gpuDevice) {
+            else if (gameProps->gpuDevice) {
                 SDL_GPUTextureCreateInfo textureInfo = {
                     .type = SDL_GPU_TEXTURETYPE_2D,
                     .format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
@@ -99,9 +99,9 @@ namespace Amara {
                     .num_levels = 1,
                     .usage = SDL_GPU_TEXTUREUSAGE_SAMPLER
                 };
-                gpuTexture = SDL_CreateGPUTexture(Props::gpuDevice, &textureInfo);
+                gpuTexture = SDL_CreateGPUTexture(gameProps->gpuDevice, &textureInfo);
 
-                SDL_SetGPUTextureName(Props::gpuDevice, gpuTexture, key.c_str());
+                SDL_SetGPUTextureName(gameProps->gpuDevice, gpuTexture, key.c_str());
 
                 SDL_GPUSamplerCreateInfo samplerInfo = {
                     .min_filter = SDL_GPU_FILTER_NEAREST,
@@ -111,19 +111,19 @@ namespace Amara {
                     .address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
                     .address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
                 };
-                SDL_GPUSampler* sampler = SDL_CreateGPUSampler(Props::gpuDevice, &samplerInfo);
+                SDL_GPUSampler* sampler = SDL_CreateGPUSampler(gameProps->gpuDevice, &samplerInfo);
 
                 SDL_GPUTransferBufferCreateInfo bufferInfo = {
                     .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                     .size = (sizeof(PositionTextureVertex) * 4) + (sizeof(Uint16) * 6)
                 };
                 SDL_GPUTransferBuffer* bufferTransferBuffer = SDL_CreateGPUTransferBuffer(
-                    Props::gpuDevice,
+                    gameProps->gpuDevice,
                     &bufferInfo
                 );
             
                 PositionTextureVertex* transferData = static_cast<PositionTextureVertex*>(SDL_MapGPUTransferBuffer(
-                    Props::gpuDevice,
+                    gameProps->gpuDevice,
                     bufferTransferBuffer,
                     false
                 ));
@@ -141,26 +141,26 @@ namespace Amara {
                 indexData[4] = 2;
                 indexData[5] = 3;
 
-                SDL_UnmapGPUTransferBuffer(Props::gpuDevice, bufferTransferBuffer);
+                SDL_UnmapGPUTransferBuffer(gameProps->gpuDevice, bufferTransferBuffer);
 
                 SDL_GPUTransferBufferCreateInfo transferBufferInfo = {
                     .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                     .size = static_cast<Uint32>(width * height * 4)
                 }; 
                 SDL_GPUTransferBuffer* textureTransferBuffer = SDL_CreateGPUTransferBuffer(
-                    Props::gpuDevice,
+                    gameProps->gpuDevice,
                     &transferBufferInfo
                 );
 
                 Uint8* textureTransferPtr = static_cast<Uint8*>(SDL_MapGPUTransferBuffer(
-                    Props::gpuDevice,
+                    gameProps->gpuDevice,
                     textureTransferBuffer,
                     false
                 ));
                 SDL_memcpy(textureTransferPtr, imageData, width * height * 4);
-                SDL_UnmapGPUTransferBuffer(Props::gpuDevice, textureTransferBuffer);
+                SDL_UnmapGPUTransferBuffer(gameProps->gpuDevice, textureTransferBuffer);
 
-                SDL_GPUCommandBuffer* uploadCmdBuf = SDL_AcquireGPUCommandBuffer(Props::gpuDevice);
+                SDL_GPUCommandBuffer* uploadCmdBuf = SDL_AcquireGPUCommandBuffer(gameProps->gpuDevice);
 	            SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(uploadCmdBuf);
 
                 stbi_image_free(imageData);
@@ -176,7 +176,7 @@ namespace Amara {
             }
             #ifdef AMARA_OPENGL
             if (glTextureID != 0) {
-                Props::queue_texture_garbage(glTextureID);
+                gameProps->queue_texture_garbage(glTextureID);
                 glTextureID = 0;
             }
             #endif
@@ -190,7 +190,7 @@ namespace Amara {
 
     class SpritesheetAsset: public ImageAsset {
     public:
-        SpritesheetAsset(): ImageAsset() {
+        SpritesheetAsset(Amara::GameProps* _gameProps): ImageAsset(_gameProps) {
             type = AssetEnum::Spritesheet;
             typeKey = "SpritesheetAsset";
         }

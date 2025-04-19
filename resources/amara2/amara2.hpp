@@ -109,14 +109,14 @@
     #include "rendering/amara2_renderUtility.cpp"
     #include "rendering/amara2_gpuHandler.cpp"
 
-    #include "managers/amara2_props.cpp"
+    #include "managers/amara2_gameProps.cpp"
 
     #include "utility/amara2_luaUtlity.cpp"
 
-    #include "input/button.cpp"
-    #include "input/keyboard.cpp"
-    #include "input/controlScheme.cpp"
-    #include "input/controlManager.cpp"
+    #include "input/amara2_button.cpp"
+    #include "input/amara2_keyboard.cpp"
+    #include "input/amara2_controlScheme.cpp"
+    #include "input/amara2_controlManager.cpp"
 
     #include "managers/amara2_gameManager.cpp"
 

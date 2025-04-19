@@ -21,7 +21,9 @@ namespace Amara {
 
         bool debug = false;
 
-        GarbageCollector() {}
+        Amara::GameProps* gameProps = nullptr;
+
+        GarbageCollector() = default;
 
         void deleteNode(Amara::Node* node) {
             node->props = sol::nil;
@@ -32,7 +34,7 @@ namespace Amara {
         void clearImmediately() {
             if (debug) debug_log("GarbageCollector: Clearing all ", collection.size(), " ", batch_queue.size(), " ", batch_overflow.size());
             
-            lua_gc(Props::lua().lua_state(), LUA_GCCOLLECT, 0);
+            lua_gc(gameProps->lua.lua_state(), LUA_GCCOLLECT, 0);
             
             for (GarbageTask& task: collection) {
                 deleteNode(task.target);
@@ -88,7 +90,7 @@ namespace Amara {
             if (batch_queue.size() >= batch_size) {
                 if (debug) debug_log("GarbageCollector: Deleting ", batch_queue.size(), " nodes.");
                 
-                lua_gc(Props::lua().lua_state(), LUA_GCCOLLECT, 0);
+                lua_gc(gameProps->lua.lua_state(), LUA_GCCOLLECT, 0);
 
                 for (Amara::Node* node: batch_queue) {
                     deleteNode(node);
@@ -137,17 +139,17 @@ namespace Amara {
         }
     };
 
-    void Props::queue_garbage(Amara::Node* node, double expiration) {
-        if (Props::garbageCollector) Props::garbageCollector->queue(node, expiration);
+    void GameProps::queue_garbage(Amara::Node* node, double expiration) {
+        if (garbageCollector) garbageCollector->queue(node, expiration);
         else debug_log("Error: Garbage Collector has not been set up. Attempting to delete: ", *node);
     }
-    void Props::queue_asset_garbage(Amara::Asset* asset, double expiration) {
-        if (Props::garbageCollector) Props::garbageCollector->queue_asset(asset, expiration);
+    void GameProps::queue_asset_garbage(Amara::Asset* asset, double expiration) {
+        if (garbageCollector) garbageCollector->queue_asset(asset, expiration);
         else debug_log("Error: Garbage Collector has not been set up. Attempting to delete Asset: ", *asset);
     }
     #ifdef AMARA_OPENGL
-    void Props::queue_texture_garbage(GLuint textureID) {
-        if (Props::garbageCollector) Props::garbageCollector->glTextures.push_back(textureID);
+    void GameProps::queue_texture_garbage(GLuint textureID) {
+        if (garbageCollector) garbageCollector->glTextures.push_back(textureID);
         else debug_log("Error: Garbage Collector has not been set up. Attempting to delete GL texture.");
     }
     #endif

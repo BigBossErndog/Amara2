@@ -1,7 +1,7 @@
 namespace Amara {
     class Creator: public Demiurge {
     public:
-        sol::state lua;
+        GameProps gameProps;
 
         std::vector<World*> copy_worlds_list;
 
@@ -21,14 +21,16 @@ namespace Amara {
         Creator(): Demiurge() {
             demiurgic = false;
 
-            Props::set_lua(lua);
+            garbageCollector.gameProps = &gameProps;
 
-            Props::messages = &messages;
-            Props::garbageCollector = &garbageCollector;
-
+            gameProps.messages = &messages;
+            gameProps.garbageCollector = &garbageCollector;
+            
             worlds.clear();
             
-            lua_checkstack(lua.lua_state(), Props::lua_stack_size);
+            sol::state& lua = gameProps.lua;
+
+            lua_checkstack(lua.lua_state(), gameProps.lua_stack_size);
 
             lua.open_libraries(
                 sol::lib::base,
@@ -40,17 +42,17 @@ namespace Amara {
                 sol::lib::bit32,
                 sol::lib::utf8
             );
-            
+
             bindLua();
 
-            setup();
+            setup(&gameProps);
 
             lua["Keyboard"] = &(inputManager.keyboard);
-            Props::keyboard = &(inputManager.keyboard);
+            gameProps.keyboard = &(inputManager.keyboard);
 
             override_existence();
 
-            Props::world_list = &worlds;
+            gameProps.world_list = &worlds;
         }
 
         Creator(int argv, char** args): Creator() {
@@ -68,8 +70,8 @@ namespace Amara {
 
         virtual World* createWorld(sol::object config) override {
             std::string key = "World";
-            if (config.is<std::string>()) key = config.as<std::string>();
 
+            if (config.is<std::string>()) key = config.as<std::string>();
             World* new_world = factory.create(key)->as<World*>();
 
             if (new_world == nullptr) {
@@ -94,7 +96,56 @@ namespace Amara {
             return new_world;
         }
         virtual World* createWorld() override {
-            return createWorld(sol::make_object(Props::lua(), std::string("World")));
+            return createWorld(sol::make_object(gameProps.lua, std::string("World")));
+        }
+
+        void update_properties() {
+            if (currentWorld && currentWorld->demiurge) {
+                currentWorld->demiurge->override_existence();
+            }
+            else {
+                override_existence();
+                gameProps.system->setBasePath(base_dir_path);
+                gameProps.lua["Creator"] = this;
+            }
+        }
+
+        Amara::Demiurge* createDemiurge() {
+            Amara::Demiurge* new_demiurge = new Demiurge();
+            new_demiurge->setup(&gameProps);
+            new_demiurge->true_creator = this;
+            return new_demiurge;
+        }
+
+        void startDemiurgicUniverse() {
+            destroyDemiurgicUniverse();
+
+            // Causes all future created worlds to be isolated.
+            currentDemiurge = createDemiurge();
+        }
+        void startDemiurgicUniverse(std::string path) {
+            startDemiurgicUniverse();
+            currentDemiurge->base_dir_path = path;
+        }
+
+        void destroyDemiurgicUniverse() {
+            if (currentDemiurge) {
+                currentDemiurge->destroy();
+                delete currentDemiurge;
+            }
+            currentDemiurge = nullptr;
+        }
+
+        void pauseDemiurgicUniverse() {
+            if (currentDemiurge) {
+                currentDemiurge->paused = true;
+            }
+        }
+
+        void resumeDemiurgicUniverse() {
+            if (currentDemiurge) {
+                currentDemiurge->paused = false;
+            }
         }
 
         void cleanDestroyedWorlds() {
@@ -114,55 +165,6 @@ namespace Amara {
             new_worlds.clear();
         }
 
-        void update_properties() {
-            if (currentWorld && currentWorld->demiurge) {
-                currentWorld->demiurge->override_existence();
-            }
-            else {
-                override_existence();
-                Props::system->setBasePath(base_dir_path);
-                Props::lua()["Creator"] = this;
-            }
-        }
-
-        Amara::Demiurge* createDemiurge() {
-            Amara::Demiurge* new_demiurge = new Demiurge();
-            new_demiurge->setup();
-            new_demiurge->true_creator = this;
-            return new_demiurge;
-        }
-
-        void startDemiurgicUniverse() {
-            destroyDemiurgicUniverse();
-
-            // Causes all future created worlds to be isolated.
-            currentDemiurge = createDemiurge();
-        }
-        void startDemiurgicUniverse(std::string path) {
-            startDemiurgicUniverse();
-            currentDemiurge->base_dir_path = path;
-        }
-
-        void destroyDemiurgicUniverse() {
-            if (currentDemiurge) {
-                currentDemiurge->destroyAllWorlds();
-                delete currentDemiurge;
-            }
-            currentDemiurge = nullptr;
-        }
-
-        void pauseDemiurgicUniverse() {
-            if (currentDemiurge) {
-                currentDemiurge->paused = true;
-            }
-        }
-
-        void resumeDemiurgicUniverse() {
-            if (currentDemiurge) {
-                currentDemiurge->paused = false;
-            }
-        }
-
         void startCreation(std::string path) {
             if (!SDL_Init(SDL_INIT_VIDEO)) {
                 debug_log("Error: SDL_Init failed: ", SDL_GetError());
@@ -174,8 +176,8 @@ namespace Amara {
             double elapsedTime = 0;
 
             scripts.run(path);
-            game.hasQuit = Props::lua_exception_thrown;
-            
+            game.hasQuit = gameProps.lua_exception_thrown;
+
             std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
 
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
@@ -191,7 +193,7 @@ namespace Amara {
                         currentWorld = *it;
                         update_properties();
 
-                        Props::lua_exception_thrown = false;
+                        gameProps.lua_exception_thrown = false;
 
                         currentWorld->run(game.deltaTime);
 
@@ -209,7 +211,7 @@ namespace Amara {
                         update_properties();
 
                         currentWorld->prepareRenderer();
-                        currentWorld->draw(Props::master_viewport);
+                        currentWorld->draw(gameProps.master_viewport);
                     }
                     for (Amara::World* world: worlds) {
                         world->presentRenderer();
@@ -225,7 +227,7 @@ namespace Amara {
                         }
                     }
                     current_tick = SDL_GetPerformanceCounter();
-                    Props::deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
+                    gameProps.deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
                     game.fps = 1 / game.deltaTime;
                     rec_tick = current_tick;
 
@@ -236,16 +238,17 @@ namespace Amara {
                 }
             }
 
-            destroyAllWorlds();
+            destroy();
             cleanDestroyedWorlds();
 
-            factory.clear();
             garbageCollector.clearImmediately();
 
             SDL_Quit();
         }
 
         void bindLua() {
+            sol::state& lua = gameProps.lua;
+
             bindLua_Enums(lua);
             bindLua_LuaUtilityFunctions(lua);
             bindLua_Vectors(lua);
@@ -265,7 +268,7 @@ namespace Amara {
             AssetManager::bindLua(lua);
             NodeFactory::bindLua(lua);
             AudioMaster::bindLua(lua);
-
+            
             Demiurge::bindLua(lua);
 
             lua.new_usertype<Creator>("Creator",
@@ -283,8 +286,6 @@ namespace Amara {
                 "resumeDemiurgicUniverse", &Creator::resumeDemiurgicUniverse
             );
         }
-        
-        ~Creator() {}
     };
 
     World* Demiurge::createWorld(sol::object config) {
