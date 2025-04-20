@@ -63,14 +63,24 @@ namespace Amara {
                 repeats = lua_data["repeats"].get<int>();
             }
             if (lua_data["color"].valid()) {
-                Amara::Color color = lua_to_json(lua_data["color"]);
+                Amara::Color color = lua_data["color"];
                 target_data["color"] = color.toJSON();
                 lua_data["color"] = sol::nil;
             }
             if (lua_data["tint"].valid()) {
-                Amara::Color color = lua_to_json(lua_data["tint"]);
+                Amara::Color color = lua_data["tint"];
                 target_data["tint"] = color.toJSON();
                 lua_data["tint"] = sol::nil;
+            }
+            if (lua_data["fill"].valid()) {
+                Amara::Color color = lua_data["fill"];
+                target_data["fill"] = color.toJSON();
+                lua_data["fill"] = sol::nil;
+            }
+            if (lua_data["backgroundColor"].valid()) {
+                Amara::Color color = lua_data["backgroundColor"];
+                target_data["fill"] = color.toJSON();
+                lua_data["backgroundColor"] = sol::nil;
             }
 
             nlohmann::json data = lua_to_json(lua_data);
@@ -137,7 +147,7 @@ namespace Amara {
                         if (it.value().is_number()) {
                             lua_actor_table.set(it.key(), ease((double)start_data[it.key()], (double)target_data[it.key()], progress, easing));
                         }
-                        else if (string_equal(it.key(), "color") || string_equal(it.key(), "tint")) {
+                        else if (string_equal(it.key(), "color") || string_equal(it.key(), "tint") || string_equal(it.key(), "fill") || string_equal(it.key(), "backgroundColor")) {
                             Amara::Color start_color = start_data[it.key()];
                             Amara::Color target_color = target_data[it.key()];
                             lua_actor_table.set(it.key(), ease(start_color, target_color, progress, easing));

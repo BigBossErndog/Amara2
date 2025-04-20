@@ -7,6 +7,8 @@ namespace Amara {
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
         Amara::Color tint = Amara::Color::White;
 
+        Amara::Color fill = Amara::Color::Transparent;
+
         #ifdef AMARA_OPENGL
         GLuint glCanvasID = 0;
         GLuint glBufferID = 0;
@@ -71,6 +73,7 @@ namespace Amara {
 
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "tint")) tint = config["tint"];
+            if (json_has(config, "fill")) fill = config["fill"];
             if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
 
             if (json_has(config, "w")) width = config["w"];
@@ -200,7 +203,12 @@ namespace Amara {
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
                 
                 glViewport(0, 0, width, height);
-                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                glClearColor(
+                    fill.r / 255.0f,
+                    fill.g / 255.0f,
+                    fill.b / 255.0f,
+                    fill.a / 255.0f
+                );
                 glClear(GL_COLOR_BUFFER_BIT);
             }
             #endif
@@ -442,6 +450,7 @@ namespace Amara {
             lua.new_usertype<TextureContainer>("TextureContainer",
                 sol::base_classes, sol::bases<Node>(),
                 "tint", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.tint; }, [](Amara::TextureContainer& t, sol::object v) { t.tint = v; }),
+                "fill", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.fill; }, [](Amara::TextureContainer& t, sol::object v) { t.fill = v; }),
                 "blendMode", &TextureContainer::blendMode,
                 "w", &TextureContainer::width,
                 "h", &TextureContainer::height,
