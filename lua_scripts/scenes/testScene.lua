@@ -55,7 +55,7 @@ return NodeFactory:create("Scene"):configure({
         local textCont = self:createChild("TextureContainer", {
             width = 256,
             height = 256,
-            -- fill = "black",
+            tint = "red",
             -- alpha = 0.5,
             -- visible = false,
             -- paused = true,
@@ -76,15 +76,15 @@ return NodeFactory:create("Scene"):configure({
         -- -- textCont.rect = map.rect
         -- -- copy.target = textCont
 
-        -- local a_rate = 2 * math.pi * 0.01
-        -- local d_rate = 1
-        -- for i = 1, (128*128) do
-        --     textCont:createChild("Sprite", {
-        --         texture = "goldenFlower",
-        --         x = math.sin(a_rate * i) * d_rate * i,
-        --         y = math.cos(a_rate * i) * d_rate * i
-        --     })
-        -- end
+        local a_rate = 2 * math.pi * 0.01
+        local d_rate = 1
+        for i = 1, (128*128) do
+            textCont:createChild("Sprite", {
+                texture = "goldenFlower",
+                x = math.sin(a_rate * i) * d_rate * i,
+                y = math.cos(a_rate * i) * d_rate * i
+            })
+        end
 
         self.props.txt = textCont:createChild("Text", {
             -- text = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9",
@@ -98,7 +98,7 @@ return NodeFactory:create("Scene"):configure({
             x = textCont.left,
             y = textCont.top,
             -- origin = 1,
-            alignment = Align.Left
+            alignment = Align.Left,
         })
 
         local f = textCont:createChild("Sprite", {

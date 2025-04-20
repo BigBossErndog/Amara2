@@ -145,11 +145,12 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::object shaderProgram(std::string key, sol::object config) {
+        sol::object shaderProgram(std::string key, sol::table config) {
             LoadTask task;
             task.key = key;
             task.type = AssetEnum::ShaderProgram;
             task.config = config;
+            task.path = gameProps->lua["table"]["to_string"](config);
 
             queueTask(task);
             return get_lua_object();
