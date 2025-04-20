@@ -44,13 +44,13 @@ namespace Amara {
                 return false;
             }
             
-            if (string_endsWith(script_path, ".lua")) {
+            if (String::endsWith(script_path, ".lua")) {
                 readScripts[key] = script_path;
             }
-            else if (string_endsWith(script_path, ".luac")) {
+            else if (String::endsWith(script_path, ".luac")) {
                 compiledScripts[key] = gameProps->system->load_script(script_path);
             }
-            else if (string_endsWith(script_path, ".amara")) {
+            else if (String::endsWith(script_path, ".amara")) {
                 NodeDescriptor desc;
                 nlohmann::json data = gameProps->system->readJSON(script_path);
                 desc.data = data;
@@ -112,12 +112,12 @@ namespace Amara {
             
             std::string script_path = gameProps->system->getScriptPath(key);
             if (gameProps->system->fileExists(script_path)) {
-                if (string_endsWith(script_path, ".lua") || string_endsWith(script_path, ".luac")) {
+                if (String::endsWith(script_path, ".lua") || String::endsWith(script_path, ".luac")) {
                     sol::object result = gameProps->system->run(script_path);
                     Amara::Node* node = result.as<Amara::Node*>();
                     return prepNode(node, node->baseNodeID);
                 }
-                else if (string_endsWith(script_path, ".amara")) {
+                else if (String::endsWith(script_path, ".amara")) {
                     NodeDescriptor desc;
                     nlohmann::json data = gameProps->system->readJSON(script_path);
                     desc.data = data;
@@ -193,6 +193,9 @@ namespace Amara {
 
             registerNode<Amara::TextureContainer>("TextureContainer");
 
+            registerNode<Amara::TilemapLayer>("TilemapLayer");
+            registerNode<Amara::Tilemap>("Tilemap");
+
             registerNode<Amara::Audio>("Audio");
             registerNode<Amara::AudioGroup>("AudioGroup");
 
@@ -235,6 +238,9 @@ namespace Amara {
             Amara::Animation::bindLua(lua);
             
             Amara::TextureContainer::bindLua(lua);
+
+            Amara::TilemapLayer::bindLua(lua);
+            Amara::Tilemap::bindLua(lua);
             
             Amara::Audio::bindLua(lua);
             Amara::AudioGroup::bindLua(lua);

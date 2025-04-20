@@ -143,15 +143,15 @@ namespace Amara {
     }
 
     Vector2 stringToPosition(std::string str) {
-        if (string_equal(str, "top")) return { 0.5, 0 };
-        if (string_equal(str, "bottom")) return { 0.5, 1 };
-        if (string_equal(str, "left")) return { 0, 0.5 };
-        if (string_equal(str, "right")) return { 1, 0.5 };
-        if (string_equal(str, "center")) return { 0.5, 0.5 };
-        if (string_equal(str, "topLeft")) return { 0, 0 };
-        if (string_equal(str, "topRight")) return { 1, 0 };
-        if (string_equal(str, "bottomLeft")) return { 0, 1 };
-        if (string_equal(str, "bottomRight")) return { 1, 1 };
+        if (String::equal(str, "top")) return { 0.5, 0 };
+        if (String::equal(str, "bottom")) return { 0.5, 1 };
+        if (String::equal(str, "left")) return { 0, 0.5 };
+        if (String::equal(str, "right")) return { 1, 0.5 };
+        if (String::equal(str, "center")) return { 0.5, 0.5 };
+        if (String::equal(str, "topLeft")) return { 0, 0 };
+        if (String::equal(str, "topRight")) return { 1, 0 };
+        if (String::equal(str, "bottomLeft")) return { 0, 1 };
+        if (String::equal(str, "bottomRight")) return { 1, 1 };
         return { 0.5, 0.5 };
     }
     Vector2& Vector2::operator= (nlohmann::json config) {

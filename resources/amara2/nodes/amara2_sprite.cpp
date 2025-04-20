@@ -156,8 +156,7 @@ namespace Amara {
                 passOn.anchor.z + pos.z
             );
 
-            SDL_FRect srcRect;
-            SDL_FRect destRect;
+            SDL_FRect srcRect, destRect;
 
             if (spritesheet) {
                 int fixedFrame = frame % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));

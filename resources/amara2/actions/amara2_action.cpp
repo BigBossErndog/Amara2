@@ -10,6 +10,8 @@ namespace Amara {
         bool completed = false;
         bool hasStarted = false;
         bool waitingForChildren = false;
+
+        bool autoDestroy = false;
         
         bool locked = false;
 
@@ -117,9 +119,9 @@ namespace Amara {
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
             if (val.is<sol::function>()) {
                 sol::function func = val.as<sol::function>();
-                if (string_equal("onPrepare", key)) onPrepare = func;
-                else if (string_equal("onAct", key)) onAct = func;
-                else if (string_equal("onComplete", key)) onComplete = func;
+                if (String::equal("onPrepare", key)) onPrepare = func;
+                else if (String::equal("onAct", key)) onAct = func;
+                else if (String::equal("onComplete", key)) onComplete = func;
             }
             return Amara::Node::luaConfigure(key, val);
         }
@@ -164,8 +166,34 @@ namespace Amara {
         }
 
         sol::object chain(std::string key) {
-            Amara::Action* action = createChild(key)->as<Amara::Action*>();
+            Amara::Action* action = nullptr;
+            Amara::Node* child = nullptr;
+
+            for (int i = children.size()-1; i >= 0; i++) {
+                child = children[i];
+                if (!child->destroyed && child->is_action) {
+                    action = child->as<Amara::Action*>();
+                    if (action) {
+                        return action->chain(key);
+                    }
+                }
+            }
+
+            action = createChild(key)->as<Amara::Action*>();
             return action->get_lua_object();
+        }
+
+        bool chainCompleted() {
+            if (!completed) return false;
+
+            Amara::Action* action = nullptr;
+            for (Amara::Node* child: children) {
+                if (!child->is_action) continue;
+                action = child->as<Amara::Action*>();
+                if (action == nullptr) continue;
+                if (!action->chainCompleted()) return false;
+            }
+            return true;
         }
 
         static void bindLua(sol::state& lua) {
@@ -180,6 +208,7 @@ namespace Amara {
                 "addChild", &Action::addChild,
                 "chain", &Action::chain,
                 "whenDone", &Action::whenDone,
+                "autoDestroy", &Action::autoDestroy,
                 "on", &Action::on,
                 "alongside", [](Amara::Node& e, std::string key) -> sol::object {
                     Amara::Action* action = nullptr;
@@ -201,8 +230,10 @@ namespace Amara {
                 for (int i = e.children.size()-1; i >= 0; i++) {
                     child = e.children[i];
                     if (!child->destroyed && child->is_action) {
-                        action = child->createChild(key)->as<Amara::Action*>();
-                        break;
+                        action = child->as<Amara::Action*>();
+                        if (action) {
+                            return action->chain(key);
+                        }
                     }
                 }
                 if (action == nullptr) action = e.createChild(key)->as<Amara::Action*>();
@@ -212,14 +243,20 @@ namespace Amara {
             node_type["isActing"] = sol::property([](Amara::Node& e) -> bool {
                 if (e.is_action) return !e.destroyed;
                 for (Amara::Node* child: e.children) {
-                    if (!child->destroyed && child->is_action) return true;
+                    if (!child->destroyed && child->is_action) {
+                        Amara::Action* action = child->as<Amara::Action*>();
+                        if (!action->chainCompleted()) return true;
+                    }
                 }
                 return false;
             });
             node_type["finishedActing"] = sol::property([](Amara::Node& e) -> bool {
                 if (e.is_action) return e.destroyed;
+                Amara::Action* action = nullptr;
                 for (Amara::Node* child: e.children) {
                     if (!child->destroyed && child->is_action) return false;
+                    action = child->as<Amara::Action*>();
+                    if (action && !action->chainCompleted()) return false;
                 }
                 return true;
             });

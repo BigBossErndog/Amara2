@@ -125,7 +125,7 @@
     #include "assets/amara2_asset.cpp"
     #include "assets/amara2_imageAsset.cpp"
     #include "assets/amara2_fontAsset.cpp"
-    #include "assets/amara2_tiled_tilemapAsset.cpp"
+    #include "assets/amara2_tmxTilemapAsset.cpp"
 
     #ifdef AMARA_OPENGL
     #include "rendering/shaders/amara2_shaderProgram.cpp"
@@ -170,6 +170,9 @@
     #include "actions/amara2_animation.cpp"
 
     #include "nodes/amara2_textureContainer.cpp"
+
+    #include "nodes/tilemap/amara2_tilemapLayer.cpp"
+    #include "nodes/tilemap/amara2_tilemap.cpp"
 
     #include "audio/amara2_audio.cpp"
     #include "audio/amara2_audiogroup.cpp"

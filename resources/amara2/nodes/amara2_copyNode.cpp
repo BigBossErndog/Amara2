@@ -9,7 +9,7 @@ namespace Amara {
 
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
             if (val.is<Amara::Node*>()) {
-                if (string_equal(key, "target")) copy(val.as<Amara::Node*>());
+                if (String::equal(key, "target")) copy(val.as<Amara::Node*>());
             }
             return Amara::Node::luaConfigure(key, val);
         }

@@ -218,7 +218,6 @@ namespace Amara {
                     }
 
                     currentWorld = nullptr;
-
                     if (game.targetFPS != -1) {
                         frameTarget = 1.0 / (double)game.targetFPS;
                         elapsedTime = (double)(SDL_GetPerformanceCounter() - rec_tick) / (double)freq;
@@ -230,7 +229,7 @@ namespace Amara {
                     gameProps.deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
                     game.fps = 1 / game.deltaTime;
                     rec_tick = current_tick;
-
+                    
                     game.lifeTime += game.deltaTime;
                     if (currentDemiurge) {
                         currentDemiurge->game.lifeTime += game.lifeTime;

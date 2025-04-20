@@ -255,10 +255,10 @@ namespace Amara {
         
         sol::table string_metatable = lua["string"];
         string_metatable.set_function("starts_with", [](std::string self, std::string check) -> bool {
-            return string_startsWith(self, check);
+            return String::startsWith(self, check);
         });
         string_metatable.set_function("ends_with", [](std::string self, std::string check) -> bool {
-            return string_endsWith(self, check);
+            return String::endsWith(self, check);
         });
         string_metatable.set_function("concat", &Amara::lua_string_concat);
         string_metatable.set_function("sep_concat", &Amara::lua_string_sep_concat);

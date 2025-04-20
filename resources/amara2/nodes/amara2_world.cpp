@@ -292,7 +292,7 @@ namespace Amara {
                     vsync = val;
                 }
                 else if (val.is_string()) {
-                    if (string_equal(val, "adaptive")) {
+                    if (String::equal(val, "adaptive")) {
                         vsync = -1;
                     }
                 }
@@ -353,6 +353,9 @@ namespace Amara {
                         entryScenes.push_back(keys[i]);
                     }
                 }
+            }
+            if (json_has(config, "backgroundColor")) {
+                backgroundColor = config["backgroundColor"];
             }
 
             return this;

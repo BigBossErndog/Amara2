@@ -150,10 +150,10 @@ namespace Amara {
             update_properties();
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
-                if (string_endsWith(path, ".json")) {
+                if (String::endsWith(path, ".json")) {
                     configure(gameProps->system->readJSON(path));
                 }
-                else if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
+                else if (String::endsWith(path, ".lua") || String::endsWith(path, ".luac")) {
                     configure(lua_to_json(gameProps->scripts->run(path)));
                 }
                 return this;
@@ -222,10 +222,10 @@ namespace Amara {
                     if (val.is<sol::function>()) {
                         std::string key = it.first.as<std::string>();
                         sol::function func = val.as<sol::function>();
-                        if (string_equal("onPreload", key)) luaPreload = func;
-                        else if (string_equal("onCreate", key)) luaCreate = func;
-                        else if (string_equal("onUpdate", key)) luaUpdate = func;
-                        else if (string_equal("onDestroy", key)) luaDestroy = func;
+                        if (String::equal("onPreload", key)) luaPreload = func;
+                        else if (String::equal("onCreate", key)) luaCreate = func;
+                        else if (String::equal("onUpdate", key)) luaUpdate = func;
+                        else if (String::equal("onDestroy", key)) luaDestroy = func;
                         luaConfigure(key, val);
                     }
                     else if (val.is<sol::userdata>()) {
@@ -236,11 +236,11 @@ namespace Amara {
 
             if (config.is<std::string>()) {
                 std::string path = config.as<std::string>();
-                if (string_endsWith(path, ".json")) {
+                if (String::endsWith(path, ".json")) {
                     luaConfigure(json_to_lua(gameProps->lua, gameProps->system->readJSON(path)));
                     return get_lua_object();
                 }
-                if (string_endsWith(path, ".lua") || string_endsWith(path, ".luac")) {
+                if (String::endsWith(path, ".lua") || String::endsWith(path, ".luac")) {
                     luaConfigure(gameProps->scripts->run(path));
                     return get_lua_object();
                 }
@@ -336,11 +336,14 @@ namespace Amara {
             update_properties();
             if (!actuated) {
                 preload();
-                create();
+                if (!destroyed) create();
                 actuated = true;
             }
+            if (destroyed) return;
 
             messages.run();
+
+            if (destroyed) return;
 
             update(deltaTime);
 
@@ -488,7 +491,7 @@ namespace Amara {
             Amara::Node* child;
 			for (auto it = children.begin(); it != children.end();) {
                 child = *it;
-				if (string_equal(child->id, gid)) {
+				if (String::equal(child->id, gid)) {
 					return child;
 				}
 				++it;
@@ -660,12 +663,12 @@ namespace Amara {
         sol::object get_lua_object();
         
         explicit operator std::string() const {
-            if (string_equal(baseNodeID, nodeID)) {
-                return string_concat(
+            if (String::equal(baseNodeID, nodeID)) {
+                return String::concat(
                     "(", baseNodeID, ": \"", id, "\")"
                 );
             }
-            return string_concat(
+            return String::concat(
                 "(", baseNodeID, ", ", 
                 nodeID, ": \"",
                 id, "\")"
@@ -738,7 +741,7 @@ namespace Amara {
                 "onDestroy", &Node::luaDestroy,
                 "createChild", &Node::luaCreateChild,
                 "addChild", &Node::addChild,
-                "getChild", &Node::luaGetChild,
+                "get", &Node::luaGetChild,
                 "destroyed", sol::readonly(&Node::destroyed),
                 "destroy", &Node::destroy,
                 "destroyChildren", &Node::destroyChildren,
@@ -779,7 +782,7 @@ namespace Amara {
                         std::string gid = getter.as<std::string>();
                         for (Amara::Node* node: vec) {
                             if (node->destroyed) continue;
-                            if (string_equal(node->id, gid)) {
+                            if (String::equal(node->id, gid)) {
                                 return node->get_lua_object();
                             }
                         }
@@ -800,7 +803,7 @@ namespace Amara {
                 "find", [](std::vector<Amara::Node*>& vec, std::string gid) -> sol::object {
                     for (Amara::Node* node: vec) {
                         if (node->destroyed) continue;
-                        if (string_equal(node->id, gid)) {
+                        if (String::equal(node->id, gid)) {
                             return node->get_lua_object();
                         }
                     }

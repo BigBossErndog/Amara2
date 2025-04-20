@@ -73,8 +73,8 @@ namespace Amara {
                     if (success) gameProps->assets->add(task.key, fontAsset);
                     break;
                 }
-                case AssetEnum::TiledTilemap: {
-                    Tiled_TilemapAsset* tilemapAsset = createAsset<Tiled_TilemapAsset>(task.key);
+                case AssetEnum::TMXTilemap: {
+                    TMXTilemapAsset* tilemapAsset = createAsset<TMXTilemapAsset>(task.key);
                     success = tilemapAsset->loadTmx(task.path);
                     if (success) gameProps->assets->add(task.key, tilemapAsset);
                     break;
@@ -135,11 +135,12 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::object tiledTilemap(std::string key, std::string path) {
+        sol::object tilemap(std::string key, std::string path) {
             LoadTask task;
             task.key = key;
             task.path = path;
-            task.type = AssetEnum::TiledTilemap;
+
+            if (String::endsWith(path, ".tmx")) task.type = AssetEnum::TMXTilemap;
 
             queueTask(task);
             return get_lua_object();
@@ -210,7 +211,7 @@ namespace Amara {
                 "image", &Loader::image,
                 "spritesheet", &Loader::spritesheet,
                 "font", &Loader::font,
-                "tiledTilemap", &Loader::tiledTilemap,
+                "tilemap", &Loader::tilemap,
                 "shaderProgram", &Loader::shaderProgram,
                 "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
                 "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; })

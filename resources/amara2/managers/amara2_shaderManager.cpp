@@ -9,12 +9,12 @@ namespace Amara {
     };
 
     ShaderTypeEnum shaderTypeFromString(std::string key) {
-        if (string_equal(key, "vertex")) return ShaderTypeEnum::Vertex;
-        if (string_equal(key, "fragment")) return ShaderTypeEnum::Fragment;
-        if (string_equal(key, "geometry")) return ShaderTypeEnum::Geometry;
-        if (string_equal(key, "compute")) return ShaderTypeEnum::Compute;
-        if (string_equal(key, "tessControl")) return ShaderTypeEnum::TessControl;
-        if (string_equal(key, "tessEvaluation")) return ShaderTypeEnum::TessEvaluation;
+        if (String::equal(key, "vertex")) return ShaderTypeEnum::Vertex;
+        if (String::equal(key, "fragment")) return ShaderTypeEnum::Fragment;
+        if (String::equal(key, "geometry")) return ShaderTypeEnum::Geometry;
+        if (String::equal(key, "compute")) return ShaderTypeEnum::Compute;
+        if (String::equal(key, "tessControl")) return ShaderTypeEnum::TessControl;
+        if (String::equal(key, "tessEvaluation")) return ShaderTypeEnum::TessEvaluation;
         return ShaderTypeEnum::Vertex;
     }
 

@@ -23,7 +23,7 @@ namespace Amara {
         Spritesheet,
         Audio,
         Font,
-        TiledTilemap,
+        TMXTilemap,
         ShaderProgram
     };
 

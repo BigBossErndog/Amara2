@@ -52,9 +52,9 @@
             virtualHeight = 360,
             graphics = Graphics.OpenGL,
             -- graphics = Graphics.Render2D,
-            resizable = true,
-            transparent = true,
-            vsync = true
+            -- resizable = true,
+            -- transparent = true,
+            -- vsync = true
             -- alwaysOnTop = true,
             -- clickThrough = true,
         },
@@ -74,9 +74,10 @@
             -- self.y = self.display.y
             -- self.width = self.display.w
             -- self.height = self.display.h
+            -- Game:uncapFPS()
         end,
         onUpdate = function(self, deltaTime)
-            -- print(Game.fps)
+            -- print(Game.targetFPS, Game.fps, deltaTime)
         end
     })
 

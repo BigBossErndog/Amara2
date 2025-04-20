@@ -1,7 +1,10 @@
 return NodeFactory:create("Scene"):configure({
     onPreload = function(self)
+        self.load:tilemap("testTilemap", "testTilemap.tmx")
+        self.load:image("tiles", "tiles.png")
+
         self.load:image("goldenFlower", "goldenFlower.png")
-        self.load:image("bigThing", "CrossroadCommune-EXT.png")
+
         self.load:spritesheet("freaker", "freaker.png", 32, 64)
         self.load:font("font", "KLEINTEN.ttf", 10)
         self.animations:add({
@@ -36,75 +39,70 @@ return NodeFactory:create("Scene"):configure({
             frameRate = 12,
             repeats = -1
         })
+        -- self:destroy()
     end,
 
     onCreate = function(self)
-        local map = self:createChild("Sprite"):configure({
-            texture = "bigThing",
-            fixedToCamera = true
-            -- alpha = 0.5
+        local tilemap = self:createChild("Tilemap", {
+            texture = "tiles",
+            tilemap = "testTilemap"
         })
-        map:fitWithin(self.camera.view)
-        
-        map = self:createChild("Sprite"):configure({
-            texture = "bigThing",
-            -- alpha = 0.5
-        })
-        self.camera:setBounds(map.rect)
 
-        local textCont = self:createChild("TextureContainer", {
-            width = 256,
-            height = 256,
-            tint = "red",
-            -- alpha = 0.5,
-            -- visible = false,
-            -- paused = true,
-            -- canvasLocked = true,
-            -- fixedToCamera = true,
-            -- origin = Position.Top,
-            -- tint = Colors.Red
-        })
-        self.props.textCont = textCont
-        textCont:wait(2).tween:to({
-            rotation = 2*math.pi,
-            duration = 10,
-            ease = Ease.QuintInOut,
-            repeats = -1,
-            yoyo = true
-        })
+        self.world.backgroundColor = "black"
+
+        -- local textCont = self:createChild("TextureContainer", {
+        --     width = 256,
+        --     height = 256,
+        --     tint = "red",
+        --     -- alpha = 0.5,
+        --     -- visible = false,
+        --     -- paused = true,
+        --     -- canvasLocked = true,
+        --     -- fixedToCamera = true,
+        --     -- origin = Position.Top,
+        --     -- tint = Colors.Red
+        -- })
+        -- self.props.textCont = textCont
+        -- textCont:wait(2).tween:to({
+        --     rotation = 2*math.pi,
+        --     duration = 10,
+        --     ease = Ease.QuintInOut,
+        --     repeats = -1,
+        --     yoyo = true
+        -- })
         -- textCont:fitWithin(self.camera.view)
         -- -- textCont.rect = map.rect
         -- -- copy.target = textCont
 
-        local a_rate = 2 * math.pi * 0.01
-        local d_rate = 1
-        for i = 1, (128*128) do
-            textCont:createChild("Sprite", {
-                texture = "goldenFlower",
-                x = math.sin(a_rate * i) * d_rate * i,
-                y = math.cos(a_rate * i) * d_rate * i
-            })
-        end
+        -- local a_rate = 2 * math.pi * 0.01
+        -- local d_rate = 1
+        -- for i = 1, (128*128) do
+        --     textCont:createChild("Sprite", {
+        --         texture = "goldenFlower",
+        --         x = math.sin(a_rate * i) * d_rate * i,
+        --         y = math.cos(a_rate * i) * d_rate * i
+        --     })
+        -- end
 
-        self.props.txt = textCont:createChild("Text", {
-            -- text = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9",
-            text = 123,
-            font = "font",
-            wrapMode = WrapMode.ByWord,
-            wrapWidth = 128,
-            lineSpacing = 10,
-            -- fixedToCamera = true,
-            color = Colors.Red,
-            x = textCont.left,
-            y = textCont.top,
-            -- origin = 1,
-            alignment = Align.Left,
-        })
+        -- self.props.txt = textCont:createChild("Text", {
+        --     -- text = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9",
+        --     text = 123,
+        --     font = "font",
+        --     wrapMode = WrapMode.ByWord,
+        --     wrapWidth = 128,
+        --     lineSpacing = 10,
+        --     -- fixedToCamera = true,
+        --     color = Colors.Red,
+        --     x = textCont.left,
+        --     y = textCont.top,
+        --     -- origin = 1,
+        --     alignment = Align.Left,
+        -- })
 
-        local f = textCont:createChild("Sprite", {
-            texture = "freaker",
-            animation = "runningDown",
-        })
+        -- local f = textCont:createChild("Sprite", {
+        --     texture = "freaker",
+        --     animation = "runningDown",
+        -- })
         local f = self:createChild("Sprite", {
             texture = "freaker",
             animation = "runningDown",
@@ -186,7 +184,7 @@ return NodeFactory:create("Scene"):configure({
 
         self.props.checker = self:createChild("Node");
         self.props.checker:createChild("Node", { id = "child1" }):createChild("Node", { id = "child2" }):createChild("Node", { id = "3" })
-        print(self.props.checker:getChild("child1/child2"))
+        print(self.props.checker:get("child1/child2"))
     end,
 
     onUpdate = function(self, deltaTime)

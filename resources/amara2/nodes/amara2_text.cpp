@@ -91,7 +91,7 @@ namespace Amara {
             if (in_drawing) {
                 if (config.is_string()) {
                     std::string manipulator_name = config;
-                    if (string_equal(manipulator_name, "end")) {
+                    if (String::equal(manipulator_name, "end")) {
                         temp_props.set(this);
                     }
                     else if (manipulators.find(manipulator_name) != manipulators.end()) {

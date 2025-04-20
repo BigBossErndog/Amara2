@@ -71,6 +71,45 @@ namespace Amara {
             return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
         }
 
+        template<typename... Args>
+        static std::string concat(Args... args) {
+            std::ostringstream ss;
+            (ss << ... << args);
+            return ss.str();
+        }
+
+        template<typename... Args>
+        static std::string sep_concat(const std::string& separator, Args ... args) {
+            std::ostringstream ss;
+            bool first = true;
+            ((ss << (first ? "" : separator) << args, first = false), ...);
+            return ss.str();
+        }
+
+        static bool endsWith(std::string str, std::string suffix) {
+            if (suffix.size() > str.size()) {
+                return false;
+            }
+            return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+        }
+
+        static bool startsWith(std::string& str, std::string& prefix) {
+            if (prefix.size() > str.size()) {
+                return false;
+            }
+            return std::equal(prefix.begin(), prefix.end(), str.begin());
+        }
+
+        static bool equal(std::string str1, std::string str2) {
+            return str1.compare(str2) == 0;
+        }
+        
+        static std::string float_to_string(float n) {
+            if (floor(n) == n) return (std::to_string((int)n));
+            nlohmann::json json(n);
+            return json.dump();
+        }
+
         static std::string fromHex(const std::string& hex) {
             std::string result;
             for (size_t i = 0; i < hex.length(); i += 2) {

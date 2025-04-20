@@ -229,7 +229,7 @@ namespace Amara {
     Amara::Action* Amara::Sprite::animate(nlohmann::json config) {
         for (Amara::Node* node: children) {
             if (node->is_animation && !node->destroyed) {
-                if (config.is_string() && string_equal(config, node->as<Animation*>()->animKey)) {
+                if (config.is_string() && String::equal(config, node->as<Animation*>()->animKey)) {
                     return node->as<Amara::Action*>();
                 }
                 else {

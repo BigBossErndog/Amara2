@@ -70,7 +70,7 @@ namespace Amara {
         }
 
         explicit operator std::string() const {
-            return "{ x: " + float_string(x) + ", y: " + float_string(y) + " }";
+            return "{ x: " + String::float_to_string(x) + ", y: " + String::float_to_string(y) + " }";
         }
         friend std::ostream& operator<<(std::ostream& os, const Vector2& v) {
             return os << static_cast<std::string>(v);
@@ -210,7 +210,7 @@ namespace Amara {
         }
 
         explicit operator std::string() const {
-            return "{ x: " + float_string(x) + ", y: " + float_string(y) + ", z: " + float_string(z) + " }";
+            return "{ x: " + String::float_to_string(x) + ", y: " + String::float_to_string(y) + ", z: " + String::float_to_string(z) + " }";
         }
         friend std::ostream& operator<<(std::ostream& os, const Vector3& v) {
             return os << static_cast<std::string>(v);
@@ -304,7 +304,7 @@ namespace Amara {
         }
 
         explicit operator std::string() const {
-            return "{ x: " + float_string(x) + ", y: " + float_string(y) + ", z: " + float_string(z) + ", w: " + float_string(w) + " }";
+            return "{ x: " + String::float_to_string(x) + ", y: " + String::float_to_string(y) + ", z: " + String::float_to_string(z) + ", w: " + String::float_to_string(w) + " }";
         }
 
         friend std::ostream& operator<<(std::ostream& os, const Vector4& v) {

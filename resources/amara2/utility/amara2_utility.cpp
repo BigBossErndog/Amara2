@@ -46,45 +46,6 @@ namespace Amara {
         return nullptr;
     }
 
-    template<typename... Args>
-    std::string string_concat(Args... args) {
-        std::ostringstream ss;
-        (ss << ... << args);
-        return ss.str();
-    }
-
-    template<typename... Args>
-    std::string string_sep_concat(const std::string& separator, Args ... args) {
-        std::ostringstream ss;
-        bool first = true;
-        ((ss << (first ? "" : separator) << args, first = false), ...);
-        return ss.str();
-    }
-
-    bool string_endsWith(std::string str, std::string suffix) {
-        if (suffix.size() > str.size()) {
-            return false;
-        }
-        return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
-    }
-
-    bool string_startsWith(std::string& str, std::string& prefix) {
-        if (prefix.size() > str.size()) {
-            return false;
-        }
-        return std::equal(prefix.begin(), prefix.end(), str.begin());
-    }
-
-    bool string_equal(std::string str1, std::string str2) {
-        return str1.compare(str2) == 0;
-    }
-    
-    std::string float_string(float n) {
-        if (floor(n) == n) return (std::to_string((int)n));
-        nlohmann::json json(n);
-        return json.dump();
-    }
-
     float fixed_range(float num, float min, float max) {
         if (num < min) return min;
         if (num > max) return max;
@@ -180,31 +141,31 @@ namespace Amara {
 
         Amara::Color& configure(nlohmann::json config) {
             if (config.is_string()) {
-                if (string_equal(config, "white")) {
+                if (String::equal(config, "white")) {
                     r = 255; g = 255; b = 255; a = 255;
                 }
-                else if (string_equal(config, "black")) {
+                else if (String::equal(config, "black")) {
                     r = 0; g = 0; b = 0; a = 255;
                 }
-                else if (string_equal(config, "red")) {
+                else if (String::equal(config, "red")) {
                     r = 255; g = 0; b = 0; a = 255;
                 }
-                else if (string_equal(config, "green")) {
+                else if (String::equal(config, "green")) {
                     r = 0; g = 255; b = 0; a = 255;
                 }
-                else if (string_equal(config, "blue")) {
+                else if (String::equal(config, "blue")) {
                     r = 0; g = 0; b = 255; a = 255;
                 } 
-                else if (string_equal(config, "yellow")) {
+                else if (String::equal(config, "yellow")) {
                     r = 255; g = 255; b = 0; a = 255;
                 }
-                else if (string_equal(config, "magenta")) {
+                else if (String::equal(config, "magenta")) {
                     r = 255; g = 0; b = 255; a = 255;
                 }
-                else if (string_equal(config, "cyan")) {
+                else if (String::equal(config, "cyan")) {
                     r = 0; g = 255; b = 255; a = 255;
                 }
-                else if (string_equal(config, "transparent")) {
+                else if (String::equal(config, "transparent")) {
                     r = 0; g = 0; b = 0; a = 0;
                 }
                 else {

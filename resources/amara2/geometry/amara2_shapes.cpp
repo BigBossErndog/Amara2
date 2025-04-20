@@ -32,7 +32,7 @@ namespace Amara {
         }
         
         explicit operator std::string() const {
-            return "{ x: " + float_string(x) + ", y: " + float_string(y) + ", w: " + float_string(w) + ", h: " + float_string(h) + " }";
+            return "{ x: " + String::float_to_string(x) + ", y: " + String::float_to_string(y) + ", w: " + String::float_to_string(w) + ", h: " + String::float_to_string(h) + " }";
         }
         friend std::ostream& operator<<(std::ostream& os, const Rectangle& v) {
             return os << static_cast<std::string>(v);
@@ -115,7 +115,7 @@ namespace Amara {
         Vector2 p4;
 
         explicit operator std::string() const {
-            return string_concat(
+            return String::concat(
                 "{ \n\t", std::string(p1), ",\n\t",
                 std::string(p2), ",\n\t",
                 std::string(p3), ",\n\t",

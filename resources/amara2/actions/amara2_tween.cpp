@@ -147,7 +147,7 @@ namespace Amara {
                         if (it.value().is_number()) {
                             lua_actor_table.set(it.key(), ease((double)start_data[it.key()], (double)target_data[it.key()], progress, easing));
                         }
-                        else if (string_equal(it.key(), "color") || string_equal(it.key(), "tint") || string_equal(it.key(), "fill") || string_equal(it.key(), "backgroundColor")) {
+                        else if (String::equal(it.key(), "color") || String::equal(it.key(), "tint") || String::equal(it.key(), "fill") || String::equal(it.key(), "backgroundColor")) {
                             Amara::Color start_color = start_data[it.key()];
                             Amara::Color target_color = target_data[it.key()];
                             lua_actor_table.set(it.key(), ease(start_color, target_color, progress, easing));

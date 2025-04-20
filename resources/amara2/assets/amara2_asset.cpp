@@ -15,7 +15,7 @@ namespace Amara {
         }
 
         explicit operator std::string() const {
-            return string_concat(
+            return String::concat(
                 "(", typeKey, ": \"",
                 key, "\")"
             );

@@ -15,7 +15,7 @@ namespace Amara {
                 gameProps->lua_exception_thrown = true;
                 return false;
             }
-            if (string_endsWith(script_path, ".lua")) {
+            if (String::endsWith(script_path, ".lua")) {
                 readScripts[key] = script_path;
             }
             else {
