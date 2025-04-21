@@ -58,6 +58,28 @@ namespace Amara {
             return false;
         }
 
+        void createObjects(sol::protected_function func) {
+            if (tmxAsset) {
+                for (int i = 0; i < tmxAsset->objectGroups.size(); ++i) {
+                    const Amara::TMXObjectGroup& objectGroup = tmxAsset->objectGroups[i];
+                    for (int j = 0; j < objectGroup.objects.size(); ++j) {
+                        const Amara::TMXObject& object = objectGroup.objects[j];
+                        nlohmann::json config = nlohmann::json::object();
+                        config["x"] = object.x;
+                        config["y"] = object.y;
+                        config["width"] = object.width;
+                        config["height"] = object.height;
+                        config["rotation"] = object.rotation;
+                        config["visible"] = object.visible;
+
+                        config["gid"] = object.gid;
+                        config["name"] = object.name;
+                        config["type"] = object.type;
+                    }
+                }
+            }
+        }
+
         void createTMXTilemap() {
             if (tmxAsset) {
                 const unsigned int FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
@@ -137,6 +159,14 @@ namespace Amara {
         }
 
         static void bindLua(sol::state& lua) {
+            lua.new_enum("TMXObjectType", 
+                "Rectangle", Amara::TMXObjectType::Rectangle,
+                "Ellipse", Amara::TMXObjectType::Ellipse,
+                "Polygon", Amara::TMXObjectType::Polygon,
+                "Polyline", Amara::TMXObjectType::Polyline,
+                "Text", Amara::TMXObjectType::Text
+            );
+
             lua.new_usertype<Tilemap>("Tilemap",
                 sol::base_classes, sol::bases<Amara::Group, Amara::Node>(),
                 "texture", sol::property([](Amara::Tilemap& t) -> std::string { if (t.image) return t.image->key; else return ""; }, [](Amara::Tilemap& t, std::string key) { t.setTexture(key); }),

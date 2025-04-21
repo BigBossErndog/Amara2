@@ -180,6 +180,8 @@
     
     #include "nodes/amara2_world.cpp"
 
+    #include "../../plugins/plugins.cpp"
+
     #include "factories/amara2_nodeFactory.cpp"
 
     #include "managers/amara2_garbage.cpp"

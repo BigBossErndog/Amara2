@@ -1,4 +1,6 @@
 namespace Amara {
+    NodeFactory* Plugins::nodeFactory = nullptr;
+
     class NodeDescriptor {
     public:
         nlohmann::json data;
@@ -204,6 +206,9 @@ namespace Amara {
             #endif
             
             registerNode<Amara::World>("World");
+
+            Plugins::nodeFactory = this;
+            Plugins::registerNodes();
         }
 
         void clear() {
@@ -250,6 +255,8 @@ namespace Amara {
             #endif
 
             Amara::World::bindLua(lua);
+            
+            Plugins::bindLua(lua);
 
             lua.new_usertype<NodeFactory>("NodeFactory",
                 "load", &NodeFactory::load,
@@ -302,4 +309,9 @@ namespace Amara {
 
         return luaobject;
     }
+
+    template <typename T>
+    void Plugins::registerNode(std::string key) {
+        Plugins::nodeFactory->registerNode<T>(key);
+    } 
 }

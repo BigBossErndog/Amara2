@@ -27,6 +27,41 @@ namespace Amara {
             paintOnce();
         }
 
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            Amara::TextureContainer::configure(config);
+            
+            if (json_has(config, "tileWidth")) tileWidth = config["tileWidth"];
+            if (json_has(config, "tileHeight")) tileHeight = config["tileHeight"];
+            if (json_has(config, "width")) mapWidth = json_extract(config, "width");
+            if (json_has(config, "height")) mapHeight = json_extract(config, "height");
+
+            Amara::Tile tile;
+            tiles.resize(mapWidth * mapHeight, tile);
+
+            if (json_has(config, "tiles")) {
+                nlohmann::json tileData = json_extract(config, "tiles");
+                if (tileData.is_array()) {
+                    if (tileData.size() != mapWidth * mapHeight) {
+                        debug_log("Error: Given tile data does not match TilemapLayer dimensions.");
+                    }
+                    else {
+                        for (int i = 0; i < tileData.size(); ++i) {
+                            if (tileData[i].is_number()) {
+                                setTile(
+                                    i % mapWidth, i / mapWidth, 
+                                    sol::make_object(gameProps->lua, tileData[i].get<int>())
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            update_canvas = true;
+
+            return this;
+        }
+
         bool setTexture(std::string key) {
             image = nullptr;
 
@@ -50,6 +85,20 @@ namespace Amara {
             image = _image;
             textureWidth = image->width;
             textureHeight = image->height;
+        }
+
+        void setTile(int gx, int gy, sol::object sol_config) {
+            if (gx < 0 || gx >= mapWidth || gy < 0 || gy >= mapHeight) {
+                debug_log("Error: (", gx, ", ", gy, ") is out of bounds of TilemapLayer.");
+                return;
+            }
+            nlohmann::json config = lua_to_json(sol_config);
+            
+            Amara::Tile& tile = tiles[gy * mapWidth + gx];
+            
+            if (config.is_number()) {
+                tile.tileID = config.get<int>();
+            }
         }
 
         virtual void drawCanvasContents(const Rectangle& v) override {
@@ -139,7 +188,8 @@ namespace Amara {
                 "mapWidth", sol::readonly(&TilemapLayer::mapWidth),
                 "mapHeight", sol::readonly(&TilemapLayer::mapHeight),
                 "texture", sol::property([](Amara::TilemapLayer& t) -> std::string { if (t.image) return t.image->key; else return ""; }, [](Amara::TilemapLayer& t, std::string key) { t.setTexture(key); }),
-                "setTexture", sol::resolve<bool(std::string)>(&TilemapLayer::setTexture)
+                "setTexture", sol::resolve<bool(std::string)>(&TilemapLayer::setTexture),
+                "setTile", &TilemapLayer::setTile
             );
         }
     };
