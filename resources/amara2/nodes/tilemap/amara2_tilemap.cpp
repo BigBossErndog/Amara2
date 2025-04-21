@@ -59,6 +59,14 @@ namespace Amara {
         }
 
         void createObjects(sol::protected_function func) {
+            if (!tmxAsset) {
+                debug_log("Error: No tilemap set.");
+                return;
+            }
+            if (!func.valid()) {
+                debug_log("Error: Tilemap.createObjects requires a function to be passed as an argument.");
+                return;
+            }
             if (tmxAsset) {
                 for (int i = 0; i < tmxAsset->objectGroups.size(); ++i) {
                     const Amara::TMXObjectGroup& objectGroup = tmxAsset->objectGroups[i];
@@ -75,6 +83,17 @@ namespace Amara {
                         config["gid"] = object.gid;
                         config["name"] = object.name;
                         config["type"] = object.type;
+
+                        try {
+                            sol::protected_function_result result = func(get_lua_object(), json_to_lua(gameProps->lua, config));
+                            if (!result.valid()) {
+                                sol::error err = result;
+                                throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                            }
+                        } catch (const std::exception& e) {
+                            debug_log(e.what());
+                            gameProps->breakWorld();
+                        }
                     }
                 }
             }
