@@ -38,6 +38,17 @@ namespace Amara {
             SDL_ReadIO(rw, buffer, fileSize);
             SDL_CloseIO(rw);
 
+            if (Amara::Encryption::is_buffer_encrypted(buffer, fileSize)) {
+                #if defined(AMARA_ENCRYPTION_KEY)
+                    Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY)
+                #else
+                    debug_log("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
+                    SDL_free(buffer);
+                    gameProps->breakWorld();
+                    return false;
+                #endif
+            }
+
             stbi_set_flip_vertically_on_load(0);
             unsigned char *imageData = stbi_load_from_memory(buffer, fileSize, &width, &height, &channels, 4);
             SDL_free(buffer);

@@ -227,7 +227,7 @@ namespace Amara {
         }
 
         size_t fileSize = static_cast<size_t>(fileSize_s64);
-        char* buffer = new (std::nothrow) char[fileSize + 1];
+        unsigned char* buffer = new (std::nothrow) unsigned char[fileSize + 1];
         if (!buffer) {
             SDL_CloseIO(rw);
             debug_log("Error: Failed to allocate memory for TMX file buffer: ", path);
@@ -244,8 +244,20 @@ namespace Amara {
         }
         buffer[fileSize] = '\0';
 
+        if (Amara::Encryption::is_buffer_encrypted(buffer, fileSize)) {
+            #if defined(AMARA_ENCRYPTION_KEY)
+                Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY)
+                buffer[fileSize] = '\0';
+            #else
+                debug_log("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
+                SDL_free(buffer);
+                gameProps->breakWorld();
+                return false;
+            #endif
+        }
+
         tinyxml2::XMLDocument doc;
-        tinyxml2::XMLError parseResult = doc.Parse(buffer, fileSize);
+        tinyxml2::XMLError parseResult = doc.Parse(reinterpret_cast<const char*>(buffer), fileSize);
         delete[] buffer;
         buffer = nullptr;
 

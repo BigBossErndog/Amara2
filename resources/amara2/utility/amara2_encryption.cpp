@@ -1,6 +1,10 @@
 namespace Amara {
     class Encryption {
     public:
+        /*
+         * Really basic encryption for the sake of obfuscation and not security.
+         * Using the TEA encryption algorithm.
+         */ 
         static constexpr uint8_t ENCRYPTION_HEADER[] = {'_', 'A', 'R', 'A'}; // Never change this.
         
         static std::array<uint32_t, 4> hash(const std::string& keyStr) {
@@ -10,10 +14,10 @@ namespace Amara {
             std::memcpy(keyBytes, keyStr.data(), len);
         
             for (int i = 0; i < 4; ++i) {
-                key[i] =  (static_cast<uint32_t>(keyBytes[i * 4 + 0])      ) |
-                        (static_cast<uint32_t>(keyBytes[i * 4 + 1]) <<  8) |
-                        (static_cast<uint32_t>(keyBytes[i * 4 + 2]) << 16) |
-                        (static_cast<uint32_t>(keyBytes[i * 4 + 3]) << 24);
+                key[i] = (static_cast<uint32_t>(keyBytes[i * 4 + 0])      ) |
+                         (static_cast<uint32_t>(keyBytes[i * 4 + 1]) <<  8) |
+                         (static_cast<uint32_t>(keyBytes[i * 4 + 2]) << 16) |
+                         (static_cast<uint32_t>(keyBytes[i * 4 + 3]) << 24);
             }
         
             return key;
@@ -30,6 +34,30 @@ namespace Amara {
             }
             v[0] = v0;
             v[1] = v1;
+        }
+
+        static bool is_buffer_encrypted(unsigned char* buffer, size_t size) {
+            if (size < sizeof(ENCRYPTION_HEADER)) {
+                return false;
+            }
+
+            if (std::memcmp(buffer, ENCRYPTION_HEADER, sizeof(ENCRYPTION_HEADER)) != 0) {
+                return false;
+            }
+
+            return true;
+        }
+
+        static bool is_string_encrypted(const std::string& str) {
+            if (str.size() < sizeof(ENCRYPTION_HEADER)) {
+                return false;
+            }
+
+            if (std::memcmp(str.data(), ENCRYPTION_HEADER, sizeof(ENCRYPTION_HEADER)) != 0) {
+                return false;
+            }
+            
+            return true;
         }
         
         static void tea_decrypt(uint32_t* v, const std::string& keyStr) {
@@ -66,12 +94,9 @@ namespace Amara {
         }
         
         static void decryptBuffer(unsigned char* buffer, size_t& size, const std::string& keyStr) {
-            if (size < sizeof(ENCRYPTION_HEADER)) {
-                throw std::runtime_error("Invalid data size or missing magic header.");
-            }
-
-            if (std::memcmp(buffer, ENCRYPTION_HEADER, sizeof(ENCRYPTION_HEADER)) != 0) {
-                throw std::runtime_error("Data is not encrypted or magic header missing.");
+            if (!Encryption::is_buffer_encrypted(buffer, size)) {
+                debug_log("Warning: Attempted to decrypt non-encrypted data (type buffer).");
+                return;
             }
 
             unsigned char* data = buffer + sizeof(ENCRYPTION_HEADER);
@@ -106,6 +131,12 @@ namespace Amara {
             size_t size = encrypted.size();
             unsigned char* buffer = new unsigned char[size];
             std::memcpy(buffer, encrypted.data(), size);
+
+            if (!Encryption::is_buffer_encrypted(buffer, size)) {
+                debug_log("Error: Attempted to decrypt non-encrypted data (type string).");
+                delete[] buffer;
+                return "";
+            }
 
             Encryption::decryptBuffer(buffer, size, keyStr);
 

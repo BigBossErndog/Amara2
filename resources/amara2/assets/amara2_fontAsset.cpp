@@ -162,6 +162,17 @@ namespace Amara {
             SDL_ReadIO(rw, fontBuffer, fileSize);
             SDL_CloseIO(rw);
 
+            if (Amara::Encryption::is_buffer_encrypted(fontBuffer, fileSize)) {
+                #if defined(AMARA_ENCRYPTION_KEY)
+                    Amara::Encryption::decryptBuffer(fontBuffer, fileSize, AMARA_ENCRYPTION_KEY)
+                #else
+                    debug_log("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
+                    SDL_free(fontBuffer);
+                    gameProps->breakWorld();
+                    return false;
+                #endif
+            }
+
             stbtt_InitFont(&font, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));
             
             scale = stbtt_ScaleForMappingEmToPixels(&font, fontSize);
