@@ -13,13 +13,23 @@ namespace Amara {
             if (!gameProps->system->fileExists(script_path)) {
                 debug_log("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
                 gameProps->lua_exception_thrown = true;
+                gameProps->breakWorld();
                 return false;
             }
             if (String::endsWith(script_path, ".lua")) {
                 readScripts[key] = script_path;
             }
             else {
-                compiledScripts[key] = gameProps->system->load_script(script_path);
+                sol::load_result loadResult = gameProps->system->load_script(script_path);
+                if (!loadResult.valid()) {
+                    compiledScripts[key] = loadResult;
+                }
+                else {
+                    debug_log("Error: Invalid script file at \"", script_path, "\".");
+                    gameProps->lua_exception_thrown = true;
+                    gameProps->breakWorld();
+                    return false;
+                }
             }
             return true;
         }
