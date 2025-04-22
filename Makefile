@@ -44,8 +44,8 @@ play:
 
 all:
 	@echo "Usage: make (option)"
-	@echo "Options: win64 win32 linux"
-	@echo "Options: playwin playlinux"
+	@echo "Options: win linux"
+	@echo "Options: play(default windows) playwin playlinux"
 
 cpamara:
 	rm -rf amara/*
@@ -78,7 +78,8 @@ cpDLLsAlt:
 
 # Using MinGW clang++
 win: $(ENTRY_FILES)
-	rm -rf ./build/*
+	mkdir -p ./$(BUILD_PATH)
+	rm -rf ./$(BUILD_PATH)/*
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLs
 

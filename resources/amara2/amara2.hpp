@@ -39,7 +39,6 @@
 
     #define STB_IMAGE_IMPLEMENTATION
     #include <stb_image.h>
-    
 
     #define STB_TRUETYPE_IMPLEMENTATION
     #include <stb_truetype.h>
@@ -94,6 +93,7 @@
     #endif
 
     #include "utility/amara2_enums.cpp"
+    #include "utility/amara2_encryption.cpp"
     #include "utility/amara2_string.cpp"
     #include "utility/amara2_utility.cpp"
     #include "utility/amara2_easing.cpp"

@@ -20,7 +20,7 @@ namespace Amara {
         std::vector<LoadTask> tasks;
 
         int loadRate = 0;
-        int maxFailAttempts = 1;
+        int maxFailAttempts = 3;
         
         bool replaceExisting = true;
 
