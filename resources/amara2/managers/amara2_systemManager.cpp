@@ -52,7 +52,7 @@ namespace Amara {
             return json_to_lua(gameProps->lua, readJSON(path));
         }
 
-        bool writeFile(std::string path, nlohmann::json input) {
+        bool writeFile(std::string path, nlohmann::json input, std::string encryptionKey) {
             std::filesystem::path filePath = getRelativePath(path);
 
             try {
@@ -79,6 +79,10 @@ namespace Amara {
             std::vector<unsigned char> encrypted_buffer_vec;
 
             #if (defined(AMARA_ENCRYPT_RW) && defined(AMARA_ENCRYPTION_KEY))
+            if (encryptionKey.empty()) encryptionKey = AMARA_ENCRYPTION_KEY;
+            #endif
+
+            if (!encryptionKey.empty()) {
                 std::vector<unsigned char> data_to_encrypt(output_str.begin(), output_str.end());
                 size_t original_size = data_to_encrypt.size();
 
@@ -91,20 +95,21 @@ namespace Amara {
                     std::memcpy(encrypted_buffer_vec.data(), data_to_encrypt.data(), original_size);
 
                     size_t actualEncryptedSize = original_size;
-                    Amara::Encryption::encryptBuffer(encrypted_buffer_vec.data(), actualEncryptedSize, AMARA_ENCRYPTION_KEY);
+                    Amara::Encryption::encryptBuffer(encrypted_buffer_vec.data(), actualEncryptedSize, encryptionKey);
 
                     buffer_to_write = encrypted_buffer_vec.data();
                     size_to_write = actualEncryptedSize;
-                } else {
+                } 
+                else {
                     buffer_to_write = nullptr;
                     size_to_write = 0;
                 }
-
-            #else
+            }
+            else {
                 // No encryption, just write the original string data
                 buffer_to_write = reinterpret_cast<const unsigned char*>(output_str.data());
                 size_to_write = output_str.size();
-            #endif
+            }
 
             SDL_IOStream* rw = SDL_IOFromFile(filePath.string().c_str(), "wb");
             if (!rw) {
@@ -130,9 +135,15 @@ namespace Amara {
             debug_log("Written file: ", filePath.string(), " (", size_to_write, " bytes)");
             return true;
         }
+        bool writeFile(std::string path, std::string input) {
+            return writeFile(path, nlohmann::json::parse(input), "");
+        }
+        bool luaWriteFile(std::string path, sol::object input, std::string encryptionKey) {
+            if (input.is<std::string>()) return writeFile(path, input.as<std::string>(), encryptionKey);
+            return writeFile(path, lua_to_json(input), encryptionKey);
+        }
         bool luaWriteFile(std::string path, sol::object input) {
-            if (input.is<std::string>()) return writeFile(path, input.as<std::string>());
-            return writeFile(path, lua_to_json(input));
+            return luaWriteFile(path, input, "");
         }
 
         bool encryptFile(std::string path, std::string dest, std::string encryptionKey) {
@@ -470,18 +481,69 @@ namespace Amara {
         }
 
         sol::object run(std::string path) {
-            std::filesystem::path filePath = getRelativePath(path);
+            std::string scriptContent = readFile(path);
+
+            std::filesystem::path filePath = getScriptPath(path);
+            bool fileExists = std::filesystem::exists(filePath);
+
+            if (scriptContent.empty()) {
+                if (fileExists) {
+                    debug_log("Error: Script '", path, "' is empty or could not be read/decrypted. Cannot execute.");
+                }
+                else {
+                    debug_log("Error: Script '", path, "' does not exist. Cannot execute.");
+                }
+                return sol::nil;
+            }
+
             try {
-                return gameProps->lua.script_file(filePath.string());
+                sol::load_result loadResult = gameProps->lua.load(scriptContent, filePath.string());
+
+                if (!loadResult.valid()) {
+                    sol::error err = loadResult;
+                    debug_log("Error loading script '", filePath.string(), "': ", err.what());
+                    gameProps->lua_exception_thrown = true;
+                    gameProps->breakWorld();
+                    return sol::nil;
+                }
+
+                sol::protected_function scriptFunc = loadResult;
+                sol::protected_function_result execResult = scriptFunc();
+
+                if (!execResult.valid()) {
+                    sol::error err = execResult;
+                    debug_log("Error: Error while executing script \"", filePath.string(), "\": ", err.what());
+                    gameProps->lua_exception_thrown = true;
+                    gameProps->breakWorld();
+                    return sol::nil;
+                }
+
+                return execResult;
             }
             catch (const sol::error& e) {
+                debug_log("Error: Unexpected error during script processing \"", path, "\".");
+                debug_log(e.what());
                 gameProps->lua_exception_thrown = true;
+                gameProps->breakWorld();
+                return sol::nil;
             }
-            return sol::nil;
         }
+
         sol::load_result load_script(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
-            return gameProps->lua.load_file(filePath.string());
+            bool fileExists = std::filesystem::exists(filePath);
+            std::string scriptContent = readFile(path);
+
+            if (scriptContent.empty()) {
+                if (fileExists) {
+                    debug_log("Error: Script '", path, "' is empty or could not be read/decrypted. Cannot execute.");
+                }
+                else {
+                    debug_log("Error: Script '", path, "' does not exist. Cannot execute.");
+                }
+            }
+
+            return gameProps->lua.load(scriptContent, filePath.string());
         }
 
         bool compileScript(std::string path, std::string dest, std::string encryptionKey) {
@@ -508,15 +570,10 @@ namespace Amara {
 
                         std::string bytecode_str = bytecode.as<std::string>();
 
-                        if (!encryptionKey.empty()) {
-                            bytecode_str = Amara::Encryption::encryptString(bytecode_str, encryptionKey);
+                        if (writeFile(destPath.string(), bytecode_str, encryptionKey)) {
+                            debug_log("Compiled script to \"", destPath.string(), "\"");
+                            return true;
                         }
-                        
-                        std::ofstream out(destPath, std::ios::binary);
-                        out.write(bytecode_str.data(), bytecode_str.size());
-                        out.close();
-                        debug_log("Compiled script to \"", destPath.string(), "\"");
-                        return true;
                     }
                     else {
                         debug_log("Error: Could not compile script \"", getScriptPath(path), "\"");
@@ -663,7 +720,10 @@ namespace Amara {
                 "fileExists", &SystemManager::fileExists,
                 "readFile", &SystemManager::readFile,
                 "readJSON", &SystemManager::luaReadJSON,
-                "writeFile", &SystemManager::luaWriteFile,
+                "writeFile", sol::overload(
+                    sol::resolve<bool(std::string, sol::object, std::string)>(&SystemManager::luaWriteFile),
+                    sol::resolve<bool(std::string, sol::object)>(&SystemManager::luaWriteFile)
+                ),
                 "encryptFile", &SystemManager::encryptFile,
                 "deleteFile", &SystemManager::deleteFile,
                 "createDirectory", &SystemManager::createDirectory,
