@@ -72,6 +72,8 @@ namespace Amara {
         bool is_audio = false;
         bool is_audio_group = false;
 
+        bool is_world = false;
+
         std::deque<std::string> inheritanceChain;
 
         #ifdef AMARA_OPENGL
@@ -366,6 +368,7 @@ namespace Amara {
             clean_node_list(children);
 
             lifeTime += deltaTime;
+            if (is_world) gameProps->worldLifetime = lifeTime;
         }
 
         bool finishedLoading();

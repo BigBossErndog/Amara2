@@ -30,6 +30,7 @@ namespace Amara {
             frameRate = 60;
             yoyo = false;
             waitingYoyo = false;
+            animKey.clear();
             frames.clear();
 
             if (config.is_string()) {
@@ -166,28 +167,30 @@ namespace Amara {
                 }
                 else {
                     progress += frameRate*deltaTime/frames.size();
-                    if (progress > 1) progress = 1;
 
-                    if (sprite) {
-                        index = progress == 1 ? (frames.size()-1): floor(progress * (float)frames.size());
-                        sprite->frame = frames[index];
-                    }
-
-                    if (progress == 1) {
+                    if (progress >= 1) {
                         if (waitingYoyo) {
-                            progress = 0;
+                            progress = fmod(progress, 1);
                             waitingYoyo = false;
                             std::reverse(frames.begin(), frames.end());
                         }
                         else if (repeats != 0) {
                             repeats -= 1;
-                            progress = 0;
+                            progress = fmod(progress, 1);
                             if (yoyo) {
                                 std::reverse(frames.begin(), frames.end());
                             }
                             waitingYoyo = yoyo;
                         }
-                        else complete();
+                        else {
+                            progress = 1;
+                            complete();
+                        }
+                    }
+
+                    if (sprite) {
+                        index = progress >= 1 ? (frames.size()-1): floor(progress * (float)frames.size());
+                        sprite->frame = frames[index];
                     }
                 }
             }
@@ -196,7 +199,9 @@ namespace Amara {
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Animation>("Animation",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
-                "setAnimation", &Animation::setAnimation
+                "setAnimation", &Animation::setAnimation,
+                "progress", sol::readonly(&Animation::progress),
+                "key", sol::readonly(&Animation::animKey)
             );
 
             sol::usertype<Amara::Sprite> sprite_type = lua["Sprite"];

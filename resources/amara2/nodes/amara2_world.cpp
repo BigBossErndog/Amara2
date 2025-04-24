@@ -76,6 +76,7 @@ namespace Amara {
             set_base_node_id("World");
             world = this;
             passOnPropsEnabled = false;
+            is_world = true;
         }
 
         virtual void init() override {

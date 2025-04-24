@@ -216,9 +216,14 @@ namespace Amara {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
 
-                GLint location = glGetUniformLocation(shaderProgram->programID, "_texture");
-                if (location != -1) {
-                    glUniform1i(location, 0);
+                GLint texture_location = glGetUniformLocation(shaderProgram->programID, "_texture");
+                if (texture_location != -1) {
+                    glUniform1i(texture_location, 0);
+                }
+
+                GLint time_location = glGetUniformLocation(shaderProgram->programID, "_time");
+                if (time_location != -1) {
+                    glUniform1f(time_location, (float)gameProps->worldLifetime);
                 }
 
                 switch (blendMode) {

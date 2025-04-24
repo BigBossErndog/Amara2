@@ -116,7 +116,7 @@ namespace Amara {
             task.key = key;
             task.path = path;
             task.type = AssetEnum::Spritesheet;
-
+            
             task.frameWidth = frameWidth;
             task.frameHeight = frameHeight;
 

@@ -99,6 +99,7 @@ namespace Amara {
         Scene* scene = nullptr;
 
         std::vector<World*>* world_list = nullptr;
+        double worldLifetime = 0;
 
         void breakWorld();
 
