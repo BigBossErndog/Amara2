@@ -41,6 +41,8 @@ namespace Amara {
         bool canvasLocked = false;
         bool update_canvas = false;
 
+        bool clearOnDraw = true;
+
         Vector2 origin = { 0.5, 0.5 };
 
         Rectangle container_viewport;
@@ -90,6 +92,8 @@ namespace Amara {
             if (json_has(config, "cropRight")) cropRight = config["cropRight"];
             if (json_has(config, "cropTop")) cropTop = config["cropTop"];
             if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
+
+            if (json_has(config, "clearOnDraw")) clearOnDraw = config["clearOnDraw"];
 
             update_size();
             
@@ -187,7 +191,7 @@ namespace Amara {
                 SDL_Rect setv = Rectangle::makeSDLRect(container_viewport);
                 SDL_SetRenderViewport(gameProps->renderer, &setv);
 
-                SDL_RenderClear(gameProps->renderer);
+                if (clearOnDraw) SDL_RenderClear(gameProps->renderer);
             }
 
             #ifdef AMARA_OPENGL
@@ -203,12 +207,14 @@ namespace Amara {
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
                 
                 glViewport(0, 0, width, height);
-                glClearColor(
-                    fill.r / 255.0f,
-                    fill.g / 255.0f,
-                    fill.b / 255.0f,
-                    fill.a / 255.0f
-                );
+                if (clearOnDraw) {
+                    glClearColor(
+                        fill.r / 255.0f,
+                        fill.g / 255.0f,
+                        fill.b / 255.0f,
+                        fill.a / 255.0f
+                    );
+                }
                 glClear(GL_COLOR_BUFFER_BIT);
             }
             #endif
@@ -473,7 +479,8 @@ namespace Amara {
                 "originX", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.x; }, [](Amara::TextureContainer& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.y; }, [](Amara::TextureContainer& t, float v) { t.origin.y = v; }),
                 "canvasLocked", &TextureContainer::canvasLocked,
-                "paintOnce", &TextureContainer::paintOnce
+                "paintOnce", &TextureContainer::paintOnce,
+                "clearOnDraw", &TextureContainer::clearOnDraw
             );
         }
     };

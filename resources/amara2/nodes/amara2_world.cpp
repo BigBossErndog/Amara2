@@ -187,7 +187,7 @@ namespace Amara {
 
             data["window"] = nlohmann::json::object();
             nlohmann::json& window_data = data["window"];
-
+            
             window_data["windowTitle"] = windowTitle;
             window_data["width"] = windowW;
             window_data["height"] = windowH;
