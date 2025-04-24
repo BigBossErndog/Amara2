@@ -7,6 +7,7 @@ return NodeFactory:create("Scene"):configure({
 
         self.load:spritesheet("freaker", "freaker.png", 32, 64)
         self.load:font("font", "KLEINTEN.ttf", 10)
+
         self.animations:add({
             key = "runningDown",
             texture = "freaker",
@@ -135,7 +136,7 @@ return NodeFactory:create("Scene"):configure({
             fixedToCamera = true,
             x = self.camera.left + 10,
             y = self.camera.top + 10,
-            color = Colors.Red
+            color = "white"
         });
 
         local root = self:createChild("TextureContainer", {
@@ -185,6 +186,8 @@ return NodeFactory:create("Scene"):configure({
         self.props.checker = self:createChild("Node");
         self.props.checker:createChild("Node", { id = "child1" }):createChild("Node", { id = "child2" }):createChild("Node", { id = "3" })
         print(self.props.checker:get("child1/child2"))
+
+        self.camera:setBounds(tilemap.rect)
     end,
 
     onUpdate = function(self, deltaTime)

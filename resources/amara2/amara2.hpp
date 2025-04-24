@@ -186,7 +186,7 @@
 
     #include "managers/amara2_garbage.cpp"
 
-    #include "managers/amara2_inputManager.cpp"
+    #include "managers/amara2_inputHandler.cpp"
 
     #include "garden/amara2_demiurge.cpp"
     #include "garden/amara2_creator.cpp"

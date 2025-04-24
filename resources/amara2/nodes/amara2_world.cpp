@@ -203,6 +203,7 @@ namespace Amara {
             window_data["graphics"] = graphics_to_string(graphics);
             window_data["backgroundColor"] = backgroundColor.toJSON();
 
+            data["basePath"] = base_dir_path;
             data["entryScenes"] = entryScenes;
 
             return data;
@@ -445,7 +446,19 @@ namespace Amara {
 
         void setVsync(int _vsync) {
             vsync = _vsync;
-            if (renderer) SDL_SetRenderVSync(renderer, vsync);
+            if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
+                if (SDL_SetRenderVSync(renderer, vsync) < 0) {
+                    debug_log("Warning: Failed to set VSync for SDL_Renderer: ", SDL_GetError());
+                }
+            }
+            #ifdef AMARA_OPENGL
+            else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
+                SDL_GL_MakeCurrent(window, glContext);
+                if (SDL_GL_SetSwapInterval(vsync) < 0) {
+                    debug_log("Warning: Failed to set VSync mode ", vsync, " for OpenGL: ", SDL_GetError());
+                }
+            }
+            #endif
         }
 
         void setClickThroughState(bool enabled) {

@@ -1,12 +1,12 @@
 namespace Amara {
-    class InputManager {
+    class InputHandler {
     public:
         bool logicBlocking = false;
         SDL_Event e;
 
         KeyboardManager keyboard;
 
-        InputManager() = default;
+        InputHandler() = default;
 
         void handleEvents(
             std::vector<Amara::World*>& worlds,

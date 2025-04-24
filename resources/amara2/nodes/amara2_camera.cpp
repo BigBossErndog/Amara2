@@ -141,8 +141,10 @@ namespace Amara {
                     if (bottom > bounds.y + bounds.h) scroll.y = bounds.y + bounds.h - view.h/2;
                 }
             }
-        }
 
+            update_borders();
+        }
+        
         sol::object setBounds(sol::object _bounds) {
             if (!_bounds.is<sol::nil_t>()) {
                 hasBounds = true;
@@ -151,11 +153,13 @@ namespace Amara {
             else {
                 hasBounds = false;
             }
+            update_bounds();
             return get_lua_object();
         }
         sol::object setBounds(const Rectangle& _bounds) {
             hasBounds = true;
             bounds = _bounds;
+            update_bounds();
             return get_lua_object();
         }
         sol::object setBounds(float _x, float _y, float _w, float _h) {

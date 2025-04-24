@@ -54,7 +54,7 @@
             -- graphics = Graphics.Render2D,
             -- resizable = true,
             -- transparent = true,
-            -- vsync = true
+            vsync = true
             -- alwaysOnTop = true,
             -- clickThrough = true,
         },

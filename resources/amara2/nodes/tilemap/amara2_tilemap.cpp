@@ -9,6 +9,12 @@ namespace Amara {
         int mapWidth = 0;
         int mapHeight = 0;
 
+        int tileWidth = 0;
+        int tileHeight = 0;
+
+        int pixelWidth = 0;
+        int pixelHeight = 0;
+
         Tilemap(): Amara::Group() {
             set_base_node_id("Tilemap");
         }
@@ -108,6 +114,12 @@ namespace Amara {
                 
                 mapWidth = tmxAsset->width;
                 mapHeight = tmxAsset->height;
+
+                tileWidth = tmxAsset->tileWidth;
+                tileHeight = tmxAsset->tileHeight;
+
+                pixelWidth = mapWidth * tileWidth;
+                pixelHeight = mapHeight * tileHeight;
                 
                 for (int layerIndex = 0; layerIndex < tmxAsset->layers.size(); ++layerIndex) {
                     const Amara::TMXTileLayer& layer = tmxAsset->layers[layerIndex];
@@ -177,6 +189,14 @@ namespace Amara {
             }
         }
 
+        Rectangle getRectangle() {
+            return Rectangle(
+                pos.x, pos.y,
+                pixelWidth*scale.x, 
+                pixelHeight*scale.y
+            );
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_enum("TMXObjectType", 
                 "Rectangle", Amara::TMXObjectType::Rectangle,
@@ -191,7 +211,14 @@ namespace Amara {
                 "texture", sol::property([](Amara::Tilemap& t) -> std::string { if (t.image) return t.image->key; else return ""; }, [](Amara::Tilemap& t, std::string key) { t.setTexture(key); }),
                 "setTexture", sol::resolve<bool(std::string)>(&Tilemap::setTexture),
                 "tilemap", sol::property([](Amara::Tilemap& t) -> std::string { if (t.asset) return t.asset->key; else return ""; }, [](Amara::Tilemap& t, std::string key) { t.createTilemap(key); }),
-                "createTilemap", sol::resolve<bool(std::string)>(&Tilemap::createTilemap)
+                "createTilemap", sol::resolve<bool(std::string)>(&Tilemap::createTilemap),
+                "width", sol::readonly(&Tilemap::mapWidth),
+                "height", sol::readonly(&Tilemap::mapHeight),
+                "tileWidth", sol::readonly(&Tilemap::tileWidth),
+                "tileHeight", sol::readonly(&Tilemap::tileHeight),
+                "pixelWidth", sol::readonly(&Tilemap::pixelWidth),
+                "pixelHeight", sol::readonly(&Tilemap::pixelHeight),
+                "rect", sol::property(&Tilemap::getRectangle)
             );
         }
     };

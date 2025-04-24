@@ -38,8 +38,8 @@ namespace Amara {
         }
         
         void setTargetFPS(float _fps) {
-            if (_fps <= 0) {
-                debug_log("Error: Target FPS cannot be 0 or less (Note: use World:uncapFPS() to uncap frame rate).");
+            if (_fps < 0) {
+                debug_log("Error: Target FPS cannot be less than 0. (You can use 0 for uncapped frame rate).");
                 return;
             }
             if (demiurgic) {
@@ -49,11 +49,7 @@ namespace Amara {
             targetFPS = _fps;
         }
         void uncapFPS() {
-            if (demiurgic) {
-                debug_log("Note: Demiurgic presence. FPS Overridden.");
-                debug_log("Control will be handed over in target builds.");
-            }
-            targetFPS = -1;
+            setTargetFPS(0);
         }
 
         int get_lua_stack_size() {

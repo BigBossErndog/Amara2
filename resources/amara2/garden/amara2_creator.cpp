@@ -9,7 +9,7 @@ namespace Amara {
 
         MessageQueue messages;
         GarbageCollector garbageCollector;
-        InputManager inputManager;
+        InputHandler inputHandler;
 
         Uint64 rec_tick = 0;
         Uint64 current_tick = 0;
@@ -47,8 +47,8 @@ namespace Amara {
 
             setup(&gameProps);
 
-            lua["Keyboard"] = &(inputManager.keyboard);
-            gameProps.keyboard = &(inputManager.keyboard);
+            lua["Keyboard"] = &(inputHandler.keyboard);
+            gameProps.keyboard = &(inputHandler.keyboard);
 
             override_existence();
 
@@ -180,14 +180,17 @@ namespace Amara {
 
             std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
 
+            bool vsync = false;
+
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
-                inputManager.handleEvents(worlds, game);
+                inputHandler.handleEvents(worlds, game);
 
                 if (game.hasQuit) {
                     break;
                 }
+                vsync = false;
 
-                if (!inputManager.logicBlocking) {
+                if (!inputHandler.logicBlocking) {
                     copy_worlds_list = worlds;
                     for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
                         currentWorld = *it;
@@ -212,13 +215,14 @@ namespace Amara {
 
                         currentWorld->prepareRenderer();
                         currentWorld->draw(gameProps.master_viewport);
+                        if (currentWorld->vsync != 0) vsync = true;
                     }
                     for (Amara::World* world: worlds) {
                         world->presentRenderer();
                     }
 
                     currentWorld = nullptr;
-                    if (game.targetFPS != -1) {
+                    if (game.targetFPS != 0 && !vsync) {
                         frameTarget = 1.0 / (double)game.targetFPS;
                         elapsedTime = (double)(SDL_GetPerformanceCounter() - rec_tick) / (double)freq;
                         if (elapsedTime < frameTarget) {
