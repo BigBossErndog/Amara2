@@ -17,6 +17,8 @@ namespace Amara {
 
         Amara::GameProps* gameProps = nullptr;
 
+        std::string executable;
+
         GameManager() {
             #if defined(__EMSCRIPTEN__)
                 platform = "web";
@@ -83,6 +85,7 @@ namespace Amara {
                 "deltaTime", sol::readonly(&GameManager::deltaTime),
                 "platform", sol::readonly(&GameManager::platform),
                 "get_lua_stack_size", &GameManager::get_lua_stack_size,
+                "executable", sol::readonly(&GameManager::executable),
                 "arguments", sol::property([](const GameManager& g) -> sol::object {
                     if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.gameProps->lua, g.arguments);

@@ -56,6 +56,7 @@ namespace Amara {
         }
 
         Creator(int argv, char** args): Creator() {
+            game.executable = system.getRelativePath(system.getFileName(std::string(args[0])));
             if (argv > 1) {
                 std::cout << "Arguments: ";
                 for (int i = 1; i < argv; i++) {

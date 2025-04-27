@@ -68,6 +68,7 @@
             
         end,
         onCreate = function(self)
+            print("Hello from", Game.executable)
             -- self:setShaderProgram("outlineShader")
             self:createChild("scenes/TestScene")
             -- self.x = self.display.x
