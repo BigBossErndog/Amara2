@@ -17,14 +17,14 @@ namespace Amara {
     };
 
     enum class AssetEnum {
-        None,
-        Surface,
-        Image,
-        Spritesheet,
-        Audio,
-        Font,
-        TMXTilemap,
-        ShaderProgram
+        None = 0,
+        Surface = 1,
+        Image = 2,
+        Spritesheet = 3,
+        Audio = 4,
+        Font = 5,
+        TMXTilemap = 6,
+        ShaderProgram = 7
     };
 
     enum class BlendMode {

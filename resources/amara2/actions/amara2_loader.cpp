@@ -1,6 +1,6 @@
 namespace Amara {
     struct LoadTask {
-        AssetEnum type = AssetEnum::None;
+        int type = (int)AssetEnum::None;
         std::string key;
         std::string path;
 
@@ -59,31 +59,31 @@ namespace Amara {
             bool success = false;
 
             switch (task.type) {
-                case AssetEnum::Image: {
+                case (int)AssetEnum::Image: {
                     ImageAsset* imgAsset = createAsset<ImageAsset>(task.key);
                     success = imgAsset->loadImage(task.path);
                     if (success) gameProps->assets->add(task.key, imgAsset);
                     break;
                 }
-                case AssetEnum::Spritesheet: {
+                case (int)AssetEnum::Spritesheet: {
                     SpritesheetAsset* sprAsset = createAsset<SpritesheetAsset>(task.key);
                     success = sprAsset->loadSpritesheet(task.path, task.frameWidth, task.frameHeight);
                     if (success) gameProps->assets->add(task.key, sprAsset);
                     break;
                 }
-                case AssetEnum::Font: {
+                case (int)AssetEnum::Font: {
                     FontAsset* fontAsset = createAsset<FontAsset>(task.key);
                     success = fontAsset->loadFont(task.path, task.fontSize);
                     if (success) gameProps->assets->add(task.key, fontAsset);
                     break;
                 }
-                case AssetEnum::TMXTilemap: {
+                case (int)AssetEnum::TMXTilemap: {
                     TMXTilemapAsset* tilemapAsset = createAsset<TMXTilemapAsset>(task.key);
                     success = tilemapAsset->loadTmx(task.path);
                     if (success) gameProps->assets->add(task.key, tilemapAsset);
                     break;
                 }
-                case AssetEnum::ShaderProgram: {
+                case (int)AssetEnum::ShaderProgram: {
                     #ifdef AMARA_OPENGL
                     if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                         ShaderProgram* shaderProgram = gameProps->shaders->createShaderProgram(task.key, task.config);
@@ -98,6 +98,7 @@ namespace Amara {
                     break;
                 }
                 default:
+                    success = loadPlugins(task);
                     break;
             }
 
@@ -105,11 +106,13 @@ namespace Amara {
             return success;
         }
 
+        bool loadPlugins(const LoadTask& task);
+
         sol::object image(std::string key, std::string path) {
             LoadTask task;
             task.key = key;
             task.path = path;
-            task.type = AssetEnum::Image;
+            task.type = (int)AssetEnum::Image;
             
             queueTask(task);
             return get_lua_object();
@@ -119,7 +122,7 @@ namespace Amara {
             LoadTask task;
             task.key = key;
             task.path = path;
-            task.type = AssetEnum::Spritesheet;
+            task.type = (int)AssetEnum::Spritesheet;
             
             task.frameWidth = frameWidth;
             task.frameHeight = frameHeight;
@@ -133,7 +136,7 @@ namespace Amara {
             task.key = key;
             task.path = path;
             task.fontSize = fontSize;
-            task.type = AssetEnum::Font;
+            task.type = (int)AssetEnum::Font;
 
             queueTask(task);
             return get_lua_object();
@@ -144,7 +147,7 @@ namespace Amara {
             task.key = key;
             task.path = path;
 
-            if (String::endsWith(path, ".tmx")) task.type = AssetEnum::TMXTilemap;
+            if (String::endsWith(path, ".tmx")) task.type = (int)AssetEnum::TMXTilemap;
 
             queueTask(task);
             return get_lua_object();
@@ -153,9 +156,19 @@ namespace Amara {
         sol::object shaderProgram(std::string key, sol::table config) {
             LoadTask task;
             task.key = key;
-            task.type = AssetEnum::ShaderProgram;
+            task.type = (int)AssetEnum::ShaderProgram;
             task.config = config;
             task.path = gameProps->lua["table"]["to_string"](config);
+
+            queueTask(task);
+            return get_lua_object();
+        }
+
+        sol::object custom(std::string key, int type, sol::table config) {
+            LoadTask task;
+            task.key = key;
+            task.type = type;
+            task.config = config;
 
             queueTask(task);
             return get_lua_object();
@@ -221,6 +234,7 @@ namespace Amara {
                 "font", &Loader::font,
                 "tilemap", &Loader::tilemap,
                 "shaderProgram", &Loader::shaderProgram,
+                "custom", &Loader::custom,
                 "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
                 "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; })
             );

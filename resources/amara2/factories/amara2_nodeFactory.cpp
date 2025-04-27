@@ -313,5 +313,9 @@ namespace Amara {
     template <typename T>
     void Plugins::registerNode(std::string key) {
         Plugins::nodeFactory->registerNode<T>(key);
-    } 
+    }
+
+    bool Amara::Loader::loadPlugins(const LoadTask& task) {
+        Plugins::load(task);
+    }
 }

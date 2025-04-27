@@ -27,5 +27,14 @@ namespace Amara {
              * e.g. registerNode<MyPlugin>("MyPlugin");
              */
         }
+
+        static bool load(const LoadTask& task) {
+            /* Insert loading your custom assets here.
+             * Return true on success and 
+             */
+            switch (task.type) {
+
+            }
+        }
     };
 }
