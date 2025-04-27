@@ -28,16 +28,41 @@ namespace Amara {
         std::string key;
         unsigned int programID = 0;
 
-        virtual void applyShader() {
+        void applyShader() {
             if (destroyed) return;
             if (programID != 0) {
                 glUseProgram(programID);
             }
+            for (auto& uniform : uniforms) {
+                GLint location = glGetUniformLocation(programID, uniform.first.c_str());
+                if (location == -1) {
+                    debug_log("Warning: Uniform \"", uniform.first, "\" not found in shader program \"", key, "\".");
+                    continue;
+                }
+                if (isUniform<bool>(uniform.second) || isUniform<int>(uniform.second)) {
+                    glUniform1i(programID, getUniform<int>(uniform.second));
+                }
+                else if (isUniform<float>(uniform.second)) {
+                    glUniform1f(programID, getUniform<float>(uniform.second));
+                }
+                else if (isUniform<Vector2>(uniform.second)) {
+                    Vector2 vec = getUniform<Vector2>(uniform.second);
+                    glUniform2f(location, vec.x, vec.y);
+                }
+                else if (isUniform<Vector3>(uniform.second)) {
+                    Vector3 vec = getUniform<Vector3>(uniform.second);
+                    glUniform3f(location, vec.x, vec.y, vec.z);
+                }
+                else if (isUniform<Vector4>(uniform.second)) {
+                    Vector4 vec = getUniform<Vector4>(uniform.second);
+                    glUniform4f(location, vec.x, vec.y, vec.z, vec.w);
+                }
+            }
         }
 
-        virtual void configure(nlohmann::json config);
+        void configure(nlohmann::json config);
 
-        virtual void setUniform(std::string name, nlohmann::json value) {
+        void setUniform(std::string name, nlohmann::json value) {
             if (destroyed) return;
             if (value.is_array()) {
                 if (value.size() == 4) {
@@ -72,12 +97,8 @@ namespace Amara {
                 return;
             }
             if (value.is_object()) {
-                if (json_has(value, "x", "y")) {
-                    uniforms[name] = Vector2(value["x"], value["y"]);
-                    return;
-                }
-                if (json_has(value, "x", "y", "z")) {
-                    uniforms[name] = Vector3(value["x"], value["y"], value["z"]);
+                if (json_has(value, "r", "g", "b", "a")) {
+                    uniforms[name] = Vector4(value["r"], value["g"], value["b"], value["a"]);
                     return;
                 }
                 if (json_has(value, "x", "y", "z", "w")) {
@@ -88,7 +109,18 @@ namespace Amara {
                     uniforms[name] = Vector4(value["x"], value["y"], value["w"], value["h"]);
                     return;
                 }
+                if (json_has(value, "x", "y", "z")) {
+                    uniforms[name] = Vector3(value["x"], value["y"], value["z"]);
+                    return;
+                }
+                if (json_has(value, "x", "y")) {
+                    uniforms[name] = Vector2(value["x"], value["y"]);
+                    return;
+                }
             }
+        }
+        void setUniform(std::string name, sol::object config) {
+            setUniform(name, lua_to_json(config));
         }
 
         template <typename T>
@@ -98,10 +130,15 @@ namespace Amara {
 
         template <typename T>
         T getUniform(std::string name) {
-            if (!isUniform<T>(uniforms[name])) {
+            return getUniform<T>(uniforms[name]);
+        }
+
+        template <typename T>
+        T getUniform(UniformType type) {
+            if (!isUniform<T>(type)) {
                 throw std::bad_cast();
             }
-            return std::get<T>(uniforms[name]);
+            return std::get<T>(type);
         }
         
         virtual void destroy() {
@@ -117,7 +154,7 @@ namespace Amara {
                 "destroy", &ShaderProgram::destroy,
                 "key", &ShaderProgram::key,
                 "configure", &ShaderProgram::configure,
-                "setUniform", &ShaderProgram::setUniform
+                "setUniform", sol::resolve<void(std::string, sol::object)>(&ShaderProgram::setUniform)
             );
         }
     };

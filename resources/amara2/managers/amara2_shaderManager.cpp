@@ -1,5 +1,6 @@
 namespace Amara {
     enum class ShaderTypeEnum {
+        None = -1,
         Vertex = GL_VERTEX_SHADER,
         Fragment = GL_FRAGMENT_SHADER,
         Geometry = GL_GEOMETRY_SHADER,
@@ -15,7 +16,7 @@ namespace Amara {
         if (String::equal(key, "compute")) return ShaderTypeEnum::Compute;
         if (String::equal(key, "tessControl")) return ShaderTypeEnum::TessControl;
         if (String::equal(key, "tessEvaluation")) return ShaderTypeEnum::TessEvaluation;
-        return ShaderTypeEnum::Vertex;
+        return ShaderTypeEnum::None;
     }
 
     std::string shaderTypeToString(ShaderTypeEnum type) {
@@ -201,10 +202,17 @@ namespace Amara {
                 return nullptr;
             }
             
-            for (auto it = config.begin(); it != config.end(); ++it) {
+            auto config_items = config.items();
+            for (auto it : config_items) {
                 bool temp = false;
                 ShaderTypeEnum type = shaderTypeFromString(it.key());
                 std::string shader_key = it.value();
+
+                if (type == ShaderTypeEnum::None) {
+                    continue;
+                }
+                config.erase(it.key());
+
                 unsigned int shaderID = 0;
                 if (hasShader(shader_key)) {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
@@ -319,6 +327,7 @@ namespace Amara {
                 #ifdef AMARA_OPENGL
                 "createShaderProgram", sol::resolve<ShaderProgram*(std::string, sol::object)>(&ShaderManager::createShaderProgram),
                 "hasShaderProgram", &ShaderManager::hasShaderProgram,
+                "getShaderProgram", &ShaderManager::getShaderProgram,
                 #endif
                 "hasShader", &ShaderManager::hasShader,
                 "loadShader", &ShaderManager::loadShader
@@ -328,7 +337,9 @@ namespace Amara {
 
     #ifdef AMARA_OPENGL
     void ShaderProgram::configure(nlohmann::json config) {
-
+        for (auto it = config.begin(); it != config.end(); ++it) {
+            setUniform(it.key(), it.value());
+        }
     }
     #endif
 }

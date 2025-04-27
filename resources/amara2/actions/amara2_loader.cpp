@@ -7,6 +7,8 @@ namespace Amara {
         bool replace = false;
         int failAttempts = 0;
 
+        bool in_progress = false;
+
         int frameWidth = 0;
         int frameHeight = 0;
 
@@ -20,7 +22,7 @@ namespace Amara {
         std::vector<LoadTask> tasks;
 
         int loadRate = 0;
-        int maxFailAttempts = 3;
+        int maxFailAttempts = 1;
         
         bool replaceExisting = true;
 
@@ -39,16 +41,18 @@ namespace Amara {
         }
 
         bool processTask(const LoadTask& task) {
-            bool existing = gameProps->assets->has(task.key);
-            if (existing) {
-                if (replaceExisting) {
-                    debug_log("Note: Asset \"", task.key, "\" already exists. Overwriting Asset.");
-                    debug_log("(Use \"node.load.replaceExisting = false\" to disable overwriting of assets.)");
-                }
-                else {
-                    debug_log("Note: Asset \"", task.key, "\" already exists. Ignoring load task.");
-                    debug_log("(Use \"node.load.replaceExisting = true\" to enable overwriting of assets.)");
-                    return true;
+            if (!task.in_progress) {
+                bool existing = gameProps->assets->has(task.key);
+                if (existing) {
+                    if (replaceExisting) {
+                        debug_log("Note: Asset \"", task.key, "\" already exists. Overwriting Asset.");
+                        debug_log("(Use \"node.load.replaceExisting = false\" to disable overwriting of assets.)");
+                    }
+                    else {
+                        debug_log("Note: Asset \"", task.key, "\" already exists. Ignoring load task.");
+                        debug_log("(Use \"node.load.replaceExisting = true\" to enable overwriting of assets.)");
+                        return true;
+                    }
                 }
             }
 
@@ -97,7 +101,7 @@ namespace Amara {
                     break;
             }
 
-            if (!success) debug_log("Error: Failed to load asset \"", task.key, "\" from ", task.path);
+            if (!success && !task.in_progress) debug_log("Error: Failed to load asset \"", task.key, "\" from ", task.path);
             return success;
         }
 
@@ -161,7 +165,7 @@ namespace Amara {
             if (loadRate > 0) tasks.push_back(task);
             else processTask(task);
         }
-
+        
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
 
@@ -169,14 +173,18 @@ namespace Amara {
                 int processedTasks = 0;
 
                 for (auto it = tasks.begin(); it != tasks.end();) {
-                    if (processTask(*it)) {
+                    LoadTask& task = *it;
+                    if (processTask(task)) {
                         it = tasks.erase(it);
+                    }
+                    else if (task.in_progress) {
+                        break;
                     }
                     else {
                         LoadTask& task = *it;
                         task.failAttempts += 1;
                         if (task.failAttempts >= maxFailAttempts) {
-                            debug_log("Error: Failed to load \"", task.key, "\" ", task.path);
+                            debug_log("Error: Given up on load task \"", task.key, "\" ", task.path);
                             it = tasks.erase(it);
                         }
                         else {

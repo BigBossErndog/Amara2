@@ -66,6 +66,23 @@ namespace Amara {
                 }
                 std::cout << std::endl;
             }
+            if (game.arguments.size() > 0) {
+                for (auto it = game.arguments.begin(); it != game.arguments.end();) {
+                    nlohmann::json& arg = *it;
+                    if (arg.is_string()) {
+                        if (String::equal(arg, "-context")) {
+                            ++it;
+                            if (it == game.arguments.end()) break;
+                            nlohmann::json& path = *it;
+                            if (path.is_string()) {
+                                gameProps.context_path = path;
+                                system.resetBasePath();
+                            }
+                        }
+                    }
+                    ++it;
+                }
+            }
         }
 
         virtual World* createWorld(sol::object config) override {
