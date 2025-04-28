@@ -530,6 +530,14 @@ namespace Amara {
             return sol::nil;
         }
 
+        bool isProp(std::string key) {
+            sol::object p = props[key];
+            if (p.is<bool>()) {
+                return p.as<bool>();
+            }
+            return false;
+        }
+
         void switchParent(Amara::Node* other) {
             if (destroyed || other->destroyed || other == parent) return;
             if (other->parent && other->parent == this) {

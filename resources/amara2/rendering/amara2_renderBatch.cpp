@@ -150,7 +150,7 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
 
-            if (glTextureID != 0 && shaderProgram != nullptr && gameProps->graphics == Amara::GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+            if (shaderProgram != nullptr && gameProps->graphics == Amara::GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 glDisable(GL_DEPTH_TEST);
 
                 if (!insideTextureContainer && gameProps->current_window != nullptr) {
@@ -213,12 +213,17 @@ namespace Amara {
                     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, required_ebo_size, indices.data());
                 }
                 
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, glTextureID);
+                if (glTextureID != 0) {
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, glTextureID);
 
-                GLint texture_location = glGetUniformLocation(shaderProgram->programID, "_texture");
-                if (texture_location != -1) {
-                    glUniform1i(texture_location, 0);
+                    GLint texture_location = glGetUniformLocation(shaderProgram->programID, "_texture");
+                    if (texture_location != -1) {
+                        glUniform1i(texture_location, 0);
+                    }
+                    else {
+                        debug_log("Warning: Uniform \"_texture\" was not found in shader program \"", shaderProgram->programID, "\".");
+                    }
                 }
 
                 GLint time_location = glGetUniformLocation(shaderProgram->programID, "_time");
@@ -249,7 +254,7 @@ namespace Amara {
                 }
 
                 glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
-
+                
                 glBindVertexArray(0);
                 glBindTexture(GL_TEXTURE_2D, 0);
             }

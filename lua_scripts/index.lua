@@ -54,8 +54,8 @@
             -- graphics = Graphics.Render2D,
             -- resizable = true,
             -- transparent = true,
-            vsync = true
-            -- alwaysOnTop = true,
+            vsync = true,
+            alwaysOnTop = true,
             -- clickThrough = true,
         },
         -- entryScene = "scenes/TestScene",

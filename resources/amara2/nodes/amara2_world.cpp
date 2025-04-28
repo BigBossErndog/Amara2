@@ -474,7 +474,7 @@ namespace Amara {
                     return;
                 }
 
-                #ifdef _WIN32
+                #if defined(_WIN32)
                     HWND hwnd = (HWND)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
                     if (hwnd) {
                         // Ensure SetWindowLongPtr is available (might need different versions for 32/64 bit)
@@ -501,6 +501,43 @@ namespace Amara {
                     } else {
                         debug_log("Warning: Failed to get HWND for click-through setup.");
                     }
+                #elif defined(__linux__)
+                    Display* display = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+                    Window xwindow = (Window)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+    
+                    if (display && xwindow != 0) {
+                        int shape_event_base, shape_error_base;
+                        if (XShapeQueryExtension(display, &shape_event_base, &shape_error_base)) {
+                            if (enabled) {
+                                Region region = XCreateRegion();
+                                if (region) {
+                                    XShapeCombineRegion(display, xwindow, ShapeInput, 0, 0, region, ShapeSet);
+                                    XDestroyRegion(region);
+                                } else {
+                                    debug_log("Warning: Failed to create X region for click-through.");
+                                }
+                            } else {
+                                XShapeCombineRegion(display, xwindow, ShapeInput, 0, 0, None, ShapeSet);
+                            }
+                            XFlush(display);
+                        } else {
+                            debug_log("Warning: X Shape Extension not available. Cannot set click-through.");
+                        }
+                    } else {
+                        debug_log("Warning: Failed to get X11 Display or Window for click-through setup.");
+                    }
+    
+                #elif defined(__APPLE__) // Cocoa Implementation
+                    NSWindow* nsWindow = (NSWindow*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+                    if (nsWindow) {
+                        [nsWindow setIgnoresMouseEvents:enabled];
+                    } else {
+                        debug_log("Warning: Failed to get NSWindow for click-through setup.");
+                    }
+    
+                #else
+                    debug_log("Warning: Click-through not implemented for this platform.");
+                    return;
                 #endif
             }
         }

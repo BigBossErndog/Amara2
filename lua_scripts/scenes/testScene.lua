@@ -44,12 +44,12 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
-        local tilemap = self:createChild("Tilemap", {
-            texture = "tiles",
-            tilemap = "testTilemap"
-        })
+        -- local tilemap = self:createChild("Tilemap", {
+        --     texture = "tiles",
+        --     tilemap = "testTilemap"
+        -- })
 
-        self.world.backgroundColor = "black"
+        -- self.world.backgroundColor = "black"
 
         -- local textCont = self:createChild("TextureContainer", {
         --     width = 256,
@@ -187,7 +187,7 @@ return NodeFactory:create("Scene"):configure({
         self.props.checker:createChild("Node", { id = "child1" }):createChild("Node", { id = "child2" }):createChild("Node", { id = "3" })
         print(self.props.checker:get("child1/child2"))
         
-        self.camera:setBounds(tilemap.rect)
+        -- self.camera:setBounds(tilemap.rect)
         self.props.f.pos = self.camera.center
     end,
 

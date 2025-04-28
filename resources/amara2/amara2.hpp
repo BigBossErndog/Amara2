@@ -49,6 +49,9 @@
         #include <windows.h>
     #elif defined(__linux__)
         #include <SDL_syswm.h>
+        #include <sys/socket.h>
+        #include <netinet/in.h>
+        #include <unistd.h>
         #include <X11/Xlib.h>
         #include <X11/extensions/shape.h>
     #elif defined(__ANDROID__)
