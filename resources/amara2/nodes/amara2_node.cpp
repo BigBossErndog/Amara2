@@ -517,9 +517,18 @@ namespace Amara {
                 else findKey += c;
             }
 
+            if (parent && String::equal(findKey, "..")) {
+                if (forwardSlash && !nextKey.empty()) return parent->getChild(nextKey);
+                else return parent;
+            }
+            if (String::equal(findKey, ".")) {
+                if (forwardSlash && !nextKey.empty()) return getChild(nextKey);
+                else return this;
+            }
+
             Amara::Node* found = findChild(findKey);
             if (found != nullptr) {
-                if (forwardSlash) return found->getChild(nextKey);
+                if (forwardSlash && !nextKey.empty()) return found->getChild(nextKey);
                 else return found;
             }
             return nullptr;

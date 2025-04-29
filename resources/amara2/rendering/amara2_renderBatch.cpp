@@ -280,8 +280,9 @@ namespace Amara {
                 if (alphaVBO) { glDeleteBuffers(1, &alphaVBO); alphaVBO = 0; }
                 if (tintVBO) { glDeleteBuffers(1, &tintVBO); tintVBO = 0; }
 
-            } else {
-                 VAO = VBO = EBO = alphaVBO = tintVBO = 0;
+            }
+            else {
+                VAO = VBO = EBO = alphaVBO = tintVBO = 0;
             }
             #endif
 

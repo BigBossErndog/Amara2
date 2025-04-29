@@ -49,7 +49,7 @@ namespace Amara {
             }
             if (hasStarted && !completed && onAct.valid()) {
                 try {
-                    sol::protected_function_result result = onAct(actor->get_lua_object(), deltaTime, get_lua_object());
+                    sol::protected_function_result result = onAct(actor->get_lua_object(), get_lua_object(), deltaTime);
                     if (!result.valid()) {
                         sol::error err = result;
                         throw std::runtime_error("Lua Error: " + std::string(err.what()));  

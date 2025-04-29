@@ -16,6 +16,7 @@ namespace Amara {
 
         int repeats = 0;
 
+        sol::protected_function onStart;
         sol::protected_function onUpdate;
 
         Tween(): Amara::Action() {
@@ -42,6 +43,10 @@ namespace Amara {
             if (lua_data["onComplete"].valid()) {
                 onComplete = lua_data["onComplete"];
                 lua_data["onComplete"] = sol::nil;
+            }
+            if (lua_data["onStart"].valid()) {
+                onStart = lua_data["onStart"];
+                lua_data["onStart"] = sol::nil;
             }
             if (lua_data["onUpdate"].valid()) {
                 onUpdate = lua_data["onUpdate"];
@@ -130,6 +135,19 @@ namespace Amara {
                 clean_data();
 
                 Amara::Action::prepare();
+
+                if (onStart.valid()) {
+                    try {
+                        sol::protected_function_result result = onStart(actor, get_lua_object());
+                        if (!result.valid()) {
+                            sol::error err = result;
+                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                        }
+                    } catch (const std::exception& e) {
+                        debug_log(e.what());
+                        gameProps->breakWorld();
+                    }
+                }
             }
         }
 
@@ -157,7 +175,7 @@ namespace Amara {
 
                 if (onUpdate.valid()) {
                     try {
-                        sol::protected_function_result result = onUpdate(actor, deltaTime, get_lua_object());
+                        sol::protected_function_result result = onUpdate(actor, get_lua_object(), deltaTime);
                         if (!result.valid()) {
                             sol::error err = result;
                             throw std::runtime_error("Lua Error: " + std::string(err.what()));  
