@@ -199,6 +199,19 @@ namespace Amara {
 
             if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
 
+            if (json_has(config, "onPreload") && config["onPreload"].is_string()) {
+                luaPreload = string_to_lua_object(gameProps->lua);
+            }
+            if (json_has(config, "onCreate") && config["onCreate"].is_string()) {
+                luaCreate = string_to_lua_object(gameProps->lua, config["onCreate"]);
+            }
+            if (json_has(config, "onUpdate") && config["onUpdate"].is_string()) {
+                luaUpdate = string_to_lua_object(gameProps->lua);
+            }
+            if (json_has(config, "onDestroy") && config["onDestroy"].is_string()) {
+                luaDestroy = string_to_lua_object(gameProps->lua);
+            }
+            
             if (json_has(config, "props")) {
                 nlohmann::json data = config["props"];
                 if (data.is_object()) {
