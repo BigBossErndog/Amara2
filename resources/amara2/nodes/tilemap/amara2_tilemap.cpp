@@ -165,6 +165,14 @@ namespace Amara {
 
                             unsigned int localTileId = cleanGid - tileset->firstGid;
 
+                            const TMXTileData* tileData = tmxAsset->getTileData(cleanGid);
+                            if (tileData && tileData->animation.has_value()) {
+                                if (layerNode->tmxAnimations.find(localTileId) == layerNode->tmxAnimations.end()) {
+                                    const TMXAnimation& animDefinition = tileData->animation.value();
+                                    layerNode->setAnimation(localTileId, animDefinition);
+                                }
+                            }
+
                             tile.tileID = localTileId;
                             tile.pos.x = tx;
                             tile.pos.y = ty;

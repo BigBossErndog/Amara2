@@ -82,6 +82,7 @@ namespace Amara {
             if (json_has(config, "h")) height = config["h"];
             if (json_has(config, "width")) width = config["width"];
             if (json_has(config, "height")) height = config["height"];
+            if (json_has(config, "size")) resize(config["size"]);
             if (json_has(config, "canvasLocked")) canvasLocked = config["canvasLocked"];
 
             if (json_has(config, "originX")) origin.x = config["originX"];
@@ -412,6 +413,15 @@ namespace Amara {
                 height*scale.y
             );
         }
+
+        Rectangle resize(const Rectangle& rect) {
+            rotation = 0;
+            pos.x = rect.x + rect.w*origin.x;
+            pos.y = rect.y + rect.h*origin.y;
+            width = rect.w;
+            height = rect.h;
+            return getRectangle();
+        }
         
         Rectangle stretchTo(const Rectangle& rect) {
             rotation = 0;
@@ -464,6 +474,8 @@ namespace Amara {
                 "height", &TextureContainer::height,
                 "canvas", sol::property(&TextureContainer::getCanvasSize, &TextureContainer::setCanvasSize),
                 "rect", sol::property(&TextureContainer::getRectangle, &TextureContainer::stretchTo),
+                "size", sol::property([](Amara::TextureContainer& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.width, t.height); }, &TextureContainer::resize),
+                "resize", &TextureContainer::resize,
                 "stretchTo", &TextureContainer::stretchTo,
                 "fitWithin", &TextureContainer::fitWithin,
                 "center", sol::property(&TextureContainer::getCenter),

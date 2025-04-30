@@ -21,9 +21,12 @@ namespace Amara {
 
         std::vector<Tile> tiles;
 
+        std::unordered_map<int, TMXAnimation> tmxAnimations;
+
         TilemapLayer(): Amara::TextureContainer() {
             set_base_node_id("TilemapLayer");
             origin = Vector2(0, 0);
+            tmxAnimations.clear();
             paintOnce();
         }
 
@@ -87,6 +90,14 @@ namespace Amara {
             textureHeight = image->height;
         }
 
+        void setAnimation(int tileID, const TMXAnimation& animation) {
+            tmxAnimations[tileID] = animation;
+            TMXAnimation& anim = tmxAnimations[tileID];
+            anim.progress = 0;
+            anim.currentIndex = 0;
+            anim.currentTileId = anim.frames[0].tileId;
+        }
+
         void setTile(int gx, int gy, sol::object sol_config) {
             if (gx < 0 || gx >= mapWidth || gy < 0 || gy >= mapHeight) {
                 debug_log("Error: (", gx, ", ", gy, ") is out of bounds of TilemapLayer.");
@@ -101,19 +112,44 @@ namespace Amara {
             }
         }
 
+        void processAnimations(double deltaTime) {
+            for (auto it = tmxAnimations.begin(); it != tmxAnimations.end(); ++it) {
+                TMXAnimation& animation = it->second;
+                double progress = animation.progress += deltaTime * 1000;
+                progress = fmod(progress, animation.totalDuration);
+                animation.currentIndex = 0;
+                while (progress > animation.frames[animation.currentIndex].duration) {
+                    progress -= animation.frames[animation.currentIndex].duration;
+                    ++animation.currentIndex;
+                }
+                animation.currentTileId = animation.frames[animation.currentIndex].tileId;
+            }
+        }
+
+        virtual void update(double deltaTime) override {
+            processAnimations(deltaTime);
+            Amara::TextureContainer::update(deltaTime);
+        }
+
         virtual void drawCanvasContents(const Rectangle& v) override {
             if (image) {
                 SDL_FRect srcRect, destRect;
                 SDL_FPoint dorigin = { tileWidth/2.0f, tileHeight/2.0f };
                 
+                int frame = 0;
                 for (int x = 0; x < mapWidth; ++x) {
                     for (int y = 0; y < mapHeight; ++y) {
                         Amara::Tile& tile = tiles[y * mapWidth + x];
                         if (tile.tileID == -1) continue;
 
+                        frame = tile.tileID;
+                        if (tmxAnimations.find(tile.tileID) != tmxAnimations.end()) {
+                            frame = tmxAnimations[tile.tileID].currentTileId;
+                        }
+
                         srcRect = {
-                            static_cast<float>((tile.tileID % (textureWidth / tileWidth)) * tileWidth),
-                            static_cast<float>(floor(tile.tileID / (textureWidth / tileWidth)) * tileHeight),
+                            static_cast<float>((frame % (textureWidth / tileWidth)) * tileWidth),
+                            static_cast<float>(floor(frame / (textureWidth / tileWidth)) * tileHeight),
                             static_cast<float>(tileWidth),
                             static_cast<float>(tileHeight)
                         };

@@ -1,86 +1,77 @@
 namespace Amara {
+    class GameProps;
+    class Asset;
+
     struct TMXProperty {
         std::string name;
-        std::string type = "string"; // Tiled type: string, int, float, bool, color, file, object
+        std::string type = "string";
         std::string value;
-
-        // TODO: std::variant<std::string, int, float, bool, Color, std::string, int> parsedValue;
     };
     using TMXProperties = std::map<std::string, TMXProperty>;
 
     enum class TMXObjectType {
-        Rectangle, // Default if no shape element
-        Ellipse,
-        Point,
-        Polygon,
-        Polyline,
-        Text
+        Rectangle, Ellipse, Point, Polygon, Polyline, Text
     };
 
     struct TMXObject {
         unsigned int id = 0;
-
         std::string name;
-        std::string type; // User-defined type string
-
-        float x = 0.0f;
-        float y = 0.0f;
-        float width = 0.0f;  // For Rectangle, Ellipse, Text
-        float height = 0.0f; // For Rectangle, Ellipse, Text
-        float rotation = 0.0f;
-        unsigned int gid = 0; // Tile GID if object is represented by a tile
+        std::string type;
+        float x = 0.0f, y = 0.0f, width = 0.0f, height = 0.0f, rotation = 0.0f;
+        unsigned int gid = 0;
         bool visible = true;
-
         TMXObjectType objectType = TMXObjectType::Rectangle;
-
-        // Shape data for Polygon and Polyline
         std::vector<std::pair<float, float>> points;
-
-        std::string text_content;
-        std::string text_fontfamily;
-        int text_pixelsize;
-        bool text_wrap;
-        std::string text_color;
-        std::string text_halign; // left, center, right, justify
-        std::string text_valign; // top, center, bottom
-        bool text_bold = false;
-        bool text_italic = false;
-        bool text_underline = false;
-        bool text_strikeout = false;
-        bool text_kerning = true;
-
+        std::string text_content, text_fontfamily, text_color, text_halign, text_valign;
+        int text_pixelsize = 16;
+        bool text_wrap = false, text_bold = false, text_italic = false, text_underline = false, text_strikeout = false, text_kerning = true;
         TMXProperties properties;
     };
 
     struct TMXObjectGroup {
         std::string name;
-        std::string color; // Stored as string (e.g., "#FF00FF")
-
+        std::string color;
         float opacity = 1.0f;
         bool visible = true;
-        float offsetX = 0.0f;
-        float offsetY = 0.0f;
-        std::string drawOrder = "topdown"; // "topdown" or "index"
+        float offsetX = 0.0f, offsetY = 0.0f;
+        std::string drawOrder = "topdown";
         std::vector<TMXObject> objects;
         TMXProperties properties;
     };
 
     struct TMXImage {
-        std::string source;           // Relative path from TMX file
-        std::string transparentColor; // Stored as string (e.g., "#FF00FF")
-        int width = 0;                // Image width in pixels (from <image> tag)
-        int height = 0;               // Image height in pixels (from <image> tag)
+        std::string source;
+        std::string transparentColor;
+        int width = 0, height = 0;
     };
 
     struct TMXImageLayer {
         std::string name;
-        float offsetX = 0.0f;
-        float offsetY = 0.0f;
+        float offsetX = 0.0f, offsetY = 0.0f;
         float opacity = 1.0f;
         bool visible = true;
         TMXImage image;
         TMXProperties properties;
-        std::string mapDirectory; // Store directory of the TMX for resolving relative paths
+        std::string mapDirectory;
+    };
+
+    struct TMXAnimationFrame {
+        unsigned int tileId;
+        unsigned int duration; // In milliseconds
+    };
+
+    struct TMXAnimation {
+        std::vector<TMXAnimationFrame> frames;
+        int totalDuration = 0; // In milliseconds
+        double progress = 0; // In milliseconds
+        unsigned int currentTileId = 0;
+        int currentIndex = 0;
+    };
+
+    struct TMXTileData {
+        unsigned int localId = 0;
+        TMXProperties properties;
+        std::optional<TMXAnimation> animation;
     };
 
     struct TMXTileset {
@@ -92,10 +83,12 @@ namespace Amara {
         unsigned int columns = 0;
         unsigned int spacing = 0;
         unsigned int margin = 0;
-        // Consider adding TMXProperties here too if tilesets can have them
-        // TMXProperties properties;
-        // Consider adding image source if tileset image is embedded/referenced
-        // TMXImage image;
+        std::string imageSource;
+        int imageWidth = 0;
+        int imageHeight = 0;
+        std::string transparentColor;
+
+        std::map<unsigned int, TMXTileData> tileData;
     };
 
     struct TMXTileLayer {
@@ -104,25 +97,25 @@ namespace Amara {
         unsigned int height = 0;
         float opacity = 1.0f;
         bool visible = true;
-        std::vector<unsigned int> data; // Tile GIDs (Global IDs)
-        TMXProperties properties; // Add properties to layers too
+        std::vector<unsigned int> data;
+        TMXProperties properties;
     };
 
     class TMXTilemapAsset : public Amara::Asset {
     public:
-        unsigned int width = 0;         // Map width in tiles
-        unsigned int height = 0;        // Map height in tiles
-        unsigned int tileWidth = 0;     // Tile width in pixels
-        unsigned int tileHeight = 0;    // Tile height in pixels
+        unsigned int width = 0;
+        unsigned int height = 0;
+        unsigned int tileWidth = 0;
+        unsigned int tileHeight = 0;
 
-        std::string orientation;        // e.g., "orthogonal", "isometric"
-        std::string renderOrder;        // e.g., "right-down"
-        
+        std::string orientation;
+        std::string renderOrder;
+
         std::vector<TMXTileset> tilesets;
         std::vector<TMXTileLayer> layers;
-        std::vector<TMXObjectGroup> objectGroups; // Added
-        std::vector<TMXImageLayer> imageLayers;   // Added
-        TMXProperties mapProperties;              // Added for map-level properties
+        std::vector<TMXObjectGroup> objectGroups;
+        std::vector<TMXImageLayer> imageLayers;
+        TMXProperties mapProperties;
 
         TMXTilemapAsset(Amara::GameProps* _gameProps): Amara::Asset(_gameProps) {
             type = AssetEnum::TMXTilemap;
@@ -132,6 +125,7 @@ namespace Amara {
         bool loadTmx(const std::string& tmxPath);
 
         const TMXTileset* findTilesetForGid(unsigned int gid) const {
+            if (gid == 0) return nullptr;
             for (auto it = tilesets.rbegin(); it != tilesets.rend(); ++it) {
                 if (gid >= it->firstGid) {
                     return &(*it);
@@ -140,9 +134,24 @@ namespace Amara {
             return nullptr;
         }
 
+        const TMXTileData* getTileData(unsigned int gid) const {
+            const TMXTileset* tileset = findTilesetForGid(gid);
+            if (!tileset) {
+                return nullptr;
+            }
+            unsigned int localId = gid - tileset->firstGid;
+            auto it = tileset->tileData.find(localId);
+            if (it != tileset->tileData.end()) {
+                return &(it->second);
+            }
+            return nullptr;
+        }
+
+
         static TMXProperties parseProperties(tinyxml2::XMLElement* parentElement);
         static std::vector<std::pair<float, float>> parsePointsString(const std::string& pointsStr);
     };
+
 
     TMXProperties TMXTilemapAsset::parseProperties(tinyxml2::XMLElement* parentElement) {
         TMXProperties props;
@@ -154,19 +163,18 @@ namespace Amara {
         for (tinyxml2::XMLElement* propElement = propertiesElement->FirstChildElement("property"); propElement != nullptr; propElement = propElement->NextSiblingElement("property")) {
             const char* name = propElement->Attribute("name");
             const char* type = propElement->Attribute("type");
-            const char* value = propElement->Attribute("value");
+            const char* valueAttr = propElement->Attribute("value");
 
             if (name) {
                 TMXProperty prop;
                 prop.name = name;
-                if (type) prop.type = type; else prop.type = "string";
+                prop.type = type ? type : "string";
 
-                if (value) {
-                    prop.value = value;
+                if (valueAttr) {
+                    prop.value = valueAttr;
                 } else {
                     const char* textValue = propElement->GetText();
                     prop.value = textValue ? textValue : "";
-                    if (!type) prop.type = "string";
                 }
                 props[prop.name] = prop;
             } else {
@@ -189,11 +197,8 @@ namespace Amara {
 
             while (std::getline(ssPair, coordStr, ',')) {
                 try {
-                    if (coordIndex == 0) {
-                        x = std::stof(coordStr);
-                    } else if (coordIndex == 1) {
-                        y = std::stof(coordStr);
-                    }
+                    if (coordIndex == 0) x = std::stof(coordStr);
+                    else if (coordIndex == 1) y = std::stof(coordStr);
                 } catch (const std::invalid_argument& e) {
                     debug_log("Warning: Invalid coordinate '", coordStr, "' in points string '", pointsStr, "'. Using 0.");
                 } catch (const std::out_of_range& e) {
@@ -201,17 +206,20 @@ namespace Amara {
                 }
                 coordIndex++;
             }
-            if (coordIndex >= 2) { // Ensure we have at least x and y
-                 points.push_back({x, y});
-            } else if (!pairStr.empty()) {
-                 debug_log("Warning: Incomplete coordinate pair '", pairStr, "' in points string '", pointsStr, "'. Skipping.");
-            }
+            if (coordIndex >= 2) points.push_back({x, y});
+            else if (!pairStr.empty()) debug_log("Warning: Incomplete coordinate pair '", pairStr, "' in points string '", pointsStr, "'. Skipping.");
         }
         return points;
     }
 
     bool TMXTilemapAsset::loadTmx(const std::string& tmxPath) {
         path = gameProps->system->getAssetPath(tmxPath);
+        std::string mapDir = "";
+        size_t lastSlash = path.find_last_of("/\\");
+        if (lastSlash != std::string::npos) {
+            mapDir = path.substr(0, lastSlash + 1);
+        }
+
 
         SDL_IOStream* rw = SDL_IOFromFile(path.c_str(), "rb");
         if (!rw) {
@@ -227,42 +235,39 @@ namespace Amara {
         }
 
         size_t fileSize = static_cast<size_t>(fileSize_s64);
-        unsigned char* buffer = new (std::nothrow) unsigned char[fileSize + 1];
+        std::unique_ptr<unsigned char[]> buffer(new (std::nothrow) unsigned char[fileSize + 1]);
         if (!buffer) {
             SDL_CloseIO(rw);
             debug_log("Error: Failed to allocate memory for TMX file buffer: ", path);
             return false;
         }
 
-        size_t bytesRead = SDL_ReadIO(rw, buffer, fileSize);
+        size_t bytesRead = SDL_ReadIO(rw, buffer.get(), fileSize);
         SDL_CloseIO(rw);
 
         if (bytesRead != fileSize) {
-            delete[] buffer;
             debug_log("Error: Failed to read entire TMX file: ", path);
             return false;
         }
         buffer[fileSize] = '\0';
 
-        if (Amara::Encryption::is_buffer_encrypted(buffer, fileSize)) {
+        unsigned char* raw_buffer_ptr = buffer.get();
+        if (Amara::Encryption::is_buffer_encrypted(raw_buffer_ptr, fileSize)) {
             #if defined(AMARA_ENCRYPTION_KEY)
-                Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY)
-                buffer[fileSize] = '\0';
+                Amara::Encryption::decryptBuffer(raw_buffer_ptr, fileSize, AMARA_ENCRYPTION_KEY);
+                raw_buffer_ptr[fileSize] = '\0';
             #else
-                debug_log("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
-                SDL_free(buffer);
+                debug_log("Error: Attempted to load encrypted TMX data without encryption key: \"", path, "\".");
                 gameProps->breakWorld();
                 return false;
             #endif
         }
 
         tinyxml2::XMLDocument doc;
-        tinyxml2::XMLError parseResult = doc.Parse(reinterpret_cast<const char*>(buffer), fileSize);
-        delete[] buffer;
-        buffer = nullptr;
+        tinyxml2::XMLError parseResult = doc.Parse(reinterpret_cast<const char*>(raw_buffer_ptr), fileSize);
 
         if (parseResult != tinyxml2::XML_SUCCESS) {
-            debug_log("Error: Failed to parse TMX file XML: ", path, " - Error Code: ", parseResult);
+            debug_log("Error: Failed to parse TMX file XML: ", path, " - Error Code: ", parseResult, " - ", doc.ErrorStr());
             return false;
         }
 
@@ -276,13 +281,8 @@ namespace Amara {
         mapRoot->QueryUnsignedAttribute("height", &height);
         mapRoot->QueryUnsignedAttribute("tilewidth", &tileWidth);
         mapRoot->QueryUnsignedAttribute("tileheight", &tileHeight);
-
-        const char* orient = mapRoot->Attribute("orientation");
-        if (orient) orientation = orient; else orientation = "orthogonal";
-
-        const char* render = mapRoot->Attribute("renderorder");
-        if (render) renderOrder = render; else renderOrder = "right-down";
-
+        orientation = mapRoot->Attribute("orientation") ? mapRoot->Attribute("orientation") : "orthogonal";
+        renderOrder = mapRoot->Attribute("renderorder") ? mapRoot->Attribute("renderorder") : "right-down";
         mapProperties = parseProperties(mapRoot);
 
         tilesets.clear();
@@ -295,39 +295,72 @@ namespace Amara {
             }
 
             const char* source = tsElement->Attribute("source");
-
             if (source) {
                 debug_log("Error: External tilesets (TSX system) are not supported.");
                 debug_log("       Found reference to '", source, "' in map '", path, "'.");
                 debug_log("       Please embed the tileset directly into the TMX file.");
-                debug_log("       ( Edit -> Preferences -> Embed tilesets, then Export As .tmx )");
-                tilesets.clear();
-                layers.clear();
-                objectGroups.clear();
-                imageLayers.clear();
-                mapProperties.clear();
+                debug_log("       ( In Tiled: Edit -> Preferences -> Plugins -> Tiled -> Embed tilesets, then File -> Export As... -> Select .tmx )");
+                tilesets.clear(); layers.clear(); objectGroups.clear(); imageLayers.clear(); mapProperties.clear();
                 width = height = tileWidth = tileHeight = 0;
-
                 return false;
             }
+            else {
+                const char* tsName = tsElement->Attribute("name");
+                if (tsName) currentTileset.name = tsName;
 
-            const char* tsName = tsElement->Attribute("name");
-            if (tsName) currentTileset.name = tsName;
+                tsElement->QueryUnsignedAttribute("tilewidth", &currentTileset.tileWidth);
+                tsElement->QueryUnsignedAttribute("tileheight", &currentTileset.tileHeight);
+                tsElement->QueryUnsignedAttribute("tilecount", &currentTileset.tileCount);
+                tsElement->QueryUnsignedAttribute("columns", &currentTileset.columns);
+                tsElement->QueryUnsignedAttribute("spacing", &currentTileset.spacing);
+                tsElement->QueryUnsignedAttribute("margin", &currentTileset.margin);
 
-            tsElement->QueryUnsignedAttribute("tilewidth", &currentTileset.tileWidth);
-            tsElement->QueryUnsignedAttribute("tileheight", &currentTileset.tileHeight);
-            tsElement->QueryUnsignedAttribute("tilecount", &currentTileset.tileCount);
-            tsElement->QueryUnsignedAttribute("columns", &currentTileset.columns);
-            tsElement->QueryUnsignedAttribute("spacing", &currentTileset.spacing);
-            tsElement->QueryUnsignedAttribute("margin", &currentTileset.margin);
+                tinyxml2::XMLElement* imgElement = tsElement->FirstChildElement("image");
+                if (imgElement) {
+                     const char* imgSrc = imgElement->Attribute("source");
+                     if (imgSrc) currentTileset.imageSource = imgSrc;
+                     imgElement->QueryIntAttribute("width", &currentTileset.imageWidth);
+                     imgElement->QueryIntAttribute("height", &currentTileset.imageHeight);
+                     const char* trans = imgElement->Attribute("trans");
+                     if (trans) currentTileset.transparentColor = trans;
+                } else {
+                    debug_log("Warning: Embedded tileset '", currentTileset.name, "' is missing <image> element in map '", path, "'.");
+                }
 
-            // TODO: Parse <image> tag within embedded <tileset> if needed later
-            // tinyxml2::XMLElement* imgElement = tsElement->FirstChildElement("image");
-            // if (imgElement) { ... }
+                for (tinyxml2::XMLElement* tileElement = tsElement->FirstChildElement("tile"); tileElement != nullptr; tileElement = tileElement->NextSiblingElement("tile")) {
+                    unsigned int localId = 0;
+                    if (tileElement->QueryUnsignedAttribute("id", &localId) == tinyxml2::XML_SUCCESS) {
+                        TMXTileData tileData;
+                        tileData.localId = localId;
+                        tileData.properties = parseProperties(tileElement);
 
-            // TODO: Parse <tile> specific properties/animations within <tileset> if needed later
-
-            tilesets.push_back(currentTileset);
+                        tinyxml2::XMLElement* animElement = tileElement->FirstChildElement("animation");
+                        if (animElement) {
+                            TMXAnimation animation;
+                            for (tinyxml2::XMLElement* frameElement = animElement->FirstChildElement("frame"); frameElement != nullptr; frameElement = frameElement->NextSiblingElement("frame")) {
+                                TMXAnimationFrame frame;
+                                if (frameElement->QueryUnsignedAttribute("tileid", &frame.tileId) != tinyxml2::XML_SUCCESS) {
+                                     debug_log("Warning: Animation frame missing 'tileid' in tileset '", currentTileset.name, "', tile '", localId, "' in map '", path, "'. Skipping frame.");
+                                     continue;
+                                }
+                                if (frameElement->QueryUnsignedAttribute("duration", &frame.duration) != tinyxml2::XML_SUCCESS) {
+                                     debug_log("Warning: Animation frame missing 'duration' in tileset '", currentTileset.name, "', tile '", localId, "' in map '", path, "'. Skipping frame.");
+                                     continue;
+                                }
+                                animation.frames.push_back(frame);
+                                animation.totalDuration += frame.duration;
+                            }
+                            if (!animation.frames.empty()) {
+                                tileData.animation = animation;
+                            }
+                        }
+                        currentTileset.tileData[localId] = tileData;
+                    } else {
+                         debug_log("Warning: Tile element missing 'id' attribute within tileset '", currentTileset.name, "' in map '", path, "'. Skipping tile data.");
+                    }
+                }
+                tilesets.push_back(currentTileset);
+            }
         }
 
         std::sort(tilesets.begin(), tilesets.end(), [](const TMXTileset& a, const TMXTileset& b) {
@@ -344,15 +377,11 @@ namespace Amara {
 
             if (String::equal(elementName, "layer")) {
                 TMXTileLayer currentLayer;
-                const char* layerName = element->Attribute("name");
-                if (layerName) currentLayer.name = layerName;
-
+                currentLayer.name = element->Attribute("name") ? element->Attribute("name") : "";
                 currentLayer.width = width;
                 currentLayer.height = height;
-
                 element->QueryFloatAttribute("opacity", &currentLayer.opacity);
                 element->QueryBoolAttribute("visible", &currentLayer.visible);
-
                 currentLayer.properties = parseProperties(element);
 
                 tinyxml2::XMLElement* dataElement = element->FirstChildElement("data");
@@ -364,27 +393,21 @@ namespace Amara {
                 const char* encoding = dataElement->Attribute("encoding");
                 const char* compression = dataElement->Attribute("compression");
                 const char* dataText = dataElement->GetText();
+                std::string dataString = dataText ? dataText : "";
 
-                if (!dataText && !encoding) {
-                    // Handle XML case where dataText might be null
+                if (encoding) {
+                    dataString.erase(std::remove_if(dataString.begin(), dataString.end(), ::isspace), dataString.end());
                 }
-                else if (!dataText || std::string(dataText).empty()) {
-                     debug_log("Warning: Tile layer '", currentLayer.name, "' in map '", path, "' has empty <data> content. Skipping layer.");
+
+                if (dataString.empty() && !encoding) {
+                } else if (dataString.empty() && encoding) {
+                     debug_log("Warning: Tile layer '", currentLayer.name, "' in map '", path, "' has empty <data> content after whitespace removal. Skipping layer.");
                      continue;
                 }
 
-                std::string dataString;
-                if (dataText) {
-                    dataString = dataText;
-                    if (encoding) {
-                         dataString.erase(std::remove_if(dataString.begin(), dataString.end(), ::isspace), dataString.end());
-                    }
-                }
-
-                currentLayer.data.reserve(width * height);
+                currentLayer.data.reserve(static_cast<size_t>(width) * height);
 
                 if (!encoding) {
-                    // XML encoding (<tile gid="..."/> elements)
                     unsigned int tileCount = 0;
                     for (tinyxml2::XMLElement* tileElement = dataElement->FirstChildElement("tile"); tileElement != nullptr; tileElement = tileElement->NextSiblingElement("tile")) {
                         unsigned int gid = 0;
@@ -392,8 +415,8 @@ namespace Amara {
                         currentLayer.data.push_back(gid);
                         tileCount++;
                     }
-                    if (tileCount != width * height) {
-                        debug_log("Warning: XML tile layer '", currentLayer.name, "' in map '", path, "' has ", tileCount, " tiles, expected ", width * height, ".");
+                    if (tileCount != static_cast<size_t>(width) * height) {
+                        debug_log("Warning: XML tile layer '", currentLayer.name, "' in map '", path, "' has ", tileCount, " tiles, expected ", static_cast<size_t>(width) * height, ".");
                     }
                 }
                 else if (String::equal(encoding, "csv")) {
@@ -403,17 +426,14 @@ namespace Amara {
                     while (std::getline(ss, value, ',')) {
                         try {
                             currentLayer.data.push_back(std::stoul(value));
-                        } catch (const std::invalid_argument& e) {
-                            debug_log("Warning: Invalid GID '", value, "' in CSV data for layer '", currentLayer.name, "'. Using 0.");
-                            currentLayer.data.push_back(0);
-                        } catch (const std::out_of_range& e) {
-                            debug_log("Warning: GID '", value, "' out of range in CSV data for layer '", currentLayer.name, "'. Using 0.");
+                        } catch (...) {
+                            debug_log("Warning: Invalid/Out-of-range GID '", value, "' in CSV data for layer '", currentLayer.name, "'. Using 0.");
                             currentLayer.data.push_back(0);
                         }
                         tileCount++;
                     }
-                    if (tileCount != width * height) {
-                         debug_log("Warning: CSV tile layer '", currentLayer.name, "' in map '", path, "' has ", tileCount, " tiles, expected ", width * height, ".");
+                     if (tileCount != static_cast<size_t>(width) * height) {
+                         debug_log("Warning: CSV tile layer '", currentLayer.name, "' in map '", path, "' has ", tileCount, " tiles, expected ", static_cast<size_t>(width) * height, ".");
                     }
                 }
                 else if (String::equal(encoding, "base64")) {
@@ -438,7 +458,7 @@ namespace Amara {
                     }
 
                     unsigned int tileCount = 0;
-                    for (size_t i = 0; (i + 3) < decompressed_data.size() && tileCount < (width * height); i += 4) {
+                    for (size_t i = 0; (i + 3) < decompressed_data.size() && tileCount < (static_cast<size_t>(width) * height); i += 4) {
                         unsigned int gid = static_cast<unsigned int>(decompressed_data[i]) |
                                            (static_cast<unsigned int>(decompressed_data[i + 1]) << 8) |
                                            (static_cast<unsigned int>(decompressed_data[i + 2]) << 16) |
@@ -446,44 +466,32 @@ namespace Amara {
                         currentLayer.data.push_back(gid);
                         tileCount++;
                     }
-                     if (tileCount != width * height) {
-                         debug_log("Warning: Base64 tile layer '", currentLayer.name, "' in map '", path, "' processed ", tileCount, " tiles, expected ", width * height, ".");
+                     if (tileCount != static_cast<size_t>(width) * height) {
+                         debug_log("Warning: Base64 tile layer '", currentLayer.name, "' in map '", path, "' processed ", tileCount, " tiles, expected ", static_cast<size_t>(width) * height, ".");
                     }
                 }
                 else {
                     debug_log("Error: Unsupported layer data encoding '", encoding, "' for layer '", currentLayer.name, "' in map '", path, "'. Skipping layer.");
                     continue;
                 }
-
                 layers.push_back(currentLayer);
             }
             else if (String::equal(elementName, "objectgroup")) {
                 TMXObjectGroup currentGroup;
-                const char* groupName = element->Attribute("name");
-                if (groupName) currentGroup.name = groupName;
-
-                const char* colorStr = element->Attribute("color");
-                if (colorStr) currentGroup.color = colorStr;
-
+                currentGroup.name = element->Attribute("name") ? element->Attribute("name") : "";
+                currentGroup.color = element->Attribute("color") ? element->Attribute("color") : "";
                 element->QueryFloatAttribute("opacity", &currentGroup.opacity);
                 element->QueryBoolAttribute("visible", &currentGroup.visible);
                 element->QueryFloatAttribute("offsetx", &currentGroup.offsetX);
-                element->QueryFloatAttribute("offsety", &currentGroup.offsetY); 
-
-                const char* drawOrderStr = element->Attribute("draworder");
-                if (drawOrderStr) currentGroup.drawOrder = drawOrderStr;
-                else currentGroup.drawOrder = "topdown";
-
+                element->QueryFloatAttribute("offsety", &currentGroup.offsetY);
+                currentGroup.drawOrder = element->Attribute("draworder") ? element->Attribute("draworder") : "topdown";
                 currentGroup.properties = parseProperties(element);
 
                 for (tinyxml2::XMLElement* objElement = element->FirstChildElement("object"); objElement != nullptr; objElement = objElement->NextSiblingElement("object")) {
                     TMXObject currentObject;
                     objElement->QueryUnsignedAttribute("id", &currentObject.id);
-                    const char* objName = objElement->Attribute("name");
-                    if (objName) currentObject.name = objName;
-                    const char* objType = objElement->Attribute("type");
-                    if (objType) currentObject.type = objType;
-
+                    currentObject.name = objElement->Attribute("name") ? objElement->Attribute("name") : "";
+                    currentObject.type = objElement->Attribute("type") ? objElement->Attribute("type") : "";
                     objElement->QueryFloatAttribute("x", &currentObject.x);
                     objElement->QueryFloatAttribute("y", &currentObject.y);
                     objElement->QueryFloatAttribute("width", &currentObject.width);
@@ -491,17 +499,14 @@ namespace Amara {
                     objElement->QueryFloatAttribute("rotation", &currentObject.rotation);
                     objElement->QueryUnsignedAttribute("gid", &currentObject.gid);
                     objElement->QueryBoolAttribute("visible", &currentObject.visible);
-
                     currentObject.properties = parseProperties(objElement);
 
                     tinyxml2::XMLElement* shapeElement = objElement->FirstChildElement();
                     if (shapeElement) {
                         const char* shapeName = shapeElement->Name();
-                        if (String::equal(shapeName, "ellipse")) {
-                            currentObject.objectType = TMXObjectType::Ellipse;
-                        } else if (String::equal(shapeName, "point")) {
-                            currentObject.objectType = TMXObjectType::Point;
-                        } else if (String::equal(shapeName, "polygon")) {
+                        if (String::equal(shapeName, "ellipse")) currentObject.objectType = TMXObjectType::Ellipse;
+                        else if (String::equal(shapeName, "point")) currentObject.objectType = TMXObjectType::Point;
+                        else if (String::equal(shapeName, "polygon")) {
                             currentObject.objectType = TMXObjectType::Polygon;
                             const char* points = shapeElement->Attribute("points");
                             if (points) currentObject.points = parsePointsString(points);
@@ -511,16 +516,12 @@ namespace Amara {
                             if (points) currentObject.points = parsePointsString(points);
                         } else if (String::equal(shapeName, "text")) {
                             currentObject.objectType = TMXObjectType::Text;
-                            const char* fontFamily = shapeElement->Attribute("fontfamily");
-                            if (fontFamily) currentObject.text_fontfamily = fontFamily;
+                            currentObject.text_fontfamily = shapeElement->Attribute("fontfamily") ? shapeElement->Attribute("fontfamily") : "sans-serif";
                             shapeElement->QueryIntAttribute("pixelsize", &currentObject.text_pixelsize);
                             shapeElement->QueryBoolAttribute("wrap", &currentObject.text_wrap);
-                            const char* color = shapeElement->Attribute("color");
-                            if (color) currentObject.text_color = color;
-                            const char* halign = shapeElement->Attribute("halign");
-                            if (halign) currentObject.text_halign = halign; else currentObject.text_halign = "left";
-                            const char* valign = shapeElement->Attribute("valign");
-                            if (valign) currentObject.text_valign = valign; else currentObject.text_valign = "top";
+                            currentObject.text_color = shapeElement->Attribute("color") ? shapeElement->Attribute("color") : "#000000";
+                            currentObject.text_halign = shapeElement->Attribute("halign") ? shapeElement->Attribute("halign") : "left";
+                            currentObject.text_valign = shapeElement->Attribute("valign") ? shapeElement->Attribute("valign") : "top";
                             shapeElement->QueryBoolAttribute("bold", &currentObject.text_bold);
                             shapeElement->QueryBoolAttribute("italic", &currentObject.text_italic);
                             shapeElement->QueryBoolAttribute("underline", &currentObject.text_underline);
@@ -529,61 +530,34 @@ namespace Amara {
                             const char* text = shapeElement->GetText();
                             if (text) currentObject.text_content = text;
                         }
-                    }
-                    else {
-                        // No shape element: Default to Rectangle if no GID, otherwise it's a Tile object (which we treat as Rectangle visually)
+                    } else {
                         currentObject.objectType = TMXObjectType::Rectangle;
                     }
-
                     currentGroup.objects.push_back(currentObject);
                 }
                 objectGroups.push_back(currentGroup);
             }
             else if (String::equal(elementName, "imagelayer")) {
                 TMXImageLayer currentImageLayer;
-                // Store the directory for resolving relative image paths later
-                size_t lastSlash = path.find_last_of("/\\");
-                currentImageLayer.mapDirectory = (lastSlash == std::string::npos) ? "" : path.substr(0, lastSlash + 1);
-
-                const char* imgLayerName = element->Attribute("name");
-                if (imgLayerName) currentImageLayer.name = imgLayerName;
-
-                element->QueryFloatAttribute("offsetx", &currentImageLayer.offsetX); // Defaults to 0.0
-                element->QueryFloatAttribute("offsety", &currentImageLayer.offsetY); // Defaults to 0.0
-                element->QueryFloatAttribute("opacity", &currentImageLayer.opacity); // Defaults to 1.0
-                element->QueryBoolAttribute("visible", &currentImageLayer.visible); // Defaults to true
-
+                currentImageLayer.mapDirectory = mapDir;
+                currentImageLayer.name = element->Attribute("name") ? element->Attribute("name") : "";
+                element->QueryFloatAttribute("offsetx", &currentImageLayer.offsetX);
+                element->QueryFloatAttribute("offsety", &currentImageLayer.offsetY);
+                element->QueryFloatAttribute("opacity", &currentImageLayer.opacity);
+                element->QueryBoolAttribute("visible", &currentImageLayer.visible);
                 currentImageLayer.properties = parseProperties(element);
 
                 tinyxml2::XMLElement* imgElement = element->FirstChildElement("image");
                 if (imgElement) {
-                    const char* imgSrc = imgElement->Attribute("source");
-                    if (imgSrc) currentImageLayer.image.source = imgSrc;
-
-                    const char* transColor = imgElement->Attribute("trans");
-                    if (transColor) currentImageLayer.image.transparentColor = transColor;
-
+                    currentImageLayer.image.source = imgElement->Attribute("source") ? imgElement->Attribute("source") : "";
+                    currentImageLayer.image.transparentColor = imgElement->Attribute("trans") ? imgElement->Attribute("trans") : "";
                     imgElement->QueryIntAttribute("width", &currentImageLayer.image.width);
                     imgElement->QueryIntAttribute("height", &currentImageLayer.image.height);
                 } else {
                     debug_log("Warning: Image layer '", currentImageLayer.name, "' in map '", path, "' is missing the <image> element. Skipping image info.");
                 }
-
                 imageLayers.push_back(currentImageLayer);
             }
-            // --- Group Layer Parsing (Optional/Future) ---
-            // else if (String::equal(elementName, "group")) {
-            //     // TODO: Handle nested groups recursively if needed
-            //     debug_log("Info: Skipping nested layer group '", element->Attribute("name"), "' (not fully supported).");
-            // }
-            // --- Ignore other known elements ---
-            // else if (String::equal(elementName, "tileset") || String::equal(elementName, "properties")) {
-            //     // Already handled or part of other elements
-            // }
-            // --- Warn about unknown elements ---
-            // else {
-            //     debug_log("Info: Skipping unknown top-level map element: <", elementName, "> in map '", path, "'.");
-            // }
         }
 
         if (tilesets.empty()) {
@@ -592,4 +566,5 @@ namespace Amara {
 
         return true;
     }
+
 }

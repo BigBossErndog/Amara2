@@ -27,6 +27,9 @@ namespace Amara {
                     addKey(jkeys[i]);
                 }
             }
+            else if (jkeys.is_number_integer()) {
+                addKey(jkeys);
+            }
         }
         void setKeys(sol::object _keys) {
             clearKeys();
