@@ -178,6 +178,7 @@
     #include "nodes/tilemap/amara2_tilemap.cpp"
 
     #include "audio/amara2_audio.cpp"
+    #include "audio/amara2_audioPool.cpp"
     #include "audio/amara2_audiogroup.cpp"
     #include "audio/amara2_audioMaster.cpp"
     

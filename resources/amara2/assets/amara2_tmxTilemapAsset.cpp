@@ -214,6 +214,13 @@ namespace Amara {
 
     bool TMXTilemapAsset::loadTmx(const std::string& tmxPath) {
         path = gameProps->system->getAssetPath(tmxPath);
+        
+        if (!gameProps->system->fileExists(path)) {
+            debug_log("Error: Tilemap file not found at \"", path, "\".");
+            gameProps->breakWorld();
+            return false;
+        }
+        
         std::string mapDir = "";
         size_t lastSlash = path.find_last_of("/\\");
         if (lastSlash != std::string::npos) {

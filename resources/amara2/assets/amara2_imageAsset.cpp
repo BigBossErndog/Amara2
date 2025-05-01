@@ -21,7 +21,7 @@ namespace Amara {
             path = gameProps->system->getAssetPath(_p);
             
             if (!gameProps->system->fileExists(path)) {
-                debug_log("Error: File not found at ", path);
+                debug_log("Error: Image file not found \"", path, "\".");
                 return false;
             }
             

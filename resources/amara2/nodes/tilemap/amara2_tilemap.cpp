@@ -20,7 +20,7 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) {
-            Amara::Node::configure(config);
+            Amara::Group::configure(config);
 
             if (json_has(config, "texture")) setTexture(config["texture"]);
             if (json_has(config, "tilemap")) createTilemap(config["tilemap"]);

@@ -10,6 +10,7 @@ namespace Amara {
     class AssetManager;
     class ShaderManager;
     class RenderBatch;
+    class Audio;
     class AudioMaster;
     class MessageQueue;
     class GarbageCollector;
@@ -22,9 +23,22 @@ namespace Amara {
     class ShaderProgram;
     #endif
 
+    struct AudioData {
+        Amara::Audio* audio = nullptr;
+
+        float volume = 1;
+
+        float panning = 0;
+        
+        void reset() {
+            AudioData new_data;
+            *this = new_data;
+        }
+    };
+
     struct PassOnProps {
         float alpha = 1;
-
+        
         float rotation = 0;
         Vector3 anchor = { 0, 0, 0 };
         Vector2 scale = { 1, 1 };
@@ -36,8 +50,6 @@ namespace Amara {
 
         bool insideTextureContainer = false;
         
-        float volume = 1;
-
         void reset() {
             Vector2 rec_window_zoom = window_zoom;
 
@@ -71,6 +83,8 @@ namespace Amara {
         Rectangle display;
 
         PassOnProps passOn;
+        AudioData audioData;
+        std::vector<AudioData> audioQueue;
 
         GraphicsEnum graphics = Amara::GraphicsEnum::None;
         

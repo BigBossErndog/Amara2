@@ -97,6 +97,12 @@ namespace Amara {
                     #endif
                     break;
                 }
+                case (int)AssetEnum::Audio: {
+                    AudioAsset* audioAsset = createAsset<AudioAsset>(task.key);
+                    success = audioAsset->loadAudio(task.path);
+                    if (success) gameProps->assets->add(task.key, audioAsset);
+                    break;
+                }
                 default:
                     success = loadPlugins(task);
                     break;
@@ -159,6 +165,16 @@ namespace Amara {
             task.type = (int)AssetEnum::ShaderProgram;
             task.config = config;
             task.path = gameProps->lua["table"]["to_string"](config);
+
+            queueTask(task);
+            return get_lua_object();
+        }
+
+        sol::object audio(std::string key, std::string path) {
+            LoadTask task;
+            task.key = key;
+            task.type = (int)AssetEnum::Audio;
+            task.path = path;
 
             queueTask(task);
             return get_lua_object();

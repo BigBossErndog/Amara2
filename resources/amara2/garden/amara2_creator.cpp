@@ -288,7 +288,6 @@ namespace Amara {
             AnimationFactory::bindLua(lua);
             AssetManager::bindLua(lua);
             NodeFactory::bindLua(lua);
-            AudioMaster::bindLua(lua);
             
             Demiurge::bindLua(lua);
 

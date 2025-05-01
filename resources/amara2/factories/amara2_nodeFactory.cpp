@@ -197,9 +197,11 @@ namespace Amara {
 
             registerNode<Amara::TilemapLayer>("TilemapLayer");
             registerNode<Amara::Tilemap>("Tilemap");
-
+            
             registerNode<Amara::Audio>("Audio");
+            registerNode<Amara::AudioPool>("AudioPool");
             registerNode<Amara::AudioGroup>("AudioGroup");
+            registerNode<Amara::AudioMaster>("AudioMaster");
 
             #ifdef AMARA_WEB_SERVER
             registerNode<Amara::WebServer>("WebServer");
@@ -248,7 +250,9 @@ namespace Amara {
             Amara::Tilemap::bindLua(lua);
             
             Amara::Audio::bindLua(lua);
+            Amara::AudioPool::bindLua(lua);
             Amara::AudioGroup::bindLua(lua);
+            Amara::AudioMaster::bindLua(lua);
 
             #ifdef AMARA_WEB_SERVER
             Amara::WebServer::bindLua(lua);
