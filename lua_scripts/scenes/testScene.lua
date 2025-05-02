@@ -49,10 +49,10 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
-        self.audio:createChild("AudioPool", {
+        self.audio:createChild("Audio", {
             audio = "music",
             -- loop = true,
-            -- playing = true
+            playing = true
             -- volume = 0.5
         });
 

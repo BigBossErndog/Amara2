@@ -15,17 +15,18 @@ namespace Amara {
             }
 
             if (json_has(config, "audio")) {
-                std::string key = config["audio"];
+                std::string key = json_extract(config, "audio");
                 if (setAudio(key)) {
                     int poolSize = 1;
                     if (json_has(config, "poolSize")) poolSize = config["poolSize"];
                     for (int i = 0; i < poolSize; ++i) {
                         Amara::Audio* child = createChild("Audio")->as<Amara::Audio*>();
                         child->configure(config);
+                        child->setAudio(key);
                     }
                 }
             }
-
+            
             if (play_now) play();
             
             return Amara::Audio::configure(config);

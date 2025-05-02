@@ -111,8 +111,24 @@ namespace Amara {
             }
             else if (String::endsWith(path, ".ogg")) {
                 int error;
-                stb_vorbis* v = stb_vorbis_open_filename(path.c_str(), &error, nullptr);
-                if (!v) return false;
+                SDL_IOStream* io = SDL_IOFromFile(path.c_str(), "rb");
+                if (!io) {
+                    debug_log("Error: Failed to open file: ", SDL_GetError());
+                    gameProps->breakWorld();
+                    return false;
+                }
+
+                size_t fileSize = SDL_GetIOSize(io);
+                std::vector<uint8_t> buffer(fileSize);
+                SDL_ReadIO(io, buffer.data(), fileSize);
+                SDL_CloseIO(io);
+
+                stb_vorbis* v = stb_vorbis_open_memory(buffer.data(), buffer.size(), &error, nullptr);
+                if (!v) {
+                    debug_log("Error: Failed to read .ogg file: \"", path, "\".");
+                    gameProps->breakWorld();
+                    return false;
+                }
 
                 stb_vorbis_info info = stb_vorbis_get_info(v);
                 sampleRate = info.sample_rate;
@@ -120,7 +136,7 @@ namespace Amara {
                 int count = stb_vorbis_stream_length_in_samples(v) * channels;
                 samples.resize(count);
                 stb_vorbis_get_samples_float_interleaved(v, channels, samples.data(), count);
-                
+
                 loopEnd = samples.size();
 
                 stb_vorbis_comment comments = stb_vorbis_get_comment(v);
@@ -129,7 +145,7 @@ namespace Amara {
                     if (String::startsWith(c, "LOOPSTART=")) loopStart = std::stoi(c.substr(10));
                     if (String::startsWith(c, "LOOPEND=")) loopEnd = std::stoi(c.substr(8));
                 }
-                
+
                 stb_vorbis_close(v);
 
                 audioType = AudioFileType::OGG;

@@ -29,7 +29,7 @@ namespace Amara {
 
             SDL_IOStream *rw = SDL_IOFromFile(path.c_str(), "rb");
             if (!rw) {
-                debug_log("Failed to open file: ", SDL_GetError());
+                debug_log("Error: Failed to open file: ", SDL_GetError());
                 return false;
             }
 
