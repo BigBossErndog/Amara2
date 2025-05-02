@@ -65,7 +65,7 @@ namespace Amara {
 
             return true;
         }
-
+        
         Amara::Node* prepNode(Amara::Node* node, std::string key) {
             node->nodeID = key;
             node->gameProps = gameProps;
@@ -213,15 +213,6 @@ namespace Amara {
             Plugins::registerNodes();
         }
 
-        void clear() {
-            readScripts.clear();
-            compiledScripts.clear();
-        }
-
-        ~NodeFactory() {
-            clear();
-        }
-
         static void bindLua(sol::state& lua) {
             Amara::Node::bindLua(lua);
             Amara::Group::bindLua(lua);
@@ -267,6 +258,15 @@ namespace Amara {
                 "add", &NodeFactory::add,
                 "create", &NodeFactory::luaCreate
             );
+        }
+
+        void clear() {
+            readScripts.clear();
+            compiledScripts.clear();
+        }
+
+        ~NodeFactory() {
+            clear();
         }
     };
 

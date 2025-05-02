@@ -141,6 +141,8 @@ namespace Amara {
         #endif
 
         bool loadFont(std::string _p, int _size) {
+            clear();
+            
             path = gameProps->system->getAssetPath(_p);
             fontSize = _size;
             
@@ -148,8 +150,6 @@ namespace Amara {
                 debug_log("Error: Font file not found at \"", path, "\".");
                 return false;
             }
-
-            clearTexture();
 
             SDL_IOStream *rw = SDL_IOFromFile(path.c_str(), "rb");
             if (!rw) {
@@ -508,7 +508,22 @@ namespace Amara {
             return layout;
         }
  
-        virtual void clearTexture() {
+        virtual void clear() {
+            glyphCache.clear();
+
+            currentX = 0;
+            currentY = 0;
+            rowHeight = 0;
+
+            scale = 1;
+            ascent = 0;
+            descent = 0;
+            lineGap = 0;
+            baseline = 0;
+            lineHeight = 0;
+
+            fontSize = 0;
+            
             if (texture) {
                 SDL_DestroyTexture(texture);
                 texture = nullptr;
@@ -527,7 +542,7 @@ namespace Amara {
         }
 
         void destroy() {
-            clearTexture();
+            clear();
             Amara::Asset::destroy();
         }
     };

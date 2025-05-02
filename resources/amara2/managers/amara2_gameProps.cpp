@@ -25,6 +25,8 @@ namespace Amara {
 
     struct AudioData {
         Amara::Audio* audio = nullptr;
+        SDL_AudioDeviceID device = 0;
+        SDL_AudioSpec spec;
 
         float volume = 1;
 
@@ -32,6 +34,8 @@ namespace Amara {
         
         void reset() {
             AudioData new_data;
+            new_data.device = device;
+
             *this = new_data;
         }
     };
@@ -51,12 +55,10 @@ namespace Amara {
         bool insideTextureContainer = false;
         
         void reset() {
-            Vector2 rec_window_zoom = window_zoom;
-
             PassOnProps new_props;
-            *this = new_props;
+            new_props.window_zoom = window_zoom;
 
-            window_zoom = rec_window_zoom;
+            *this = new_props;
         }
     };
 
@@ -84,7 +86,7 @@ namespace Amara {
 
         PassOnProps passOn;
         AudioData audioData;
-        std::vector<AudioData> audioQueue;
+        std::vector<AudioData> audio_buffer;
 
         GraphicsEnum graphics = Amara::GraphicsEnum::None;
         

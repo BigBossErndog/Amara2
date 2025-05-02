@@ -8,7 +8,8 @@ namespace Amara {
         AssetManager assets;
         AnimationFactory animations;
         ShaderManager shaders;
-        AudioMaster audio;
+
+        AudioMaster* audio = nullptr;
 
         std::string base_dir_path;
 
@@ -84,7 +85,6 @@ namespace Amara {
             assets.gameProps = gameProps;
             animations.gameProps = gameProps;
             shaders.gameProps = gameProps;
-            audio.gameProps = gameProps;
 
             base_dir_path = gameProps->system->getBasePath();
             
@@ -152,7 +152,7 @@ namespace Amara {
             gameProps->assets = &assets;
             gameProps->animations = &animations;
             gameProps->shaders = &shaders;
-            gameProps->audio = &audio;
+            gameProps->audio = audio;
             
             if (window) {
                 #ifdef AMARA_OPENGL
@@ -837,9 +837,18 @@ namespace Amara {
             Amara::Node::preload();
         }
 
+        virtual void create() override {
+            Amara::Node::create();
+            audio = createChild("AudioMaster")->as<Amara::AudioMaster*>();
+        }
+
         virtual void run(double deltaTime) override {
             if (!base_dir_path.empty()) {
                 gameProps->system->setBasePath(base_dir_path);
+            }
+            if (audio) {
+                if (!audio->destroyed) audio->update_properties();
+                else audio = nullptr;
             }
 
             Amara::Node::run(deltaTime);

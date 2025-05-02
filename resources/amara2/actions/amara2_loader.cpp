@@ -250,6 +250,7 @@ namespace Amara {
                 "font", &Loader::font,
                 "tilemap", &Loader::tilemap,
                 "shaderProgram", &Loader::shaderProgram,
+                "audio", &Loader::audio,
                 "custom", &Loader::custom,
                 "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
                 "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; })

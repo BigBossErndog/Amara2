@@ -31,6 +31,7 @@
     #include <cstdarg>
     #include <atomic>
     #include <thread>
+    #include <mutex>
 #endif
 
 #ifndef AMARA_EXTLIBS
@@ -42,6 +43,21 @@
 
     #define STB_TRUETYPE_IMPLEMENTATION
     #include <stb_truetype.h>
+
+    #include <stb_vorbis.c>
+    #ifdef R
+    #undef R
+    #endif
+    #ifdef L
+    #undef L
+    #endif
+    #ifdef C
+    #undef C
+    #endif
+
+    #define MINIMP3_IMPLEMENTATION
+    #define MINIMP3_ENABLE_MP3_FLOAT
+    #include <minimp3_ex.h>
 
     #include <tinyxml2.h>
 
@@ -129,6 +145,7 @@
     #include "assets/amara2_imageAsset.cpp"
     #include "assets/amara2_fontAsset.cpp"
     #include "assets/amara2_tmxTilemapAsset.cpp"
+    #include "assets/amara2_audioAsset.cpp"
 
     #ifdef AMARA_OPENGL
     #include "rendering/shaders/amara2_shaderProgram.cpp"
@@ -178,8 +195,8 @@
     #include "nodes/tilemap/amara2_tilemap.cpp"
 
     #include "audio/amara2_audio.cpp"
-    #include "audio/amara2_audioPool.cpp"
     #include "audio/amara2_audiogroup.cpp"
+    #include "audio/amara2_audioPool.cpp"
     #include "audio/amara2_audioMaster.cpp"
     
     #include "nodes/amara2_world.cpp"
@@ -190,7 +207,7 @@
 
     #include "managers/amara2_garbage.cpp"
 
-    #include "managers/amara2_inputHandler.cpp"
+    #include "managers/amara2_eventHandler.cpp"
 
     #include "garden/amara2_demiurge.cpp"
     #include "garden/amara2_creator.cpp"

@@ -9,7 +9,7 @@ namespace Amara {
 
         MessageQueue messages;
         GarbageCollector garbageCollector;
-        InputHandler inputHandler;
+        EventHandler eventHandler;
 
         Uint64 rec_tick = 0;
         Uint64 current_tick = 0;
@@ -47,8 +47,8 @@ namespace Amara {
 
             setup(&gameProps);
 
-            lua["Keyboard"] = &(inputHandler.keyboard);
-            gameProps.keyboard = &(inputHandler.keyboard);
+            lua["Keyboard"] = &(eventHandler.keyboard);
+            gameProps.keyboard = &(eventHandler.keyboard);
 
             override_existence();
 
@@ -184,7 +184,7 @@ namespace Amara {
         }
 
         void startCreation(std::string path) {
-            if (!SDL_Init(SDL_INIT_VIDEO)) {
+            if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
                 debug_log("Error: SDL_Init failed: ", SDL_GetError());
             }
 
@@ -201,14 +201,14 @@ namespace Amara {
             bool vsync = false;
 
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
-                inputHandler.handleEvents(worlds, game);
+                eventHandler.handleEvents(worlds, game);
 
                 if (game.hasQuit) {
                     break;
                 }
                 vsync = false;
 
-                if (!inputHandler.logicBlocking) {
+                if (!eventHandler.logicBlocking) {
                     copy_worlds_list = worlds;
                     for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
                         currentWorld = *it;

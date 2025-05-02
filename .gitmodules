@@ -4,3 +4,6 @@
 [submodule "resources/libs/nlohmann"]
 	path = resources/libs/nlohmann
 	url = https://github.com/nlohmann/json.git
+[submodule "resources/libs/minimp3"]
+	path = resources/libs/minimp3
+	url = https://github.com/lieff/minimp3.git

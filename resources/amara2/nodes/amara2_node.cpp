@@ -505,7 +505,7 @@ namespace Amara {
 
         Amara::Node* findChild(std::string gid) {
             Amara::Node* child;
-			for (auto it = children.begin(); it != children.end();) {
+			for (auto it = children.rbegin(); it != children.rend();) {
                 child = *it;
 				if (String::equal(child->id, gid)) {
 					return child;

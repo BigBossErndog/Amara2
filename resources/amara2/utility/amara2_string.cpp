@@ -86,21 +86,21 @@ namespace Amara {
             return ss.str();
         }
 
-        static bool endsWith(std::string str, std::string suffix) {
+        static bool endsWith(const std::string& str, const std::string& suffix) {
             if (suffix.size() > str.size()) {
                 return false;
             }
             return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
         }
 
-        static bool startsWith(std::string& str, std::string& prefix) {
+        static bool startsWith(const std::string& str, const std::string& prefix) {
             if (prefix.size() > str.size()) {
                 return false;
             }
             return std::equal(prefix.begin(), prefix.end(), str.begin());
         }
 
-        static bool equal(std::string str1, std::string str2) {
+        static bool equal(const std::string& str1, const std::string& str2) {
             return str1.compare(str2) == 0;
         }
         

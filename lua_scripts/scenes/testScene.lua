@@ -1,4 +1,5 @@
 local freaker
+local fpsTxt
 
 return NodeFactory:create("Scene"):configure({
     onPreload = function(self)
@@ -9,6 +10,8 @@ return NodeFactory:create("Scene"):configure({
 
         self.load:spritesheet("freaker", "freaker.png", 32, 64)
         self.load:font("font", "KLEINTEN.ttf", 10)
+
+        self.load:audio("music", "battleTheme2.ogg");
 
         self.animations:add({
             key = "runningDown",
@@ -46,6 +49,13 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
+        self.audio:createChild("AudioPool", {
+            audio = "music",
+            -- loop = true,
+            -- playing = true
+            -- volume = 0.5
+        });
+
         local tilemap = self:createChild("Tilemap", {
             texture = "tiles",
             tilemap = "testTilemap"
@@ -159,13 +169,15 @@ return NodeFactory:create("Scene"):configure({
         self.props.prog.progress = 0;
         self.props.prog:wait(2):whenDone(function(self)
             self:autoProgress({
-                speed = 12,
+                speed = 12, -- How many characters to be shown a second
                 onAct = function(self)
                     if Keyboard:justPressed(Key.Space) then
                         self:skipProgress()
                     end
                 end
-            })
+            }):whenDone(function(self)
+                print("finished progressing text")
+            end)
         end)
 
         self.props.prog:setManipulator("yellow_wave", function(index, lifeTime, character)
@@ -210,6 +222,10 @@ return NodeFactory:create("Scene"):configure({
         end
         if Keyboard:isDown(Key.O) then
             self.camera:changeZoom(-1.1 * deltaTime)
+        end
+
+        if Keyboard:justPressed(Key.Space) then
+            self.audio:play("music")
         end
 
         freaker.rotation = -self.camera.rotation
