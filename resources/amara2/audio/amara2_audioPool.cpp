@@ -15,14 +15,16 @@ namespace Amara {
             }
 
             if (json_has(config, "audio")) {
-                std::string key = json_extract(config, "audio");
-                if (setAudio(key)) {
-                    int poolSize = 1;
-                    if (json_has(config, "poolSize")) poolSize = config["poolSize"];
-                    for (int i = 0; i < poolSize; ++i) {
-                        Amara::Audio* child = createChild("Audio")->as<Amara::Audio*>();
-                        child->configure(config);
-                        child->setAudio(key);
+                if (config["audio"].is_string()) {
+                    std::string key = json_extract(config, "audio");
+                    if (setAudio(key)) {
+                        int poolSize = 1;
+                        if (json_has(config, "poolSize")) poolSize = config["poolSize"];
+                        for (int i = 0; i < poolSize; ++i) {
+                            Amara::Audio* child = createChild("Audio")->as<Amara::Audio*>();
+                            child->configure(config);
+                            child->setAudio(key);
+                        }
                     }
                 }
             }
@@ -99,7 +101,7 @@ namespace Amara {
 
         static void bindLua(sol::state& lua) {
             lua.new_usertype<AudioPool>("AudioPool",
-                sol::base_classes, sol::bases<Amara::Node>(),
+                sol::base_classes, sol::bases<Amara::Audio, Amara::Node>(),
                 "play", &AudioPool::play_from_pool,
                 "stop", &AudioPool::stop,
                 "randomOrder", &AudioPool::randomOrder

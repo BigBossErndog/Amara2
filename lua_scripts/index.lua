@@ -68,6 +68,7 @@
             
         end,
         onCreate = function(self)
+            -- Game:uncapFPS()
             print("Hello from", Game.executable)
             -- self:setShaderProgram("outlineShader")
             self:createChild("scenes/TestScene")

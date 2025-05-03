@@ -49,19 +49,23 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
-        self.audio:createChild("Audio", {
+        local sound = self.audio:createChild("Audio", {
             audio = "music",
             -- loop = true,
-            playing = true
-            -- volume = 0.5
+            playing = true,
+            -- volume = 0.5,
         });
+        print(sound.volume)
+        sound:wait(5).tween:to({
+            volume = 0,
+            duration = 2
+        })
 
         local tilemap = self:createChild("Tilemap", {
             texture = "tiles",
             tilemap = "testTilemap"
         })
-
-        -- self.world.backgroundColor = "black"
+        self.world.backgroundColor = "black"
 
         local textCont = self:createChild("TextureContainer", {
             width = 256,
@@ -70,7 +74,7 @@ return NodeFactory:create("Scene"):configure({
             -- alpha = 0.5,
             -- visible = false,
             -- paused = true,
-            -- canvasLocked = true,
+            canvasLocked = true,
             -- fixedToCamera = true,
             -- origin = Position.Top,
             -- tint = Colors.Red
