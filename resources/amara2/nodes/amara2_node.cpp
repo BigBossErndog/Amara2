@@ -148,6 +148,18 @@ namespace Amara {
             return json_to_lua(gameProps->lua, toJSON());
         }
 
+        bool isActive() {
+            return !destroyed && !paused && visible;
+        }
+        void activate() {
+            paused = false;
+            visible = true;
+        }
+        void deactivate() {
+            paused = true;
+            visible = false;
+        }
+
         virtual Amara::Node* configure(nlohmann::json config) {
             update_properties();
             if (config.is_string()) {
@@ -186,6 +198,11 @@ namespace Amara {
             if (json_has(config, "depth")) depth = config["depth"];
             
             if (json_has(config, "paused")) paused = config["paused"];
+
+            if (json_has(config, "active")) {
+                if (config["active"]) activate();
+                else deactivate();
+            }
 
             if (json_has(config, "visible")) visible = config["visible"];
 
@@ -804,6 +821,11 @@ namespace Amara {
                 "pause", &Node::pause,
                 "resume", &Node::resume,
                 "togglePause", &Node::togglePause,
+                "active", sol::property([](Node& e) { return e.isActive(); }, [](Node& e, bool val) { if (val) e.activate(); else e.deactivate(); }),
+                "activate", &Node::activate,
+                "deactivate", &Node::deactivate,
+                "paused", &Node::paused,
+                "visible", &Node::visible,
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
                 },
