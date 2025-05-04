@@ -50,7 +50,7 @@ namespace Amara {
         }
 
         Amara::Camera* setMainCamera(Amara::Camera* cam, bool destroyExisting) {
-            if (destroyExisting && camera != nullptr) camera->destroy();
+            if (destroyExisting && camera != nullptr && camera != cam) camera->destroy();
             camera = cam;
             return cam;
         }
@@ -66,10 +66,15 @@ namespace Amara {
             return Amara::Node::addChild(node);
         }
 
+        sol::object getCamera() {
+            if (camera) return camera->get_lua_object();
+            else return sol::nil;
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_usertype<Scene>("Scene",
                 sol::base_classes, sol::bases<Amara::Node>(),
-                "camera", sol::readonly(&Scene::camera),
+                "camera", sol::property(&Scene::getCamera, sol::resolve<Amara::Camera*(Amara::Camera*)>(&Scene::setMainCamera)),
                 "setMainCamera", sol::overload(
                     sol::resolve<Amara::Camera*(Amara::Camera*, bool)>(&Scene::setMainCamera),
                     sol::resolve<Amara::Camera*(Amara::Camera*)>(&Scene::setMainCamera)

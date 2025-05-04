@@ -55,8 +55,8 @@ return NodeFactory:create("Scene"):configure({
             playing = true,
             -- volume = 0.5,
         });
-        print(sound.volume)
-        sound:wait(5).tween:to({
+        
+        sound:wait(3).tween:to({
             volume = 0,
             duration = 2
         })
@@ -206,6 +206,8 @@ return NodeFactory:create("Scene"):configure({
         
         self.camera:setBounds(tilemap.rect)
         freaker.pos = self.camera.center
+
+        self.props.checked = false
     end,
 
     onUpdate = function(self, deltaTime)

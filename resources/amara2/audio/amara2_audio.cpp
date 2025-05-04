@@ -21,6 +21,10 @@ namespace Amara {
         int chunk_bytes = 0;
 
         float duration = 0;
+        float playDuration = 0;
+
+        const float stream_expiry_time = 60;
+        float stream_expiry_counter = 0;
 
         sol::protected_function onPlay;
         sol::protected_function onComplete;
@@ -74,6 +78,8 @@ namespace Amara {
                     return;
                 }
                 else if (queued < chunk_bytes) {
+                    stream_expiry_counter = 0;
+
                     const auto& samples = audio->samples;
 
                     int endPoint = (int)samples.size();
@@ -148,6 +154,12 @@ namespace Amara {
                                 }
                             }
                         }
+                    }
+                }
+                else if (stream != nullptr) {
+                    stream_expiry_counter += deltaTime;
+                    if (stream_expiry_counter > stream_expiry_time) {
+                        destroyAudioStream();
                     }
                 }
             }
@@ -228,6 +240,8 @@ namespace Amara {
             }
 
             if (!playing) {
+                playDuration = 0;
+
                 if (onPlay.valid()) {
                     try {
                         sol::protected_function_result result = onPlay(get_lua_object());
@@ -257,6 +271,7 @@ namespace Amara {
         }
 
         virtual void restart() {
+            playDuration = 0;
             setPosition(0);
             play();
         }

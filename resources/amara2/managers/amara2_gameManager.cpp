@@ -18,7 +18,7 @@ namespace Amara {
         Amara::GameProps* gameProps = nullptr;
 
         std::string executable;
-
+        
         GameManager() {
             #if defined(__EMSCRIPTEN__)
                 platform = "web";

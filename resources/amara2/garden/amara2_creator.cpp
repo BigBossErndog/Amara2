@@ -197,7 +197,7 @@ namespace Amara {
             game.hasQuit = gameProps.lua_exception_thrown;
 
             std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
-
+            
             bool vsync = false;
 
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
