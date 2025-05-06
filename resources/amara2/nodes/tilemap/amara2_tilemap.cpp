@@ -12,8 +12,8 @@ namespace Amara {
         int tileWidth = 0;
         int tileHeight = 0;
 
-        int pixelWidth = 0;
-        int pixelHeight = 0;
+        int widthInPixels = 0;
+        int heightInPixels = 0;
 
         Tilemap(): Amara::Group() {
             set_base_node_id("Tilemap");
@@ -118,8 +118,8 @@ namespace Amara {
                 tileWidth = tmxAsset->tileWidth;
                 tileHeight = tmxAsset->tileHeight;
 
-                pixelWidth = mapWidth * tileWidth;
-                pixelHeight = mapHeight * tileHeight;
+                widthInPixels = mapWidth * tileWidth;
+                heightInPixels = mapHeight * tileHeight;
                 
                 for (int layerIndex = 0; layerIndex < tmxAsset->layers.size(); ++layerIndex) {
                     const Amara::TMXTileLayer& layer = tmxAsset->layers[layerIndex];
@@ -200,8 +200,8 @@ namespace Amara {
         Rectangle getRectangle() {
             return Rectangle(
                 pos.x, pos.y,
-                pixelWidth*scale.x, 
-                pixelHeight*scale.y
+                widthInPixels*scale.x, 
+                heightInPixels*scale.y
             );
         }
 
@@ -224,8 +224,8 @@ namespace Amara {
                 "height", sol::readonly(&Tilemap::mapHeight),
                 "tileWidth", sol::readonly(&Tilemap::tileWidth),
                 "tileHeight", sol::readonly(&Tilemap::tileHeight),
-                "pixelWidth", sol::readonly(&Tilemap::pixelWidth),
-                "pixelHeight", sol::readonly(&Tilemap::pixelHeight),
+                "widthInPixels", sol::readonly(&Tilemap::widthInPixels),
+                "heightInPixels", sol::readonly(&Tilemap::heightInPixels),
                 "rect", sol::property(&Tilemap::getRectangle)
             );
         }

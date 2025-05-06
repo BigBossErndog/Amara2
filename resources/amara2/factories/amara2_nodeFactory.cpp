@@ -142,8 +142,11 @@ namespace Amara {
         
         sol::object luaCreate(std::string key, sol::object config) {
             Amara::Node* node = create(key);
+            if (!node) return sol::nil;
 
-            if (config.is<sol::table>()) node->luaConfigure(config);
+            if (!config.is<sol::nil_t>()) {
+                node->luaConfigure(config);
+            }
 
             return node->get_lua_object();
         }
@@ -279,7 +282,7 @@ namespace Amara {
     sol::object Node::luaCreateChild(std::string key, sol::object config) {
         Amara::Node* node = createChild(key);
         if (node) {
-            if (config.is<sol::table>()) node->luaConfigure(config);
+            node->luaConfigure(config);
             return node->get_lua_object();
         }
         return sol::nil;

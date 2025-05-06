@@ -272,10 +272,23 @@ namespace Amara {
                     luaConfigure(json_to_lua(gameProps->lua, gameProps->system->readJSON(path)));
                     return get_lua_object();
                 }
-                if (String::endsWith(path, ".lua") || String::endsWith(path, ".luac")) {
+                std::string script_path = gameProps->system->getScriptPath(path);
+                if (String::endsWith(script_path, ".lua") || String::endsWith(script_path, ".luac")) {
                     luaConfigure(gameProps->scripts->run(path));
                     return get_lua_object();
                 }
+                std::string str_config = config.as<std::string>();
+                if (nlohmann::json::accept(str_config)) {
+                    configure(nlohmann::json::parse(str_config));
+                    return get_lua_object();
+                }
+                sol::object lua_config = string_to_lua_object(gameProps->lua, str_config);
+                if (lua_config.is<sol::table>()) {
+                    luaConfigure(lua_config);
+                    return get_lua_object();
+                }
+                
+                return get_lua_object();
             }
 
             configure(lua_to_json(config));
@@ -494,6 +507,10 @@ namespace Amara {
 
         virtual Amara::Node* addChild(Amara::Node* node) {
             if (destroyed) return node;
+
+            if (node->parent == this) {
+                return node;
+            }
             
             update_properties();
             node->gameProps = gameProps;
@@ -508,7 +525,9 @@ namespace Amara {
         sol::object luaCreateChild(std::string, sol::object config);
 
         void removeChild(Amara::Node* find) {
+            if (find->parent == this) find->parent = nullptr;
             if (destroyed) return;
+
             Amara::Node* child;
 			for (auto it = children.begin(); it != children.end();) {
                 child = *it;
@@ -580,7 +599,8 @@ namespace Amara {
         void switchParent(Amara::Node* other) {
             if (destroyed || other->destroyed || other == parent) return;
             if (other->parent && other->parent == this) {
-                other->switchParent(parent);
+                if (parent) other->switchParent(parent);
+                else removeChild(other);
             }
             if (parent) parent->removeChild(this);
             other->addChild(this);

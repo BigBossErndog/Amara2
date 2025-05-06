@@ -19,6 +19,9 @@ namespace Amara {
         int tileWidth = 0;
         int tileHeight = 0;
 
+        int widthInPixels = 0;
+        int heightInPixels = 0;
+
         std::vector<Tile> tiles;
 
         std::unordered_map<int, TMXAnimation> tmxAnimations;
@@ -45,7 +48,7 @@ namespace Amara {
                 nlohmann::json tileData = json_extract(config, "tiles");
                 if (tileData.is_array()) {
                     if (tileData.size() != mapWidth * mapHeight) {
-                        debug_log("Error: Given tile data does not match TilemapLayer dimensions.");
+                        debug_log("Error: Given tile data does not match given TilemapLayer width and height.");
                     }
                     else {
                         for (int i = 0; i < tileData.size(); ++i) {
@@ -59,6 +62,13 @@ namespace Amara {
                     }
                 }
             }
+
+            width = mapWidth * tileWidth;
+            height = mapHeight * tileHeight;
+            widthInPixels = width;
+            heightInPixels = height;
+
+            if (json_has(config, "texture")) setTexture(config["texture"]);
 
             update_canvas = true;
 
@@ -221,8 +231,10 @@ namespace Amara {
                 sol::base_classes, sol::bases<Amara::TextureContainer, Amara::Node>(),
                 "tileWidth", sol::readonly(&TilemapLayer::tileWidth),
                 "tileHeight", sol::readonly(&TilemapLayer::tileHeight),
-                "mapWidth", sol::readonly(&TilemapLayer::mapWidth),
-                "mapHeight", sol::readonly(&TilemapLayer::mapHeight),
+                "width", sol::readonly(&TilemapLayer::mapWidth),
+                "height", sol::readonly(&TilemapLayer::mapHeight),
+                "widthInPixels", sol::readonly(&TilemapLayer::widthInPixels),
+                "heightInPixels", sol::readonly(&TilemapLayer::heightInPixels),
                 "texture", sol::property([](Amara::TilemapLayer& t) -> std::string { if (t.image) return t.image->key; else return ""; }, [](Amara::TilemapLayer& t, std::string key) { t.setTexture(key); }),
                 "setTexture", sol::resolve<bool(std::string)>(&TilemapLayer::setTexture),
                 "setTile", &TilemapLayer::setTile

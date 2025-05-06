@@ -25,7 +25,7 @@ namespace Amara {
 
         const float stream_expiry_time = 60;
         float stream_expiry_counter = 0;
-
+        
         sol::protected_function onPlay;
         sol::protected_function onComplete;
         sol::protected_function onLoop;
