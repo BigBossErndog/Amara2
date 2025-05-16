@@ -172,7 +172,7 @@ namespace Amara {
             bottom = height/2.0;
         }
 
-        void paintOnce() {
+        void drawOnce() {
             update_canvas = true;
             canvasLocked = true;
         }
@@ -491,7 +491,7 @@ namespace Amara {
                 "originX", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.x; }, [](Amara::TextureContainer& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.y; }, [](Amara::TextureContainer& t, float v) { t.origin.y = v; }),
                 "canvasLocked", &TextureContainer::canvasLocked,
-                "paintOnce", &TextureContainer::paintOnce,
+                "drawOnce", &TextureContainer::drawOnce,
                 "clearOnDraw", &TextureContainer::clearOnDraw
             );
         }

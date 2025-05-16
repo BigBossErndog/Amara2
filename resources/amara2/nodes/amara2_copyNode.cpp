@@ -3,6 +3,8 @@ namespace Amara {
     public:
         Amara::Node* copyTarget = nullptr;
 
+        static std::vector<Amara::CopyNode*> copy_node_stack;
+
         CopyNode(): Amara::Node() {
             set_base_node_id("CopyNode");
         }
@@ -30,6 +32,15 @@ namespace Amara {
         virtual void drawChildren(const Rectangle& v) override {
             pass_on_properties();
 
+            for (Amara::CopyNode* node : copy_node_stack) {
+                if (node == this) {
+                    debug_log("Error: CopyNode found itself within its target tree.");
+                    gameProps->breakWorld();
+                    return;
+                }
+            }
+            copy_node_stack.push_back(this);
+
             if (copyTarget && copyTarget->destroyed) {
                 copyTarget = nullptr;
             }
@@ -55,6 +66,14 @@ namespace Amara {
                 gameProps->passOn = passOn;
 				++it;
 			}
+
+            for (auto it = copy_node_stack.begin(); it != copy_node_stack.end();) {
+                if (*it == this) {
+                    copy_node_stack.erase(it);
+                    break;
+                }
+                ++it;
+            }
         }
 
         static void bindLua(sol::state& lua) {
@@ -65,4 +84,6 @@ namespace Amara {
             );
         }
     };
+
+    std::vector<Amara::CopyNode*> Amara::CopyNode::copy_node_stack;
 }

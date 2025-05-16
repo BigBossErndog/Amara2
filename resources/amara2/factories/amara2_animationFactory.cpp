@@ -35,6 +35,7 @@ namespace Amara {
                 if (list.is_string()) {
                     config["texture"] = list;
                     add(config);
+                    return true;
                 }
                 else if (list.is_array()) {
                     for (int i = 0; i < list.size(); i++) {

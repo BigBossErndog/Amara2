@@ -656,9 +656,9 @@ namespace Amara {
                 else if (foundSelf) {
                     family[i - 1] = node;
                     family[i] = this;
-                    if (!node->destroyed && node->depth > depth) {
-                        depth = node->depth;
-                    }
+                }
+                if (!node->destroyed && node->depth > depth) {
+                    depth = node->depth;
                 }
             }
             if (foundSelf) parent->children = family;
@@ -679,9 +679,9 @@ namespace Amara {
                 else if (foundSelf) {
                     family[i + 1] = node;
                     family[i] = this;
-                    if (!node->destroyed && node->depth < depth) {
-                        depth = node->depth;
-                    }
+                }
+                if (!node->destroyed && node->depth < depth) {
+                    depth = node->depth;
                 }
             }
             if (foundSelf) parent->children = family;

@@ -49,6 +49,14 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
+        self:createChild("Hotkey", {
+            keys = { Key.A, Key.LeftCtrl, Key.LeftAlt },
+            onPress = function(self)
+                self.world:destroy()
+            end
+        })
+        print(Key.LeftCtrl)
+
         local sound = self.audio:createChild("Audio", {
             audio = "music",
             -- loop = true,

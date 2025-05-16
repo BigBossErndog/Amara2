@@ -30,7 +30,7 @@ namespace Amara {
             set_base_node_id("TilemapLayer");
             origin = Vector2(0, 0);
             tmxAnimations.clear();
-            paintOnce();
+            drawOnce();
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
