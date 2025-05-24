@@ -213,6 +213,7 @@ return NodeFactory:create("Scene"):configure({
         print(self.props.checker:get("child1/child2"))
         
         self.camera:setBounds(tilemap.rect)
+        self.camera.zoom = 5
         freaker.pos = self.camera.center
 
         self.props.checked = false

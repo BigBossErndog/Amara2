@@ -28,7 +28,7 @@ namespace Amara {
     bool json_is(const nlohmann::json& data, std::string key) {
         return json_has(data, key) && data[key].is_boolean() && data[key];
     }
-
+    
     bool json_erase(nlohmann::json& data, std::string key) {
         if (json_has(data, key)) {
             data.erase(key);

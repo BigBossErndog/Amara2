@@ -220,6 +220,19 @@ namespace Amara {
             return changeZoom(_z, _z);
         }
 
+        sol::object setZoom(sol::object _z) {
+            if (_z.is<int>()) {
+                zoom = Vector2( _z.as<int>(), _z.as<int>() );
+            }
+            else if (_z.is<double>()) {
+                zoom = Vector2( _z.as<double>(), _z.as<double>() );
+            }
+            else if (_z.is<Vector2>()) {
+                zoom = _z.as<Vector2>();
+            }
+            return get_lua_object();
+        }
+
         virtual void pass_on_properties() override {
             passOn = gameProps->passOn;
 
@@ -305,13 +318,17 @@ namespace Amara {
                     sol::resolve<sol::object(float, float)>(&Camera::changeScroll),
                     sol::resolve<sol::object(float)>(&Camera::changeScroll)
                 ),
-                "zoom", &Camera::zoom, 
+                "zoom", sol::property(
+                    [] (Camera& cam) -> Vector2 { return cam.zoom; },
+                    [] (Camera& cam, sol::object _z) { cam.setZoom(_z); }
+                ),
                 "zoomX", sol::property([](Camera& cam) { return cam.zoom.x; }, [](Camera& cam, float val) { cam.zoom.x = val; }),
                 "zoomY", sol::property([](Camera& cam) { return cam.zoom.y; }, [](Camera& cam, float val) { cam.zoom.y = val; }),
                 "changeZoom", sol::overload(
                     sol::resolve<sol::object(float, float)>(&Camera::changeZoom),
                     sol::resolve<sol::object(float)>(&Camera::changeZoom)
                 ),
+                "setZoom", &Camera::setZoom,
                 "lerp", &Camera::lerp,
                 "lerpX", sol::property([](Camera& cam) { return cam.lerp.x; }, [](Camera& cam, float val) { cam.lerp.x = val; }),
                 "lerpY", sol::property([](Camera& cam) { return cam.lerp.y; }, [](Camera& cam, float val) { cam.lerp.y = val; }),
