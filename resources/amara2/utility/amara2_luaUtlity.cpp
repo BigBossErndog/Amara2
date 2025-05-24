@@ -221,6 +221,7 @@ namespace Amara {
     }
     Vector3& Vector3::operator= (sol::object obj) {
         if (obj.is<Vector3>()) *this = obj.as<Vector3>();
+        else if (obj.is<Vector2>()) *this = obj.as<Vector2>();
         else *this = lua_to_json(obj);
         return *this;
     }

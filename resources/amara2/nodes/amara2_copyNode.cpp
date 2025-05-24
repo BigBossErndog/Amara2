@@ -69,8 +69,8 @@ namespace Amara {
 
             for (auto it = copy_node_stack.begin(); it != copy_node_stack.end();) {
                 if (*it == this) {
-                    copy_node_stack.erase(it);
-                    break;
+                    it = copy_node_stack.erase(it);
+                    continue;
                 }
                 ++it;
             }

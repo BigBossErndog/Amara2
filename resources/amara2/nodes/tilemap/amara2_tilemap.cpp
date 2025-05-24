@@ -205,6 +205,10 @@ namespace Amara {
             );
         }
 
+        Vector2 getCenter() {
+            return getRectangle().getCenter();
+        }
+
         static void bindLua(sol::state& lua) {
             lua.new_enum("TMXObjectType", 
                 "Rectangle", Amara::TMXObjectType::Rectangle,
@@ -226,7 +230,8 @@ namespace Amara {
                 "tileHeight", sol::readonly(&Tilemap::tileHeight),
                 "widthInPixels", sol::readonly(&Tilemap::widthInPixels),
                 "heightInPixels", sol::readonly(&Tilemap::heightInPixels),
-                "rect", sol::property(&Tilemap::getRectangle)
+                "rect", sol::property(&Tilemap::getRectangle),
+                "center", sol::property(&Tilemap::getCenter)
             );
         }
     };

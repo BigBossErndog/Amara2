@@ -67,6 +67,27 @@ namespace Amara {
             if (lua_data["repeats"].valid()) {
                 repeats = lua_data["repeats"].get<int>();
             }
+
+            if (lua_data["zoom"].valid()) {
+                sol::object config = lua_data["zoom"];
+                if (config.is<double>()) {
+                    double zoom = config.as<double>();
+                    target_data["zoomX"] = zoom;
+                    target_data["zoomY"] = zoom;
+                }
+                else if (config.is<sol::table>()) {
+                    nlohmann::json jconfig = lua_to_json(config);
+                    if (jconfig.is_array()) {
+                        target_data["zoomX"] = jconfig[0];
+                        target_data["zoomY"] = jconfig[1];
+                    }
+                    else if (json_has(jconfig, "x", "y")) {
+                        target_data["zoomX"] = jconfig["x"];
+                        target_data["zoomY"] = jconfig["y"];
+                    }
+                }
+                lua_data["zoom"] = sol::nil;
+            }
             if (lua_data["color"].valid()) {
                 Amara::Color color = lua_data["color"];
                 target_data["color"] = color.toJSON();
@@ -101,7 +122,7 @@ namespace Amara {
         void clean_data() {
             std::vector<std::string> to_clean;
             for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                if (!json_has(target_data, it.key()) || !(it.value().is_number() || it.value().is_object())) {
+                if (!json_has(target_data, it.key()) || !(it.value().is_number() || it.value().is_object() || it.value().is_boolean())) {
                     to_clean.push_back(it.key());
                 }
             }
@@ -146,6 +167,23 @@ namespace Amara {
                     } catch (const std::exception& e) {
                         debug_log(e.what());
                         gameProps->breakWorld();
+                    }
+                }
+            }
+        }
+
+        void completeProperties() {
+            if (lua_actor_table.valid()) {
+                for (auto it = target_data.begin(); it != target_data.end(); ++it) {
+                    if (it.value().is_number()) {
+                        lua_actor_table.set(it.key(), (double)target_data[it.key()]);
+                    }
+                    else if (String::equal(it.key(), "color") || String::equal(it.key(), "tint") || String::equal(it.key(), "fill") || String::equal(it.key(), "backgroundColor")) {
+                        Amara::Color target_color = target_data[it.key()];
+                        lua_actor_table.set(it.key(), target_color);
+                    }
+                    else if (it.value().is_boolean()) {
+                        lua_actor_table.set(it.key(), (bool)target_data[it.key()]);
                     }
                 }
             }
@@ -205,7 +243,10 @@ namespace Amara {
                         }
                         waitingYoyo = yoyo;
                     }
-                    else complete();
+                    else {
+                        completeProperties();
+                        complete();
+                    }
                 }
             }
         }
