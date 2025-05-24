@@ -230,6 +230,16 @@ namespace Amara {
             else if (_z.is<Vector2>()) {
                 zoom = _z.as<Vector2>();
             }
+            else if (_z.is<sol::table>()) {
+                nlohmann::json config = lua_to_json(_z);
+                if (config.is_array()) {
+                    zoom = Vector2( config[0], config[1] );
+                }
+                else {
+                    if (json_has(config, "x")) zoom.x = config["x"];
+                    if (json_has(config, "y")) zoom.y = config["y"];
+                }
+            }
             return get_lua_object();
         }
 
