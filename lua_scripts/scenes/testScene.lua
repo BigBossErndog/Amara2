@@ -76,17 +76,20 @@ return NodeFactory:create("Scene"):configure({
         self.world.backgroundColor = "black"
 
         local textCont = self:createChild("TextureContainer", {
+            x = tilemap.center.x,
+            y = tilemap.center.y,
             width = 256,
             height = 256,
-            tint = "red",
+            -- tint = "red",
             -- alpha = 0.5,
             -- visible = false,
             -- paused = true,
-            canvasLocked = true,
+            -- canvasLocked = true,
             -- fixedToCamera = true,
             -- origin = Position.Top,
             -- tint = Colors.Red
         })
+        print("TextCont", textCont.pos, tilemap.center)
         self.props.textCont = textCont
         textCont:wait(2).tween:to({
             rotation = 2*math.pi,
@@ -95,7 +98,6 @@ return NodeFactory:create("Scene"):configure({
             repeats = -1,
             yoyo = true
         })
-        textCont.size = self.camera.view
         -- textCont.rect = map.rect
         -- copy.target = textCont
 
@@ -214,10 +216,10 @@ return NodeFactory:create("Scene"):configure({
         
         self.camera:setBounds(tilemap.rect)
         -- self.camera.zoom = 5
-        freaker.pos = tilemap.center
-        print(tilemap.center)
-        print(freaker.pos)
-
+        -- freaker.pos = tilemap.center
+        freaker.blendMode = BlendMode.Mask
+        -- textCont.blendMode = BlendMode.Mask
+        
         self.props.checked = false
     end,
 

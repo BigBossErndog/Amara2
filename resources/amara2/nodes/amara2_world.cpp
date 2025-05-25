@@ -547,7 +547,7 @@ namespace Amara {
 
             windowID = SDL_GetWindowID(window);
             window_dim = Rectangle( pos.x, pos.y, windowW, windowH );
-
+            
             setScreenMode(screenMode);
         }
 
@@ -694,6 +694,9 @@ namespace Amara {
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
                         
+                        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+                        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+
                         if (create_graphics_window(SDL_WINDOW_OPENGL)) {
                             glContext = SDL_GL_CreateContext(window);
                             renderer_created = true;

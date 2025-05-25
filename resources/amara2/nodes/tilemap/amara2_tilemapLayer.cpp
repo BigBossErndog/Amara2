@@ -120,6 +120,8 @@ namespace Amara {
             if (config.is_number()) {
                 tile.tileID = config.get<int>();
             }
+
+            drawOnce();
         }
 
         void processAnimations(double deltaTime) {
@@ -133,6 +135,7 @@ namespace Amara {
                     ++animation.currentIndex;
                 }
                 animation.currentTileId = animation.frames[animation.currentIndex].tileId;
+                drawOnce();
             }
         }
 

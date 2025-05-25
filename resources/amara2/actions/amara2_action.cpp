@@ -52,7 +52,7 @@ namespace Amara {
                     sol::protected_function_result result = onAct(actor->get_lua_object(), get_lua_object(), deltaTime);
                     if (!result.valid()) {
                         sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                        throw std::runtime_error("Lua Error: " + std::string(err.what()));
                     }
                 } catch (const std::exception& e) {
                     debug_log(e.what());
@@ -239,6 +239,14 @@ namespace Amara {
                 if (action == nullptr) action = e.createChild(key)->as<Amara::Action*>();
 
                 return action->get_lua_object();
+            };
+            node_type["stopActions"] = [](Amara::Node& e) -> sol::object {
+                for (Amara::Node* child: e.children) {
+                    if (!child->destroyed && child->is_action) {
+                        child->as<Amara::Action*>()->destroy();
+                    }
+                }
+                return e.get_lua_object();
             };
             node_type["isActing"] = sol::property([](Amara::Node& e) -> bool {
                 if (e.is_action) return !e.destroyed;

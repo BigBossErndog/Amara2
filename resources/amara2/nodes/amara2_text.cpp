@@ -342,7 +342,7 @@ namespace Amara {
                         SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
                         SDL_SetTextureColorMod(font->texture, temp_props.color.r, temp_props.color.g, temp_props.color.b);
                         SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * temp_props.alpha * 255);
-                        setSDLBlendMode(font->texture, temp_props.blendMode);
+                        Apply_SDL_BlendMode(gameProps, font->texture, temp_props.blendMode);
 
                         SDL_RenderTextureRotated(
                             gameProps->renderer, 

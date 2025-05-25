@@ -204,7 +204,7 @@ namespace Amara {
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
                 SDL_SetTextureColorMod(image->texture, tint.r, tint.g, tint.b);
                 SDL_SetTextureAlphaMod(image->texture, alpha * passOn.alpha * 255);
-                setSDLBlendMode(image->texture, blendMode);
+                Apply_SDL_BlendMode(gameProps, image->texture, blendMode);
 
                 SDL_RenderTextureRotated(
                     gameProps->renderer, 

@@ -375,7 +375,7 @@ namespace Amara {
                 actuated = true;
             }
             if (destroyed) return;
-
+            
             messages.run();
 
             if (destroyed) return;

@@ -125,11 +125,11 @@
     #include "geometry/amara2_shapes.cpp"
     #include "geometry/amara2_geometry.cpp"
 
-    #include "rendering/amara2_renderUtility.cpp"
     #include "rendering/amara2_gpuHandler.cpp"
 
     #include "managers/amara2_gameProps.cpp"
-
+    
+    #include "rendering/amara2_renderUtility.cpp"
     #include "utility/amara2_luaUtlity.cpp"
 
     #include "input/amara2_button.cpp"
@@ -201,7 +201,7 @@
     
     #include "nodes/amara2_world.cpp"
 
-    #include "../../plugins/plugins.cpp"
+    #include <amara2_plugins.cpp>
 
     #include "factories/amara2_nodeFactory.cpp"
 

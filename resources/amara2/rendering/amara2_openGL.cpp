@@ -88,6 +88,7 @@ namespace Amara {
     X(void, glEnable, GLenum) \
     X(void, glDisable, GLenum) \
     X(void, glBlendFunc, GLenum, GLenum) \
+    X(void, glBlendFuncSeparate, GLenum, GLenum, GLenum, GLenum) \
     X(void, glDepthFunc, GLenum) \
     X(void, glStencilFunc, GLenum, GLint, GLuint) \
     X(void, glStencilOp, GLenum, GLenum, GLenum) \

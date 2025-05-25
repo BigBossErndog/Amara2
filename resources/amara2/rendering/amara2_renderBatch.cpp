@@ -230,7 +230,6 @@ namespace Amara {
                 if (time_location != -1) {
                     glUniform1f(time_location, (float)gameProps->worldLifetime);
                 }
-
                 switch (blendMode) {
                     case BlendMode::Alpha:
                         glEnable(GL_BLEND);
@@ -248,6 +247,28 @@ namespace Amara {
                          glEnable(GL_BLEND);
                          glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
                          break;
+                    case BlendMode::Mask:
+                        if (!insideTextureContainer) {
+                            debug_log("Error: Mask and Erase blend modes can only be used inside a TextureContainer.");
+                            gameProps->breakWorld();
+                            return;
+                        }
+                        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+                        glEnable(GL_BLEND);
+                        // glBlendFunc(GL_DST_COLOR, GL_ZERO);
+                        glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ZERO, GL_SRC_ALPHA);
+                        break;
+                    case BlendMode::Erase:
+                        if (!insideTextureContainer) {
+                            debug_log("Error: Mask and Erase blend modes can only be used inside a TextureContainer.");
+                            gameProps->breakWorld();
+                            return;
+                        }
+                        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+                        glEnable(GL_BLEND);
+                        // glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+                        glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+                        break;
                     default:
                         glDisable(GL_BLEND);
                         break;
