@@ -217,7 +217,7 @@ return NodeFactory:create("Scene"):configure({
         self.camera:setBounds(tilemap.rect)
         -- self.camera.zoom = 5
         -- freaker.pos = tilemap.center
-        freaker.blendMode = BlendMode.Mask
+        -- freaker.blendMode = BlendMode.Mask
         -- textCont.blendMode = BlendMode.Mask
         
         self.props.checked = false

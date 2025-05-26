@@ -251,7 +251,6 @@ namespace Amara {
                         if (!insideTextureContainer) {
                             debug_log("Error: Mask and Erase blend modes can only be used inside a TextureContainer.");
                             gameProps->breakWorld();
-                            return;
                         }
                         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
                         glEnable(GL_BLEND);
@@ -262,7 +261,6 @@ namespace Amara {
                         if (!insideTextureContainer) {
                             debug_log("Error: Mask and Erase blend modes can only be used inside a TextureContainer.");
                             gameProps->breakWorld();
-                            return;
                         }
                         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
                         glEnable(GL_BLEND);
