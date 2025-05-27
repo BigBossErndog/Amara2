@@ -91,11 +91,15 @@ namespace Amara {
             if (in_drawing) {
                 if (config.is_string()) {
                     std::string manipulator_name = config;
+                    
                     if (String::equal(manipulator_name, "end")) {
                         temp_props.set(this);
                     }
                     else if (manipulators.find(manipulator_name) != manipulators.end()) {
                         temp_props.manipulator = manipulators[manipulator_name];
+                    }
+                    else if (Amara::Color::isColor(manipulator_name)) {
+                        temp_props.color = nlohmann::json(manipulator_name);
                     }
                     else {
                         debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");

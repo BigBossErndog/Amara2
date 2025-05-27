@@ -139,6 +139,19 @@ namespace Amara {
             return os << static_cast<std::string>(color);
         }
 
+        static bool isColor(std::string key) {
+            if (String::equal(key, "white")) return true;
+            if (String::equal(key, "black")) return true;
+            if (String::equal(key, "red")) return true;
+            if (String::equal(key, "green")) return true;
+            if (String::equal(key, "blue")) return true;
+            if (String::equal(key, "yellow")) return true;
+            if (String::equal(key, "magenta")) return true;
+            if (String::equal(key, "cyan")) return true;
+            if (String::equal(key, "transparent")) return true;
+            return false;
+        }
+
         Amara::Color& configure(nlohmann::json config) {
             if (config.is_string()) {
                 if (String::equal(config, "white")) {

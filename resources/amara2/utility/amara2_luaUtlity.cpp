@@ -17,6 +17,24 @@ namespace Amara {
             }
             return sol::make_object(lua, arr);
         } else if (json.is_object()) {
+            if (json_has(json, "r", "g", "g", "a")) {
+                return sol::make_object(lua, Color(json["r"], json["g"], json["b"], json["a"]));
+            }
+            else if (json_has(json, "x", "y")) {
+                if (json_has(json, "w", "h")) {
+                    return sol::make_object(lua, Rectangle(json["x"], json["y"], json["w"], json["h"]));
+                }
+                else if (json_has(json, "z", "w")) {
+                    return sol::make_object(lua, Vector4(json["x"], json["y"], json["z"], json["w"]));
+                }
+                else if (json_has(json, "z")) {
+                    return sol::make_object(lua, Vector3(json["x"], json["y"], json["z"]));
+                }
+                else {
+                    return sol::make_object(lua, Vector2(json["x"], json["y"]));           
+                }
+            }
+
             sol::table tbl = lua.create_table();
             for (auto& item : json.items()) {
                 std::string key = item.key();
@@ -268,6 +286,10 @@ namespace Amara {
         math_metatable.set_function("round", [](double num) -> int {
             return std::round(num);
         });
+        math_metatable.set_function("hypotenuse", [](double a, double b) -> int {
+            return std::sqrt(a * a + b * b);
+        });
+
 
         sol::table table_metatable = lua["table"];
         table_metatable.set_function("to_string", string_to_lua_object(lua, lua_table_to_string));

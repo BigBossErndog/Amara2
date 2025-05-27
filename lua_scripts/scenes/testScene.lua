@@ -84,7 +84,7 @@ return NodeFactory:create("Scene"):configure({
             -- alpha = 0.5,
             -- visible = false,
             -- paused = true,
-            -- canvasLocked = true,
+            canvasLocked = true,
             -- fixedToCamera = true,
             -- origin = Position.Top,
             -- tint = Colors.Red
@@ -172,7 +172,7 @@ return NodeFactory:create("Scene"):configure({
         root:setShaderProgram("outlineShader")
 
         self.props.prog = root:createChild("Text", {
-            text = "Hello ${green_shake}world${end}, I am ${yellow_wave}Amara${end}!",
+            text = "${blue}Hello${blue} ${green_shake}world${end}, I am ${yellow_wave}Amara${end}!",
             font = "font",
             origin = 0,
             fixedToCamera = true,
