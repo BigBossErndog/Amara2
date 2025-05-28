@@ -153,7 +153,18 @@ namespace Amara {
         }
 
         Amara::Color& configure(nlohmann::json config) {
-            if (config.is_string()) {
+            if (config.is_array()) {
+                if (config.size() >= 3) {
+                    r = config[0];
+                    g = config[1];
+                    b = config[2];
+                    a = 255;
+                }
+                if (config.size() >= 4) {
+                    a = config[3];
+                }
+            }
+            else if (config.is_string()) {
                 if (String::equal(config, "white")) {
                     r = 255; g = 255; b = 255; a = 255;
                 }
