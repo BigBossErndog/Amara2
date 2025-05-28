@@ -157,9 +157,16 @@ namespace Amara {
                     start_data = nlohmann::json::object();
                 }
                 if (lua_actor_table.valid()) {
+                    nlohmann::json start_prop_data = json_extract(start_data, "props");
                     for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                        if (String::equal(it.key(), "props")) continue;
                         lua_actor_table.set(it.key(), json_to_lua(gameProps->lua, it.value()));
+                    }
+                    if (!start_prop_data.is_null()) {
+                        start_data["props"] = start_prop_data;
+                        sol::table prop_table = lua_actor_table["props"];
+                        for (auto it = start_prop_data.begin(); it != start_prop_data.end(); ++it) {
+                            prop_table.set(it.key(), json_to_lua(gameProps->lua, it.value()));
+                        }
                     }
 
                     nlohmann::json prop_data = json_extract(target_data, "props");

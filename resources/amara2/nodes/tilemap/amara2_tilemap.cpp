@@ -19,13 +19,22 @@ namespace Amara {
             set_base_node_id("Tilemap");
         }
 
-        virtual Amara::Node* configure(nlohmann::json config) {
+        virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Group::configure(config);
 
             if (json_has(config, "texture")) setTexture(config["texture"]);
             if (json_has(config, "tilemap")) createTilemap(config["tilemap"]);
 
             return this;
+        }
+
+        virtual sol::object luaConfigure(std::string key, sol::object val) override {
+            if (val.is<sol::function>()) {
+                if (String::equal(key, "objects")) createObjects(val.as<sol::protected_function>());
+                else if (String::equal(key, "createObjects")) createObjects(val.as<sol::protected_function>());
+            }
+
+            return Amara::Group::luaConfigure(key, val);
         }
 
         bool setTexture(std::string key) {
@@ -224,6 +233,7 @@ namespace Amara {
                 "setTexture", sol::resolve<bool(std::string)>(&Tilemap::setTexture),
                 "tilemap", sol::property([](Amara::Tilemap& t) -> std::string { if (t.asset) return t.asset->key; else return ""; }, [](Amara::Tilemap& t, std::string key) { t.createTilemap(key); }),
                 "createTilemap", sol::resolve<bool(std::string)>(&Tilemap::createTilemap),
+                "createObjects", sol::resolve<void(sol::protected_function)>(&Tilemap::createObjects),
                 "width", sol::readonly(&Tilemap::mapWidth),
                 "height", sol::readonly(&Tilemap::mapHeight),
                 "tileWidth", sol::readonly(&Tilemap::tileWidth),

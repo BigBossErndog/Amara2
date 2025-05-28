@@ -98,12 +98,16 @@ return NodeFactory:create("Scene"):configure({
             repeats = -1,
             yoyo = true
         })
-        textCont.props.val = 0
-        textCont.tween:to({
+        textCont.props.val = 9
+        textCont.tween:from({
+            props = {
+                val = 0
+            }
+        }):to({
             props = {
                 val = 10
             },
-            duration = 5,
+            duration = 1,
             repeats = -1,
             yoyo = true,
             onUpdate = function(self) 
