@@ -98,6 +98,18 @@ return NodeFactory:create("Scene"):configure({
             repeats = -1,
             yoyo = true
         })
+        textCont.props.val = 0
+        textCont.tween:to({
+            props = {
+                val = 10
+            },
+            duration = 5,
+            repeats = -1,
+            yoyo = true,
+            onUpdate = function(self) 
+                print(self.props.val)
+            end
+        })
         -- textCont.rect = map.rect
         -- copy.target = textCont
         
