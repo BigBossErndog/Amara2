@@ -19,7 +19,7 @@ namespace Amara {
     public:
         std::string text;
         std::u32string converted_text;
-
+        
         Amara::FontAsset* font = nullptr;
         
         int progress = 0;

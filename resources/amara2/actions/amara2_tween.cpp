@@ -28,6 +28,13 @@ namespace Amara {
                 Amara::Tween* tween = createChild("Tween")->as<Amara::Tween*>();
                 return tween->from(lua_data);
             }
+
+            if (lua_data["target"].valid()) {
+                sol::object otarget = lua_data["target"];
+                lua_actor_table = otarget.as<sol::table>();
+                lua_data["target"] = sol::nil;
+            }
+            
             start_data = lua_to_json(lua_data);
             return get_lua_object();
         }
@@ -39,6 +46,12 @@ namespace Amara {
             }
 
             target_data = nlohmann::json::object();
+
+            if (lua_data["target"].valid()) {
+                sol::object otarget = lua_data["target"];
+                lua_actor_table = otarget.as<sol::table>();
+                lua_data["target"] = sol::nil;
+            }
 
             if (lua_data["onComplete"].valid()) {
                 onComplete = lua_data["onComplete"];

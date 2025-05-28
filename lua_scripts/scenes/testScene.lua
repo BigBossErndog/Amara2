@@ -100,7 +100,7 @@ return NodeFactory:create("Scene"):configure({
         })
         -- textCont.rect = map.rect
         -- copy.target = textCont
-
+        
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
         for i = 1, (128*128) do
