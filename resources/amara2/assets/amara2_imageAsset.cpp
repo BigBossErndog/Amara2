@@ -199,7 +199,7 @@ namespace Amara {
         }
     };
 
-    class SpritesheetAsset: public ImageAsset {
+    class SpritesheetAsset: public Amara::ImageAsset {
     public:
         SpritesheetAsset(Amara::GameProps* _gameProps): ImageAsset(_gameProps) {
             type = AssetEnum::Spritesheet;
@@ -214,6 +214,19 @@ namespace Amara {
             frameHeight = _fh;
 
             return ImageAsset::loadImage(_p);
+        }
+    };
+
+    class SinglePixelAsset: public Amara::ImageAsset {
+    public:
+        SinglePixelAsset(Amara::GameProps* _gameProps): ImageAsset(_gameProps) {
+            typeKey = "SinglePixelAsset";
+
+            createPixel();
+        }
+
+        void createPixel() {
+            // TODO: Create a single pixel.
         }
     };
 }

@@ -1,7 +1,8 @@
 namespace Amara {
     class Animation;
+
     /**
-     * This is used for 2D sprites.
+     * This Sprite class is used for 2D sprites.
      */
     class Sprite: public Amara::Node {
     public:

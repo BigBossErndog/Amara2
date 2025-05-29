@@ -4,13 +4,14 @@ namespace Amara {
     struct Message {
         Amara::MessageBox* sender = nullptr;
         std::string key;
-        nlohmann::json data;
+        sol::object data;
+        
         bool active = true;
         bool null = false;
         bool skip = false;
         bool forceRemove = false;
 
-        bool is(std::string check) {
+        bool is(const std::string& check) {
             if (key.compare(check) == 0) return true;
             if (json_is(data, check)) return true;
             return false;
@@ -28,7 +29,7 @@ namespace Amara {
         void update() {
             for (auto it = queue.begin(); it != queue.end();) {
                 Message msg = *it;
-                if (msg.sender == nullptr || !msg.active || msg.forceRemove) {
+                if (msg.sender == nullptr || msg.forceRemove) {
                     if (msg.skip) msg.skip = false;
                     else {
                         it = queue.erase(it);
@@ -68,12 +69,12 @@ namespace Amara {
             return nullMessage;
         }
 
-        Message& send(std::string key, nlohmann::json gData) {
+        Message& send(std::string key, sol::object _msgData) {
             queue.push_back({ nullptr, key, gData });
             return queue.back();
         }
 
-        Message& send(Amara::MessageBox* gParent, std::string key, nlohmann::json gData) {
+        Message& send(Amara::MessageBox* gParent, std::string key, sol::object _msgData) {
             queue.push_back({ gParent, key, gData });
             return queue.back();
         }

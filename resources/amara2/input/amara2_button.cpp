@@ -30,6 +30,10 @@ namespace Amara {
             if (isDown) {
                 timeHeld += deltaTime;
             }
+        },
+
+        static void bind_lua(sol::state& lua) {
+            lua.new_usertype<Amara::Button>("")
         }
     };
 }

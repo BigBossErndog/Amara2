@@ -30,9 +30,11 @@ namespace Amara {
                         break;
                     case SDL_EVENT_KEY_DOWN:
                         keyboard.press(e.key.key);
+                        game.gameProps->messages->send(nullptr, "keyboarddown", e.key.key);
                         break;
                     case SDL_EVENT_KEY_UP:
                         keyboard.release(e.key.key);
+                        game.gameProps->messages->send(nullptr, "keyboardup", e.key.key);
                         break;
                 }
             }

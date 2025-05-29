@@ -201,6 +201,7 @@ namespace Amara {
             bool vsync = false;
 
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
+                messages.update();
                 eventHandler.handleEvents(worlds, game);
 
                 if (game.hasQuit) {

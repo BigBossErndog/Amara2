@@ -201,6 +201,8 @@
     #include "audio/amara2_audiogroup.cpp"
     #include "audio/amara2_audioPool.cpp"
     #include "audio/amara2_audioMaster.cpp"
+
+    #include "transitions/amara2_transition.cpp"
     
     #include "nodes/amara2_world.cpp"
 

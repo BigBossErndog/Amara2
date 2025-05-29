@@ -1,11 +1,11 @@
 namespace Amara {
     class KeyboardManager {
     public:
-        std::unordered_map<SDL_Keycode, Button> keys;
+        std::unordered_map<SDL_Keycode, Amara::Button> keys;
 
         SDL_Keycode lastKeyPressed = SDLK_UNKNOWN;
         bool keyPressed = false;
-
+        
         SDL_Keycode lastKeyReleased = SDLK_UNKNOWN;
         bool keyReleased = false;
         
@@ -83,7 +83,7 @@ namespace Amara {
             keycode_enum["Return"] = SDLK_RETURN;
             keycode_enum["Esc"] = SDLK_ESCAPE;
             keycode_enum["Backspace"] = SDLK_BACKSPACE;
-            keycode_enum["Tasb"] = SDLK_TAB;
+            keycode_enum["Tab"] = SDLK_TAB;
             keycode_enum["Space"] = SDLK_SPACE;
             keycode_enum["Exclaim"] = SDLK_EXCLAIM;
             keycode_enum["DoubleApostrophe"] = SDLK_DBLAPOSTROPHE;

@@ -6,7 +6,7 @@ namespace Amara {
 
         bool destroy_past = true;
         bool just_deactivate = false;
-
+        
         Transition(): Amara::Action() {
             set_base_node_id("Transition");
         }
@@ -22,12 +22,15 @@ namespace Amara {
             return Amara::Action::configure(config);
         }
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
-            if (String::equal(key, "next")) {
-                if (val.is<Amara::Node>()) {
-                    next_node = val.as<Amara::Node*>();
-                }
+            if (val.is<Amara::Node>()) {
+                if (String::equal(key, "next")) next_node = val.as<Amara::Node*>();
             }
             return Amara::Action::luaConfigure(key, val);
+        }
+
+        virtual void prepare() override {
+            bringToFront();
+            Amara::Action::prepare();
         }
 
         virtual void doTransition() {
@@ -41,12 +44,20 @@ namespace Amara {
             if (next_node) {
                 next_node->activate();
                 switchParent(next_node);
+                bringToFront();
             }
 
             if (next_node != prev_parent) {
-                if (just_destroy) prev_parent->destroy();
+                if (destroy_past) prev_parent->destroy();
                 else if (just_deactivate) prev_parent->deactivate();
             }
+        }
+
+        static void bind_lua(sol::state& lua) {
+            lua.new_usertype<Amara::Transition>("Transition"
+                sol::base_classes, sol::bases<Amara::Action>(),
+                "doTransition", &Amara::Transition::doTransition
+            );
         }
     };
 }

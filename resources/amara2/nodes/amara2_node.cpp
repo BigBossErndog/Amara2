@@ -33,6 +33,7 @@ namespace Amara {
         sol::protected_function luaDestroy;
         
         MessageBox messages;
+        MessageBox input;
 
         Amara::StateMachine* stateMachine = nullptr;
         Amara::Loader* loader = nullptr;
@@ -374,7 +375,8 @@ namespace Amara {
             }
             if (destroyed) return;
             
-            messages.run();
+            if (messages.active) messages.run();
+            if (input.active) input.run();
 
             if (destroyed) return;
 
@@ -607,6 +609,9 @@ namespace Amara {
                     gameProps->breakWorld();
                 }
             }
+
+            messages.destroy();
+            input.destroy();
 
             if (parent) parent->removeChild(this);
 
