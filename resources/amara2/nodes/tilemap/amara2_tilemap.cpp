@@ -19,13 +19,22 @@ namespace Amara {
             set_base_node_id("Tilemap");
         }
 
-        virtual Amara::Node* configure(nlohmann::json config) {
+        virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Group::configure(config);
 
             if (json_has(config, "texture")) setTexture(config["texture"]);
             if (json_has(config, "tilemap")) createTilemap(config["tilemap"]);
 
             return this;
+        }
+
+        virtual sol::object luaConfigure(std::string key, sol::object val) override {
+            if (val.is<sol::function>()) {
+                if (String::equal(key, "objects")) createObjects(val.as<sol::protected_function>());
+                else if (String::equal(key, "createObjects")) createObjects(val.as<sol::protected_function>());
+            }
+
+            return Amara::Group::luaConfigure(key, val);
         }
 
         bool setTexture(std::string key) {
@@ -94,7 +103,7 @@ namespace Amara {
                             sol::protected_function_result result = func(get_lua_object(), json_to_lua(gameProps->lua, config));
                             if (!result.valid()) {
                                 sol::error err = result;
-                                throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                                throw std::runtime_error("Lua Error: " + std::string(err.what()));
                             }
                         } catch (const std::exception& e) {
                             debug_log(e.what());
@@ -205,7 +214,11 @@ namespace Amara {
             );
         }
 
-        static void bind_lua(sol::state& lua) {
+        Vector2 getCenter() {
+            return getRectangle().getCenter();
+        }
+
+        static void bindLua(sol::state& lua) {
             lua.new_enum("TMXObjectType", 
                 "Rectangle", Amara::TMXObjectType::Rectangle,
                 "Ellipse", Amara::TMXObjectType::Ellipse,
@@ -220,13 +233,15 @@ namespace Amara {
                 "setTexture", sol::resolve<bool(std::string)>(&Tilemap::setTexture),
                 "tilemap", sol::property([](Amara::Tilemap& t) -> std::string { if (t.asset) return t.asset->key; else return ""; }, [](Amara::Tilemap& t, std::string key) { t.createTilemap(key); }),
                 "createTilemap", sol::resolve<bool(std::string)>(&Tilemap::createTilemap),
+                "createObjects", sol::resolve<void(sol::protected_function)>(&Tilemap::createObjects),
                 "width", sol::readonly(&Tilemap::mapWidth),
                 "height", sol::readonly(&Tilemap::mapHeight),
                 "tileWidth", sol::readonly(&Tilemap::tileWidth),
                 "tileHeight", sol::readonly(&Tilemap::tileHeight),
                 "widthInPixels", sol::readonly(&Tilemap::widthInPixels),
                 "heightInPixels", sol::readonly(&Tilemap::heightInPixels),
-                "rect", sol::property(&Tilemap::getRectangle)
+                "rect", sol::property(&Tilemap::getRectangle),
+                "center", sol::property(&Tilemap::getCenter)
             );
         }
     };

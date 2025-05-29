@@ -49,6 +49,14 @@ return NodeFactory:create("Scene"):configure({
     end,
 
     onCreate = function(self)
+        self:createChild("Hotkey", {
+            keys = { Key.A, Key.LeftCtrl, Key.LeftAlt },
+            onPress = function(self)
+                self.world:destroy()
+            end
+        })
+        print(Key.LeftCtrl)
+
         local sound = self.audio:createChild("Audio", {
             audio = "music",
             -- loop = true,
@@ -68,9 +76,11 @@ return NodeFactory:create("Scene"):configure({
         self.world.backgroundColor = "black"
 
         local textCont = self:createChild("TextureContainer", {
+            x = tilemap.center.x,
+            y = tilemap.center.y,
             width = 256,
             height = 256,
-            tint = "red",
+            -- tint = "red",
             -- alpha = 0.5,
             -- visible = false,
             -- paused = true,
@@ -79,6 +89,7 @@ return NodeFactory:create("Scene"):configure({
             -- origin = Position.Top,
             -- tint = Colors.Red
         })
+        print("TextCont", textCont.pos, tilemap.center)
         self.props.textCont = textCont
         textCont:wait(2).tween:to({
             rotation = 2*math.pi,
@@ -87,10 +98,25 @@ return NodeFactory:create("Scene"):configure({
             repeats = -1,
             yoyo = true
         })
-        textCont.size = self.camera.view
+        textCont.props.val = 9
+        textCont.tween:from({
+            props = {
+                val = 0
+            }
+        }):to({
+            props = {
+                val = 10
+            },
+            duration = 1,
+            repeats = -1,
+            yoyo = true,
+            onUpdate = function(self) 
+                print(self.props.val)
+            end
+        })
         -- textCont.rect = map.rect
         -- copy.target = textCont
-
+        
         local a_rate = 2 * math.pi * 0.01
         local d_rate = 1
         for i = 1, (128*128) do
@@ -162,7 +188,7 @@ return NodeFactory:create("Scene"):configure({
         root:setShaderProgram("outlineShader")
 
         self.props.prog = root:createChild("Text", {
-            text = "Hello ${green_shake}world${end}, I am ${yellow_wave}Amara${end}!",
+            text = "${blue}Hello${blue} ${green_shake}world${end}, I am ${yellow_wave}Amara${end}!",
             font = "font",
             origin = 0,
             fixedToCamera = true,
@@ -205,8 +231,11 @@ return NodeFactory:create("Scene"):configure({
         print(self.props.checker:get("child1/child2"))
         
         self.camera:setBounds(tilemap.rect)
-        freaker.pos = self.camera.center
-
+        -- self.camera.zoom = 5
+        -- freaker.pos = tilemap.center
+        -- freaker.blendMode = BlendMode.Mask
+        -- textCont.blendMode = BlendMode.Mask
+        
         self.props.checked = false
     end,
 

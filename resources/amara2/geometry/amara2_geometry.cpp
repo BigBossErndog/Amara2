@@ -157,8 +157,7 @@ namespace Amara {
     Vector2& Vector2::operator= (nlohmann::json config) {
         if (config.is_string()) *this = stringToPosition(config.get<std::string>());
         else if (config.is_number()) {
-            x = config.get<float>();
-            y = config.get<float>();
+            x = y = config.get<float>();
         }
         else if (config.is_object()) {
             if (json_has(config, "x")) x = config["x"];

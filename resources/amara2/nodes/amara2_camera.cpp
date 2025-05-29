@@ -305,7 +305,10 @@ namespace Amara {
                     sol::resolve<sol::object(float, float)>(&Camera::changeScroll),
                     sol::resolve<sol::object(float)>(&Camera::changeScroll)
                 ),
-                "zoom", &Camera::zoom, 
+                "zoom", sol::property(
+                    [] (Camera& cam) -> Vector2 { return cam.zoom; },
+                    [] (Camera& cam, sol::object _z) { cam.zoom = _z; }
+                ),
                 "zoomX", sol::property([](Camera& cam) { return cam.zoom.x; }, [](Camera& cam, float val) { cam.zoom.x = val; }),
                 "zoomY", sol::property([](Camera& cam) { return cam.zoom.y; }, [](Camera& cam, float val) { cam.zoom.y = val; }),
                 "changeZoom", sol::overload(

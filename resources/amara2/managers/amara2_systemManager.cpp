@@ -481,10 +481,10 @@ namespace Amara {
         }
 
         sol::object run(std::string path) {
-            std::string scriptContent = readFile(path);
-
             std::filesystem::path filePath = getScriptPath(path);
             bool fileExists = std::filesystem::exists(filePath);
+
+            std::string scriptContent = readFile(filePath.string());
 
             if (scriptContent.empty()) {
                 if (fileExists) {
@@ -493,11 +493,24 @@ namespace Amara {
                 else {
                     debug_log("Error: Script '", path, "' does not exist. Cannot execute.");
                 }
+                gameProps->breakWorld();
                 return sol::nil;
             }
 
             try {
-                sol::load_result loadResult = gameProps->lua.load(scriptContent, filePath.string());
+                sol::load_result loadResult;
+                if (String::endsWith(filePath.string(), ".luac")) {
+                    loadResult = gameProps->lua.load(
+                        std::string_view(scriptContent.data(), scriptContent.size()), 
+                        filePath.string(), sol::load_mode::binary
+                    );
+                }
+                else {
+                    loadResult = gameProps->lua.load(
+                        std::string_view(scriptContent.data(), scriptContent.size()), 
+                        filePath.string(), sol::load_mode::text
+                    );
+                }
 
                 if (!loadResult.valid()) {
                     sol::error err = loadResult;
@@ -532,7 +545,7 @@ namespace Amara {
         sol::load_result load_script(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
             bool fileExists = std::filesystem::exists(filePath);
-            std::string scriptContent = readFile(path);
+            std::string scriptContent = readFile(filePath.string());
 
             if (scriptContent.empty()) {
                 if (fileExists) {
@@ -541,9 +554,21 @@ namespace Amara {
                 else {
                     debug_log("Error: Script '", path, "' does not exist. Cannot execute.");
                 }
+                gameProps->breakWorld();
             }
 
-            return gameProps->lua.load(scriptContent, filePath.string());
+            if (String::endsWith(filePath.string(), ".luac")) {
+                return gameProps->lua.load(
+                    std::string_view(scriptContent.data(), scriptContent.size()), 
+                    filePath.string(), sol::load_mode::binary
+                );
+            }
+            else {
+                return gameProps->lua.load(
+                    std::string_view(scriptContent.data(), scriptContent.size()), 
+                    filePath.string(), sol::load_mode::text
+                );
+            }
         }
 
         bool compileScript(std::string path, std::string dest, std::string encryptionKey) {

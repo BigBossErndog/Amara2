@@ -164,8 +164,8 @@ namespace Amara {
             // Modifier Keys
             keycode_enum["LeftShift"] = SDLK_LSHIFT;
             keycode_enum["RightShift"] = SDLK_RSHIFT;
-            keycode_enum["LeftCTRL"] = SDLK_LCTRL;
-            keycode_enum["RightCTRL"] = SDLK_RCTRL;
+            keycode_enum["LeftCtrl"] = SDLK_LCTRL;
+            keycode_enum["RightCtrl"] = SDLK_RCTRL;
             keycode_enum["LeftAlt"] = SDLK_LALT;
             keycode_enum["RightAlt"] = SDLK_RALT;
             keycode_enum["LGUI"] = SDLK_LGUI;

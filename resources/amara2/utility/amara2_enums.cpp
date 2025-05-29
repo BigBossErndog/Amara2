@@ -32,7 +32,9 @@ namespace Amara {
         Alpha = 1,
         Additive = 2,
         Multiply = 3,
-        PremultipliedAlpha = 4
+        PremultipliedAlpha = 4,
+        Mask = 5,
+        Erase = 6
     };
 
     enum class AlignmentEnum {
@@ -88,7 +90,9 @@ namespace Amara {
             "Alpha", Amara::BlendMode::Alpha,
             "Additive", Amara::BlendMode::Additive,
             "Multiply", Amara::BlendMode::Multiply,
-            "PremultipliedAlpha", Amara::BlendMode::PremultipliedAlpha
+            "PremultipliedAlpha", Amara::BlendMode::PremultipliedAlpha,
+            "Mask", Amara::BlendMode::Mask,
+            "Erase", Amara::BlendMode::Erase
         );
 
         lua.new_enum("Align",

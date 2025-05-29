@@ -18,6 +18,8 @@ namespace Amara {
         Amara::GameProps* gameProps = nullptr;
 
         std::string executable;
+
+        bool testing = false;
         
         GameManager() {
             #if defined(__EMSCRIPTEN__)
@@ -36,6 +38,10 @@ namespace Amara {
                 #endif
             #else
                 platform = "unknown";
+            #endif
+
+            #if defined(AMARA_TESTING)
+                testing = true;
             #endif
         }
         
@@ -90,7 +96,9 @@ namespace Amara {
                     if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.gameProps->lua, g.arguments);
                 }),
-                "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint
+                "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint,
+                "getDisplayBounds", &GameManager::getDisplayBounds,
+                "testing", sol::readonly(&GameManager::testing)
             );
         }
     };

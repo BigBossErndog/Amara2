@@ -28,7 +28,7 @@ namespace Amara {
     bool json_is(const nlohmann::json& data, std::string key) {
         return json_has(data, key) && data[key].is_boolean() && data[key];
     }
-
+    
     bool json_erase(nlohmann::json& data, std::string key) {
         if (json_has(data, key)) {
             data.erase(key);
@@ -139,8 +139,32 @@ namespace Amara {
             return os << static_cast<std::string>(color);
         }
 
+        static bool isColor(std::string key) {
+            if (String::equal(key, "white")) return true;
+            if (String::equal(key, "black")) return true;
+            if (String::equal(key, "red")) return true;
+            if (String::equal(key, "green")) return true;
+            if (String::equal(key, "blue")) return true;
+            if (String::equal(key, "yellow")) return true;
+            if (String::equal(key, "magenta")) return true;
+            if (String::equal(key, "cyan")) return true;
+            if (String::equal(key, "transparent")) return true;
+            return false;
+        }
+
         Amara::Color& configure(nlohmann::json config) {
-            if (config.is_string()) {
+            if (config.is_array()) {
+                if (config.size() >= 3) {
+                    r = config[0];
+                    g = config[1];
+                    b = config[2];
+                    a = 255;
+                }
+                if (config.size() >= 4) {
+                    a = config[3];
+                }
+            }
+            else if (config.is_string()) {
                 if (String::equal(config, "white")) {
                     r = 255; g = 255; b = 255; a = 255;
                 }

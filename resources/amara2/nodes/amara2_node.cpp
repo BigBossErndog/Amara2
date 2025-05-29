@@ -178,17 +178,7 @@ namespace Amara {
 
             if (json_has(config, "scaleX")) scale.x = config["scaleX"];
             if (json_has(config, "scaleY")) scale.y = config["scaleY"];
-            if (json_has(config, "scale")) {
-                nlohmann::json scaleData = config["scale"];
-                if (scaleData.is_number()) {
-                    scale.x = scaleData;
-                    scale.y = scaleData;
-                }
-                else if (scaleData.is_object()) {
-                    if (json_has(scaleData, "x")) scale.x = scaleData["x"];
-                    if (json_has(scaleData, "y")) scale.y = scaleData["y"];
-                }
-            }
+            if (json_has(config, "scale")) scale = config["scale"];
             
             if (json_has(config, "rotation")) rotation = config["rotation"];
 
@@ -383,7 +373,7 @@ namespace Amara {
                 actuated = true;
             }
             if (destroyed) return;
-
+            
             messages.run();
 
             if (destroyed) return;
@@ -650,9 +640,9 @@ namespace Amara {
                 else if (foundSelf) {
                     family[i - 1] = node;
                     family[i] = this;
-                    if (!node->destroyed && node->depth > depth) {
-                        depth = node->depth;
-                    }
+                }
+                if (!node->destroyed && node->depth > depth) {
+                    depth = node->depth;
                 }
             }
             if (foundSelf) parent->children = family;
@@ -673,9 +663,9 @@ namespace Amara {
                 else if (foundSelf) {
                     family[i + 1] = node;
                     family[i] = this;
-                    if (!node->destroyed && node->depth < depth) {
-                        depth = node->depth;
-                    }
+                }
+                if (!node->destroyed && node->depth < depth) {
+                    depth = node->depth;
                 }
             }
             if (foundSelf) parent->children = family;
@@ -792,7 +782,7 @@ namespace Amara {
                     sol::resolve<sol::object(float, float, float)>(&Node::goTo),
                     sol::resolve<sol::object(float, float)>(&Node::goTo)
                 ),
-                "scale", &Node::scale,
+                "scale", sol::property([](Node& e, sol::object val) { e.scale = val; }, [](Node& e) { return e.scale; }),
                 "scaleX", sol::property([](Node& e, float val) { e.scale.x = val; }, [](Node& e) { return e.scale.x; }),
                 "scaleY", sol::property([](Node& e, float val) { e.scale.y = val; }, [](Node& e) { return e.scale.y; }),
                 "rotation", &Node::rotation,

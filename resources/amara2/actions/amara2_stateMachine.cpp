@@ -3,7 +3,6 @@ namespace Amara {
 
     struct StateRecord {
         std::string name;
-		nlohmann::json data;
         int event = 0;
         std::string jumpFlag;
     };
@@ -23,8 +22,6 @@ namespace Amara {
 
         bool skipEvent = false;
         bool debug = false;
-
-        nlohmann::json data;
 
         std::string jumpFlag;
 
@@ -61,8 +58,8 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::object setDefaultState(sol::function func) {
-            return addState("", func);
+        void clearStateRecord() {
+            stateRecords.clear();
         }
 
         void reset() {
@@ -70,10 +67,6 @@ namespace Amara {
             lastState.clear();
             currentEvent = 1;
             jumpFlag.clear();
-            stateRecords.clear();
-        }
-
-        void clearStateRecord() {
             stateRecords.clear();
         }
 
@@ -115,13 +108,12 @@ namespace Amara {
         void switchState(std::string key) {
             if (!currentState.empty()) {
                 lastState = currentState;
-                Amara::StateRecord record = {currentState, data, currentEvent, jumpFlag};
+                Amara::StateRecord record = { currentState, currentEvent, jumpFlag };
                 stateRecords.push_back(record);
             }
 
             currentState = key;
             currentEvent = 1;
-            data.clear();
 
             if (debug) {
                 debug_log(*this, ": switch state \"", key, "\".");
@@ -147,7 +139,6 @@ namespace Amara {
                 currentState = record.name;
                 currentEvent = record.event;
                 jumpFlag = record.jumpFlag;
-                data = record.data;
                 stateRecords.pop_back();
 
                 if (debug) {
@@ -304,7 +295,27 @@ namespace Amara {
                 "start", sol::overload(
                     sol::resolve<void(std::string)>(&StateMachine::start),
                     sol::resolve<bool()>(&StateMachine::start)
-                )
+                ),
+                "event", &StateMachine::event,
+                "once", &StateMachine::once,
+                "nextEvent", &StateMachine::nextEvent,
+                "nextEventOn", &StateMachine::nextEventOn
+                // "wait", &StateMachine::wait,
+                // "waitUntil", &StateMachine::waitUntil,
+                // "repeat", &StateMachine::repeat,
+                // "bookmark", &StateMachine::bookmark,
+                // "jump", &StateMachine::jump,
+                // "jumpEvent", &StateMachine::jumpEvent,
+                // "switchState", &StateMachine::switchState,
+                // "switchStateEvent", &StateMachine::switchStateEvent,
+                // "returnState", &StateMachine::returnState,
+                // "returnStateEvent", &StateMachine::returnStateEvent,
+                // "restartState", &StateMachine::restartState,
+                // "restartStateEvent", &StateMachine::restartStateEvent,
+                // "addState", &StateMachine::addState,
+                // "reset", &StateMachine::reset,
+                // "resetEvent", &StateMachine::resetEvent,
+                // "inState", &StateMachine::inState
             );
 
             sol::usertype<Node> node_type = lua["Node"];

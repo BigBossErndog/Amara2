@@ -196,14 +196,24 @@ namespace Amara {
                     y = config[1];
                 }
             }
-            if (config.is_object()) {
+            else if (config.is_number()) {
+                x = y = z = config.get<float>();
+            }
+            else if (config.is_object()) {
                 if (json_has(config, "x")) x = config["x"];
                 if (json_has(config, "y")) y = config["y"];
                 if (json_has(config, "z")) z = config["z"];
             }
+            
             return *this;
         }
         Vector3& operator= (sol::object obj);
+
+        Vector3& operator= (const Vector2& v2) {
+            x = v2.x;
+            y = v2.y;
+            return *this;
+        }
 
         bool operator==(const Vector3& other) const {
             return x == other.x && y == other.y && z == other.z;
@@ -289,7 +299,10 @@ namespace Amara {
                     y = config[1];
                 }
             }
-            if (config.is_object()) {
+            else if (config.is_number()) {
+                x = y = z = w = config.get<float>();
+            }
+            else if (config.is_object()) {
                 if (json_has(config, "x")) x = config["x"];
                 if (json_has(config, "y")) y = config["y"];
                 if (json_has(config, "z")) z = config["z"];
@@ -298,6 +311,18 @@ namespace Amara {
             return *this;
         }
         Vector4& operator= (sol::object obj);
+
+        Vector4& operator= (const Vector3& v3) {
+            x = v3.x;
+            y = v3.y;
+            z = v3.z;
+            return *this;
+        }
+        Vector4& operator= (const Vector2& v2) {
+            x = v2.x;
+            y = v2.y;
+            return *this;
+        }
 
         bool operator==(const Vector4& other) const {
             return x == other.x && y == other.y && z == other.z && w == other.w;

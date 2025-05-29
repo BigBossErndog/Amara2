@@ -28,6 +28,13 @@ namespace Amara {
                 Amara::Tween* tween = createChild("Tween")->as<Amara::Tween*>();
                 return tween->from(lua_data);
             }
+
+            if (lua_data["target"].valid()) {
+                sol::object otarget = lua_data["target"];
+                lua_actor_table = otarget.as<sol::table>();
+                lua_data["target"] = sol::nil;
+            }
+            
             start_data = lua_to_json(lua_data);
             return get_lua_object();
         }
@@ -39,6 +46,12 @@ namespace Amara {
             }
 
             target_data = nlohmann::json::object();
+
+            if (lua_data["target"].valid()) {
+                sol::object otarget = lua_data["target"];
+                lua_actor_table = otarget.as<sol::table>();
+                lua_data["target"] = sol::nil;
+            }
 
             if (lua_data["onComplete"].valid()) {
                 onComplete = lua_data["onComplete"];
@@ -66,6 +79,27 @@ namespace Amara {
             }
             if (lua_data["repeats"].valid()) {
                 repeats = lua_data["repeats"].get<int>();
+            }
+
+            if (lua_data["zoom"].valid()) {
+                sol::object config = lua_data["zoom"];
+                if (config.is<double>()) {
+                    double zoom = config.as<double>();
+                    target_data["zoomX"] = zoom;
+                    target_data["zoomY"] = zoom;
+                }
+                else if (config.is<sol::table>()) {
+                    nlohmann::json jconfig = lua_to_json(config);
+                    if (jconfig.is_array()) {
+                        target_data["zoomX"] = jconfig[0];
+                        target_data["zoomY"] = jconfig[1];
+                    }
+                    else if (json_has(jconfig, "x", "y")) {
+                        target_data["zoomX"] = jconfig["x"];
+                        target_data["zoomY"] = jconfig["y"];
+                    }
+                }
+                lua_data["zoom"] = sol::nil;
             }
             if (lua_data["color"].valid()) {
                 Amara::Color color = lua_data["color"];
@@ -101,7 +135,7 @@ namespace Amara {
         void clean_data() {
             std::vector<std::string> to_clean;
             for (auto it = start_data.begin(); it != start_data.end(); ++it) {
-                if (!json_has(target_data, it.key()) || !(it.value().is_number() || it.value().is_object())) {
+                if (!json_has(target_data, it.key()) || !(it.value().is_number() || it.value().is_object() || it.value().is_boolean())) {
                     to_clean.push_back(it.key());
                 }
             }
@@ -121,15 +155,32 @@ namespace Amara {
             
                 if (start_data.is_null()) {
                     start_data = nlohmann::json::object();
-                    if (lua_actor_table.valid()) {
-                        for (auto it = target_data.begin(); it != target_data.end(); ++it) {
-                            start_data[it.key()] = lua_to_json(lua_actor_table[it.key()]);
-                        }
-                    }
                 }
-                else if (lua_actor_table.valid()) {
+                if (lua_actor_table.valid()) {
+                    nlohmann::json start_prop_data = json_extract(start_data, "props");
                     for (auto it = start_data.begin(); it != start_data.end(); ++it) {
                         lua_actor_table.set(it.key(), json_to_lua(gameProps->lua, it.value()));
+                    }
+                    if (!start_prop_data.is_null()) {
+                        start_data["props"] = start_prop_data;
+                        sol::table prop_table = lua_actor_table["props"];
+                        for (auto it = start_prop_data.begin(); it != start_prop_data.end(); ++it) {
+                            prop_table.set(it.key(), json_to_lua(gameProps->lua, it.value()));
+                        }
+                    }
+
+                    nlohmann::json prop_data = json_extract(target_data, "props");
+                    for (auto it = target_data.begin(); it != target_data.end(); ++it) {
+                        if (!json_has(start_data, it.key())) start_data[it.key()] = lua_to_json(lua_actor_table[it.key()]);
+                    }
+                    if (!prop_data.is_null()) {
+                        target_data["props"] = prop_data;
+                        if (!json_has(start_data, "props")) start_data["props"] = nlohmann::json::object();
+                        nlohmann::json& start_prop_data = start_data["props"];
+                        sol::table prop_table = lua_actor_table["props"];
+                        for (auto it = prop_data.begin(); it != prop_data.end(); ++it) {
+                            if (!json_has(start_prop_data, it.key())) start_prop_data[it.key()] = lua_to_json(prop_table[it.key()]);
+                        }
                     }
                 }
                 clean_data();
@@ -151,6 +202,41 @@ namespace Amara {
             }
         }
 
+        void completeProperties() {
+            if (lua_actor_table.valid()) {
+                for (auto it = target_data.begin(); it != target_data.end(); ++it) {
+                    if (it.value().is_number()) {
+                        lua_actor_table.set(it.key(), (double)target_data[it.key()]);
+                    }
+                    else if (String::equal(it.key(), "color") || String::equal(it.key(), "tint") || String::equal(it.key(), "fill") || String::equal(it.key(), "backgroundColor")) {
+                        Amara::Color target_color = target_data[it.key()];
+                        lua_actor_table.set(it.key(), target_color);
+                    }
+                    else if (it.value().is_boolean()) {
+                        lua_actor_table.set(it.key(), (bool)target_data[it.key()]);
+                    }
+                }
+            }
+        }
+
+        void tweenValue(sol::table target, const std::string& key,  const nlohmann::json& val1, const nlohmann::json& val2, double progress) {
+            if (val1.is_number() && val2.is_number()) {
+                target.set(key, ease((double)val1, (double)val2, progress, easing));
+            }
+            else if (val1.is_object() && val2.is_object()) {
+                if (String::equal(key, "props")) {
+                    for (auto it = val1.begin(); it != val1.end(); ++it) {
+                        tweenValue(target["props"], it.key(), val1[it.key()], val2[it.key()], progress);
+                    }
+                }
+                else if (String::equal(key, "color") || String::equal(key, "tint") || String::equal(key, "fill") || String::equal(key, "backgroundColor")) {
+                    Amara::Color start_color = val1;
+                    Amara::Color target_color = val2;
+                    target.set(key, ease(start_color, target_color, progress, easing));
+                }
+            }
+        }
+
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
             
@@ -162,14 +248,7 @@ namespace Amara {
 
                 if (lua_actor_table.valid()) {
                     for (auto it = target_data.begin(); it != target_data.end(); ++it) {
-                        if (it.value().is_number()) {
-                            lua_actor_table.set(it.key(), ease((double)start_data[it.key()], (double)target_data[it.key()], progress, easing));
-                        }
-                        else if (String::equal(it.key(), "color") || String::equal(it.key(), "tint") || String::equal(it.key(), "fill") || String::equal(it.key(), "backgroundColor")) {
-                            Amara::Color start_color = start_data[it.key()];
-                            Amara::Color target_color = target_data[it.key()];
-                            lua_actor_table.set(it.key(), ease(start_color, target_color, progress, easing));
-                        }
+                        tweenValue(lua_actor_table, it.key(), start_data[it.key()], target_data[it.key()], progress);
                     }
                 }
 
@@ -205,7 +284,10 @@ namespace Amara {
                         }
                         waitingYoyo = yoyo;
                     }
-                    else complete();
+                    else {
+                        completeProperties();
+                        complete();
+                    }
                 }
             }
         }

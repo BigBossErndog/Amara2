@@ -1,6 +1,9 @@
 /*
  * Include your .cpp files here.
+ * #include "myplugin.cpp"
  */
+
+ #include "hotkeys/hotkey.cpp"
 
 namespace Amara {
     class NodeFactory;
@@ -26,6 +29,8 @@ namespace Amara {
             /*
              * e.g. registerNode<MyPlugin>("MyPlugin");
              */
+
+             registerNode<Hotkey>("Hotkey");
         }
 
         static bool load(const LoadTask& task) {

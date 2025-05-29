@@ -25,10 +25,11 @@ OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/mur
 
 OTHER_LIB = $(OTHER_LIB_LINKS) $(OTHER_LIB_PATHS)
 
-AMARA_PATH = -I ./resources/amara2
+AMARA_PATH = -I ./resources/amara2 -I ./plugins
 
 # INCLUDE_DEPTH = 1000
 # EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)
+EXTRA_OPTIONS = -DAMARA_TESTING
 
 COMPILER_FLAGS = -w -Wall -m64 -std=c++17
 # COMPILER_FLAGS = -w -Wl,-subsystem,windows
