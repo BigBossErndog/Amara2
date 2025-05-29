@@ -13,10 +13,10 @@ namespace Amara {
         Y,
 
         //
-        Cross,
-        Circle,
-        Triangle,
-        Square,
+        PSCross,
+        PSCircle,
+        PSTriangle,
+        PSSquare,
         
         LeftStick,
         RightStick,
@@ -28,7 +28,7 @@ namespace Amara {
 
     class Gamepad {
     public:
-        SDL_JoystickID* gamepad = nullptr;
+        SDL_JoystickID gamepad = 0;
 
         bool active = false;
 
@@ -61,10 +61,15 @@ namespace Amara {
             buttons[_buttoncode].release();
         }
 
-        void press(SDL_GamepadButton _sdlbuttoncode) {
+        void sdl_press(SDL_GamepadButton _sdlbuttoncode) {
             switch (_sdlbuttoncode) {
                 // TODO parse all possible buttons.
             };
+        }
+        void sdl_release(SDL_GamepadButton _sdlbuttoncode) {
+            switch (_sdlbuttoncode) {
+                // TODO parse all possible buttons
+            }
         }
 
         bool isDown(Amara::GamepadButton _buttoncode) {
@@ -103,6 +108,26 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
+            lua.new_enum("GamepadButton",
+                "North", GamepadButton::North,
+                "South", GamepadButton::South,
+                "East", GamepadButton::East,
+                "West", GamepadButton::West,
+                "A", GamepadButton::A,
+                "B", GamepadButton::B,
+                "X", GamepadButton::X,
+                "Y", GamepadButton::Y,
+                "PSCross", GamepadButton::PSCross,
+                "PSCircle", GamepadButton::PSCircle,
+                "PSTriangle", GamepadButton::PSTriangle,
+                "PSSquare", GamepadButton::PSSquare,
+                "LeftStick", GamepadButton::LeftStick,
+                "RightStick", GamepadButton::RightStick,
+                "Start", GamepadButton::Start,
+                "Select", GamepadButton::Select,
+                "Guide", GamepadButton::Guide
+            );
+
             lua.new_usertype<Amara::Gamepad>("Gamepad",
                 "isDown", &Amara::Gamepad::isDown,
                 "justPressed", &Amara::Gamepad::justPressed,
@@ -115,15 +140,17 @@ namespace Amara {
     class GamepadManager {
     public:
         std::vector<Amara::Gamepad> gamepads;
+        std::unordered_map<SDL_JoystickID, Amara::Gamepad*> gamepadMap;
 
         int connectedGamepadsCount = 0;
 
-        void connectGamepad(SDL_JoystickID* _gamepad) {
+        void connectGamepad(SDL_JoystickID _gamepad) {
             for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
-                if (it->gamepad == _gamepad || it->gamepad == nullptr) {
+                if (it->gamepad == _gamepad || it->gamepad == 0) {
                     it->gamepad = _gamepad;
                     it->active = true;
                     it->reset();
+                    gamepadMap[_gamepad] = &(*it);
                     connectedGamepadsCount += 1;
                     return;
                 }
@@ -134,14 +161,18 @@ namespace Amara {
             gamepad.gamepad = _gamepad;
             gamepad.active = true;
             gamepad.reset();
+            gamepadMap[_gamepad] = &gamepad;
             connectedGamepadsCount += 1;
         }
 
-        void disconnectGamepad(SDL_JoystickID* _gamepad) {
+        void disconnectGamepad(SDL_JoystickID _gamepad) {
             for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
                 if (it->gamepad == _gamepad) {
                     it->active = false;
-                    it->gamepad = nullptr;
+                    it->gamepad = 0;
+                    if (gamepadMap.find(_gamepad) != gamepadMap.end()) {
+                        gamepadMap.erase(_gamepad);
+                    }
                     connectedGamepadsCount -= 1;
                     return;
                 }
@@ -149,13 +180,20 @@ namespace Amara {
         }
 
         Amara::Gamepad* getGamepad(int index) {
-            if (index < gamepads.size()) {
+            if (index >= 0 && index < gamepads.size()) {
                 return &gamepads[index];
             }
             return nullptr;
         }
+
+        Amara::Gamepad* getGamepadByID(SDL_JoystickID _gamepad) {
+            if (gamepadMap.find(_gamepad) != gamepadMap.end()) {
+                return gamepadMap[_gamepad];
+            }
+            return nullptr;
+        }
         
-        void update(double deltaTime) {
+        void manage(double deltaTime) {
             for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
                 if (it->active) {
                     it->manage(deltaTime);
@@ -164,6 +202,8 @@ namespace Amara {
         }
         
         static void bind_lua(sol::state& lua) {
+            Amara::Gamepad::bind_lua(lua);
+            
             lua.new_usertype<Amara::GamepadManager>("GamepadManager",
                 "getGamepad", &Amara::GamepadManager::getGamepad,
                 "count", &Amara::GamepadManager::connectedGamepadsCount

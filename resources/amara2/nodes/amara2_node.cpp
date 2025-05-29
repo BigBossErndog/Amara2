@@ -107,6 +107,8 @@ namespace Amara {
 
         virtual void init() {
             messages.gameProps = gameProps;
+            input.gameProps = gameProps;
+            
             update_properties();
             get_lua_object();
         }

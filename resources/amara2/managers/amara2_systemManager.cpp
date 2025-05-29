@@ -432,7 +432,7 @@ namespace Amara {
         std::string mergePaths(std::string str1, std::string str2) {
             std::filesystem::path p1(getRelativePath(str1));
             std::filesystem::path p2(getRelativePath(str2));
-
+            
             if (p1.string().find(p2.string()) == 0) {
                 return p1.string();
             }
@@ -502,13 +502,13 @@ namespace Amara {
                 if (String::endsWith(filePath.string(), ".luac")) {
                     loadResult = gameProps->lua.load(
                         std::string_view(scriptContent.data(), scriptContent.size()), 
-                        filePath.string(), sol::load_mode::binary
+                        getFileName(filePath.string()), sol::load_mode::binary
                     );
                 }
                 else {
                     loadResult = gameProps->lua.load(
                         std::string_view(scriptContent.data(), scriptContent.size()), 
-                        filePath.string(), sol::load_mode::text
+                        getFileName(filePath.string()), sol::load_mode::text
                     );
                 }
 
@@ -560,13 +560,13 @@ namespace Amara {
             if (String::endsWith(filePath.string(), ".luac")) {
                 return gameProps->lua.load(
                     std::string_view(scriptContent.data(), scriptContent.size()), 
-                    filePath.string(), sol::load_mode::binary
+                    getFileName(filePath.string()), sol::load_mode::binary
                 );
             }
             else {
                 return gameProps->lua.load(
                     std::string_view(scriptContent.data(), scriptContent.size()), 
-                    filePath.string(), sol::load_mode::text
+                    getFileName(filePath.string()), sol::load_mode::text
                 );
             }
         }

@@ -218,7 +218,7 @@ namespace Amara {
             return getRectangle().getCenter();
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_enum("TMXObjectType", 
                 "Rectangle", Amara::TMXObjectType::Rectangle,
                 "Ellipse", Amara::TMXObjectType::Ellipse,

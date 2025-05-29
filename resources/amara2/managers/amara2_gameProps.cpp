@@ -2,20 +2,29 @@ namespace Amara {
     class Node;
     class World;
     class Scene;
+
     class GameManager;
+
     class NodeFactory;
     class ScriptFactory;
     class AnimationFactory;
+
     class SystemManager;
     class AssetManager;
     class ShaderManager;
+
     class RenderBatch;
+
     class Audio;
     class AudioMaster;
+
     class MessageQueue;
     class GarbageCollector;
+
     class KeyboardManager;
+    class GamepadManager;
     class ControlManager;
+
     class GPUHandler;
     class Asset;
 
@@ -147,6 +156,7 @@ namespace Amara {
         #endif
 
         KeyboardManager* keyboard = nullptr;
+        GamepadManager* gamepads = nullptr;
         ControlManager* controls = nullptr;
     };
 }

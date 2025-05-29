@@ -65,6 +65,7 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             KeyboardManager::bind_lua(lua);
+            GamepadManager::bind_lua(lua);
             ControlScheme::bind_lua(lua);
 
             lua.new_usertype<ControlManager>("ControlManager",

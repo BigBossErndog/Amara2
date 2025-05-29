@@ -134,9 +134,9 @@
 
     #include "input/amara2_button.cpp"
     #include "input/amara2_keyboard.cpp"
+    #include "input/amara2_gamepad.cpp"
     #include "input/amara2_controlScheme.cpp"
     #include "input/amara2_controlManager.cpp"
-    #include "input/amara2_gamepad.cpp"
 
     #include "managers/amara2_gameManager.cpp"
 

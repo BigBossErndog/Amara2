@@ -126,7 +126,7 @@ namespace Amara {
 
             "DownLeft", Amara::Direction::DownLeft,
             "SouthWest", Amara::Direction::DownLeft,
-
+            
             "DownRight", Amara::Direction::DownRight,
             "SouthEast", Amara::Direction::DownRight,
 

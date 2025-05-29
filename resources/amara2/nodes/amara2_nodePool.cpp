@@ -1,7 +1,7 @@
 namespace Amara {
-    class NodePool: public Amara::Node {
+    class NodePool: public Amara::Group {
     public:
-        NodePool(): Amara::Node() {
+        NodePool(): Amara::Group() {
             set_base_node_id("NodePool");
         }
 
@@ -10,7 +10,7 @@ namespace Amara {
 
             node->deactivate();
 
-            return Amara::Node::addChild(node);
+            return Amara::Group::addChild(node);
         }
 
         Amara::Node* grab() {
@@ -30,7 +30,7 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::NodePool>("NodePool",
-                sol::base_classes, sol::bases<Amara::Node>(),
+                sol::base_classes, sol::bases<Amara::Group, Amara::Node>(),
                 "grab", &Amara::NodePool::lua_grab
             );
         }

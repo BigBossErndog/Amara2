@@ -50,6 +50,9 @@ namespace Amara {
             lua["Keyboard"] = &(eventHandler.keyboard);
             gameProps.keyboard = &(eventHandler.keyboard);
 
+            lua["Gamepads"] = &(eventHandler.gamepads);
+            gameProps.gamepads = &(eventHandler.gamepads);
+
             override_existence();
 
             gameProps.world_list = &worlds;
