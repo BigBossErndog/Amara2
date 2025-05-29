@@ -223,7 +223,7 @@ namespace Amara {
         static Color Cyan;
         static Color Transparent;
 
-        static void bindLua(sol::state& lua);
+        static void bind_lua(sol::state& lua);
     };
 
     Color Color::White = {255, 255, 255, 255};
@@ -236,7 +236,7 @@ namespace Amara {
     Color Color::Cyan = {0, 255, 255, 255};
     Color Color::Transparent = {0, 0, 0, 0};
 
-    void Color::bindLua(sol::state& lua) {
+    void Color::bind_lua(sol::state& lua) {
         sol::usertype<Color> color_type = lua.new_usertype<Color>("Color",
             sol::constructors<Color(Uint8, Uint8, Uint8, Uint8), Color(Uint8, Uint8, Uint8)>(),
             "r", &Color::r,

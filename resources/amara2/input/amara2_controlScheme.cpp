@@ -85,7 +85,7 @@ namespace Amara {
             return t;
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<ControlScheme>("ControlScheme", 
                 "addKey", &ControlScheme::addKey,
                 "setKey", &ControlScheme::setKey,

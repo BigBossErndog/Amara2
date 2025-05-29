@@ -63,9 +63,9 @@ namespace Amara {
             return false;
         }
 
-        static void bindLua(sol::state& lua) {
-            KeyboardManager::bindLua(lua);
-            ControlScheme::bindLua(lua);
+        static void bind_lua(sol::state& lua) {
+            KeyboardManager::bind_lua(lua);
+            ControlScheme::bind_lua(lua);
 
             lua.new_usertype<ControlManager>("ControlManager",
                 "createScheme", &ControlManager::createScheme,

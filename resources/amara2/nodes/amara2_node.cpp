@@ -62,9 +62,7 @@ namespace Amara {
         double lifeTime = 0;
 
         bool is_camera = false;
-        bool is_scene = false;
         bool is_action = false;
-        bool is_load_task = false;
         bool is_autoprogress = false;
 
         bool is_animation = false;
@@ -506,11 +504,7 @@ namespace Amara {
         #endif
 
         virtual Amara::Node* addChild(Amara::Node* node) {
-            if (destroyed) return node;
-
-            if (node->parent == this) {
-                return node;
-            }
+            if (destroyed || node->parent == this) return node;
             
             update_properties();
             node->gameProps = gameProps;
@@ -775,7 +769,7 @@ namespace Amara {
 
         virtual ~Node() {}
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             sol::usertype<Node> node_type = lua.new_usertype<Node>("Node",
                 "id", &Node::id,
                 "baseNodeID", sol::readonly(&Node::baseNodeID),

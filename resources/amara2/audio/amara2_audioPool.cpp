@@ -99,7 +99,7 @@ namespace Amara {
             }
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<AudioPool>("AudioPool",
                 sol::base_classes, sol::bases<Amara::Audio, Amara::Node>(),
                 "play", &AudioPool::play_from_pool,

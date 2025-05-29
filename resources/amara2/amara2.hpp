@@ -166,6 +166,7 @@
 
     #include "nodes/amara2_group.cpp"
     #include "nodes/amara2_copyNode.cpp"
+    #include "nodes/amara2_nodePool.cpp"
 
     #ifdef AMARA_WEB_SERVER
         #include "nodes/amara2_webServer.cpp"
@@ -193,6 +194,8 @@
 
     #include "nodes/tilemap/amara2_tilemapLayer.cpp"
     #include "nodes/tilemap/amara2_tilemap.cpp"
+
+    #include "nodes/amara2_pathFinder.cpp"
 
     #include "audio/amara2_audio.cpp"
     #include "audio/amara2_audiogroup.cpp"

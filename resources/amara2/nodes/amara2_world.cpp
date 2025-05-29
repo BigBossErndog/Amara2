@@ -1005,7 +1005,7 @@ namespace Amara {
 
         void removeFromDemiurge();
         
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<World>("World",
                 sol::base_classes, sol::bases<Node>(),
                 "w", &World::windowW,

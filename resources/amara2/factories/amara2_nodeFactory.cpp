@@ -176,8 +176,10 @@ namespace Amara {
 
         void prepareNodes() {
             registerNode<Amara::Node>("Node");
+
             registerNode<Amara::Group>("Group");
             registerNode<Amara::CopyNode>("CopyNode");
+            registerNode<Amara::NodePool>("NodePool");
 
             registerNode<Amara::Text>("Text");
 
@@ -201,6 +203,8 @@ namespace Amara {
             registerNode<Amara::TilemapLayer>("TilemapLayer");
             registerNode<Amara::Tilemap>("Tilemap");
             
+            registerNode<Amara::PathFinder>("PathFinder");
+
             registerNode<Amara::Audio>("Audio");
             registerNode<Amara::AudioPool>("AudioPool");
             registerNode<Amara::AudioGroup>("AudioGroup");
@@ -216,45 +220,49 @@ namespace Amara {
             Plugins::registerNodes();
         }
 
-        static void bindLua(sol::state& lua) {
-            Amara::Node::bindLua(lua);
-            Amara::Group::bindLua(lua);
-            Amara::CopyNode::bindLua(lua);
+        static void bind_lua(sol::state& lua) {
+            Amara::Node::bind_lua(lua);
 
-            Amara::Text::bindLua(lua);
-            
-            Amara::Camera::bindLua(lua);
-            Amara::Scene::bindLua(lua);
-            
-            Amara::Action::bindLua(lua);
-            Amara::WaitAction::bindLua(lua);
-            Amara::Tween::bindLua(lua);
-            Amara::StateMachine::bindLua(lua);
-            
-            Amara::Loader::bindLua(lua);
+            Amara::Group::bind_lua(lua);
+            Amara::CopyNode::bind_lua(lua);
+            Amara::NodePool::bind_lua(lua);
 
-            Amara::AutoProgress::bindLua(lua);
-
-            Amara::Sprite::bindLua(lua);
-            Amara::Animation::bindLua(lua);
+            Amara::Text::bind_lua(lua);
             
-            Amara::TextureContainer::bindLua(lua);
-
-            Amara::TilemapLayer::bindLua(lua);
-            Amara::Tilemap::bindLua(lua);
+            Amara::Camera::bind_lua(lua);
+            Amara::Scene::bind_lua(lua);
             
-            Amara::Audio::bindLua(lua);
-            Amara::AudioPool::bindLua(lua);
-            Amara::AudioGroup::bindLua(lua);
-            Amara::AudioMaster::bindLua(lua);
+            Amara::Action::bind_lua(lua);
+            Amara::WaitAction::bind_lua(lua);
+            Amara::Tween::bind_lua(lua);
+            Amara::StateMachine::bind_lua(lua);
+            
+            Amara::Loader::bind_lua(lua);
+
+            Amara::AutoProgress::bind_lua(lua);
+
+            Amara::Sprite::bind_lua(lua);
+            Amara::Animation::bind_lua(lua);
+            
+            Amara::TextureContainer::bind_lua(lua);
+
+            Amara::TilemapLayer::bind_lua(lua);
+            Amara::Tilemap::bind_lua(lua);
+
+            Amara::PathFinder::bind_lua(lua);
+            
+            Amara::Audio::bind_lua(lua);
+            Amara::AudioPool::bind_lua(lua);
+            Amara::AudioGroup::bind_lua(lua);
+            Amara::AudioMaster::bind_lua(lua);
 
             #ifdef AMARA_WEB_SERVER
-            Amara::WebServer::bindLua(lua);
+            Amara::WebServer::bind_lua(lua);
             #endif
 
-            Amara::World::bindLua(lua);
+            Amara::World::bind_lua(lua);
             
-            Plugins::bindLua(lua);
+            Plugins::bind_lua(lua);
 
             lua.new_usertype<NodeFactory>("NodeFactory",
                 "load", &NodeFactory::load,

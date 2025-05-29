@@ -224,7 +224,7 @@ namespace Amara {
         return ease(startColor, endColor, progress, Ease::Linear);
     }
 
-    void bindLua_Easing(sol::state& lua) {
+    void bind_lua_Easing(sol::state& lua) {
         lua.new_enum("Ease",
             "Linear", Ease::Linear,
             "SineIn", Ease::SineIn,

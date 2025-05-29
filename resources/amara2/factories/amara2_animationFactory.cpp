@@ -147,7 +147,7 @@ namespace Amara {
             return &(texAnims.animations[animKey]);
         }
         
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<AnimationFactory>("AnimationFactory",
                 "add", &AnimationFactory::lua_add
             );

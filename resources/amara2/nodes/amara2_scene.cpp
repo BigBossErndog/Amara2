@@ -7,7 +7,6 @@ namespace Amara {
         Scene(): Node() {
             set_base_node_id("Scene");
             scene = this;
-            is_scene = true;
         }
 
         virtual void update_properties() override {
@@ -71,7 +70,7 @@ namespace Amara {
             else return sol::nil;
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<Scene>("Scene",
                 sol::base_classes, sol::bases<Amara::Node>(),
                 "camera", sol::property(&Scene::getCamera, sol::resolve<Amara::Camera*(Amara::Camera*)>(&Scene::setMainCamera)),

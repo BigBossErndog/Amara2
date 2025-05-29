@@ -84,7 +84,7 @@ namespace Amara {
             return gameProps->system->run(path);
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<ScriptFactory>("ScriptFactory",
                 "load", &ScriptFactory::load,
                 "get", &ScriptFactory::get,

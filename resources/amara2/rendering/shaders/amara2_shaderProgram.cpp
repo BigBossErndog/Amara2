@@ -149,7 +149,7 @@ namespace Amara {
             programID = 0;
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<ShaderProgram>("ShaderProgram",
                 "destroy", &ShaderProgram::destroy,
                 "key", &ShaderProgram::key,

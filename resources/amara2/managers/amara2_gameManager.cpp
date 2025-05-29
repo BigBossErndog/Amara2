@@ -76,7 +76,7 @@ namespace Amara {
             return { 0, 0, 0, 0 };
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<GameManager>("GameManager",
                 "fps", sol::readonly(&GameManager::fps),
                 "targetFPS", sol::readonly(&GameManager::targetFPS),

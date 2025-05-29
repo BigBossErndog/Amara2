@@ -45,7 +45,7 @@ namespace Amara {
             assets.clear();
         }
         
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<AssetManager>("AssetManager",
                 "has", &AssetManager::has
             );

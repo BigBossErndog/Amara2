@@ -28,7 +28,6 @@ namespace Amara {
 
         Loader(): Amara::Action() {
             set_base_node_id("Loader");
-            is_load_task = true;
         }
 
         template <typename T>
@@ -241,7 +240,7 @@ namespace Amara {
             return Amara::Action::complete();
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<Loader>("Loader",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "replaceExisting", &Loader::replaceExisting,

@@ -226,7 +226,7 @@ namespace Amara {
             }
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<TilemapLayer>("TilemapLayer",
                 sol::base_classes, sol::bases<Amara::TextureContainer, Amara::Node>(),
                 "tileWidth", sol::readonly(&TilemapLayer::tileWidth),

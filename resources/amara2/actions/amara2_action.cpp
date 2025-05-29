@@ -196,7 +196,7 @@ namespace Amara {
             return true;
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::Action>("Action",
                 sol::base_classes, sol::bases<Amara::Node>(),
                 "onPrepare", &Action::onPrepare,

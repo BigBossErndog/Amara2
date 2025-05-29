@@ -65,7 +65,7 @@ namespace Amara {
             return 0;
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<KeyboardManager>("Keyboard",
                 "isDown", &KeyboardManager::isDown,
                 "justPressed", &KeyboardManager::justPressed,

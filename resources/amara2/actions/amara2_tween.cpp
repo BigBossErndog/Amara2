@@ -210,7 +210,7 @@ namespace Amara {
             }
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<Tween>("Tween",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "progress", sol::readonly(&Tween::progress),

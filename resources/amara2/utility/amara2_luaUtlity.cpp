@@ -243,7 +243,7 @@ namespace Amara {
         return *this; 
     }
 
-    void bindLua_LuaUtilityFunctions(sol::state& lua) {
+    void bind_lua_LuaUtilityFunctions(sol::state& lua) {
         lua.set_function("debug_log", &Amara::lua_debug_log);
 
         lua["lua_print"] = lua["print"];

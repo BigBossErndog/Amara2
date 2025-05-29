@@ -715,7 +715,7 @@ namespace Amara {
             #endif
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<SystemManager>("SystemManager",
                 "fileExists", &SystemManager::fileExists,
                 "readFile", &SystemManager::readFile,

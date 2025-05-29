@@ -47,7 +47,7 @@ namespace Amara {
             Amara::Node::destroy();
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<AudioMaster>("AudioMaster",
                 sol::base_classes, sol::bases<Amara::AudioGroup, Amara::Node>(),
                 "volume", &AudioMaster::volume

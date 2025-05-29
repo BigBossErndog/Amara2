@@ -301,7 +301,7 @@ namespace Amara {
             Amara::Node::destroy();
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<Audio>("Audio",
                 sol::base_classes, sol::bases<Amara::Node>(),
                 "volume", sol::property([] (Audio& a) -> float { return a.volume; }, [](Audio& a, float v) { a.setVolume(v); }),

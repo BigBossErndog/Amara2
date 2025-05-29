@@ -246,7 +246,7 @@ namespace Amara {
         }
     };
 
-    void bindLua_Shapes(sol::state& lua) {
+    void bind_lua_Shapes(sol::state& lua) {
         lua.new_usertype<Rectangle>("Rectangle",
             sol::constructors<Rectangle(), Rectangle(float, float, float, float)>(),
             sol::base_classes, sol::bases<Vector2>(),

@@ -173,7 +173,7 @@ namespace Amara {
         return *this;
     }
 
-    void bindLua_Geometry(sol::state& lua) {
+    void bind_lua_Geometry(sol::state& lua) {
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("rotateAroundAnchor", sol::overload(
             sol::resolve<Vector2(const Vector2&, const Vector2&, float)>(&Amara::rotateAroundAnchor),

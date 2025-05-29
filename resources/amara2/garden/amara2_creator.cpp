@@ -43,7 +43,7 @@ namespace Amara {
                 sol::lib::utf8
             );
 
-            bindLua();
+            bind_lua();
 
             setup(&gameProps);
 
@@ -267,29 +267,29 @@ namespace Amara {
             SDL_Quit();
         }
 
-        void bindLua() {
+        void bind_lua() {
             sol::state& lua = gameProps.lua;
 
-            bindLua_Enums(lua);
-            bindLua_LuaUtilityFunctions(lua);
-            bindLua_Vectors(lua);
-            bindLua_Shapes(lua);
-            bindLua_Easing(lua);
-            bindLua_Geometry(lua);
+            bind_lua_Enums(lua);
+            bind_lua_LuaUtilityFunctions(lua);
+            bind_lua_Vectors(lua);
+            bind_lua_Shapes(lua);
+            bind_lua_Easing(lua);
+            bind_lua_Geometry(lua);
 
-            Color::bindLua(lua);
-            ShaderProgram::bindLua(lua);
+            Color::bind_lua(lua);
+            ShaderProgram::bind_lua(lua);
             
-            GameManager::bindLua(lua);
-            ControlManager::bindLua(lua);
-            SystemManager::bindLua(lua);
-            ScriptFactory::bindLua(lua);
-            ShaderManager::bindLua(lua);
-            AnimationFactory::bindLua(lua);
-            AssetManager::bindLua(lua);
-            NodeFactory::bindLua(lua);
+            GameManager::bind_lua(lua);
+            ControlManager::bind_lua(lua);
+            SystemManager::bind_lua(lua);
+            ScriptFactory::bind_lua(lua);
+            ShaderManager::bind_lua(lua);
+            AnimationFactory::bind_lua(lua);
+            AssetManager::bind_lua(lua);
+            NodeFactory::bind_lua(lua);
             
-            Demiurge::bindLua(lua);
+            Demiurge::bind_lua(lua);
 
             lua.new_usertype<Creator>("Creator",
                 sol::base_classes, sol::bases<Demiurge>(),

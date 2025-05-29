@@ -12,11 +12,11 @@ namespace Amara {
         template <typename T>
         static void registerNode(std::string);
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             // Insert your lua bindings here
             
             /*
-             * MyPlugin::bindLua(lua);
+             * MyPlugin::bind_lua(lua);
             */
         }
 

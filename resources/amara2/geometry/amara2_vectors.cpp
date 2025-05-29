@@ -332,7 +332,7 @@ namespace Amara {
         float m41, m42, m43, m44;
     };
 
-    void bindLua_Vectors(sol::state& lua) {
+    void bind_lua_Vectors(sol::state& lua) {
         lua.new_usertype<Vector2>("Vector2",
             sol::constructors<Vector2(), Vector2(float, float)>(),
             "x", &Vector2::x,

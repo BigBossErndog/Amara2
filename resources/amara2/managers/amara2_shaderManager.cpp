@@ -322,7 +322,7 @@ namespace Amara {
             return false;
         }
         
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<ShaderManager>("ShaderManager",
                 #ifdef AMARA_OPENGL
                 "createShaderProgram", sol::resolve<ShaderProgram*(std::string, sol::object)>(&ShaderManager::createShaderProgram),

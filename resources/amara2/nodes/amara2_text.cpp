@@ -502,7 +502,7 @@ namespace Amara {
             return get_lua_object();
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),
                 "tint", sol::property([](Amara::Text& t) -> Amara::Color { return t.tint; }, [](Amara::Text& t, sol::object v) { t.tint = v; }),

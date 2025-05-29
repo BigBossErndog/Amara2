@@ -291,7 +291,7 @@ namespace Amara {
 			}
         }
 
-        static void bindLua(sol::state& lua) {
+        static void bind_lua(sol::state& lua) {
             lua.new_usertype<Camera>("Camera",
                 sol::base_classes, sol::bases<Amara::Node>(),
                 "w", &Camera::width,
