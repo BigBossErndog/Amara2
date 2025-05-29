@@ -27,11 +27,12 @@ namespace Amara {
     };
 
     class Gamepad {
-        SDL_Gamepad* gamepad = nullptr;
+    public:
+        SDL_JoystickID* gamepad = nullptr;
 
         bool active = false;
 
-        std::vectors<GamepadButton, Button> buttons;
+        std::unordered_map<Amara::GamepadButton, Button> buttons;
 
         Amara::GameProps* gameProps = nullptr;
 
@@ -39,14 +40,20 @@ namespace Amara {
 
         sol::object luaobject;
 
-        void press(GamepadButton _buttoncode) {
+        void reset() {
+            for (auto it = buttons.begin(); it != buttons.end(); it++) {
+                it->second.reset();
+            }
+        }
+
+        void press(Amara::GamepadButton _buttoncode) {
             if (buttons.find(_buttoncode) == buttons.end()) {
                 buttons[_buttoncode] = Button();
             }
             buttons[_buttoncode].press();
         }
 
-        void release(GameButton _buttoncode) {
+        void release(Amara::GamepadButton _buttoncode) {
             if (buttons.find(_buttoncode) == buttons.end()) {
                 buttons[_buttoncode] = Button();
                 buttons[_buttoncode] = Button();
@@ -60,35 +67,107 @@ namespace Amara {
             };
         }
 
+        bool isDown(Amara::GamepadButton _buttoncode) {
+            if (buttons.find(_buttoncode) != buttons.end()) {
+                buttons[_buttoncode].isDown;
+            }
+            return false;
+        }
+
+        bool justPressed(Amara::GamepadButton _buttoncode) {
+            if (buttons.find(_buttoncode) != buttons.end()) {
+                return buttons[_buttoncode].justPressed;
+            }
+            return false;
+        }
+
+        bool justReleased(Amara::GamepadButton _buttoncode) {
+            if (buttons.find(_buttoncode) != buttons.end()) {
+                return buttons[_buttoncode].justReleased;
+            }
+            return false;
+        }
+
+        double timeHeld(Amara::GamepadButton _buttoncode) {
+            if (buttons.find(_buttoncode) != buttons.end()) {
+                return buttons[_buttoncode].timeHeld;
+            }
+            return 0;
+        }
+
         void manage(double deltaTime) {
-            for (auto it = keys.begin(); it != keys.end(); it++) {
-                Button& key = it->second;
-                key.manage(deltaTime);
+            for (auto it = buttons.begin(); it != buttons.end(); it++) {
+                Button& button = it->second;
+                button.manage(deltaTime);
             }
         }
 
         static void bind_lua(sol::state& lua) {
-            
+            lua.new_usertype<Amara::Gamepad>("Gamepad",
+                "isDown", &Amara::Gamepad::isDown,
+                "justPressed", &Amara::Gamepad::justPressed,
+                "justReleased", &Amara::Gamepad::justReleased,
+                "timeHeld", &Amara::Gamepad::timeHeld
+            );
         }
     };
 
     class GamepadManager {
+    public:
         std::vector<Amara::Gamepad> gamepads;
 
-        void connectGamepad(SDL_Gamepad* gamepad) {
-            
+        int connectedGamepadsCount = 0;
+
+        void connectGamepad(SDL_JoystickID* _gamepad) {
+            for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
+                if (it->gamepad == _gamepad || it->gamepad == nullptr) {
+                    it->gamepad = _gamepad;
+                    it->active = true;
+                    it->reset();
+                    connectedGamepadsCount += 1;
+                    return;
+                }
+            }
+
+            gamepads.push_back(Gamepad());
+            Amara::Gamepad& gamepad = gamepads.back();
+            gamepad.gamepad = _gamepad;
+            gamepad.active = true;
+            gamepad.reset();
+            connectedGamepadsCount += 1;
         }
 
-        void disconnectGamepad(SDL_Gamepad* _gamepad) {
-            
+        void disconnectGamepad(SDL_JoystickID* _gamepad) {
+            for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
+                if (it->gamepad == _gamepad) {
+                    it->active = false;
+                    it->gamepad = nullptr;
+                    connectedGamepadsCount -= 1;
+                    return;
+                }
+            }
         }
 
-        void getGamepad(int index) {
-
+        Amara::Gamepad* getGamepad(int index) {
+            if (index < gamepads.size()) {
+                return &gamepads[index];
+            }
+            return nullptr;
         }
         
-        void update() {
-
+        void update(double deltaTime) {
+            for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
+                if (it->active) {
+                    it->manage(deltaTime);
+                }
+            }
         }
-    }
+        
+        static void bind_lua(sol::state& lua) {
+            lua.new_usertype<Amara::GamepadManager>("GamepadManager",
+                "getGamepad", &Amara::GamepadManager::getGamepad,
+                "count", &Amara::GamepadManager::connectedGamepadsCount
+            );
+        }
+    };
 }

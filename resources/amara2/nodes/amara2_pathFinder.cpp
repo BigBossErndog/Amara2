@@ -33,7 +33,7 @@ namespace Amara {
         int mapWidth = -1;
         int mapHeight = -1;
 
-        std::unordered_map<Amara::PathPoint*> pathMap;
+        std::unordered_map<std::string, Amara::PathPoint*> pathMap;
         std::vector<Amara::PathPoint> pathPoints;
 
         PathFinder(): Amara::Node() {
@@ -50,7 +50,7 @@ namespace Amara {
 
         Amara::PathPoint* getPoint(int index) {
             if (index < 0 || index >= pathPoints.size()) return nullptr;
-            return pathPoints[index];
+            return &pathPoints[index];
         }
 
         Amara::PathPoint* getPoint(int _x, int _y) {
@@ -68,10 +68,10 @@ namespace Amara {
                 "mapWidth", &Amara::PathFinder::mapWidth,
                 "mapHeight", &Amara::PathFinder::mapHeight,
                 "getPoint", sol::overload(
-                    sol::resolve<(Amara::PathPoint*)(int)>(&Amara::PathFinder::getPoint),
-                    sol::resolve<(Amara::PathPoint*)(int, int)>(&Amara::PathFinder::getPoint)
+                    sol::resolve<Amara::PathPoint*(int)>(&Amara::PathFinder::getPoint),
+                    sol::resolve<Amara::PathPoint*(int, int)>(&Amara::PathFinder::getPoint)
                 ),
-                "createPoint", &Amara::PathPoint::createPoint
+                "createPoint", &Amara::PathFinder::createPoint
             );
         }
     };

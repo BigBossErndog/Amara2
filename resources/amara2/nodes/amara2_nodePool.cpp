@@ -15,7 +15,7 @@ namespace Amara {
 
         Amara::Node* grab() {
             for (Amara::Node* child: children) {
-                if (!child->isActive) {
+                if (!child->isActive()) {
                     child->activate();
                     return child;
                 }
@@ -29,7 +29,7 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
-            lua.new_usertype<Amara::NodePool>("NodePool"
+            lua.new_usertype<Amara::NodePool>("NodePool",
                 sol::base_classes, sol::bases<Amara::Node>(),
                 "grab", &Amara::NodePool::lua_grab
             );

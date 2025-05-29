@@ -34,7 +34,7 @@ namespace Amara {
         }
 
         virtual void doTransition() {
-            Amara::node* prev_parent = parent;
+            Amara::Node* prev_parent = parent;
 
             if (!next_key.empty()) {
                 if (parent && parent->parent) {
@@ -54,7 +54,7 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
-            lua.new_usertype<Amara::Transition>("Transition"
+            lua.new_usertype<Amara::Transition>("Transition",
                 sol::base_classes, sol::bases<Amara::Action>(),
                 "doTransition", &Amara::Transition::doTransition
             );

@@ -10,7 +10,7 @@ namespace Amara {
         MessageBox() = default;
     
         void send(std::string _key, sol::object _msgData) {
-            gameProps->messages.send(this, _key, _msgData);
+            gameProps->messages->send(this, _key, _msgData);
         }
 
         void listen(const std::string& key, sol::function action) {
@@ -30,7 +30,7 @@ namespace Amara {
 
         void deactivate() {
             active = false;
-            for (Amara::Message& msg: gameProps->queue) {
+            for (Amara::Message& msg: gameProps->messages->queue) {
                 msg.forceRemove = true;
                 msg.active = false;
             }

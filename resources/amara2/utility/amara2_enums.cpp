@@ -63,9 +63,9 @@ namespace Amara {
         Right = 128
     };
 
-    std::vector<Amara::Direction> DirectionsInOrder = { Right, DownRight, Down, DownLeft, Left, UpLeft, Up, UpRight };
-    std::vector<Amara::Direction> CardinalDirections = { Right, Down, Left, Up };
-    std::vector<Amara::Direction> OrdinalDirections = { DownLeft, UpLeft, UpRight, DownRight };
+    std::vector<Amara::Direction> DirectionsInOrder = { Direction::Right, Direction::DownRight, Direction::Down, Direction::DownLeft, Direction::Left, Direction::UpLeft, Direction::Up, Direction::UpRight };
+    std::vector<Amara::Direction> CardinalDirections = { Direction::Right, Direction::Down, Direction::Left, Direction::Up };
+    std::vector<Amara::Direction> OrdinalDirections = { Direction::DownLeft, Direction::UpLeft, Direction::UpRight, Direction::DownRight };
 
     void bind_lua_Enums(sol::state& lua) {
         lua.new_enum("Graphics",
@@ -109,7 +109,7 @@ namespace Amara {
             "ByWord", Amara::WrapModeEnum::ByWord
         );
 
-        lua.new_enum("Direction"
+        lua.new_enum("Direction",
             "NoDirection", Amara::Direction::NoDirection,
             
             "Up", Amara::Direction::Up,
@@ -122,7 +122,7 @@ namespace Amara {
             "NorthEast", Amara::Direction::UpRight,
 
             "Down", Amara::Direction::Down,
-            "South", Amara::Direction::South,
+            "South", Amara::Direction::Down,
 
             "DownLeft", Amara::Direction::DownLeft,
             "SouthWest", Amara::Direction::DownLeft,
@@ -134,7 +134,7 @@ namespace Amara {
             "West", Amara::Direction::Left,
 
             "Right", Amara::Direction::Right,
-            "East", Amara::Direction::East
+            "East", Amara::Direction::Right
         );
     }
 }

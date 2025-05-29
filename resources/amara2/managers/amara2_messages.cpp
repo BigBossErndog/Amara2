@@ -13,7 +13,6 @@ namespace Amara {
 
         bool is(const std::string& check) {
             if (key.compare(check) == 0) return true;
-            if (json_is(data, check)) return true;
             return false;
         }
     };
@@ -70,12 +69,12 @@ namespace Amara {
         }
 
         Message& send(std::string key, sol::object _msgData) {
-            queue.push_back({ nullptr, key, gData });
+            queue.push_back({ nullptr, key, _msgData });
             return queue.back();
         }
 
         Message& send(Amara::MessageBox* gParent, std::string key, sol::object _msgData) {
-            queue.push_back({ gParent, key, gData });
+            queue.push_back({ gParent, key, _msgData });
             return queue.back();
         }
     };
