@@ -845,7 +845,10 @@ namespace Amara {
                 "shaders", sol::property([](Node& e) { return e.gameProps->shaders; }),
                 "audio", sol::property([](Node& e) { return e.gameProps->audio; }),
                 "animations", sol::property([](Node& e) { return e.gameProps->animations; }),
-                "controls", sol::property([](Node& e) { return e.gameProps->controls; })
+                "controls", sol::property([](Node& e) { return e.gameProps->controls; }),
+
+                "messages", sol::readonly(&Node::messages),
+                "input", sol::readonly(&Node::input)
             );
 
             lua.new_usertype<std::vector<Amara::Node*>>("NodeVector",

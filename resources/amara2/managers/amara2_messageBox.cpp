@@ -24,6 +24,15 @@ namespace Amara {
             return messageBox.find(key) != messageBox.end();
         }
 
+        void stopListening(const std::string& key) {
+            if (isListening(key)) {
+                messageBox.erase(key);
+            }
+        }
+        void stopListening() {
+            messageBox.clear();
+        }
+
         void activate() {
             active = true;
         }
@@ -66,18 +75,23 @@ namespace Amara {
 
         void destroy() {
             deactivate();
+            messageBox.clear();
+        }
+
+        static void bind_lua(sol::state& lua) {
+            lua.new_usertype<Amara::MessageBox>("MessageBox",
+                "listen", &Amara::MessageBox::listen,
+                "active", sol::readonly(&Amara::MessageBox::active),
+                "send", &Amara::MessageBox::send,
+                "listen", &Amara::MessageBox::listen,
+                "isListening", &Amara::MessageBox::isListening,
+                "stopListening", sol::overload(
+                    sol::resolve<void(const std::string&)>(&Amara::MessageBox::stopListening),
+                    sol::resolve<void()>(&Amara::MessageBox::stopListening)
+                ),
+                "activate", &Amara::MessageBox::activate,
+                "deactivate", &Amara::MessageBox::deactivate
+            );
         }
     };
-
-    static void bind_lua(sol::state& lua) {
-        lua.new_usertype<Amara::MessageBox>("MessageBox",
-            "listen", &Amara::MessageBox::listen,
-            "active", sol::readonly(&Amara::MessageBox::active),
-            "send", &Amara::MessageBox::send,
-            "listen", &Amara::MessageBox::listen,
-            "isListening", &Amara::MessageBox::isListening,
-            "activate", &Amara::MessageBox::activate,
-            "deactivate", &Amara::MessageBox::deactivate
-        );
-    }
 }

@@ -5,6 +5,7 @@ namespace Amara {
 
         std::string id;
         std::vector<SDL_Keycode> keys;
+        std::vector<Amara::GamepadButton> gamepadButtons;
 
         ControlScheme() {}
         ControlScheme(std::string _id, Amara::GameProps* _gameProps) {
@@ -47,23 +48,69 @@ namespace Amara {
             }
         }
 
+        void addButton(Amara::GamepadButton _b) {
+            gamepadButtons.push_back(_b);
+        }
+        void setButton(Amara::GamepadButton _b) {
+            gamepadButtons.clear();
+            addButton(_b);
+        }
+
+        void addButtons(sol::object _buttons) {
+            nlohmann::json jbuttons = lua_to_json(_buttons);
+            if (jbuttons.is_array()) {
+                for (int i = 0; i < jbuttons.size(); i++) {
+                    addButton(jbuttons[i]);
+                }
+            }
+            else if (jbuttons.is_number_integer()) {
+                addButton(jbuttons);
+            }
+        }
+        void setButtons(sol::object _buttons) {
+            clearButtons();
+            addButtons(_buttons);
+        }
+
+        bool removeButton(Amara::GamepadButton _b) {
+            for (auto it = gamepadButtons.begin(); it != gamepadButtons.end();) {
+                Amara::GamepadButton& b = *it;
+                if (b == _b) {
+                    it = gamepadButtons.erase(it);
+                    continue;
+                }
+                ++it;
+            }
+        }
+
         void clearKeys() {
             keys.clear();
         }
 
+        void clearButtons() {
+            gamepadButtons.clear();
+        }
+
         void clearAll() {
             clearKeys();
+            clearButtons();
         }
 
         bool isDown() {
             for (SDL_Keycode k: keys) {
                 if (gameProps->keyboard->isDown(k)) return true;
             }
+            for (Amara::GamepadButton b: gamepadButtons) {
+                if (gameProps->gamepads->isDown(b)) return true;
+            }
             return false;
         }
         bool justPressed() {
             for (SDL_Keycode k: keys) {
                 if (gameProps->keyboard->justPressed(k)) return true;
+            }
+            for (Amara::GamepadButton b: gamepadButtons) {
+                if (gameProps->gamepads->justPressed(b)) return true;
             }
             return false;
         }
@@ -73,6 +120,10 @@ namespace Amara {
                 if (gameProps->keyboard->isDown(k)) return false;
                 if (gameProps->keyboard->justReleased(k)) result = true;
             }
+            for (Amara::GamepadButton b: gamepadButtons) {
+                if (gameProps->gamepads->isDown(b)) return false;
+                if (gameProps->gamepads->justReleased(b)) result = true;
+            }
             return result;
         }
         double timeHeld() {
@@ -80,6 +131,10 @@ namespace Amara {
             double check;
             for (SDL_Keycode k: keys) {
                 check = gameProps->keyboard->timeHeld(k);
+                if (check > t) t = check;
+            }
+            for (Amara::GamepadButton b: gamepadButtons) {
+                check = gameProps->gamepads->timeHeld(b);
                 if (check > t) t = check;
             }
             return t;
@@ -93,7 +148,16 @@ namespace Amara {
                 "setKeys", &ControlScheme::setKeys,
                 "removeKey", &ControlScheme::removeKey,
                 "clearKeys", &ControlScheme::clearKeys,
+
+                "addButton", &ControlScheme::addButton,
+                "setButton", &ControlScheme::setButton,
+                "addButtons", &ControlScheme::addButtons,
+                "setButtons", &ControlScheme::setButtons,
+                "removeButton", &ControlScheme::removeButton,
+                "clearButtons", &ControlScheme::clearButtons,
+
                 "clearAll", &ControlScheme::clearAll,
+                
                 "isDown", &ControlScheme::isDown,
                 "justPressed", &ControlScheme::justPressed,
                 "justReleased", &ControlScheme::justReleased,

@@ -187,7 +187,7 @@ namespace Amara {
         }
 
         void startCreation(std::string path) {
-            if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+            if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK)) {
                 debug_log("Error: SDL_Init failed: ", SDL_GetError());
             }
 
@@ -283,6 +283,8 @@ namespace Amara {
 
             Color::bind_lua(lua);
             ShaderProgram::bind_lua(lua);
+
+            MessageBox::bind_lua(lua);
             
             GameManager::bind_lua(lua);
             ControlManager::bind_lua(lua);

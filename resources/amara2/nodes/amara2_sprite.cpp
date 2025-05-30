@@ -55,6 +55,7 @@ namespace Amara {
             
             if (image == nullptr) {
                 debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
+                gameProps->breakWorld();
                 return false;
             }
             textureWidth = image->width;

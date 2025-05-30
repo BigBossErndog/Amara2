@@ -46,12 +46,12 @@ namespace Amara {
                         break;
                     case SDL_EVENT_GAMEPAD_BUTTON_DOWN: {
                         Amara::Gamepad* gamepad = gamepads.getGamepadByID(e.gbutton.which);
-                        if (gamepad) gamepad->sdl_press((SDL_GamepadButton)e.gbutton.button);
+                        if (gamepad) gamepad->activateSDLButton((SDL_GamepadButton)e.gbutton.button, true);
                         break;
                     }
                     case SDL_EVENT_GAMEPAD_BUTTON_UP: {
                         Amara::Gamepad* gamepad = gamepads.getGamepadByID(e.gbutton.which);
-                        if (gamepad) gamepad->sdl_release((SDL_GamepadButton)e.gbutton.button);
+                        if (gamepad) gamepad->activateSDLButton((SDL_GamepadButton)e.gbutton.button, false);
                         break;
                     }
                 }

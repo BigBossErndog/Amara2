@@ -55,7 +55,6 @@ return NodeFactory:create("Scene"):configure({
                 self.world:destroy()
             end
         })
-        print(Key.LeftCtrl)
 
         local sound = self.audio:createChild("Audio", {
             audio = "music",
@@ -97,22 +96,6 @@ return NodeFactory:create("Scene"):configure({
             ease = Ease.QuintInOut,
             repeats = -1,
             yoyo = true
-        })
-        textCont.props.val = 9
-        textCont.tween:from({
-            props = {
-                val = 0
-            }
-        }):to({
-            props = {
-                val = 10
-            },
-            duration = 1,
-            repeats = -1,
-            yoyo = true,
-            onUpdate = function(self) 
-                print(self.props.val)
-            end
         })
         -- textCont.rect = map.rect
         -- copy.target = textCont
@@ -160,15 +143,20 @@ return NodeFactory:create("Scene"):configure({
 
         local controlRight = Controls:scheme("right")
         controlRight:setKeys({ Key.Right, Key.D })
+        controlRight:setButtons({ Button.DpadRight, Button.LeftStickRight })
 
         local controlLeft = Controls:scheme("left")
         controlLeft:setKeys({ Key.Left, Key.A })
+        controlLeft:setButtons({ Button.DpadLeft, Button.LeftStickLeft })
 
         local controlUp = Controls:scheme("up")
         controlUp:setKeys({ Key.Up, Key.W })
+        controlUp:setButtons({ Button.DpadUp, Button.LeftStickUp })
 
         local controlDown = Controls:scheme("down")
         controlDown:setKeys({ Key.Down, Key.S })
+        controlDown:setButtons({ Button.DpadDown, Button.LeftStickDown })
+        print("Button: ", Button.DpadDown)
 
         fpsTxt = self:createChild("Text", {
             text = "FPS",
