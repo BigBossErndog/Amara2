@@ -21,18 +21,12 @@ namespace Amara {
             addKey(_k);
         }
 
-        void addKeys(sol::object _keys) {
-            nlohmann::json jkeys = lua_to_json(_keys);
-            if (jkeys.is_array()) {
-                for (int i = 0; i < jkeys.size(); i++) {
-                    addKey(jkeys[i]);
-                }
-            }
-            else if (jkeys.is_number_integer()) {
-                addKey(jkeys);
+        void addKeys(sol::variadic_args _keys) {
+            for (auto k: _keys) {
+                addKey(k.as<SDL_Keycode>());
             }
         }
-        void setKeys(sol::object _keys) {
+        void setKeys(sol::variadic_args _keys) {
             clearKeys();
             addKeys(_keys);
         }
@@ -56,18 +50,12 @@ namespace Amara {
             addButton(_b);
         }
 
-        void addButtons(sol::object _buttons) {
-            nlohmann::json jbuttons = lua_to_json(_buttons);
-            if (jbuttons.is_array()) {
-                for (int i = 0; i < jbuttons.size(); i++) {
-                    addButton(jbuttons[i]);
-                }
-            }
-            else if (jbuttons.is_number_integer()) {
-                addButton(jbuttons);
+        void addButtons(sol::variadic_args _buttons) {
+            for (auto b: _buttons) {
+                addButton(b.as<Amara::GamepadButton>());
             }
         }
-        void setButtons(sol::object _buttons) {
+        void setButtons(sol::variadic_args _buttons) {
             clearButtons();
             addButtons(_buttons);
         }
@@ -157,7 +145,7 @@ namespace Amara {
                 "clearButtons", &ControlScheme::clearButtons,
 
                 "clearAll", &ControlScheme::clearAll,
-                
+
                 "isDown", &ControlScheme::isDown,
                 "justPressed", &ControlScheme::justPressed,
                 "justReleased", &ControlScheme::justReleased,

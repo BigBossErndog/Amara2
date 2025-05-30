@@ -142,21 +142,20 @@ return NodeFactory:create("Scene"):configure({
         freaker.frame = 3
 
         local controlRight = Controls:scheme("right")
-        controlRight:setKeys({ Key.Right, Key.D })
-        controlRight:setButtons({ Button.DpadRight, Button.LeftStickRight })
+        controlRight:setKeys(Key.Right, Key.D)
+        controlRight:setButtons(Button.DpadRight, Button.LeftStickRight)
 
         local controlLeft = Controls:scheme("left")
-        controlLeft:setKeys({ Key.Left, Key.A })
-        controlLeft:setButtons({ Button.DpadLeft, Button.LeftStickLeft })
+        controlLeft:setKeys(Key.Left, Key.A)
+        controlLeft:setButtons(Button.DpadLeft, Button.LeftStickLeft)
 
         local controlUp = Controls:scheme("up")
-        controlUp:setKeys({ Key.Up, Key.W })
-        controlUp:setButtons({ Button.DpadUp, Button.LeftStickUp })
+        controlUp:setKeys(Key.Up, Key.W)
+        controlUp:setButtons(Button.DpadUp, Button.LeftStickUp)
 
         local controlDown = Controls:scheme("down")
-        controlDown:setKeys({ Key.Down, Key.S })
-        controlDown:setButtons({ Button.DpadDown, Button.LeftStickDown })
-        print("Button: ", Button.DpadDown)
+        controlDown:setKeys(Key.Down, Key.S)
+        controlDown:setButtons(Button.DpadDown, Button.LeftStickDown)
 
         fpsTxt = self:createChild("Text", {
             text = "FPS",
