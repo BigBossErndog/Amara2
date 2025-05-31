@@ -221,12 +221,56 @@ namespace Amara {
     public:
         SinglePixelAsset(Amara::GameProps* _gameProps): ImageAsset(_gameProps) {
             typeKey = "SinglePixelAsset";
-
+            
             createPixel();
         }
 
         void createPixel() {
-            // TODO: Create a single pixel.
+            clearTexture();
+
+            width = 1;
+            height = 1;
+            channels = 4; // RGBA
+            pitch = width * 4;
+
+            unsigned char pixelData[] = {255, 255, 255, 255}; // White, Opaque (R, G, B, A)
+
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
+                texture = SDL_CreateTexture(gameProps->renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, width, height);
+                if (!texture) {
+                    debug_log("Error: Failed to create 1x1 texture for SinglePixelAsset: ", SDL_GetError());
+                    return;
+                }
+                SDL_UpdateTexture(texture, NULL, pixelData, pitch);
+                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+            }
+            #ifdef AMARA_OPENGL
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                glGenTextures(1, &glTextureID);
+                
+                if (glTextureID == 0) {
+                    debug_log("Error: OpenGL texture generation failed for SinglePixelAsset.");
+                    return;
+                }
+
+                glBindTexture(GL_TEXTURE_2D, glTextureID);
+                
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+                // Mipmaps are not strictly necessary for a 1x1 texture with nearest filtering, but kept for consistency.
+                glGenerateMipmap(GL_TEXTURE_2D); 
+                
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            #endif
+            else if (gameProps->gpuDevice) {
+                // TODO: SDL_GPU signle pixel
+            }
         }
     };
 }

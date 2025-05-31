@@ -182,7 +182,7 @@ namespace Amara {
             drawChildren(v);
         }
 
-        void drawCanvas(const Rectangle& v) {
+        virtual void drawCanvas(const Rectangle& v) {
             SDL_Texture* rec_target = nullptr;
             if (canvasTexture != nullptr && gameProps->renderer) {
                 rec_target = SDL_GetRenderTarget(gameProps->renderer);
@@ -237,6 +237,15 @@ namespace Amara {
                 glViewport(v.x, gameProps->window_dim.h - v.y - v.h, v.w, v.h);
             }
             #endif
+        }
+
+        virtual SDL_FRect getSrcRect() {
+            return {
+                static_cast<float>(cropLeft),
+                static_cast<float>(cropTop),
+                static_cast<float>(width - cropLeft - cropRight),
+                static_cast<float>(height - cropTop - cropBottom)
+            };
         }
 
         virtual void drawObjects(const Rectangle& v) override {
@@ -303,12 +312,7 @@ namespace Amara {
                 (height*origin.y - cropTop)*scale.y*passOn.scale.y*totalZoom.y
             };
             
-            srcRect = {
-                static_cast<float>(cropLeft),
-                static_cast<float>(cropTop),
-                static_cast<float>(width - cropLeft - cropRight),
-                static_cast<float>(height - cropTop - cropBottom)
-            };
+            srcRect = getSrcRect();
 
             float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
             if (!Shape::checkCollision(

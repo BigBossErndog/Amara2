@@ -3,9 +3,16 @@ namespace Amara {
     public:
         Amara::GameProps* gameProps = nullptr;
 
+        Amara::SinglePixelAsset* whitePixel = nullptr;
+
         std::unordered_map<std::string, Amara::Asset*> assets;
         
         AssetManager() = default;
+
+        void init() {
+            whitePixel = new Amara::SinglePixelAsset(gameProps);
+            add("whitePixel", whitePixel);
+        }
 
         Amara::Asset* get(std::string key) {
             if (assets.find(key) != assets.end()) {
@@ -47,7 +54,9 @@ namespace Amara {
         
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<AssetManager>("AssetManager",
-                "has", &AssetManager::has
+                "has", &AssetManager::has,
+                "remove", &AssetManager::removeAsset,
+                "clear", &AssetManager::clear
             );
         }
     };

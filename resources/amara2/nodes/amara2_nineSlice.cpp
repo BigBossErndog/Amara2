@@ -1,0 +1,367 @@
+namespace Amara {
+    class NineSlice: public Amara::TextureContainer {
+    public:
+        NineSlice(): Amara::TextureContainer() {
+            set_base_node_id("NineSlice");
+            // TextureContainer's constructor initializes its width/height (canvas size)
+            // drawWidth/drawHeight default to 128 below.
+        }
+
+        Amara::ImageAsset* image = nullptr;
+        Amara::SpritesheetAsset* spritesheet = nullptr;
+
+        int drawWidth = 128;
+        int drawHeight = 128;
+
+        int frame = 0;
+
+        int textureWidth = 0;
+        int textureHeight = 0;
+        
+        int frameWidth = 0;
+        int frameHeight = 0;
+
+        float marginLeft = -1;
+        float marginRight = -1;
+        float marginTop = -1;
+        float marginBottom = -1;
+
+        int extrusion = 1;
+
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            if (json_has(config, "width")) drawWidth = json_extract(config, "width");
+            if (json_has(config, "height")) drawHeight = json_extract(config, "height");
+
+            if (drawWidth < 0) drawWidth = 0;
+            if (drawHeight < 0) drawHeight = 0;
+
+            int targetCanvasWidth = drawWidth;
+            int targetCanvasHeight = drawHeight;
+
+            if (json_has(config, "maxWidth")) targetCanvasWidth = json_extract(config, "maxWidth");
+            if (json_has(config, "maxHeight")) targetCanvasHeight = json_extract(config, "maxHeight");
+
+            if (targetCanvasWidth < drawWidth) targetCanvasWidth = drawWidth;
+            if (targetCanvasHeight < drawHeight) targetCanvasHeight = drawHeight;
+            
+            if (targetCanvasWidth < 0) targetCanvasWidth = 0;
+            if (targetCanvasHeight < 0) targetCanvasHeight = 0;
+
+            if (json_has(config, "texture")) setTexture(config["texture"]);
+            if (json_has(config, "frame")) frame = config["frame"];
+            
+            if (json_has(config, "marginLeft")) marginLeft = json_extract(config, "marginLeft");
+            if (json_has(config, "marginRight")) marginRight = json_extract(config, "marginRight");
+            if (json_has(config, "marginTop")) marginTop = json_extract(config, "marginTop");
+            if (json_has(config, "marginBottom")) marginBottom = json_extract(config, "marginBottom");
+
+            nlohmann::json baseConfig = config;
+            baseConfig["width"] = targetCanvasWidth;
+            baseConfig["height"] = targetCanvasHeight;
+
+            Amara::TextureContainer::configure(baseConfig);
+
+            return this;
+        }
+
+        bool setTexture(std::string key) {
+            image = nullptr;
+            spritesheet = nullptr;
+
+            if (!gameProps->assets->has(key)) {
+                debug_log("Error: Asset \"", key, "\" was not found.");
+                return false;
+            }
+
+            image = gameProps->assets->get(key)->as<ImageAsset*>();
+            
+            if (image == nullptr) {
+                debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
+                gameProps->breakWorld();
+                return false;
+            }
+            textureWidth = image->width;
+            textureHeight = image->height;
+
+            spritesheet = image->as<SpritesheetAsset*>();
+            if (spritesheet) {
+                frameWidth = spritesheet->frameWidth;
+                frameHeight = spritesheet->frameHeight;
+            }
+            else {
+                frameWidth = 0;
+                frameHeight = 0;
+            }
+
+            return true;
+        }
+
+        void drawSlice(const Rectangle& v, const SDL_FRect& srcRect, const SDL_FRect& destRect) {
+            if (image == nullptr) return;
+
+            if (image->texture && gameProps->renderer) {
+                SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureColorMod(image->texture, 255, 255, 255);
+                SDL_SetTextureAlphaMod(image->texture, 255);
+                Apply_SDL_BlendMode(gameProps, image->texture, Amara::BlendMode::None);
+ 
+                SDL_RenderTexture(
+                    gameProps->renderer, 
+                    image->texture,
+                    &srcRect,
+                    &destRect
+                );
+            }
+            else if (image->gpuTexture && gameProps->gpuDevice) {
+                // GPU Rendering
+            }
+            #ifdef AMARA_OPENGL
+            else if (image->glTextureID != 0 && gameProps->glContext != NULL) {
+                Quad srcQuad = Quad(
+                    { srcRect.x/textureWidth, srcRect.y/textureHeight },
+                    { (srcRect.x+srcRect.w)/textureWidth, srcRect.y/textureHeight },
+                    { (srcRect.x+srcRect.w)/textureWidth, (srcRect.y+srcRect.h)/textureHeight },
+                    { srcRect.x/textureWidth, (srcRect.y+srcRect.h)/textureHeight }
+                );
+                Quad destQuad = glTranslateQuad(v, rotateQuad(
+                    Quad(destRect),
+                    Vector2( destRect.x,destRect.y ),
+                    0
+                ), true);
+
+                vertices = {
+                    destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
+                    destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
+                    destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
+                    destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
+                };
+
+                gameProps->renderBatch->pushQuad(
+                    gameProps->currentShaderProgram,
+                    image->glTextureID,
+                    vertices, 1.0f, Color::White,
+                    v, true,
+                    Amara::BlendMode::None
+                );
+            }
+            #endif
+        }
+
+        virtual void drawCanvasContents(const Rectangle& v) override {
+            if (image == nullptr) return;
+
+            float logicalFrameW = (spritesheet && spritesheet->frameWidth > 0) ? spritesheet->frameWidth : image->width;
+            float logicalFrameH = (spritesheet && spritesheet->frameHeight > 0) ? spritesheet->frameHeight : image->height;
+
+            float frameAtlasX = 0;
+            float frameAtlasY = 0;
+
+            if (spritesheet && spritesheet->frameWidth > 0 && spritesheet->frameHeight > 0) {
+                if (textureWidth > 0 && logicalFrameW > 0) { 
+                    int framesPerRow = textureWidth / logicalFrameW;
+                    if (framesPerRow == 0) framesPerRow = 1; 
+                    
+                    int numFrames = static_cast<int>(floor(static_cast<float>(textureWidth) / logicalFrameW) * floor(static_cast<float>(textureHeight) / logicalFrameH));
+                    if (numFrames == 0) numFrames = 1;
+                    int fixedFrame = frame % numFrames;
+
+                    frameAtlasX = static_cast<float>((fixedFrame % framesPerRow) * logicalFrameW);
+                    frameAtlasY = static_cast<float>(floor(static_cast<float>(fixedFrame) / framesPerRow) * logicalFrameH);
+                }
+            }
+
+            float actualML = (marginLeft < 0) ? logicalFrameW / 3.0f : marginLeft;
+            float actualMR = (marginRight < 0) ? logicalFrameW / 3.0f : marginRight;
+            float actualMT = (marginTop < 0) ? logicalFrameH / 3.0f : marginTop;
+            float actualMB = (marginBottom < 0) ? logicalFrameH / 3.0f : marginBottom;
+
+            if (actualML + actualMR > logicalFrameW) {
+                float sum = actualML + actualMR;
+                if (sum == 0) { 
+                    actualML = logicalFrameW / 2.0f; 
+                    actualMR = logicalFrameW / 2.0f; 
+                }
+                else {
+                    actualML = (actualML / sum) * logicalFrameW;
+                    actualMR = (actualMR / sum) * logicalFrameW;
+                }
+            }
+            if (actualMT + actualMB > logicalFrameH) {
+                float sum = actualMT + actualMB;
+                if (sum == 0) { 
+                    actualMT = logicalFrameH / 2.0f;
+                    actualMB = logicalFrameH / 2.0f;
+                }
+                else {
+                    actualMT = (actualMT / sum) * logicalFrameH;
+                    actualMB = (actualMB / sum) * logicalFrameH;
+                }
+            }
+
+            float destML = actualML;
+            float destMR = actualMR;
+            float destMT = actualMT;
+            float destMB = actualMB;
+
+            float srcHorStretch = logicalFrameW - (actualML + actualMR);
+            float srcVerStretch = logicalFrameH - (actualMT + actualMB);
+
+            float destHorStretch = drawWidth - (actualML + actualMR); 
+            float destVerStretch = drawHeight - (actualMT + actualMB); 
+
+            if (destHorStretch < 0) {
+                float sumHorMargins = actualML + actualMR;
+                if (sumHorMargins > 0) {
+                    destML = drawWidth * (actualML / sumHorMargins);
+                    destMR = drawWidth * (actualMR / sumHorMargins);
+                }
+                else {
+                    destML = drawWidth / 2.0f;
+                    destMR = drawWidth / 2.0f;
+                }
+                destHorStretch = 0;
+            }
+
+            if (destVerStretch < 0) {
+                float sumVerMargins = actualMT + actualMB;
+                if (sumVerMargins > 0) {
+                    destMT = drawHeight * (actualMT / sumVerMargins);
+                    destMB = drawHeight * (actualMB / sumVerMargins);
+                } else {
+                    destMT = drawHeight / 2.0f;
+                    destMB = drawHeight / 2.0f;
+                }
+                destVerStretch = 0;
+            }
+            
+            if (srcHorStretch < 0) srcHorStretch = 0;
+            if (srcVerStretch < 0) srcVerStretch = 0;
+            SDL_FRect src, dest;
+
+            // Top-Left
+            src  = { frameAtlasX, frameAtlasY, actualML, actualMT };
+            dest = { 0, 0, destML, destMT };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+            // Top-Center
+            src  = { frameAtlasX + actualML, frameAtlasY, srcHorStretch, actualMT };
+            dest = { destML, 0, destHorStretch, destMT };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+            // Top-Right
+            src  = { frameAtlasX + actualML + srcHorStretch, frameAtlasY, actualMR, actualMT };
+            dest = { destML + destHorStretch, 0, destMR, destMT };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+            // Middle-Left
+            src  = { frameAtlasX, frameAtlasY + actualMT, actualML, srcVerStretch };
+            dest = { 0, destMT, destML, destVerStretch };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+            // Center
+            src  = { frameAtlasX + actualML, frameAtlasY + actualMT, srcHorStretch, srcVerStretch };
+            dest = { destML, destMT, destHorStretch, destVerStretch };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+            // Middle-Right
+            src  = { frameAtlasX + actualML + srcHorStretch, frameAtlasY + actualMT, actualMR, srcVerStretch };
+            dest = { destML + destHorStretch, destMT, destMR, destVerStretch };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+            // Bottom-Left
+            src  = { frameAtlasX, frameAtlasY + actualMT + srcVerStretch, actualML, actualMB };
+            dest = { 0, destMT + destVerStretch, destML, destMB };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+            // Bottom-Center
+            src  = { frameAtlasX + actualML, frameAtlasY + actualMT + srcVerStretch, srcHorStretch, actualMB };
+            dest = { destML, destMT + destVerStretch, destHorStretch, destMB };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+            // Bottom-Right
+            src  = { frameAtlasX + actualML + srcHorStretch, frameAtlasY + actualMT + srcVerStretch, actualMR, actualMB };
+            dest = { destML + destHorStretch, destMT + destVerStretch, destMR, destMB };
+            if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
+
+            if (depthSortChildrenEnabled) sortChildren();
+            drawChildren(v);
+        }
+
+        virtual void drawCanvas(const Rectangle& v) override {
+            SDL_Texture* rec_target = nullptr;
+            if (canvasTexture != nullptr && gameProps->renderer) {
+                rec_target = SDL_GetRenderTarget(gameProps->renderer);
+                SDL_SetRenderTarget(gameProps->renderer, canvasTexture);
+                if (clearOnDraw) SDL_SetRenderDrawColor(gameProps->renderer, fill.r, fill.g, fill.b, fill.a);
+                else SDL_SetRenderDrawColor(gameProps->renderer, 0,0,0,0);
+
+                SDL_Rect setv = { 0, 0, static_cast<int>(TextureContainer::width), static_cast<int>(TextureContainer::height) };
+                SDL_SetRenderViewport(gameProps->renderer, &setv);
+
+                if (clearOnDraw) SDL_RenderClear(gameProps->renderer);
+            }
+            #ifdef AMARA_OPENGL
+            GLint prevBuffer = 0;
+            ShaderProgram* rec_shader = gameProps->currentShaderProgram;
+
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL && glBufferID != 0) {
+                GLint prevBuffer = 0;
+                ShaderProgram* rec_shader = gameProps->currentShaderProgram;
+                
+                if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                    gameProps->renderBatch->flush();
+                    
+                    gameProps->currentShaderProgram = gameProps->defaultShaderProgram;
+                    
+                    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
+                    glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
+                    
+                    glViewport(0, 0, TextureContainer::width, TextureContainer::height);
+                    if (clearOnDraw) {
+                        glClearColor(
+                            fill.r / 255.0f,
+                            fill.g / 255.0f,
+                            fill.b / 255.0f,
+                            fill.a / 255.0f
+                        );
+                    }
+                    glClear(GL_COLOR_BUFFER_BIT);
+                }
+            }
+            #endif
+
+            drawCanvasContents(TextureContainer::container_viewport);
+
+            if (canvasTexture && gameProps->renderer) {
+                SDL_SetRenderTarget(gameProps->renderer, rec_target);
+                SDL_Rect setv = Rectangle::makeSDLRect(v);
+                SDL_SetRenderViewport(gameProps->renderer, &setv);
+            }
+            #ifdef AMARA_OPENGL
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL && glBufferID != 0) {
+                gameProps->renderBatch->flush();
+                gameProps->currentShaderProgram = rec_shader;
+
+                glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+                glViewport(v.x, gameProps->window_dim.h - v.y - v.h, v.w, v.h);
+            }
+            #endif
+        }
+        
+        virtual SDL_FRect getSrcRect() override {
+            return {
+                static_cast<float>(cropLeft),
+                static_cast<float>(cropTop),
+                static_cast<float>(drawWidth - cropLeft - cropRight),
+                static_cast<float>(drawHeight - cropTop - cropBottom)
+            };
+        }
+
+        static void bind_lua(sol::state& lua) {
+            lua.new_usertype<Amara::NineSlice>("NineSlice",
+                sol::base_classes, sol::bases<Amara::TextureContainer, Amara::Node>(),
+                "maxWidth", &Amara::NineSlice::width,
+                "maxHeight", &Amara::NineSlice::height,
+                "width", &Amara::NineSlice::drawWidth,
+                "height", &Amara::NineSlice::drawHeight,
+                "marginLeft", &Amara::NineSlice::marginLeft,
+                "marginRight", &Amara::NineSlice::marginRight,
+                "marginTop", &Amara::NineSlice::marginTop,
+                "marginBottom", &Amara::NineSlice::marginBottom,
+                "texture", sol::property([](Amara::NineSlice& t) -> std::string { return t.image ? t.image->key : ""; }, [](Amara::NineSlice& t, std::string v) { t.setTexture(v); })
+            );
+        }
+    };
+}

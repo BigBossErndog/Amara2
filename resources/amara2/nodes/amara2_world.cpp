@@ -781,6 +781,8 @@ namespace Amara {
 
                 if (vsync != 0) setVsync(vsync);
 
+                assets.init();
+
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
             }
             else if (graphics == GraphicsEnum::None && gameProps->current_window != nullptr) {

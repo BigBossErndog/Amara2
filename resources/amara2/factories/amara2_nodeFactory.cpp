@@ -198,10 +198,14 @@ namespace Amara {
             registerNode<Amara::Sprite>("Sprite");
             registerNode<Amara::Animation>("Animation");
 
+            registerNode<Amara::FillRect>("FillRect");
+
             registerNode<Amara::TextureContainer>("TextureContainer");
 
             registerNode<Amara::TilemapLayer>("TilemapLayer");
             registerNode<Amara::Tilemap>("Tilemap");
+
+            registerNode<Amara::NineSlice>("NineSlice");
             
             registerNode<Amara::PathFinder>("PathFinder");
 
@@ -243,11 +247,15 @@ namespace Amara {
 
             Amara::Sprite::bind_lua(lua);
             Amara::Animation::bind_lua(lua);
+
+            Amara::FillRect::bind_lua(lua);
             
             Amara::TextureContainer::bind_lua(lua);
 
             Amara::TilemapLayer::bind_lua(lua);
             Amara::Tilemap::bind_lua(lua);
+
+            Amara::NineSlice::bind_lua(lua);
 
             Amara::PathFinder::bind_lua(lua);
             

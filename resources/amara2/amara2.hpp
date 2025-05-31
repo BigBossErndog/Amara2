@@ -191,10 +191,14 @@
     #include "nodes/amara2_sprite.cpp"
     #include "actions/amara2_animation.cpp"
 
+    #include "nodes/amara2_fillRect.cpp"
+
     #include "nodes/amara2_textureContainer.cpp"
 
     #include "nodes/tilemap/amara2_tilemapLayer.cpp"
     #include "nodes/tilemap/amara2_tilemap.cpp"
+
+    #include "nodes/amara2_nineSlice.cpp"
 
     #include "nodes/amara2_pathFinder.cpp"
 

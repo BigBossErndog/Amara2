@@ -8,6 +8,8 @@ return NodeFactory:create("Scene"):configure({
 
         self.load:image("goldenFlower", "goldenFlower.png")
 
+        self.load:image("orangeTextbox", "orangeTextbox.png")
+
         self.load:spritesheet("freaker", "freaker.png", 32, 64)
         self.load:font("font", "KLEINTEN.ttf", 10)
 
@@ -130,11 +132,12 @@ return NodeFactory:create("Scene"):configure({
         --     animation = "runningDown",
         -- })
         freaker = self:createChild("Sprite", {
-            texture = "freaker",
+            -- texture = "freaker",
             animation = "runningDown",
             tint = Colors.Green
             -- origin = 0
         })
+        freaker:setTexture("freaker")
 
         -- f.pos = textCont.center
         -- f:goTo(textCont.center)
@@ -222,11 +225,34 @@ return NodeFactory:create("Scene"):configure({
         -- freaker.pos = tilemap.center
         -- freaker.blendMode = BlendMode.Mask
         -- textCont.blendMode = BlendMode.Mask
-        
+
+        self:createChild("NineSlice", {
+            x = 32, y = 32,
+            texture = "orangeTextbox",
+            width = 256, height = 256,
+            marginLeft = 8, marginRight = 8,
+            marginTop = 8, marginBottom = 8,
+            origin = 0
+        })
+
+        self.props.fillRect = self:createChild("FillRect", {
+            x = 64, y = 64,
+            width = 256, height = 256,
+            color = "blue",
+            origin = 0.5,
+            texture = "whitePixel"
+        })
+        -- self.props.fillRect:configure({
+        --     texture = "freaker",
+        --     width = 256,
+        --     height = 256
+        -- })
+        print(self.props.fillRect.width, self.props.fillRect.height)
         self.props.checked = false
     end,
 
     onUpdate = function(self, deltaTime)
+        -- print(self.props.fillRect, self.props.fillRect.texture)
         fpsTxt:setText(math.floor(Game.fps), " FPS")
         -- fpsTxt:bringToFront()
         -- print(math.floor(Game.fps), " FPS")

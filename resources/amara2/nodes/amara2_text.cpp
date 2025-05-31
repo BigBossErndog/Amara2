@@ -203,7 +203,8 @@ namespace Amara {
                 return false;
             }
 
-            font = gameProps->assets->get(key)->as<Amara::FontAsset*>();
+            Amara::Asset* asset = gameProps->assets->get(key);
+            if (asset) font = asset->as<Amara::FontAsset*>();
 
             if (font == nullptr) {
                 debug_log("Error: Asset \"", key, "\" is not a valid font asset.");

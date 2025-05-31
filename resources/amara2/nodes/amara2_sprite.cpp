@@ -42,7 +42,7 @@ namespace Amara {
             set_base_node_id("Sprite");
         }
 
-        bool setTexture(std::string key) {
+        virtual bool setTexture(std::string key) {
             image = nullptr;
             spritesheet = nullptr;
 
@@ -51,7 +51,8 @@ namespace Amara {
                 return false;
             }
 
-            image = gameProps->assets->get(key)->as<ImageAsset*>();
+            Amara::Asset* asset = gameProps->assets->get(key);
+            if (asset) image = asset->as<ImageAsset*>();
             
             if (image == nullptr) {
                 debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
@@ -113,6 +114,9 @@ namespace Amara {
             if (json_has(config, "cropRight")) cropRight = config["cropRight"];
             if (json_has(config, "cropTop")) cropTop = config["cropTop"];
             if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
+
+            if (json_has(config, "width")) setWidth(config["width"]);
+            if (json_has(config, "height")) setHeight(config["height"]);
 
             return this;
         }
@@ -268,9 +272,11 @@ namespace Amara {
         }
         float setWidth(float _w) {
             scale.x = _w / static_cast<float>(getWidth());
+            return scale.x;
         }
         float setHeight(float _h) {
             scale.y = _h / static_cast<float>(getHeight());
+            return scale.y;
         }
 
         Rectangle getRectangle() {
