@@ -504,7 +504,7 @@ namespace Amara {
             update_properties();
             node->gameProps = gameProps;
             node->world = world;
-            node->scene = scene;
+            if (scene) node->scene = scene;
             node->parent = this;
             children.push_back(node);
 

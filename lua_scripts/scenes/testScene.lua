@@ -243,10 +243,10 @@ return NodeFactory:create("Scene"):configure({
         })
         
         self.props.fillRect.input:activate()
-        self.props.fillRect.input:listen("onMouseDown", function()
+        self.props.fillRect.input:listen("onMouseDown", function(self)
             print("FillRect clicked")
             -- print(self.scene)
-            self:createChild("FillTransition", {
+            self.scene:createChild("FillTransition", {
                 next = "scenes/testScene",
                 fadeIn = 5,
                 fadeOut = 5,
@@ -254,7 +254,7 @@ return NodeFactory:create("Scene"):configure({
                 color = "black"
             })
         end)
-        print(self)
+        print(self.scene)
 
         self.props.checked = false
     end,
