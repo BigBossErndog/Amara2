@@ -1,4 +1,4 @@
-ENTRY_FILES = resources/amara2/main/main.cpp
+ENTRY_FILES = ./amara2/main/main.cpp
 
 BUILD_NAME = Amara2
 BUILD_PATH = build
@@ -25,7 +25,7 @@ OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/mur
 
 OTHER_LIB = $(OTHER_LIB_LINKS) $(OTHER_LIB_PATHS)
 
-AMARA_PATH = -I ./resources/amara2 -I ./plugins
+AMARA_PATH = -I ./amara2 -I ./plugins
 
 # INCLUDE_DEPTH = 1000
 # EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)

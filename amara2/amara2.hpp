@@ -183,6 +183,7 @@
     #include "actions/amara2_waitAction.cpp"
     #include "actions/amara2_tween.cpp"
     #include "actions/amara2_stateMachine.cpp"
+    #include "actions/amara2_delayedNode.cpp"
 
     #include "actions/amara2_loader.cpp"
     
@@ -208,6 +209,7 @@
     #include "audio/amara2_audioMaster.cpp"
 
     #include "transitions/amara2_transition.cpp"
+    #include "transitions/amara2_fillTransition.cpp"
     
     #include "nodes/amara2_world.cpp"
 

@@ -17,7 +17,7 @@ namespace Amara {
 
         Action(): Node() {
             set_base_node_id("Action");
-            depthSortSelfEnabled = false;
+            sortable = false;
             is_action = true;
         }
         

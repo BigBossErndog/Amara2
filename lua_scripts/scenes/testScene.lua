@@ -295,6 +295,27 @@ return NodeFactory:create("Scene"):configure({
         end
         -- if not anyPressed then freaker:stopAnimating() end
 
+        if (Keyboard:justPressed(Key.T)) then
+            -- local rect = self:createChild("FillRect", {
+            --     x = 64, y = 64,
+            --     width = 128, height = 128,
+            --     color = "red",
+            --     origin = 0,
+            --     alpha = 0
+            -- })
+            -- rect.tween:to({
+            --     alpha = 1,
+            --     duration = 1
+            -- })
+            self:createChild("FillTransition", {
+                next = "scenes/testScene",
+                fadeIn = 5,
+                fadeOut = 5,
+                interim = 2,
+                color = "black"
+            })
+        end
+
         if Keyboard:justPressed(Key.F5) then
             if self.world.screenMode == ScreenMode.Windowed or self.world.screenMode == ScreenMode.BorderlessWindowed then
                 self.world.screenMode = ScreenMode.Fullscreen

@@ -19,7 +19,7 @@ namespace Amara {
 
         double waitCounter = 0;
         double waitTimeElapsed = 0;
-
+        
         bool skipEvent = false;
         bool debug = false;
 
@@ -92,6 +92,7 @@ namespace Amara {
         bool start() {
             if (currentState.empty()) {
                 eventLooker = 0;
+
                 return true;
             }
             return false;
@@ -195,7 +196,7 @@ namespace Amara {
             currentEvent += 1;
             skipEvent = true;
         }
-
+        
         bool nextEventOn(bool cond) {
             if (cond) {
                 nextEvent();
@@ -299,23 +300,26 @@ namespace Amara {
                 "event", &StateMachine::event,
                 "once", &StateMachine::once,
                 "nextEvent", &StateMachine::nextEvent,
-                "nextEventOn", &StateMachine::nextEventOn
-                // "wait", &StateMachine::wait,
-                // "waitUntil", &StateMachine::waitUntil,
-                // "repeat", &StateMachine::repeat,
-                // "bookmark", &StateMachine::bookmark,
-                // "jump", &StateMachine::jump,
-                // "jumpEvent", &StateMachine::jumpEvent,
-                // "switchState", &StateMachine::switchState,
-                // "switchStateEvent", &StateMachine::switchStateEvent,
-                // "returnState", &StateMachine::returnState,
-                // "returnStateEvent", &StateMachine::returnStateEvent,
-                // "restartState", &StateMachine::restartState,
-                // "restartStateEvent", &StateMachine::restartStateEvent,
-                // "addState", &StateMachine::addState,
-                // "reset", &StateMachine::reset,
-                // "resetEvent", &StateMachine::resetEvent,
-                // "inState", &StateMachine::inState
+                "nextEventOn", &StateMachine::nextEventOn,
+                "wait", sol::overload(
+                    sol::resolve<bool(double, bool)>(&StateMachine::wait),
+                    sol::resolve<bool(float)>(&StateMachine::wait)
+                ),
+                "waitUntil", &StateMachine::waitUntil,
+                "repeat", &StateMachine::repeat,
+                "bookmark", &StateMachine::bookmark,
+                "jump", &StateMachine::jump,
+                "jumpEvent", &StateMachine::jumpEvent,
+                "switchState", &StateMachine::switchState,
+                "switchStateEvent", &StateMachine::switchStateEvent,
+                "returnState", &StateMachine::returnState,
+                "returnStateEvent", &StateMachine::returnStateEvent,
+                "restartState", &StateMachine::restartState,
+                "restartStateEvent", &StateMachine::restartStateEvent,
+                "addState", &StateMachine::addState,
+                "reset", &StateMachine::reset,
+                "resetEvent", &StateMachine::resetEvent,
+                "inState", &StateMachine::inState
             );
 
             sol::usertype<Node> node_type = lua["Node"];

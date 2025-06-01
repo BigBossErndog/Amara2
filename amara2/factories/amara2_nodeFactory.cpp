@@ -190,6 +190,7 @@ namespace Amara {
             registerNode<Amara::WaitAction>("WaitAction");
             registerNode<Amara::Tween>("Tween");
             registerNode<Amara::StateMachine>("StateMachine");
+            registerNode<Amara::DelayedNode>("DelayedNode");
             
             registerNode<Amara::Loader>("Loader");
             
@@ -213,6 +214,9 @@ namespace Amara {
             registerNode<Amara::AudioPool>("AudioPool");
             registerNode<Amara::AudioGroup>("AudioGroup");
             registerNode<Amara::AudioMaster>("AudioMaster");
+
+            registerNode<Amara::Transition>("Transition");
+            registerNode<Amara::FillTransition>("FillTransition");
 
             #ifdef AMARA_WEB_SERVER
             registerNode<Amara::WebServer>("WebServer");
@@ -240,6 +244,7 @@ namespace Amara {
             Amara::WaitAction::bind_lua(lua);
             Amara::Tween::bind_lua(lua);
             Amara::StateMachine::bind_lua(lua);
+            Amara::DelayedNode::bind_lua(lua);
             
             Amara::Loader::bind_lua(lua);
 
@@ -263,6 +268,9 @@ namespace Amara {
             Amara::AudioPool::bind_lua(lua);
             Amara::AudioGroup::bind_lua(lua);
             Amara::AudioMaster::bind_lua(lua);
+
+            Amara::Transition::bind_lua(lua);
+            Amara::FillTransition::bind_lua(lua);
 
             #ifdef AMARA_WEB_SERVER
             Amara::WebServer::bind_lua(lua);

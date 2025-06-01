@@ -50,9 +50,9 @@ namespace Amara {
         bool yDepthLocked = false;
         bool zDepthLocked = false;
 
-        bool depthSortSelfEnabled = true;
+        bool sortable = true;
         bool depthSortChildrenEnabled = true;
-
+        
         bool fixedToCamera = false;
 
         bool destroyed = false;
@@ -133,7 +133,7 @@ namespace Amara {
                 { "zDepthLocked", zDepthLocked },
                 { "paused", paused },
                 { "visible", visible },
-                { "depthSortSelfEnabled", depthSortSelfEnabled },
+                { "sortable", sortable },
                 { "depthSortChildrenEnabled", depthSortChildrenEnabled },
                 { "props", lua_to_json(props) }
             });
@@ -202,7 +202,7 @@ namespace Amara {
             if (json_has(config, "yDepthLocked")) yDepthLocked = config["yDepthLocked"];
             if (json_has(config, "zDepthLocked")) zDepthLocked = config["zDepthLocked"];
 
-            if (json_has(config, "depthSortSelfEnabled")) depthSortSelfEnabled = config["depthSortSelfEnabled"];
+            if (json_has(config, "sortable")) sortable = config["sortable"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
 
             if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
@@ -819,7 +819,7 @@ namespace Amara {
                 "destroyed", sol::readonly(&Node::destroyed),
                 "destroy", &Node::destroy,
                 "destroyChildren", &Node::destroyChildren,
-                "depthSortSelfEnabled", &Node::depthSortSelfEnabled,
+                "sortable", &Node::sortable,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
                 "bringToFront", &Node::bringToFront,
                 "sendToBack", &Node::sendToBack,
@@ -925,13 +925,13 @@ namespace Amara {
     std::string node_to_string(sol::object obj) {
         return std::string(obj.as<Amara::Node>());
     }
-
+    
     struct sort_entities_by_depth {
 		inline bool operator() (Amara::Node* node1, Amara::Node* node2) {
-			if (node1 == nullptr) return true;
-			if (node2 == nullptr) return true;
-            if (node1->destroyed || !node1->depthSortSelfEnabled) return true;
-			if (node2->destroyed || !node2->depthSortSelfEnabled) return true;
+			if (node1 == nullptr) return false;
+			if (node2 == nullptr) return false;
+            if (node1->destroyed || !node1->sortable) return false;
+			if (node2->destroyed || !node2->sortable) return false;
             return (node1->depth < node2->depth);
 		}
 	};
