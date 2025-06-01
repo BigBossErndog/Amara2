@@ -237,16 +237,10 @@ return NodeFactory:create("Scene"):configure({
 
         self.props.fillRect = self:createChild("FillRect", {
             x = 64, y = 64,
-            width = 256, height = 256,
+            width = 128, height = 128,
             color = "blue",
-            origin = 0.5,
-            texture = "whitePixel"
+            origin = 0
         })
-        -- self.props.fillRect:configure({
-        --     texture = "freaker",
-        --     width = 256,
-        --     height = 256
-        -- })
         print(self.props.fillRect.width, self.props.fillRect.height)
         self.props.checked = false
     end,

@@ -27,7 +27,7 @@ namespace Amara {
             setWidth(rectWidth);
             setHeight(rectHeight);
         }
-
+        
         virtual bool setTexture(std::string key) override {
             bool success = Amara::Sprite::setTexture(key);
             if (success) {

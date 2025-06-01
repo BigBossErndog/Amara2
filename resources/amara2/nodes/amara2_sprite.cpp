@@ -97,8 +97,6 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            Amara::Node::configure(config);
-
             if (json_has(config, "tint")) tint = config["tint"];
             if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
 
@@ -118,7 +116,7 @@ namespace Amara {
             if (json_has(config, "width")) setWidth(config["width"]);
             if (json_has(config, "height")) setHeight(config["height"]);
 
-            return this;
+            return Amara::Node::configure(config);
         }
 
         Amara::Action* animate(nlohmann::json config);
@@ -271,20 +269,22 @@ namespace Amara {
             return 0;
         }
         float setWidth(float _w) {
-            scale.x = _w / static_cast<float>(getWidth());
-            return scale.x;
+            float cw = (spritesheet ? frameWidth : textureWidth);
+            if (cw == 0) return scale.x = 0;
+            return scale.x = _w / cw;
         }
         float setHeight(float _h) {
-            scale.y = _h / static_cast<float>(getHeight());
-            return scale.y;
+            float ch = (spritesheet ? frameHeight : textureHeight);
+            if (ch == 0) return scale.y = 0;
+            return scale.y = _h / ch;
         }
 
         Rectangle getRectangle() {
             return Rectangle(
-                pos.x - (getWidth()*scale.x)*origin.x,
-                pos.y - (getHeight()*scale.y)*origin.y,
-                getWidth()*scale.x,
-                getHeight()*scale.y
+                pos.x - getWidth()*origin.x,
+                pos.y - getHeight()*origin.y,
+                getWidth(),
+                getHeight()
             );
         }
 
