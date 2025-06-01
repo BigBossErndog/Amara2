@@ -161,7 +161,7 @@ namespace Amara {
     };
 
     class Shape {
-    private:
+    public:
         using ShapeVariant = std::variant<
             Vector2, 
             Vector3, 
@@ -173,8 +173,6 @@ namespace Amara {
         >;
 
         ShapeVariant shape;
-        
-    public:
 
         Shape(): shape(Vector2()) {}
 
@@ -205,24 +203,29 @@ namespace Amara {
         
         bool collidesWith(const Shape& other) const {
             return std::visit([](const auto& s1, const auto& s2) {
-                return checkCollision(s1, s2);
+                return collision(s1, s2);
             }, shape, other.shape);
         }
+        bool collidesWith(const ShapeVariant& other) const {
+            return std::visit([](const auto& s1, const auto& s2) {
+                return collision(s1, s2);
+            }, shape, other);
+        }
 
-        // static bool checkCollision(const Rectangle& r1, const Rectangle& r2) {
+        // static bool collision(const Rectangle& r1, const Rectangle& r2) {
         //     return (r1.w > 0 && r1.h > 0 && r2.w > 0 && r2.h > 0);
         // }
     
-        // static bool checkCollision(const Circle& c1, const Circle& c2) {
+        // static bool collision(const Circle& c1, const Circle& c2) {
         //     double distance = std::abs(c1.radius - c2.radius);
         //     return distance < (c1.radius + c2.radius);
         // }
     
-        // static bool checkCollision(const Triangle& t1, const Triangle& t2) {
+        // static bool collision(const Triangle& t1, const Triangle& t2) {
         //     return (t1.base > 0 && t1.height > 0 && t2.base > 0 && t2.height > 0);
         // }
 
-        static bool checkCollision(const Rectangle& r1, const Rectangle& r2) {
+        static bool collision(const Rectangle& r1, const Rectangle& r2) {
             if (r1.x + r1.w <= r2.x || r2.x + r2.w <= r1.x) {
                 return false;
             }
@@ -232,16 +235,18 @@ namespace Amara {
             return true;
         }
 
-        static bool checkCollision(const Quad& q1, const Quad& q2);
+        static bool collision(const Quad& q1, const Quad& q2);
+        static bool collision(const Vector2& p, const Quad& q);
+        static bool collision(const Vector2& p, const Rectangle& r);
 
         template <typename T1, typename T2>
-        static std::enable_if_t<!std::is_same_v<T1, T2>, bool> checkCollision(const T1& a, const T2& b) {
+        static std::enable_if_t<!std::is_same_v<T1, T2>, bool> collision(const T1& a, const T2& b) {
             // Swap and call the correct function
-            return checkCollision(b, a);
+            return collision(b, a);
         }
         
         template <typename T1, typename T2>
-        static std::enable_if_t<std::is_same_v<T1, T2>, bool> checkCollision(const T1&, const T2&) {
+        static std::enable_if_t<std::is_same_v<T1, T2>, bool> collision(const T1&, const T2&) {
             return false;
         }
     };

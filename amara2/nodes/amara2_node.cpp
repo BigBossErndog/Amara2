@@ -32,8 +32,9 @@ namespace Amara {
         sol::protected_function luaUpdate;
         sol::protected_function luaDestroy;
         
-        MessageBox messages;
-        MessageBox input;
+        Amara::MessageBox messages;
+
+        Amara::NodeInput input;
 
         Amara::StateMachine* stateMachine = nullptr;
         Amara::Loader* loader = nullptr;
@@ -52,7 +53,7 @@ namespace Amara {
 
         bool sortable = true;
         bool depthSortChildrenEnabled = true;
-        
+
         bool fixedToCamera = false;
 
         bool destroyed = false;
@@ -106,8 +107,8 @@ namespace Amara {
         }
 
         virtual void init() {
-            messages.gameProps = gameProps;
-            input.gameProps = gameProps;
+            messages.init(gameProps, this);
+            input.init(gameProps, this);
             
             update_properties();
             get_lua_object();
@@ -613,7 +614,6 @@ namespace Amara {
             }
 
             messages.destroy();
-            input.destroy();
 
             if (parent) parent->removeChild(this);
 
@@ -938,5 +938,25 @@ namespace Amara {
 
     void Node::sortChildren() {
         std::stable_sort(children.begin(), children.end(), sort_entities_by_depth());
+    }
+
+    void MessageBox::handleMessage(const Message& msg) {
+        if (messageBox.find(msg.key) != messageBox.end()) {
+            const auto& list = messageBox[msg.key];
+            for (const sol::protected_function& callback: list) {
+                if (callback.valid()) {
+                    try {
+                        sol::protected_function_result result = callback(node->get_lua_object(), msg.data);
+                        if (!result.valid()) {
+                            sol::error err = result;
+                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                        }
+                    } catch (const std::exception& e) {
+                        debug_log(e.what());
+                        gameProps->breakWorld();
+                    }
+                }
+            }
+        }
     }
 }

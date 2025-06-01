@@ -196,12 +196,24 @@ namespace Amara {
             };
 
             float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
-            if (!Shape::checkCollision(
+            if (!Shape::collision(
                 Rectangle(destRect), Rectangle(
                     v.x - diag_distance, v.y - diag_distance,
                     v.w + diag_distance*2, v.h + diag_distance*2
                 )
             )) return;
+
+            if (input.active) {
+                Quad inputQuad = rotateQuad(
+                    Quad(destRect),
+                    Vector2(
+                        destRect.x + dorigin.x,
+                        destRect.y + dorigin.y
+                    ),
+                    passOn.rotation + rotation
+                );
+                input.queueInput(inputQuad);
+            }
 
             if (image->texture && gameProps->renderer) {
                 // 2D Rendering

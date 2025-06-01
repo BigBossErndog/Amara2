@@ -83,10 +83,8 @@ namespace Amara {
         }
     }
     #endif
-
-    // Function to check if two line segments (p1-p2) and (p3-p4) intersect
+    
     bool doIntersect(const Vector2& p1, const Vector2& p2, const Vector2& p3, const Vector2& p4) {
-        // Check if p1p2 and p3p4 intersect using cross product to determine orientation
         auto orientation = [](const Vector2& a, const Vector2& b, const Vector2& c) {
             return (b - a).cross(c - a);
         };
@@ -96,13 +94,10 @@ namespace Amara {
         float o3 = orientation(p3, p4, p1);
         float o4 = orientation(p3, p4, p2);
 
-        // General case: if o1 and o2 have different signs and o3 and o4 have different signs
         return (o1 * o2 < 0 && o3 * o4 < 0);
     }
 
-    // Function to check if a point is inside a polygon (here, a quadrilateral)
     bool isPointInside(const Quad& quad, const Vector2& p) {
-        // Use the cross product to check if the point is to the left of all edges
         auto sign = [](const Vector2& a, const Vector2& b, const Vector2& c) {
             return (b - a).cross(c - a);
         };
@@ -115,9 +110,7 @@ namespace Amara {
         return b1 == b2 && b2 == b3 && b3 == b4;
     }
 
-    // Function to check if two Quads are touching
-    bool Shape::checkCollision(const Quad& q1, const Quad& q2) {
-        // Check if any edge of q1 intersects with any edge of q2
+    bool Shape::collision(const Quad& q1, const Quad& q2) {
         if (doIntersect(q1.p1, q1.p2, q2.p1, q2.p2) || doIntersect(q1.p1, q1.p2, q2.p2, q2.p3) ||
             doIntersect(q1.p1, q1.p2, q2.p3, q2.p4) || doIntersect(q1.p1, q1.p2, q2.p4, q2.p1) ||
             doIntersect(q1.p2, q1.p3, q2.p1, q2.p2) || doIntersect(q1.p2, q1.p3, q2.p2, q2.p3) ||
@@ -128,18 +121,24 @@ namespace Amara {
             doIntersect(q1.p4, q1.p1, q2.p3, q2.p4) || doIntersect(q1.p4, q1.p1, q2.p4, q2.p1)) {
             return true;
         }
-
-        // Check if any vertex of q1 is inside q2
         if (isPointInside(q2, q1.p1) || isPointInside(q2, q1.p2) || isPointInside(q2, q1.p3) || isPointInside(q2, q1.p4)) {
             return true;
         }
-
-        // Check if any vertex of q2 is inside q1
         if (isPointInside(q1, q2.p1) || isPointInside(q1, q2.p2) || isPointInside(q1, q2.p3) || isPointInside(q1, q2.p4)) {
             return true;
         }
 
         return false;
+    }
+
+    bool Shape::collision(const Vector2& p, const Quad& q) {
+        return isPointInside(q, p);
+    }
+
+    bool Shape::collision(const Vector2& p, const Rectangle& r) {
+        return (p.x >= r.x && p.x <= r.x + r.w &&
+                p.y >= r.y && p.y <= r.y + r.h &&
+                r.w > 0 && r.h > 0);
     }
 
     Vector2 stringToPosition(std::string str) {

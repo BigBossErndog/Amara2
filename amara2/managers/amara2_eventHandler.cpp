@@ -30,6 +30,48 @@ namespace Amara {
                             }
                         }
                         break;
+                    case SDL_EVENT_MOUSE_MOTION: {
+                        for (auto w: worlds) {
+                            if (w->window != nullptr && w->windowID == e.motion.windowID) {
+                                w->handleMouseMovement(Vector2(e.motion.x, e.motion.y), Vector2(e.motion.xrel, e.motion.yrel));
+                            }
+                        }
+                        break;
+                    }
+                    case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+                        for (auto w: worlds) {
+                            if (w->window != nullptr && w->windowID == e.button.windowID) {
+                                if (e.button.button == SDL_BUTTON_LEFT) {
+                                    w->inputManager.mouse.left.press();
+                                }
+                                else if (e.button.button == SDL_BUTTON_RIGHT) {
+                                    w->inputManager.mouse.right.press();
+                                }
+                                else if (e.button.button == SDL_BUTTON_MIDDLE) {
+                                    w->inputManager.mouse.middle.press();
+                                }
+                                w->inputManager.handleMouseDown(Vector2(e.button.x, e.button.y));
+                            }
+                        }
+                        break;
+                    }
+                    case SDL_EVENT_MOUSE_BUTTON_UP: {
+                        for (auto w: worlds) {
+                            if (w->window != nullptr && w->windowID == e.button.windowID) {
+                                if (e.button.button == SDL_BUTTON_LEFT) {
+                                    w->inputManager.mouse.left.release();
+                                }
+                                else if (e.button.button == SDL_BUTTON_RIGHT) {
+                                    w->inputManager.mouse.right.release();
+                                }
+                                else if (e.button.button == SDL_BUTTON_MIDDLE) {
+                                    w->inputManager.mouse.middle.release();
+                                }
+                                w->inputManager.handleMouseUp(Vector2(e.button.x, e.button.y));
+                            }
+                        }
+                        break;
+                    }
                     case SDL_EVENT_KEY_DOWN:
                         keyboard.press(e.key.key);
                         game.gameProps->messages->send(nullptr, "keyboarddown", sol::make_object(game.gameProps->lua, e.key.key));

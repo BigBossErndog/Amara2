@@ -241,11 +241,27 @@ return NodeFactory:create("Scene"):configure({
             color = "blue",
             origin = 0
         })
-        print(self.props.fillRect.width, self.props.fillRect.height)
+        
+        self.props.fillRect.input:activate()
+        self.props.fillRect.input:listen("onMouseDown", function()
+            print("FillRect clicked")
+            -- print(self.scene)
+            self:createChild("FillTransition", {
+                next = "scenes/testScene",
+                fadeIn = 5,
+                fadeOut = 5,
+                -- interim = 2,
+                color = "black"
+            })
+        end)
+        print(self)
+
         self.props.checked = false
     end,
 
     onUpdate = function(self, deltaTime)
+        -- print(Mouse)
+        
         -- print(self.props.fillRect, self.props.fillRect.texture)
         fpsTxt:setText(math.floor(Game.fps), " FPS")
         -- fpsTxt:bringToFront()
@@ -294,27 +310,6 @@ return NodeFactory:create("Scene"):configure({
             anyPressed = true
         end
         -- if not anyPressed then freaker:stopAnimating() end
-
-        if (Keyboard:justPressed(Key.T)) then
-            -- local rect = self:createChild("FillRect", {
-            --     x = 64, y = 64,
-            --     width = 128, height = 128,
-            --     color = "red",
-            --     origin = 0,
-            --     alpha = 0
-            -- })
-            -- rect.tween:to({
-            --     alpha = 1,
-            --     duration = 1
-            -- })
-            self:createChild("FillTransition", {
-                next = "scenes/testScene",
-                fadeIn = 5,
-                fadeOut = 5,
-                interim = 2,
-                color = "black"
-            })
-        end
 
         if Keyboard:justPressed(Key.F5) then
             if self.world.screenMode == ScreenMode.Windowed or self.world.screenMode == ScreenMode.BorderlessWindowed then

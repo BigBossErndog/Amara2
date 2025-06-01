@@ -135,8 +135,11 @@
     #include "input/amara2_button.cpp"
     #include "input/amara2_keyboard.cpp"
     #include "input/amara2_gamepad.cpp"
+    #include "input/amara2_mouse.cpp"
     #include "input/amara2_controlScheme.cpp"
     #include "input/amara2_controlManager.cpp"
+
+    #include "input/amara2_inputManager.cpp"
 
     #include "managers/amara2_gameManager.cpp"
 
@@ -159,6 +162,8 @@
 
     #include "managers/amara2_messages.cpp"
     #include "managers/amara2_messageBox.cpp"
+
+    #include "input/amara2_nodeInput.cpp"
     
     #include "factories/amara2_scriptFactory.cpp"
     #include "factories/amara2_animationFactory.cpp"

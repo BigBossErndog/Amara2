@@ -10,6 +10,7 @@ namespace Amara {
     class AnimationFactory;
 
     class SystemManager;
+    class InputManager;
     class AssetManager;
     class ShaderManager;
 
@@ -131,6 +132,7 @@ namespace Amara {
         NodeFactory* factory = nullptr;
         ScriptFactory* scripts = nullptr;
         SystemManager* system = nullptr;
+        InputManager* inputManager = nullptr;
         AssetManager* assets = nullptr;
         AnimationFactory* animations = nullptr;
         ShaderManager* shaders = nullptr;

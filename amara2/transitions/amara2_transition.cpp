@@ -68,7 +68,8 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::Transition>("Transition",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
-                "doTransition", &Amara::Transition::doTransition
+                "doTransition", &Amara::Transition::doTransition,
+                "interim", &Amara::Transition::interim
             );
         }
     };

@@ -285,6 +285,7 @@ namespace Amara {
             ShaderProgram::bind_lua(lua);
 
             MessageBox::bind_lua(lua);
+            NodeInput::bind_lua(lua);
             
             GameManager::bind_lua(lua);
             ControlManager::bind_lua(lua);

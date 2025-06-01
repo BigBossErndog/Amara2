@@ -38,5 +38,14 @@ namespace Amara {
                 timeHeld += deltaTime;
             }
         }
+
+        static void bind_lua(sol::state& lua) {
+            lua.new_usertype<Button>("ButtonState",
+                "isDown", sol::readonly(&Button::isDown),
+                "justPressed", sol::readonly(&Button::justPressed),
+                "justReleased", sol::readonly(&Button::justReleased),
+                "timeHeld", sol::readonly(&Button::timeHeld)
+            );
+        }
     };
 }

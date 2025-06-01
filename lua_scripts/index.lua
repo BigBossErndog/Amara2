@@ -71,7 +71,7 @@
             -- Game:uncapFPS()
             print("Hello from", Game.executable)
             -- self:setShaderProgram("outlineShader")
-            self:createChild("scenes/TestScene")
+            self:createChild("scenes/testScene")
             -- self.x = self.display.x
             -- self.y = self.display.y
             -- self.width = self.display.w

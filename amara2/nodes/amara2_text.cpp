@@ -336,7 +336,7 @@ namespace Amara {
                     destRect.h = dim.h * totalZoom.y;
 
                     diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
-                    if (!Shape::checkCollision(
+                    if (!Shape::collision(
                         Rectangle(destRect), Rectangle(
                             v.x - diag_distance, v.y - diag_distance,
                             v.w + diag_distance*2, v.h + diag_distance*2

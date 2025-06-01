@@ -4,7 +4,8 @@ namespace Amara {
     class World: public Node {
     public:
         Amara::Demiurge* demiurge = nullptr;
-        
+
+        Amara::InputManager inputManager;
         AssetManager assets;
         AnimationFactory animations;
         ShaderManager shaders;
@@ -149,10 +150,13 @@ namespace Amara {
 
         virtual void update_properties() override {
             gameProps->world = this;
+            gameProps->inputManager = &inputManager;
             gameProps->assets = &assets;
             gameProps->animations = &animations;
             gameProps->shaders = &shaders;
             gameProps->audio = audio;
+
+            gameProps->lua["Mouse"] = &inputManager.mouse;
             
             if (window) {
                 #ifdef AMARA_OPENGL
@@ -848,6 +852,8 @@ namespace Amara {
         }
 
         virtual void run(double deltaTime) override {
+            inputManager.clearQueue();
+
             if (!base_dir_path.empty()) {
                 gameProps->system->setBasePath(base_dir_path);
             }
@@ -976,6 +982,20 @@ namespace Amara {
             }
         }
 
+        void handleMouseMovement(const Vector2& pos, const Vector2& movement) {
+            inputManager.mouse.handleMovement(
+                Vector2(
+                    ((pos.x / viewport.w) - 0.5) * (viewport.w*0.5 / passOn.zoom.x),
+                    ((pos.y / viewport.h) - 0.5) * (viewport.h*0.5 / passOn.zoom.y)
+                ),
+                Vector2(
+                    movement.x / passOn.zoom.x,
+                    movement.y / passOn.zoom.y
+                )
+            );
+            inputManager.handleMouseMovement(pos);
+        }
+
         virtual void destroy() override {
             Amara::Node::destroy();
 
@@ -1073,6 +1093,44 @@ namespace Amara {
     void GameProps::breakWorld() {
         if (world) {
             world->destroy();
+        }
+    }
+    
+    void InputManager::handleMouseMovement(const Vector2& pos) {
+        Amara::NodeInput* input;
+        for (auto it = queue.begin(); it != queue.end(); ++it) {
+            input = *it;
+            if (input->shape.collidesWith(pos)) {
+                input->hover.press();
+                input->rec_hovered = input->hover.isDown;
+                if (input->hover.justPressed) {
+                    input->handleMessage({ nullptr, "onMouseHover", sol::nil });
+                    input->handleMessage({ nullptr, "onPointerHover", sol::nil });
+                }
+                break;
+            }
+        }
+    }
+    void InputManager::handleMouseDown(const Amara::Vector2& point) {
+        Amara::NodeInput* input;
+        for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
+            input = *it;
+            if (input->shape.collidesWith(point)) {
+                input->handleMessage({ nullptr, "onMouseDown", sol::nil });
+                input->handleMessage({ nullptr, "onPointerDown", sol::nil });
+                break;
+            }
+        }
+    }
+    void InputManager::handleMouseUp(const Amara::Vector2& point) {
+        Amara::NodeInput* input;
+        for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
+            input = *it;
+            if (input->shape.collidesWith(point)) {
+                input->handleMessage({ nullptr, "onMouseUp", sol::nil });
+                input->handleMessage({ nullptr, "onPointerUp", sol::nil });
+                break;
+            }
         }
     }
 }

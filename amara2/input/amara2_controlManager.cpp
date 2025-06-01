@@ -64,6 +64,8 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
+            Button::bind_lua(lua);
+            Mouse::bind_lua(lua);
             KeyboardManager::bind_lua(lua);
             GamepadManager::bind_lua(lua);
             ControlScheme::bind_lua(lua);
