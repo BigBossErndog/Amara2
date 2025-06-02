@@ -159,6 +159,7 @@ namespace Amara {
             gameProps->audio = audio;
 
             gameProps->lua["Mouse"] = &inputManager.mouse;
+            gameProps->lua["Touch"] = &inputManager.touch;
             
             if (window) {
                 #ifdef AMARA_OPENGL
@@ -532,7 +533,7 @@ namespace Amara {
                     } else {
                         debug_log("Warning: Failed to get X11 Display or Window for click-through setup.");
                     }
-    
+                    
                 #elif defined(__APPLE__) // Cocoa Implementation
                     NSWindow* nsWindow = (NSWindow*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
                     if (nsWindow) {
@@ -992,6 +993,7 @@ namespace Amara {
 
         void handleMouseMovement(const Vector2& pos, const Vector2& movement) {
             inputManager.mouse.handleMovement(
+                pos,
                 Vector2(
                     ((pos.x / viewport.w) - 0.5) * (viewport.w*0.5 / passOn.zoom.x),
                     ((pos.y / viewport.h) - 0.5) * (viewport.h*0.5 / passOn.zoom.y)
@@ -1002,6 +1004,45 @@ namespace Amara {
                 )
             );
             inputManager.handleMouseMovement(pos);
+        }
+
+        void handleFingerEvent(const Vector2& pos, SDL_FingerID fingerID, SDL_EventType eventType) {
+            Vector2 realPos = Vector2(
+                pos.x * viewport.w,
+                pos.y * viewport.h
+            );
+            Vector2 virtualPos = Vector2(
+                ((realPos.x / viewport.w) - 0.5) * (viewport.w*0.5 / passOn.zoom.x),
+                ((realPos.y / viewport.h) - 0.5) * (viewport.h*0.5 / passOn.zoom.y)
+            );
+            Pointer* pointer = inputManager.touch.activateAnyFinger(fingerID);
+            if (pointer) {
+                switch (eventType) {
+                    case SDL_EVENT_FINGER_MOTION: {
+                        pointer->handleMovement(realPos, virtualPos, Vector2(
+                            (realPos.x - pointer->realPos.x) / passOn.zoom.x,
+                            (realPos.y - pointer->realPos.y) / passOn.zoom.y
+                        ));
+                        break;
+                    }
+                    case SDL_EVENT_FINGER_DOWN: {
+                        pointer->state.press();
+                        pointer->realPos = realPos;
+                        pointer->x = virtualPos.x;
+                        pointer->y = virtualPos.y;
+                        break;
+                    }
+                    case SDL_EVENT_FINGER_UP: {
+                        pointer->state.release();
+                        pointer->active = false;
+                        break;
+                    }
+                }
+                inputManager.handleFingerEvent(realPos, pointer, eventType);
+            }
+            else {
+                debug_log("Error: Could not create pointer finger.");
+            }
         }
 
         virtual void destroy() override {
@@ -1099,66 +1140,6 @@ namespace Amara {
     };
 
     void GameProps::breakWorld() {
-        if (world) {
-            world->destroy();
-        }
-    }
-    
-    void InputManager::handleMouseMovement(const Vector2& pos) {
-        Amara::NodeInput* input;
-        for (auto it = queue.begin(); it != queue.end(); ++it) {
-            input = *it;
-            if (input->shape.collidesWith(pos)) {
-                input->hover.press();
-
-                if (input->hover.justPressed) {
-                    input->hover_by_mouse = true;
-                    input->handleMessage({ nullptr, "onMouseHover", sol::nil });
-                    input->handleMessage({ nullptr, "onPointerHover", sol::nil });
-                }
-                break;
-            }
-        }
-        gameProps->messages->send("onMouseMove", sol::make_object(gameProps->lua, pos));
-    }
-    void InputManager::handleMouseDown(const Amara::Vector2& point) {
-        Amara::NodeInput* input;
-        for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
-            input = *it;
-            if (input->shape.collidesWith(point)) {
-                input->handleMessage({ nullptr, "onMouseDown", sol::nil });
-                input->handleMessage({ nullptr, "onPointerDown", sol::nil });
-                if (mouse.left.justPressed) {
-                    input->handleMessage({ nullptr, "onLeftMouseDown", sol::nil });
-                }
-                else if (mouse.right.justPressed) {
-                    input->handleMessage({ nullptr, "onRightMouseDown", sol::nil });
-                }
-                else if (mouse.middle.justPressed) {
-                    input->handleMessage({ nullptr, "onMiddleMouseDown", sol::nil });
-                }
-                break;
-            }
-        }
-    }
-    void InputManager::handleMouseUp(const Amara::Vector2& point) {
-        Amara::NodeInput* input;
-        for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
-            input = *it;
-            if (input->shape.collidesWith(point)) {
-                input->handleMessage({ nullptr, "onMouseUp", sol::nil });
-                input->handleMessage({ nullptr, "onPointerUp", sol::nil });
-                if (mouse.left.justReleased) {
-                    input->handleMessage({ nullptr, "onLeftMouseUp", sol::nil });
-                }
-                else if (mouse.right.justReleased) {
-                    input->handleMessage({ nullptr, "onRightMouseUp", sol::nil });
-                }
-                else if (mouse.middle.justReleased) {
-                    input->handleMessage({ nullptr, "onMiddleMouseUp", sol::nil });
-                }
-                break;
-            }
-        }
+        if (world) world->destroy();
     }
 }

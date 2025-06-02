@@ -64,11 +64,13 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
-            Button::bind_lua(lua);
-            Mouse::bind_lua(lua);
-            KeyboardManager::bind_lua(lua);
-            GamepadManager::bind_lua(lua);
-            ControlScheme::bind_lua(lua);
+            Amara::Button::bind_lua(lua);
+            Amara::Pointer::bind_lua(lua);
+            Amara::Mouse::bind_lua(lua);
+            Amara::TouchHandler::bind_lua(lua);
+            Amara::KeyboardManager::bind_lua(lua);
+            Amara::GamepadManager::bind_lua(lua);
+            Amara::ControlScheme::bind_lua(lua);
 
             lua.new_usertype<ControlManager>("ControlManager",
                 "createScheme", &ControlManager::createScheme,

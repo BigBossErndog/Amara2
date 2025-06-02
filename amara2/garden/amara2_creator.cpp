@@ -191,6 +191,8 @@ namespace Amara {
                 debug_log("Error: SDL_Init failed: ", SDL_GetError());
             }
 
+            eventHandler.init();
+
             rec_tick = SDL_GetPerformanceCounter();
             Uint64 freq = SDL_GetPerformanceFrequency();
             double frameTarget = 0;

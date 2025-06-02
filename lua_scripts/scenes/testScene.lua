@@ -229,16 +229,18 @@ return NodeFactory:create("Scene"):configure({
         local uiBox = self:createChild("NineSlice", {
             x = 32, y = 32,
             texture = "orangeTextbox",
-            width = 256, height = 256,
-            -- maxWidth = 256, maxHeight = 256,
+            width = 128, height = 128,
+            maxWidth = 256, maxHeight = 256,
             marginLeft = 8, marginRight = 8,
             marginTop = 8, marginBottom = 8,
             origin = 0
         })
+        uiBox.props.big = true
 
         self.props.fillRect = self:createChild("FillRect", {
-            x = 128, y = 128,
-            width = 128, height = 128,
+            x = 64, y = 64,
+            width = 64, height = 64,
+            maxWidth = 128, maxHeight = 128,
             color = "blue",
             origin = 0
         })
@@ -250,27 +252,29 @@ return NodeFactory:create("Scene"):configure({
         self.props.fillRect.input:listen("onPointerExit", function(self)
             self.alpha = 1
         end)
-        self.props.fillRect.input:listen("onLeftMouseDown", function(self)
-            print("HI!")
-        end)
-
 
         uiBox.input:activate()
-        uiBox.input:listen("onLeftMouseDown", function(self)
-            -- print(Mouse.left.justPressed, Mouse.right.justPressed, Mouse.middle.justPressed)
-            print("HI!")
+        uiBox.input:listen("onLeftMouseDown", function(self, pointer)
+            print(pointer.active, pointer.id)
+            if not self.props.big then
+                uiBox.tween:to({
+                    width = 128,
+                    height = 128,
+                    duration = 2,
+                    ease = Ease.SineInOut
+                })
+                self.props.big = true
+            else
+                self.props.big = false
+                uiBox.tween:to({
+                    width = 64,
+                    height = 64,
+                    duration = 2,
+                    ease = Ease.SineInOut
+                })
+            end
         end)
-        -- uiBox.tween:to({
-        --     width = 256,
-        --     height = 256,
-        --     duration = 5,
-        --     ease = Ease.SineInOut,
-        --     repeats = -1,
-        --     yoyo = true,
-        --     onUpdate = function(self)
-        --         -- print(self.width)
-        --     end
-        -- })
+        
 
         print(self.scene)
 
