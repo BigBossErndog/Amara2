@@ -174,7 +174,10 @@ namespace Amara {
 
         ShapeVariant shape;
 
-        Shape(): shape(Vector2()) {}
+        Shape(): shape(Vector2( -1, -1 )) {}
+        Shape(ShapeVariant _shape) {
+            shape = _shape;
+        }
 
         template <typename T>
         operator T() const {

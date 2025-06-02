@@ -7,19 +7,42 @@ namespace Amara {
 
         Button hover;
         bool rec_hovered = false;
+        bool hover_by_mouse = false;
 
         void queueInput(const Amara::Shape::ShapeVariant& _shape) {
             shape = _shape;
             gameProps->inputManager->queueInput(this);
         }
+        
+        void run(double deltaTime) {
+            hover.update(deltaTime);
+            if (!messageBox.empty()) {
+                MessageQueue* messages = gameProps->messages;
+                
+                for (
+                    auto it = messages->begin();
+                    it != messages->end();
+                ) {
+                    Message& msg = *it;
+                    if (msg.active) {
+                        handleMessage(msg);
+                        if (hover.isDown && String::equal(msg.key, "onMouseMove")) {
+                            Vector2 pos = msg.data.as<Vector2>();
+                            if (!shape.collidesWith(pos)) {
+                                hover.release();
 
-        void update() {
-            if (rec_hovered) {
-                rec_hovered = false;
-            }
-            else {
-                if (hover.isDown) {
-                    hover.release();
+                                if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", sol::nil });
+                                handleMessage({ nullptr, "onPointerExit", sol::nil });
+                                
+                                hover_by_mouse = false;
+                            }
+                        }
+                    }
+                    if (msg.sender == this) {
+                        it = messages->queue.erase(it);
+                        continue;
+                    }
+                    ++it;
                 }
             }
         }

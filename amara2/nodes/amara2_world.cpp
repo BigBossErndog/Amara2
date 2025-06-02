@@ -86,6 +86,8 @@ namespace Amara {
             assets.gameProps = gameProps;
             animations.gameProps = gameProps;
             shaders.gameProps = gameProps;
+            
+            inputManager.init(gameProps, this);
 
             base_dir_path = gameProps->system->getBasePath();
             
@@ -864,6 +866,8 @@ namespace Amara {
 
             Amara::Node::run(deltaTime);
 
+            inputManager.update(deltaTime);
+
             if (actuated && !created_entry_scenes) {
                 for (std::string key: entryScenes) {
                     createChild(key);
@@ -1102,14 +1106,16 @@ namespace Amara {
             input = *it;
             if (input->shape.collidesWith(pos)) {
                 input->hover.press();
-                input->rec_hovered = input->hover.isDown;
+
                 if (input->hover.justPressed) {
+                    input->hover_by_mouse = true;
                     input->handleMessage({ nullptr, "onMouseHover", sol::nil });
                     input->handleMessage({ nullptr, "onPointerHover", sol::nil });
                 }
                 break;
             }
         }
+        gameProps->messages->send("onMouseMove", sol::make_object(gameProps->lua, pos));
     }
     void InputManager::handleMouseDown(const Amara::Vector2& point) {
         Amara::NodeInput* input;

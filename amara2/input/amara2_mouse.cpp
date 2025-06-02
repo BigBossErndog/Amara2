@@ -14,9 +14,15 @@ namespace Amara {
             x = _pos.x;
             y = _pos.y;
         }
+
+        void update(double deltaTime) {
+            left.update(deltaTime);
+            right.update(deltaTime);
+            middle.update(deltaTime);
+        }
         
         static void bind_lua(sol::state& lua) {
-            lua.new_usertype<Mouse>("Mouse",
+            lua.new_usertype<Mouse>("MouseHandler",
                 sol::base_classes, sol::bases<Vector2>(),
                 "movement", sol::readonly(&Mouse::movement),
                 "left", &Mouse::left,

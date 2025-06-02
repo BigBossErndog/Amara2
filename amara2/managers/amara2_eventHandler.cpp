@@ -15,8 +15,8 @@ namespace Amara {
         ) {
             logicBlocking = false;
 
-            keyboard.manage(game.deltaTime);
-            gamepads.manage(game.deltaTime);
+            keyboard.update(game.deltaTime);
+            gamepads.update(game.deltaTime);
             
             while (SDL_PollEvent(&e) != 0) {
                 switch (e.type) {

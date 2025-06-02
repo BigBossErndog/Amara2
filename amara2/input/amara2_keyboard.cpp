@@ -27,13 +27,13 @@ namespace Amara {
             keyReleased = true;
         }
 
-        void manage(double deltaTime) {
+        void update(double deltaTime) {
             keyPressed = false;
             keyReleased = false;
             
             for (auto it = keys.begin(); it != keys.end(); it++) {
                 Button& key = it->second;
-                key.manage(deltaTime);
+                key.update(deltaTime);
             }
         }
 

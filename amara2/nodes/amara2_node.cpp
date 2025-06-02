@@ -379,7 +379,7 @@ namespace Amara {
             if (destroyed) return;
             
             if (messages.active) messages.run();
-            if (input.active) input.run();
+            if (input.active) input.run(deltaTime);
 
             if (destroyed) return;
 

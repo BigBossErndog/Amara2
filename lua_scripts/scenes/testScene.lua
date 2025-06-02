@@ -243,17 +243,23 @@ return NodeFactory:create("Scene"):configure({
         })
         
         self.props.fillRect.input:activate()
-        self.props.fillRect.input:listen("onMouseDown", function(self)
-            print("FillRect clicked")
-            -- print(self.scene)
-            self.scene:createChild("FillTransition", {
-                next = "scenes/testScene",
-                fadeIn = 5,
-                fadeOut = 5,
-                -- interim = 2,
-                color = "black"
-            })
+        self.props.fillRect.input:listen("onPointerHover", function(self)
+            self.alpha = 0.5
         end)
+        self.props.fillRect.input:listen("onPointerExit", function(self)
+            self.alpha = 1
+        end)
+        self.props.fillRect.input:listen("onPointerDown", function(self)
+            print(Mouse.left.justPressed, Mouse.right.justPressed, Mouse.middle.justPressed)
+            if Mouse.left.justPressed then
+                self.color = "red"
+            elseif Mouse.right.justPressed then
+                self.color = "blue"
+            elseif Mouse.middle.justPressed then
+                self.color = "green"
+            end
+        end)
+
         print(self.scene)
 
         self.props.checked = false

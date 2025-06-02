@@ -31,7 +31,7 @@ namespace Amara {
             }
         }
 
-        void manage(double deltaTime) {
+        void update(double deltaTime) {
             justPressed = false;
             justReleased = false;
             if (isDown) {

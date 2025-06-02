@@ -266,7 +266,7 @@ namespace Amara {
             return 0;
         }
 
-        void manage(double deltaTime) {
+        void update(double deltaTime) {
             if (gamepad == nullptr) return;
 
             leftStick.x = (double)SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX) / (double)SDL_JOYSTICK_AXIS_MAX;
@@ -307,7 +307,7 @@ namespace Amara {
 
             for (auto it = buttons.begin(); it != buttons.end(); it++) {
                 Button& button = it->second;
-                button.manage(deltaTime);
+                button.update(deltaTime);
             }
         }
 
@@ -468,10 +468,10 @@ namespace Amara {
             return t;
         }
         
-        void manage(double deltaTime) {
+        void update(double deltaTime) {
             for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
                 if (it->active) {
-                    it->manage(deltaTime);
+                    it->update(deltaTime);
                 }
             }
         }
