@@ -614,6 +614,7 @@ namespace Amara {
             }
 
             messages.destroy();
+            input.destroy();
 
             if (parent) parent->removeChild(this);
 

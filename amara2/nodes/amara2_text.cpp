@@ -31,8 +31,8 @@ namespace Amara {
         
         Vector2 origin = { 0, 0 };
 
-        int textwidth = 0;
-        int textheight = 0;
+        int textWidth = 0;
+        int textHeight = 0;
 
         int wrapWidth = -1;
         Amara::WrapModeEnum wrapMode = Amara::WrapModeEnum::ByCharacter;
@@ -168,8 +168,8 @@ namespace Amara {
             if (font) {
                 font->packGlyphsFromString(converted_text);
                 layout = font->generateLayout(converted_text, wrapWidth, wrapMode, alignment, lineSpacing);
-                textwidth = layout.width;
-                textheight = layout.height;
+                textWidth = layout.width;
+                textHeight = layout.height;
             }
         }
 
@@ -272,18 +272,18 @@ namespace Amara {
             float diag_distance;
 
             Rectangle dim = {
-                anchoredPos.x + (textwidth*origin.x)*scale.x*passOn.scale.x, 
-                anchoredPos.y - anchoredPos.z + (textheight*origin.y)*scale.y*passOn.scale.y,
-                textwidth*scale.x*passOn.scale.x,
-                textheight*scale.y*passOn.scale.y
+                anchoredPos.x + (textWidth*origin.x)*scale.x*passOn.scale.x, 
+                anchoredPos.y - anchoredPos.z + (textHeight*origin.y)*scale.y*passOn.scale.y,
+                textWidth*scale.x*passOn.scale.x,
+                textHeight*scale.y*passOn.scale.y
             };
             destRect.x = vcenter.x + dim.x*totalZoom.x;
             destRect.y = vcenter.y + dim.y*totalZoom.y;
             destRect.w = dim.w * totalZoom.x;
             destRect.h = dim.h * totalZoom.y;
             SDL_FPoint dorigin = { 
-                (textwidth*origin.x)*scale.x*passOn.scale.x*totalZoom.x,
-                (textheight*origin.y)*scale.y*passOn.scale.y*totalZoom.y
+                (textWidth*origin.x)*scale.x*passOn.scale.x*totalZoom.x,
+                (textHeight*origin.y)*scale.y*passOn.scale.y*totalZoom.y
             };
 
             if (input.active) {
@@ -431,17 +431,17 @@ namespace Amara {
 
         Rectangle getRectangle() {
             return Rectangle(
-                pos.x - (textwidth*scale.x)*origin.x,
-                pos.y - (textheight*scale.y)*origin.y,
-                textwidth*scale.x,
-                textheight*scale.y
+                pos.x - (textWidth*scale.x)*origin.x,
+                pos.y - (textHeight*scale.y)*origin.y,
+                textWidth*scale.x,
+                textHeight*scale.y
             );
         }
         Rectangle stretchTo(const Rectangle& rect) {
             pos.x = rect.x + rect.w*origin.x;
             pos.y = rect.y + rect.h*origin.y;
-            scale.x = rect.w / static_cast<float>(textwidth);
-            scale.y = rect.h / static_cast<float>(textheight);
+            scale.x = rect.w / static_cast<float>(textWidth);
+            scale.y = rect.h / static_cast<float>(textHeight);
             return rect;
         }
         
@@ -450,8 +450,8 @@ namespace Amara {
 
             rotation = 0;
 
-            float horFactor = rect.w / static_cast<float>(textwidth);
-            float verFactor = rect.h / static_cast<float>(textheight);
+            float horFactor = rect.w / static_cast<float>(textWidth);
+            float verFactor = rect.h / static_cast<float>(textHeight);
             
             if (horFactor < verFactor) {
                 scale.x = horFactor;
@@ -462,8 +462,8 @@ namespace Amara {
                 scale.y = verFactor;
             }
 
-            float scaledWidth  = textwidth  * scale.x;
-            float scaledHeight = textheight * scale.y;
+            float scaledWidth  = textWidth  * scale.x;
+            float scaledHeight = textHeight * scale.y;
 
             pos.x = rect.x + (rect.w - scaledWidth)/2 + scaledWidth*origin.x;
             pos.y = rect.y + (rect.h - scaledHeight)/2 + scaledHeight*origin.y;
@@ -492,10 +492,10 @@ namespace Amara {
         sol::object skipProgress();
         
         float setWidth(float _w) {
-            scale.x = _w / static_cast<float>(textwidth);
+            scale.x = _w / static_cast<float>(textWidth);
         }
         float setHeight(float _h) {
-            scale.y = _h / static_cast<float>(textheight);
+            scale.y = _h / static_cast<float>(textHeight);
         }
 
         sol::object setManipulator(sol::function manipulator) {
@@ -537,10 +537,10 @@ namespace Amara {
                 "tint", sol::property([](Amara::Text& t) -> Amara::Color { return t.tint; }, [](Amara::Text& t, sol::object v) { t.tint = v; }),
                 "color", sol::property([](Amara::Text& t) -> Amara::Color { return t.tint; }, [](Amara::Text& t, sol::object v) { t.tint = v; }),
                 "blendMode", &Text::blendMode,
-                "w", sol::property([](Amara::Text& t) -> float { return t.textwidth; }, &Text::setWidth),
-                "h", sol::property([](Amara::Text& t) -> float { return t.textheight; }, &Text::setHeight),
-                "width", sol::property([](Amara::Text& t) -> float { return t.textwidth; }, &Text::setWidth),
-                "height", sol::property([](Amara::Text& t) -> float { return t.textheight; }, &Text::setHeight),
+                "w", sol::property([](Amara::Text& t) -> float { return t.textWidth; }, &Text::setWidth),
+                "h", sol::property([](Amara::Text& t) -> float { return t.textHeight; }, &Text::setHeight),
+                "width", sol::property([](Amara::Text& t) -> float { return t.textWidth; }, &Text::setWidth),
+                "height", sol::property([](Amara::Text& t) -> float { return t.textHeight; }, &Text::setHeight),
                 "rect", sol::property(&Text::getRectangle, &Text::stretchTo),
                 "stretchTo", &Text::stretchTo,
                 "fitWithin", &Text::fitWithin,

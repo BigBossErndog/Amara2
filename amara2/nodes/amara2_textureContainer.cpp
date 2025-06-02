@@ -478,16 +478,25 @@ namespace Amara {
             return getRectangle().getCenter();
         }
 
+        void setWidth(double _w) {
+            width = _w;
+            update_size();
+        }
+        void setHeight(double _h) {
+            height = _h;
+            update_size();
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<TextureContainer>("TextureContainer",
                 sol::base_classes, sol::bases<Node>(),
                 "tint", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.tint; }, [](Amara::TextureContainer& t, sol::object v) { t.tint = v; }),
                 "fill", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.fill; }, [](Amara::TextureContainer& t, sol::object v) { t.fill = v; }),
                 "blendMode", &TextureContainer::blendMode,
-                "w", &TextureContainer::width,
-                "h", &TextureContainer::height,
-                "width", &TextureContainer::width,
-                "height", &TextureContainer::height,
+                "w", sol::property([](Amara::TextureContainer& t) -> int { return t.width; }, [](Amara::TextureContainer& t, double v) { t.setWidth(v); }),
+                "h", sol::property([](Amara::TextureContainer& t) -> int { return t.height; }, [](Amara::TextureContainer& t, double v) { t.setHeight(v); }),
+                "width", sol::property([](Amara::TextureContainer& t) -> int { return t.width; }, [](Amara::TextureContainer& t, double v) { t.setWidth(v); }),
+                "height", sol::property([](Amara::TextureContainer& t) -> int { return t.height; }, [](Amara::TextureContainer& t, double v) { t.setHeight(v); }),
                 "canvas", sol::property(&TextureContainer::getCanvasSize, &TextureContainer::setCanvasSize),
                 "rect", sol::property(&TextureContainer::getRectangle, &TextureContainer::stretchTo),
                 "size", sol::property([](Amara::TextureContainer& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.width, t.height); }, &TextureContainer::resize),

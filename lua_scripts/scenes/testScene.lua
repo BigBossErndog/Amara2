@@ -226,17 +226,18 @@ return NodeFactory:create("Scene"):configure({
         -- freaker.blendMode = BlendMode.Mask
         -- textCont.blendMode = BlendMode.Mask
 
-        self:createChild("NineSlice", {
+        local uiBox = self:createChild("NineSlice", {
             x = 32, y = 32,
             texture = "orangeTextbox",
             width = 256, height = 256,
+            -- maxWidth = 256, maxHeight = 256,
             marginLeft = 8, marginRight = 8,
             marginTop = 8, marginBottom = 8,
             origin = 0
         })
 
         self.props.fillRect = self:createChild("FillRect", {
-            x = 64, y = 64,
+            x = 128, y = 128,
             width = 128, height = 128,
             color = "blue",
             origin = 0
@@ -249,16 +250,27 @@ return NodeFactory:create("Scene"):configure({
         self.props.fillRect.input:listen("onPointerExit", function(self)
             self.alpha = 1
         end)
-        self.props.fillRect.input:listen("onMouseLeftDown", function(self)
-            -- print(Mouse.left.justPressed, Mouse.right.justPressed, Mouse.middle.justPressed)
-            if Mouse.left.justPressed then
-                self.color = "red"
-            elseif Mouse.right.justPressed then
-                self.color = "blue"
-            elseif Mouse.middle.justPressed then
-                self.color = "green"
-            end
+        self.props.fillRect.input:listen("onLeftMouseDown", function(self)
+            print("HI!")
         end)
+
+
+        uiBox.input:activate()
+        uiBox.input:listen("onLeftMouseDown", function(self)
+            -- print(Mouse.left.justPressed, Mouse.right.justPressed, Mouse.middle.justPressed)
+            print("HI!")
+        end)
+        -- uiBox.tween:to({
+        --     width = 256,
+        --     height = 256,
+        --     duration = 5,
+        --     ease = Ease.SineInOut,
+        --     repeats = -1,
+        --     yoyo = true,
+        --     onUpdate = function(self)
+        --         -- print(self.width)
+        --     end
+        -- })
 
         print(self.scene)
 

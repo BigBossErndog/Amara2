@@ -1129,13 +1129,13 @@ namespace Amara {
                 input->handleMessage({ nullptr, "onMouseDown", sol::nil });
                 input->handleMessage({ nullptr, "onPointerDown", sol::nil });
                 if (mouse.left.justPressed) {
-                    input->handleMessage({ nullptr, "onMouseLeftDown", sol::nil });
+                    input->handleMessage({ nullptr, "onLeftMouseDown", sol::nil });
                 }
                 else if (mouse.right.justPressed) {
-                    input->handleMessage({ nullptr, "onMouseRightDown", sol::nil });
+                    input->handleMessage({ nullptr, "onRightMouseDown", sol::nil });
                 }
                 else if (mouse.middle.justPressed) {
-                    input->handleMessage({ nullptr, "onMouseMiddleDown", sol::nil });
+                    input->handleMessage({ nullptr, "onMiddleMouseDown", sol::nil });
                 }
                 break;
             }
@@ -1149,13 +1149,13 @@ namespace Amara {
                 input->handleMessage({ nullptr, "onMouseUp", sol::nil });
                 input->handleMessage({ nullptr, "onPointerUp", sol::nil });
                 if (mouse.left.justReleased) {
-                    input->handleMessage({ nullptr, "onMouseLeftUp", sol::nil });
+                    input->handleMessage({ nullptr, "onLeftMouseUp", sol::nil });
                 }
                 else if (mouse.right.justReleased) {
-                    input->handleMessage({ nullptr, "onMouseRightUp", sol::nil });
+                    input->handleMessage({ nullptr, "onRightMouseUp", sol::nil });
                 }
                 else if (mouse.middle.justReleased) {
-                    input->handleMessage({ nullptr, "onMouseMiddleUp", sol::nil });
+                    input->handleMessage({ nullptr, "onMiddleMouseUp", sol::nil });
                 }
                 break;
             }

@@ -3,8 +3,6 @@ namespace Amara {
     public:
         NineSlice(): Amara::TextureContainer() {
             set_base_node_id("NineSlice");
-            // TextureContainer's constructor initializes its width/height (canvas size)
-            // drawWidth/drawHeight default to 128 below.
         }
 
         Amara::ImageAsset* image = nullptr;
@@ -287,7 +285,7 @@ namespace Amara {
                 if (clearOnDraw) SDL_SetRenderDrawColor(gameProps->renderer, fill.r, fill.g, fill.b, fill.a);
                 else SDL_SetRenderDrawColor(gameProps->renderer, 0,0,0,0);
 
-                SDL_Rect setv = { 0, 0, static_cast<int>(TextureContainer::width), static_cast<int>(TextureContainer::height) };
+                SDL_Rect setv = { 0, 0, TextureContainer::width, TextureContainer::height };
                 SDL_SetRenderViewport(gameProps->renderer, &setv);
 
                 if (clearOnDraw) SDL_RenderClear(gameProps->renderer);
@@ -349,13 +347,178 @@ namespace Amara {
             };
         }
 
+        virtual void drawObjects(const Rectangle& v) override {
+            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
+                gameProps->passOn.reset();
+            }
+            passOn = gameProps->passOn;
+            
+            if (drawWidth > TextureContainer::width) drawWidth = TextureContainer::width;
+            if (drawHeight > TextureContainer::height) drawHeight = TextureContainer::height;
+            if (drawWidth < 0) drawWidth = 0;
+            if (drawHeight < 0) drawHeight = 0;
+
+            if (rec_width != width || rec_height != height) {
+                createCanvas(width, height);
+            }
+
+            if (update_canvas || !canvasLocked) {
+                drawCanvas(v);
+                update_canvas = false;
+            }
+
+            #ifdef AMARA_OPENGL
+            ShaderProgram* rec_shader = gameProps->currentShaderProgram;
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                if (shaderProgram && shaderProgram != gameProps->currentShaderProgram) {
+                    gameProps->currentShaderProgram = shaderProgram;
+                }
+            }
+            #endif
+
+            if (cropLeft < 0) cropLeft = 0;
+            if (cropRight < 0) cropRight = 0;
+            if (cropTop < 0) cropTop = 0;
+            if (cropBottom < 0) cropBottom = 0;
+
+            Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
+            Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
+
+            Vector3 anchoredPos = Vector3(
+                rotateAroundAnchor(
+                    passOn.anchor, 
+                    Vector2( 
+                        (passOn.anchor.x + pos.x*passOn.scale.x), 
+                        (passOn.anchor.y + pos.y*passOn.scale.y)
+                    ),
+                    passOn.rotation
+                ),
+                passOn.anchor.z + pos.z
+            );
+
+            SDL_FRect srcRect;
+            SDL_FRect destRect;
+
+            Rectangle dim = {
+                anchoredPos.x + (cropLeft - drawWidth*origin.x)*scale.x*passOn.scale.x, 
+                anchoredPos.y - anchoredPos.z + (cropTop - drawHeight*origin.y)*scale.y*passOn.scale.y,
+                (drawWidth - cropLeft - cropRight)*scale.x*passOn.scale.x,
+                (drawWidth - cropTop - cropBottom)*scale.y*passOn.scale.y
+            };
+            
+            destRect.x = vcenter.x + dim.x*totalZoom.x;
+            destRect.y = vcenter.y + dim.y*totalZoom.y;
+            destRect.w = dim.w * totalZoom.x;
+            destRect.h = dim.h * totalZoom.y;
+
+            SDL_FPoint dorigin = {
+                (drawWidth*origin.x - cropLeft)*scale.x*passOn.scale.x*totalZoom.x,
+                (drawHeight*origin.y - cropTop)*scale.y*passOn.scale.y*totalZoom.y
+            };
+            
+            srcRect = getSrcRect();
+
+            float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
+            if (!Shape::collision(
+                Rectangle(destRect), Rectangle(
+                    v.x - diag_distance, v.y - diag_distance,
+                    v.w + diag_distance*2, v.h + diag_distance*2
+                )
+            )) return;
+
+            if (input.active) {
+                Quad inputQuad = rotateQuad(
+                    Quad(destRect),
+                    Vector2(
+                        destRect.x + dorigin.x,
+                        destRect.y + dorigin.y
+                    ),
+                    passOn.rotation + rotation
+                );
+                input.queueInput(inputQuad);
+            }
+            
+            if (canvasTexture && gameProps->renderer) {
+                SDL_SetTextureScaleMode(canvasTexture, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureColorMod(canvasTexture, tint.r, tint.g, tint.b);
+                SDL_SetTextureAlphaMod(canvasTexture, alpha * passOn.alpha * 255);
+                Apply_SDL_BlendMode(gameProps, canvasTexture, blendMode);
+
+                SDL_RenderTextureRotated(
+                    gameProps->renderer, 
+                    canvasTexture,
+                    &srcRect,
+                    &destRect,
+                    getDegrees(passOn.rotation + rotation),
+                    &dorigin,
+                    SDL_FLIP_NONE
+                );
+            }
+            #ifdef AMARA_OPENGL
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                Quad srcQuad = Quad(
+                    { srcRect.x/width, srcRect.y/height },
+                    { (srcRect.x+srcRect.w)/width, srcRect.y/height },
+                    { (srcRect.x+srcRect.w)/width, (srcRect.y+srcRect.h)/height },
+                    { srcRect.x/width, (srcRect.y+srcRect.h)/height }
+                );
+                Quad destQuad = glTranslateQuad(v, rotateQuad(
+                    Quad(destRect),
+                    Vector2(
+                        destRect.x + dorigin.x,
+                        destRect.y + dorigin.y
+                    ),
+                    passOn.rotation + rotation
+                ), passOn.insideTextureContainer);
+
+                vertices = {
+                    destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
+                    destQuad.p2.x, destQuad.p2.y, srcQuad.p2.x, srcQuad.p2.y,
+                    destQuad.p3.x, destQuad.p3.y, srcQuad.p3.x, srcQuad.p3.y,
+                    destQuad.p4.x, destQuad.p4.y, srcQuad.p4.x, srcQuad.p4.y
+                };
+
+                gameProps->renderBatch->pushQuad(
+                    gameProps->currentShaderProgram,
+                    glCanvasID,
+                    vertices, passOn.alpha * alpha, tint,
+                    v, passOn.insideTextureContainer,
+                    blendMode
+                );
+            }
+                
+            if (rec_shader && shaderProgram && shaderProgram != rec_shader) {
+                gameProps->currentShaderProgram = rec_shader;
+            }
+            #endif
+        }
+
+        void setDrawWidth(double _w) {
+            drawWidth = _w;
+            if (drawWidth < 0) drawWidth = 0;
+            if (drawWidth > TextureContainer::width) {
+                drawWidth = TextureContainer::width;
+            }
+            update_canvas = true;
+        }
+        void setDrawHeight(double _h) {
+            drawHeight = _h;
+            if (drawHeight < 0) drawHeight = 0;
+            if (drawHeight > TextureContainer::height) {
+                drawHeight = TextureContainer::height;
+            }
+            update_canvas = true;
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::NineSlice>("NineSlice",
                 sol::base_classes, sol::bases<Amara::TextureContainer, Amara::Node>(),
-                "maxWidth", &Amara::NineSlice::width,
-                "maxHeight", &Amara::NineSlice::height,
-                "width", &Amara::NineSlice::drawWidth,
-                "height", &Amara::NineSlice::drawHeight,
+                "maxWidth", sol::property([](Amara::NineSlice& n) -> int { return n.width; }, [](Amara::NineSlice& n, double v) { n.setWidth(v); }),
+                "maxHeight", sol::property([](Amara::NineSlice& n) -> int { return n.height; }, [](Amara::NineSlice& n, double v) { n.setHeight(v); }),
+                "w", sol::property([](Amara::NineSlice& n) -> int { return n.drawWidth; }, [](Amara::NineSlice& n, double v) { n.setDrawWidth(v); }),
+                "h", sol::property([](Amara::NineSlice& n) -> int { return n.drawHeight; }, [](Amara::NineSlice& n, double v) { n.setDrawHeight(v); }),
+                "width", sol::property([](Amara::NineSlice& n) -> int { return n.drawWidth; }, [](Amara::NineSlice& n, double v) { n.setDrawWidth(v); }),
+                "height", sol::property([](Amara::NineSlice& n) -> int { return n.drawHeight; }, [](Amara::NineSlice& n, double v) { n.setDrawHeight(v); }),
                 "marginLeft", &Amara::NineSlice::marginLeft,
                 "marginRight", &Amara::NineSlice::marginRight,
                 "marginTop", &Amara::NineSlice::marginTop,
