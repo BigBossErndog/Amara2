@@ -28,7 +28,7 @@ namespace Amara {
         Amara::Color tint = Amara::Color::White;
 
         Amara::AlignmentEnum alignment = Amara::AlignmentEnum::Left;
-
+        
         Vector2 origin = { 0, 0 };
 
         int textwidth = 0;
@@ -269,10 +269,34 @@ namespace Amara {
             );
 
             SDL_FRect srcRect, destRect;
-            Rectangle dim;
             float diag_distance;
 
-            SDL_FPoint dorigin = { 0, 0 };
+            Rectangle dim = {
+                anchoredPos.x + (textwidth*origin.x)*scale.x*passOn.scale.x, 
+                anchoredPos.y - anchoredPos.z + (textheight*origin.y)*scale.y*passOn.scale.y,
+                textwidth*scale.x*passOn.scale.x,
+                textheight*scale.y*passOn.scale.y
+            };
+            destRect.x = vcenter.x + dim.x*totalZoom.x;
+            destRect.y = vcenter.y + dim.y*totalZoom.y;
+            destRect.w = dim.w * totalZoom.x;
+            destRect.h = dim.h * totalZoom.y;
+            SDL_FPoint dorigin = { 
+                (textwidth*origin.x)*scale.x*passOn.scale.x*totalZoom.x,
+                (textheight*origin.y)*scale.y*passOn.scale.y*totalZoom.y
+            };
+
+            if (input.active) {
+                Quad inputQuad = rotateQuad(
+                    Quad(destRect),
+                    Vector2(
+                        destRect.x + dorigin.x,
+                        destRect.y + dorigin.y
+                    ),
+                    passOn.rotation + rotation
+                );
+                input.queueInput(inputQuad);
+            }
 
             int count = 0;
 

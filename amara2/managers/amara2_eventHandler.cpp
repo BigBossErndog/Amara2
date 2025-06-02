@@ -41,14 +41,16 @@ namespace Amara {
                     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.button.windowID) {
-                                if (e.button.button == SDL_BUTTON_LEFT) {
-                                    w->inputManager.mouse.left.press();
-                                }
-                                else if (e.button.button == SDL_BUTTON_RIGHT) {
-                                    w->inputManager.mouse.right.press();
-                                }
-                                else if (e.button.button == SDL_BUTTON_MIDDLE) {
-                                    w->inputManager.mouse.middle.press();
+                                switch (e.button.button) {
+                                    case SDL_BUTTON_LEFT:
+                                        w->inputManager.mouse.left.press();
+                                        break;
+                                    case SDL_BUTTON_RIGHT:
+                                        w->inputManager.mouse.right.press();
+                                        break;
+                                    case SDL_BUTTON_MIDDLE:
+                                        w->inputManager.mouse.middle.press();
+                                        break;
                                 }
                                 w->inputManager.handleMouseDown(Vector2(e.button.x, e.button.y));
                             }
@@ -58,14 +60,16 @@ namespace Amara {
                     case SDL_EVENT_MOUSE_BUTTON_UP: {
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.button.windowID) {
-                                if (e.button.button == SDL_BUTTON_LEFT) {
-                                    w->inputManager.mouse.left.release();
-                                }
-                                else if (e.button.button == SDL_BUTTON_RIGHT) {
-                                    w->inputManager.mouse.right.release();
-                                }
-                                else if (e.button.button == SDL_BUTTON_MIDDLE) {
-                                    w->inputManager.mouse.middle.release();
+                                switch (e.button.button) {
+                                    case SDL_BUTTON_LEFT:
+                                        w->inputManager.mouse.left.release();
+                                        break;
+                                    case SDL_BUTTON_RIGHT:
+                                        w->inputManager.mouse.right.release();
+                                        break;
+                                    case SDL_BUTTON_MIDDLE:
+                                        w->inputManager.mouse.middle.release();
+                                        break;
                                 }
                                 w->inputManager.handleMouseUp(Vector2(e.button.x, e.button.y));
                             }

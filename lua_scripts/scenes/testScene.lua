@@ -249,8 +249,8 @@ return NodeFactory:create("Scene"):configure({
         self.props.fillRect.input:listen("onPointerExit", function(self)
             self.alpha = 1
         end)
-        self.props.fillRect.input:listen("onPointerDown", function(self)
-            print(Mouse.left.justPressed, Mouse.right.justPressed, Mouse.middle.justPressed)
+        self.props.fillRect.input:listen("onMouseLeftDown", function(self)
+            -- print(Mouse.left.justPressed, Mouse.right.justPressed, Mouse.middle.justPressed)
             if Mouse.left.justPressed then
                 self.color = "red"
             elseif Mouse.right.justPressed then

@@ -916,6 +916,10 @@ namespace Amara {
                 gameProps->currentShaderProgram = nullptr;
             }
             #endif
+
+            if (input.active) {
+                input.queueInput(Quad(v));
+            }
             
             Amara::Node::draw(viewport);
 
@@ -1124,6 +1128,15 @@ namespace Amara {
             if (input->shape.collidesWith(point)) {
                 input->handleMessage({ nullptr, "onMouseDown", sol::nil });
                 input->handleMessage({ nullptr, "onPointerDown", sol::nil });
+                if (mouse.left.justPressed) {
+                    input->handleMessage({ nullptr, "onMouseLeftDown", sol::nil });
+                }
+                else if (mouse.right.justPressed) {
+                    input->handleMessage({ nullptr, "onMouseRightDown", sol::nil });
+                }
+                else if (mouse.middle.justPressed) {
+                    input->handleMessage({ nullptr, "onMouseMiddleDown", sol::nil });
+                }
                 break;
             }
         }
@@ -1135,6 +1148,15 @@ namespace Amara {
             if (input->shape.collidesWith(point)) {
                 input->handleMessage({ nullptr, "onMouseUp", sol::nil });
                 input->handleMessage({ nullptr, "onPointerUp", sol::nil });
+                if (mouse.left.justReleased) {
+                    input->handleMessage({ nullptr, "onMouseLeftUp", sol::nil });
+                }
+                else if (mouse.right.justReleased) {
+                    input->handleMessage({ nullptr, "onMouseRightUp", sol::nil });
+                }
+                else if (mouse.middle.justReleased) {
+                    input->handleMessage({ nullptr, "onMouseMiddleUp", sol::nil });
+                }
                 break;
             }
         }

@@ -321,6 +321,18 @@ namespace Amara {
                     v.w + diag_distance*2, v.h + diag_distance*2
                 )
             )) return;
+
+            if (input.active) {
+                Quad inputQuad = rotateQuad(
+                    Quad(destRect),
+                    Vector2(
+                        destRect.x + dorigin.x,
+                        destRect.y + dorigin.y
+                    ),
+                    passOn.rotation + rotation
+                );
+                input.queueInput(inputQuad);
+            }
             
             if (canvasTexture && gameProps->renderer) {
                 SDL_SetTextureScaleMode(canvasTexture, SDL_SCALEMODE_NEAREST);
