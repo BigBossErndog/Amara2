@@ -40,10 +40,10 @@ namespace Amara {
                     continue;
                 }
                 if (isUniform<bool>(uniform.second) || isUniform<int>(uniform.second)) {
-                    glUniform1i(programID, getUniform<int>(uniform.second));
+                    glUniform1i(location, getUniform<int>(uniform.second));
                 }
                 else if (isUniform<float>(uniform.second)) {
-                    glUniform1f(programID, getUniform<float>(uniform.second));
+                    glUniform1f(location, getUniform<float>(uniform.second));
                 }
                 else if (isUniform<Vector2>(uniform.second)) {
                     Vector2 vec = getUniform<Vector2>(uniform.second);
@@ -56,6 +56,9 @@ namespace Amara {
                 else if (isUniform<Vector4>(uniform.second)) {
                     Vector4 vec = getUniform<Vector4>(uniform.second);
                     glUniform4f(location, vec.x, vec.y, vec.z, vec.w);
+                }
+                else if (isUniform<Matrix4x4>(uniform.second)) {
+                    Matrix4x4 mat = getUniform<Matrix4x4>(uniform.second);
                 }
             }
         }
@@ -95,6 +98,18 @@ namespace Amara {
             if (value.is_boolean()) {
                 uniforms[name] = (bool)value;
                 return;
+            }
+            if (value.is_string()) {
+                if (Color::isColor(value)) {
+                    Color color = value;
+                    uniforms[name] = Vector4(
+                        color.r / 255.0f,
+                        color.g / 255.0f,
+                        color.b / 255.0f,
+                        color.a / 255.0f
+                    );
+                    return;
+                }
             }
             if (value.is_object()) {
                 if (json_has(value, "r", "g", "b", "a")) {

@@ -114,6 +114,7 @@
     #include "utility/amara2_enums.cpp"
     #include "utility/amara2_string.cpp"
     #include "utility/amara2_utility.cpp"
+    #include "utility/amara2_color.cpp"
     #include "utility/amara2_encryption.cpp"
     #include "utility/amara2_easing.cpp"
 

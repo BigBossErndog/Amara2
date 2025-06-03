@@ -203,15 +203,16 @@ namespace Amara {
             }
             
             auto config_items = config.items();
+            std::vector<std::string> shader_types;
             for (auto it : config_items) {
                 bool temp = false;
                 ShaderTypeEnum type = shaderTypeFromString(it.key());
-                std::string shader_key = it.value();
 
                 if (type == ShaderTypeEnum::None) {
                     continue;
                 }
-                config.erase(it.key());
+                std::string shader_key = it.value();
+                shader_types.push_back(it.key());
 
                 unsigned int shaderID = 0;
                 if (hasShader(shader_key)) {
@@ -235,6 +236,9 @@ namespace Amara {
                     return nullptr;
                 }
                 if (temp) glDeleteShader(shaderID);
+            }
+            for (std::string key: shader_types) {
+                config.erase(key);
             }
             
             glLinkProgram(shaderProgramID);

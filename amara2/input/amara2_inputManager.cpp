@@ -6,7 +6,7 @@ namespace Amara {
     public:
         Amara::GameProps* gameProps = nullptr;
         Amara::World* world = nullptr;
-
+        
         std::vector<Amara::NodeInput*> queue;
 
         Mouse mouse;
