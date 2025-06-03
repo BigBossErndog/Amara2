@@ -136,7 +136,21 @@ namespace Amara {
         
             // Number and letter keys
             for (char c = '0'; c <= '9'; ++c) {
-                keycode_enum[std::string(1, c)] = SDL_Keycode(SDLK_0 + (c - '0'));
+                std::string keyName;
+                switch (c) {
+                    case '0': keyName = "Zero"; break;
+                    case '1': keyName = "One"; break;
+                    case '2': keyName = "Two"; break;
+                    case '3': keyName = "Three"; break;
+                    case '4': keyName = "Four"; break;
+                    case '5': keyName = "Five"; break;
+                    case '6': keyName = "Six"; break;
+                    case '7': keyName = "Seven"; break;
+                    case '8': keyName = "Eight"; break;
+                    case '9': keyName = "Nine"; break;
+                    default: continue;
+                }
+                keycode_enum[keyName] = SDL_Keycode(SDLK_0 + (c - '0'));
             }
             for (char c = 'A'; c <= 'Z'; ++c) {
                 keycode_enum[std::string(1, c)] = SDL_Keycode(SDLK_A + (c - 'A'));

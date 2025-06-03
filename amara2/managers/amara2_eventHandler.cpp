@@ -7,6 +7,9 @@ namespace Amara {
         KeyboardManager keyboard;
         GamepadManager gamepads;
 
+        bool force_release_mouse = false;
+        Uint32 force_release_windowID = 0;
+
         EventHandler() = default;
 
         void init() {
@@ -22,19 +25,88 @@ namespace Amara {
 
             keyboard.update(game.deltaTime);
             gamepads.update(game.deltaTime);
+
+            if (force_release_mouse) {
+                for (auto w: worlds) {
+                    if (w->window != nullptr && w->windowID == force_release_windowID) {
+                        Vector2 mousePos;
+                        float mx, my;
+                        int wx, wy;
+                        SDL_MouseButtonFlags mouseFlags = SDL_GetGlobalMouseState(&mx, &my);
+                        SDL_GetWindowPosition(w->window, &wx, &wy);
+                        mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
+                        mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
+
+                        bool any_released = false;
+                        if ((mouseFlags & SDL_BUTTON_LMASK) == 0) {
+                            w->inputManager.mouse.left.release();
+                            if (w->inputManager.mouse.left.justReleased) any_released = true;
+                        }
+                        if ((mouseFlags & SDL_BUTTON_RMASK) == 0) {
+                            w->inputManager.mouse.right.release();
+                            if (w->inputManager.mouse.right.justReleased) any_released = true;
+                        }
+                        if ((mouseFlags & SDL_BUTTON_MMASK) == 0) {
+                            w->inputManager.mouse.middle.release();
+                            if (w->inputManager.mouse.middle.justReleased) any_released = true;
+                        }
+                        if (any_released) {
+                            w->inputManager.handleMouseUp(mousePos);
+                            force_release_mouse = false;
+                        }
+                    }
+                }
+            }
             
             while (SDL_PollEvent(&e) != 0) {
                 switch (e.type) {
                     case SDL_EVENT_QUIT:
                         game.hasQuit = true;
                         break;
-                    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                    case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.window.windowID) {
                                 w->destroy();
                             }
                         }
                         break;
+                    }
+                    case SDL_EVENT_WINDOW_FOCUS_GAINED: {
+                        for (auto w: worlds) {
+                            if (w->window != nullptr && w->windowID == e.window.windowID) {
+                                if (w->update_mouse) {
+                                    Vector2 mousePos;
+                                    float mx, my;
+                                    int wx, wy;
+                                    SDL_MouseButtonFlags mouseFlags = SDL_GetGlobalMouseState(&mx, &my);
+                                    SDL_GetWindowPosition(w->window, &wx, &wy);
+                                    mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
+                                    mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
+
+                                    bool any_pressed = false;
+                                    if (mouseFlags & SDL_BUTTON_LMASK) {
+                                        w->inputManager.mouse.left.press();
+                                        any_pressed = true;
+                                    }
+                                    if (mouseFlags & SDL_BUTTON_RMASK) {
+                                        w->inputManager.mouse.right.press();
+                                        any_pressed = true;
+                                    }
+                                    if (mouseFlags & SDL_BUTTON_MMASK) {
+                                        w->inputManager.mouse.middle.press();
+                                        any_pressed = true;
+                                    }
+                                    if (any_pressed) {
+                                        w->inputManager.handleMouseDown(mousePos);
+                                        force_release_mouse = true;
+                                        force_release_windowID = w->windowID;
+                                    }
+                                }
+                                w->update_mouse = false;
+                            }
+                        }
+                        break;
+                    }
                     case SDL_EVENT_MOUSE_MOTION: {
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.motion.windowID) {
@@ -134,8 +206,22 @@ namespace Amara {
         }
     };
 
+    bool InputManager::checkMouseHover(const Vector2& pos) {
+        Amara::NodeInput* input;
+        for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
+            input = *it;
+            if (input->shape.collidesWith(pos)) {
+                any_hovered = true;
+                return true;
+            }
+        }
+        any_hovered = false;
+        return false;
+    }
+
     void InputManager::handleMouseMovement(const Vector2& pos) {
         Amara::NodeInput* input;
+        any_hovered = false;
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             input = *it;
             if (input->shape.collidesWith(pos)) {
@@ -147,6 +233,7 @@ namespace Amara {
                     input->handleMessage({ nullptr, "onMouseHover", mouse.get_lua_object(gameProps) });
                     input->handleMessage({ nullptr, "onPointerHover", mouse.get_lua_object(gameProps) });
                 }
+                any_hovered = true;
                 break;
             }
         }

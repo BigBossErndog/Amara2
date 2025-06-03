@@ -10,7 +10,7 @@ namespace Amara {
         bool hover_by_mouse = false;
 
         Amara::Pointer* lastPointer = nullptr;
-
+        
         void queueInput(const Amara::Shape::ShapeVariant& _shape) {
             shape = _shape;
             gameProps->inputManager->queueInput(this);

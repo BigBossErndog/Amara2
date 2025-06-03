@@ -12,6 +12,8 @@ namespace Amara {
         Mouse mouse;
         TouchHandler touch;
 
+        bool any_hovered = false;
+
         void init(Amara::GameProps* _gameProps, Amara::World* _world) {
             gameProps = _gameProps;
             world = _world;
@@ -32,6 +34,8 @@ namespace Amara {
             mouse.update(deltaTime);
             touch.update(deltaTime);
         }
+
+        bool checkMouseHover(const Vector2& pos);
 
         void handleMouseMovement(const Amara::Vector2& pos);
         void handleMouseDown(const Amara::Vector2& point);

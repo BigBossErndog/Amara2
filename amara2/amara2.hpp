@@ -203,13 +203,12 @@
     #include "nodes/amara2_fillRect.cpp"
 
     #include "nodes/amara2_textureContainer.cpp"
-
+    #include "nodes/amara2_shaderContainer.cpp"
+    
     #include "nodes/tilemap/amara2_tilemapLayer.cpp"
     #include "nodes/tilemap/amara2_tilemap.cpp"
 
     #include "nodes/amara2_nineSlice.cpp"
-
-    #include "nodes/amara2_shaderContainer.cpp"
 
     #include "nodes/amara2_pathFinder.cpp"
 

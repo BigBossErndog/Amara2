@@ -73,6 +73,8 @@ namespace Amara {
         #ifdef AMARA_OPENGL
         ShaderProgram* defaultShaderProgram = nullptr;
         #endif
+
+        bool update_mouse = false;
         
         World(): Node() {
             set_base_node_id("World");
@@ -333,7 +335,7 @@ namespace Amara {
                 setAlwaysOnTop(config["alwaysOnTop"]);
             }
             if (json_has(config, "clickThrough")) {
-                clickThrough = config["clickThrough"];
+                setClickThrough(config["clickThrough"]);
             }
             if (json_has(config, "backgroundColor")) {
                 backgroundColor = config["backgroundColor"];
@@ -383,6 +385,12 @@ namespace Amara {
         void fitToDisplay() {
             resizeWindow(display.w, display.h);
             centerWindow();
+        }
+
+        void fitToDisplay(int _displayID) {
+            displayID = _displayID;
+            display = gameProps->game->getDisplayBounds(displayID);
+            fitToDisplay();
         }
         
         void setScreenMode(ScreenModeEnum _sm) {
@@ -474,78 +482,97 @@ namespace Amara {
 
             clickThroughState = enabled;
 
-            if (enabled) {
-                SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
-                if (!window_props) {
-                    debug_log("Warning: Failed to get window properties: ", SDL_GetError());
-                    return;
+            SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
+            if (!window_props) {
+                debug_log("Warning: Failed to get window properties: ", SDL_GetError());
+                return;
+            }
+
+            #if defined(_WIN32)
+                HWND hwnd = (HWND)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+                if (hwnd) {
+                    // Ensure SetWindowLongPtr is available (might need different versions for 32/64 bit)
+                    #ifdef _WIN64
+                        LONG_PTR currentStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+                    #else
+                        LONG_PTR currentStyle = GetWindowLong(hwnd, GWL_EXSTYLE); // Use GetWindowLong for 32-bit
+                    #endif
+
+                    LONG_PTR newStyle;
+                    if (enabled) {
+                        newStyle = currentStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT;
+                    } else {
+                        newStyle = currentStyle & ~(WS_EX_LAYERED | WS_EX_TRANSPARENT);
+                    }
+
+                    if (newStyle != currentStyle) {
+                        #ifdef _WIN64
+                            SetWindowLongPtr(hwnd, GWL_EXSTYLE, newStyle);
+                        #else
+                            SetWindowLong(hwnd, GWL_EXSTYLE, newStyle); // Use SetWindowLong for 32-bit
+                        #endif
+                    }
+                } else {
+                    debug_log("Warning: Failed to get HWND for click-through setup.");
+                }
+            #elif defined(__linux__)
+                Display* display = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+                Window xwindow = (Window)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+
+                if (display && xwindow != 0) {
+                    int shape_event_base, shape_error_base;
+                    if (XShapeQueryExtension(display, &shape_event_base, &shape_error_base)) {
+                        if (enabled) {
+                            Region region = XCreateRegion();
+                            if (region) {
+                                XShapeCombineRegion(display, xwindow, ShapeInput, 0, 0, region, ShapeSet);
+                                XDestroyRegion(region);
+                            } else {
+                                debug_log("Warning: Failed to create X region for click-through.");
+                            }
+                        } else {
+                            XShapeCombineRegion(display, xwindow, ShapeInput, 0, 0, None, ShapeSet);
+                        }
+                        XFlush(display);
+                    } else {
+                        debug_log("Warning: X Shape Extension not available. Cannot set click-through.");
+                    }
+                } else {
+                    debug_log("Warning: Failed to get X11 Display or Window for click-through setup.");
+                }
+                
+            #elif defined(__APPLE__) // Cocoa Implementation
+                NSWindow* nsWindow = (NSWindow*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+                if (nsWindow) {
+                    [nsWindow setIgnoresMouseEvents:enabled];
+                } else {
+                    debug_log("Warning: Failed to get NSWindow for click-through setup.");
                 }
 
-                #if defined(_WIN32)
-                    HWND hwnd = (HWND)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-                    if (hwnd) {
-                        // Ensure SetWindowLongPtr is available (might need different versions for 32/64 bit)
-                        #ifdef _WIN64
-                            LONG_PTR currentStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-                        #else
-                            LONG_PTR currentStyle = GetWindowLong(hwnd, GWL_EXSTYLE); // Use GetWindowLong for 32-bit
-                        #endif
+            #else
+                debug_log("Warning: Click-through not implemented for this platform.");
+                return;
+            #endif
+        }
 
-                        LONG_PTR newStyle;
-                        if (enabled) {
-                            newStyle = currentStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT;
-                        } else {
-                            newStyle = currentStyle & ~(WS_EX_LAYERED | WS_EX_TRANSPARENT);
-                        }
+        void checkClickThrough() {
+            if (clickThrough) {
+                Vector2 mousePos;
+                float mx, my;
+                int wx, wy;
+                SDL_GetGlobalMouseState(&mx, &my);
+                SDL_GetWindowPosition(window, &wx, &wy);
+                mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
+                mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
 
-                        if (newStyle != currentStyle) {
-                            #ifdef _WIN64
-                                SetWindowLongPtr(hwnd, GWL_EXSTYLE, newStyle);
-                            #else
-                                SetWindowLong(hwnd, GWL_EXSTYLE, newStyle); // Use SetWindowLong for 32-bit
-                            #endif
-                        }
-                    } else {
-                        debug_log("Warning: Failed to get HWND for click-through setup.");
-                    }
-                #elif defined(__linux__)
-                    Display* display = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
-                    Window xwindow = (Window)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
-    
-                    if (display && xwindow != 0) {
-                        int shape_event_base, shape_error_base;
-                        if (XShapeQueryExtension(display, &shape_event_base, &shape_error_base)) {
-                            if (enabled) {
-                                Region region = XCreateRegion();
-                                if (region) {
-                                    XShapeCombineRegion(display, xwindow, ShapeInput, 0, 0, region, ShapeSet);
-                                    XDestroyRegion(region);
-                                } else {
-                                    debug_log("Warning: Failed to create X region for click-through.");
-                                }
-                            } else {
-                                XShapeCombineRegion(display, xwindow, ShapeInput, 0, 0, None, ShapeSet);
-                            }
-                            XFlush(display);
-                        } else {
-                            debug_log("Warning: X Shape Extension not available. Cannot set click-through.");
-                        }
-                    } else {
-                        debug_log("Warning: Failed to get X11 Display or Window for click-through setup.");
-                    }
-                    
-                #elif defined(__APPLE__) // Cocoa Implementation
-                    NSWindow* nsWindow = (NSWindow*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
-                    if (nsWindow) {
-                        [nsWindow setIgnoresMouseEvents:enabled];
-                    } else {
-                        debug_log("Warning: Failed to get NSWindow for click-through setup.");
-                    }
-    
-                #else
-                    debug_log("Warning: Click-through not implemented for this platform.");
-                    return;
-                #endif
+                if (inputManager.checkMouseHover(mousePos)) {
+                    setClickThroughState(false);
+                    SDL_RaiseWindow(window);
+                    update_mouse = true;
+                }
+                else {
+                    setClickThroughState(true);
+                }
             }
         }
 
@@ -855,6 +882,7 @@ namespace Amara {
         }
 
         virtual void run(double deltaTime) override {
+            checkClickThrough();
             inputManager.clearQueue();
 
             if (!base_dir_path.empty()) {
@@ -1078,6 +1106,10 @@ namespace Amara {
         }
 
         void removeFromDemiurge();
+
+        Rectangle getRect() {
+            return Rectangle( pos.x, pos.y, windowW, windowH );
+        }
         
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<World>("World",
@@ -1086,6 +1118,16 @@ namespace Amara {
                 "h", &World::windowH,
                 "width", &World::windowW,
                 "height", &World::windowH,
+                "rect", sol::property(
+                    &Amara::World::getRect,
+                    [](Amara::World& world, sol::object val) {
+                        Amara::Rectangle rect = val;
+                        world.pos.x = rect.x;
+                        world.pos.y = rect.y;
+                        world.windowW = rect.w;
+                        world.windowH = rect.h;
+                    }
+                ),
                 "vw", &World::virtualWidth,
                 "vh", &World::virtualHeight,
                 "assets", &World::assets,
@@ -1096,7 +1138,10 @@ namespace Amara {
                 "graphics", sol::readonly(&World::graphics),
                 "centerWindow", &World::centerWindow,
                 "resizeWindow", &World::resizeWindow,
-                "fitToDisplay", &World::fitToDisplay,
+                "fitToDisplay", sol::overload(
+                    sol::resolve<void()>( &World::fitToDisplay ),
+                    sol::resolve<void(int)>( &World::fitToDisplay )
+                ),
                 "screenMode", sol::property([](const Amara::World& world) { return world.screenMode; }, &World::setScreenMode),
                 "transparent", sol::property([](const Amara::World& world) { return world.transparent; }, [](Amara::World& world, sol::object value) {
                     debug_log("Error: Transparency can only be set in World configuration table.");

@@ -221,6 +221,16 @@ namespace Amara {
                 luaDestroy = string_to_lua_object(gameProps->lua, config["onDestroy"].get<std::string>());
             }
 
+            if (json_has(config, "input")) {
+                nlohmann::json val = config["input"];
+                if (val.is_boolean() && val) {
+                    input.activate();
+                }
+                else {
+                    input.deactivate();
+                }
+            }
+
             if (json_has(config, "props")) {
                 nlohmann::json data = config["props"];
                 if (data.is_object()) {
