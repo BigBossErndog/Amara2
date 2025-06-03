@@ -47,6 +47,15 @@ namespace Amara {
             };
             return s;
         }
+        static SDL_FRect makeSDLFRect(const Rectangle& r) {
+            SDL_FRect s = {
+                r.x,
+                r.y,
+                r.w,
+                r.h
+            };
+            return s;
+        }
 
         nlohmann::json toJSON() {
             return nlohmann::json::object({

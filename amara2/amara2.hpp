@@ -209,6 +209,8 @@
 
     #include "nodes/amara2_nineSlice.cpp"
 
+    #include "nodes/amara2_shaderContainer.cpp"
+
     #include "nodes/amara2_pathFinder.cpp"
 
     #include "audio/amara2_audio.cpp"

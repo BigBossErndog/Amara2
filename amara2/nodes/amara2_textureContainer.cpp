@@ -19,8 +19,10 @@ namespace Amara {
              0.5f,  0.5f,  1.0f, 1.0f, // Top-right
             -0.5f,  0.5f,  0.0f, 1.0f  // Top-left
         };
-        #endif
 
+        ShaderProgram* currentShaderProgram = nullptr;
+        #endif
+        
         SDL_Texture* canvasTexture = nullptr;
         
         int width =  128;
@@ -95,13 +97,13 @@ namespace Amara {
             if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
 
             if (json_has(config, "clearOnDraw")) clearOnDraw = config["clearOnDraw"];
-
+            
             update_size();
             
             return Amara::Node::configure(config);
         }
 
-        void deletePipeline() {
+        virtual void deletePipeline() {
             if (canvasTexture) {
                 SDL_DestroyTexture(canvasTexture);
                 canvasTexture = nullptr;
@@ -120,11 +122,17 @@ namespace Amara {
             #endif
         }
 
-        void createCanvas(int _w, int _h) {
+        virtual void createCanvas(int _w, int _h) {
             width = rec_width = _w;
             height = rec_height = _h;
 
             deletePipeline();
+
+            canvasTexture = nullptr;
+            #ifdef AMARA_OPENGL
+            glCanvasID = 0;
+            glBufferID = 0;
+            #endif
 
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = SDL_CreateTexture(
@@ -202,7 +210,7 @@ namespace Amara {
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 gameProps->renderBatch->flush();
                 
-                gameProps->currentShaderProgram = gameProps->defaultShaderProgram;
+                gameProps->currentShaderProgram = currentShaderProgram;
                 
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
@@ -257,6 +265,8 @@ namespace Amara {
             if (rec_width != width || rec_height != height) {
                 createCanvas(width, height);
             }
+
+            currentShaderProgram = gameProps->defaultShaderProgram;
 
             if (update_canvas || !canvasLocked) {
                 drawCanvas(v);
@@ -375,7 +385,7 @@ namespace Amara {
                 };
 
                 gameProps->renderBatch->pushQuad(
-                    gameProps->currentShaderProgram,
+                    currentShaderProgram,
                     glCanvasID,
                     vertices, passOn.alpha * alpha, tint,
                     v, passOn.insideTextureContainer,
