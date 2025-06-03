@@ -391,6 +391,11 @@ namespace Amara {
             if (messages.active) messages.run();
             if (input.active) input.run(deltaTime);
 
+            if (input.draggable && input.held && input.lastPointer != nullptr) {
+                pos.x += input.lastPointer->movement.x;
+                pos.y += input.lastPointer->movement.y;
+            }
+
             if (destroyed) return;
 
             update(deltaTime);

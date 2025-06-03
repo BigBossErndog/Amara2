@@ -11,6 +11,10 @@ namespace Amara {
 
         Amara::Pointer* lastPointer = nullptr;
         
+        bool held = false;
+        double timeHeld = false;
+        bool draggable = false;
+
         void queueInput(const Amara::Shape::ShapeVariant& _shape) {
             shape = _shape;
             gameProps->inputManager->queueInput(this);
@@ -47,6 +51,12 @@ namespace Amara {
                     hover_by_mouse = false;
                 }
             }
+
+            if (held) {
+                if (lastPointer == nullptr || !lastPointer->active || !lastPointer->state.isDown) {
+                    held = false;
+                }
+            }
         }
 
         static void bind_lua(sol::state& lua) {
@@ -54,7 +64,10 @@ namespace Amara {
                 sol::base_classes, sol::bases<Amara::MessageBox>(),
                 "mouse", sol::property([](Amara::NodeInput& n) { return n.gameProps->inputManager->mouse; }),
                 "hovered", sol::property([](Amara::NodeInput& n) { return n.hover.isDown; }),
-                "lastPointer", sol::readonly(&NodeInput::lastPointer)
+                "lastPointer", sol::readonly(&NodeInput::lastPointer),
+                "held", sol::readonly(&NodeInput::held),
+                "timeHeld", sol::readonly(&NodeInput::timeHeld),
+                "draggable", &NodeInput::draggable
             );
         }
     };

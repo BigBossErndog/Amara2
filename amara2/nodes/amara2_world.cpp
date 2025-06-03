@@ -1020,15 +1020,19 @@ namespace Amara {
         }
 
         void handleMouseMovement(const Vector2& pos, const Vector2& movement) {
+            Vector2 virtualPos = Vector2(
+                (pos.x - viewport.w * 0.5f) / passOn.window_zoom.x,
+                (pos.y - viewport.h * 0.5f) / passOn.window_zoom.y
+            );
             inputManager.mouse.handleMovement(
-                pos,
+                pos, virtualPos,
                 Vector2(
-                    ((pos.x / viewport.w) - 0.5) * (viewport.w*0.5 / passOn.zoom.x),
-                    ((pos.y / viewport.h) - 0.5) * (viewport.h*0.5 / passOn.zoom.y)
+                    movement.x / viewport.w,
+                    movement.y / viewport.h
                 ),
                 Vector2(
-                    movement.x / passOn.zoom.x,
-                    movement.y / passOn.zoom.y
+                    (virtualPos.x - inputManager.mouse.x),
+                    (virtualPos.y - inputManager.mouse.y)
                 )
             );
             inputManager.handleMouseMovement(pos);
@@ -1040,17 +1044,24 @@ namespace Amara {
                 pos.y * viewport.h
             );
             Vector2 virtualPos = Vector2(
-                ((realPos.x / viewport.w) - 0.5) * (viewport.w*0.5 / passOn.zoom.x),
-                ((realPos.y / viewport.h) - 0.5) * (viewport.h*0.5 / passOn.zoom.y)
+                (realPos.x - viewport.w * 0.5f) / passOn.window_zoom.x,
+                (realPos.y - viewport.h * 0.5f) / passOn.window_zoom.y
             );
             Pointer* pointer = inputManager.touch.activateAnyFinger(fingerID);
             if (pointer) {
                 switch (eventType) {
                     case SDL_EVENT_FINGER_MOTION: {
-                        pointer->handleMovement(realPos, virtualPos, Vector2(
-                            (realPos.x - pointer->realPos.x) / passOn.zoom.x,
-                            (realPos.y - pointer->realPos.y) / passOn.zoom.y
-                        ));
+                        pointer->handleMovement(
+                            realPos, virtualPos,
+                            Vector2(
+                                (realPos.x - pointer->realPos.x),
+                                (realPos.y - pointer->realPos.y)
+                            ),
+                            Vector2(
+                                (virtualPos.x - pointer->x),
+                                (virtualPos.y - pointer->y)
+                            )
+                        );
                         break;
                     }
                     case SDL_EVENT_FINGER_DOWN: {
@@ -1062,7 +1073,7 @@ namespace Amara {
                     }
                     case SDL_EVENT_FINGER_UP: {
                         pointer->state.release();
-                        pointer->active = false;
+                        inputManager.touch.deactivateFinger(fingerID);
                         break;
                     }
                 }
@@ -1128,6 +1139,7 @@ namespace Amara {
                         world.windowH = rect.h;
                     }
                 ),
+                "viewport", sol::readonly(&World::viewport),
                 "vw", &World::virtualWidth,
                 "vh", &World::virtualHeight,
                 "assets", &World::assets,

@@ -12,7 +12,7 @@ namespace Amara {
             right.update(deltaTime);
             middle.update(deltaTime);
 
-            state.update(deltaTime);
+            Amara::Pointer::update(deltaTime);
         }
         
         static void bind_lua(sol::state& lua) {

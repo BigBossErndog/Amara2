@@ -121,6 +121,11 @@ namespace Amara {
                 target_data["fill"] = color.toJSON();
                 lua_data["backgroundColor"] = sol::nil;
             }
+            if (lua_data["rect"].valid()) {
+                Amara::Rectangle rect = lua_data["rect"];
+                target_data["rect"] = rect.toJSON();
+                lua_data["rect"] = sol::nil;
+            }
 
             nlohmann::json data = lua_to_json(lua_data);
             
@@ -208,6 +213,10 @@ namespace Amara {
                     if (it.value().is_number()) {
                         lua_actor_table.set(it.key(), (double)target_data[it.key()]);
                     }
+                    else if (String::equal(it.key(), "rect")) {
+                        Amara::Rectangle target_rect = target_data[it.key()];
+                        lua_actor_table.set(it.key(), target_rect);
+                    }
                     else if (String::equal(it.key(), "color") || String::equal(it.key(), "tint") || String::equal(it.key(), "fill") || String::equal(it.key(), "backgroundColor")) {
                         Amara::Color target_color = target_data[it.key()];
                         lua_actor_table.set(it.key(), target_color);
@@ -228,6 +237,16 @@ namespace Amara {
                     for (auto it = val1.begin(); it != val1.end(); ++it) {
                         tweenValue(target["props"], it.key(), val1[it.key()], val2[it.key()], progress);
                     }
+                }
+                else if (String::equal(key, "rect")) {
+                    Amara::Rectangle start_rect = val1;
+                    Amara::Rectangle target_rect = val2;
+                    target.set(key, Rectangle(
+                        ease(start_rect.x, target_rect.x, progress, easing),
+                        ease(start_rect.y, target_rect.y, progress, easing),
+                        ease(start_rect.w, target_rect.w, progress, easing),
+                        ease(start_rect.h, target_rect.h, progress, easing)
+                    ));
                 }
                 else if (String::equal(key, "color") || String::equal(key, "tint") || String::equal(key, "fill") || String::equal(key, "backgroundColor")) {
                     Amara::Color start_color = val1;

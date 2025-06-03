@@ -162,7 +162,8 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Hotkey>("Hotkey",
-                "onPress", &Hotkey::onPress
+                "onPress", &Hotkey::onPress,
+                "pressed", sol::readonly(&Hotkey::pressed)
             );
         }
     };

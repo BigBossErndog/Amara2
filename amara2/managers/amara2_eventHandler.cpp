@@ -13,8 +13,8 @@ namespace Amara {
         EventHandler() = default;
 
         void init() {
-            SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, 0);
-            SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, 0);
+            SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
+            SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
         }
 
         void handleEvents(
@@ -109,6 +109,9 @@ namespace Amara {
                     }
                     case SDL_EVENT_MOUSE_MOTION: {
                         for (auto w: worlds) {
+                            if (e.motion.which == SDL_TOUCH_MOUSEID) {
+                                continue;
+                            }
                             if (w->window != nullptr && w->windowID == e.motion.windowID) {
                                 w->handleMouseMovement(Vector2(e.motion.x, e.motion.y), Vector2(e.motion.xrel, e.motion.yrel));
                             }
@@ -117,6 +120,9 @@ namespace Amara {
                     }
                     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
                         for (auto w: worlds) {
+                            if (e.button.which == SDL_TOUCH_MOUSEID) {
+                                continue;
+                            }
                             if (w->window != nullptr && w->windowID == e.button.windowID) {
                                 switch (e.button.button) {
                                     case SDL_BUTTON_LEFT:
@@ -136,6 +142,9 @@ namespace Amara {
                     }
                     case SDL_EVENT_MOUSE_BUTTON_UP: {
                         for (auto w: worlds) {
+                            if (e.button.which == SDL_TOUCH_MOUSEID) {
+                                continue;
+                            }
                             if (w->window != nullptr && w->windowID == e.button.windowID) {
                                 switch (e.button.button) {
                                     case SDL_BUTTON_LEFT:
@@ -240,13 +249,17 @@ namespace Amara {
         gameProps->messages->send("onMouseMove", sol::make_object(gameProps->lua, pos));
     }
     void InputManager::handleMouseDown(const Amara::Vector2& point) {
+        mouse.state.press();
+
         Amara::NodeInput* input;
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             input = *it;
             if (input->shape.collidesWith(point)) {
+                input->lastPointer = &mouse;
                 input->handleMessage({ nullptr, "onMouseDown", mouse.get_lua_object(gameProps) });
                 input->handleMessage({ nullptr, "onPointerDown", mouse.get_lua_object(gameProps) });
                 if (mouse.left.justPressed) {
+                    input->held = true;
                     input->handleMessage({ nullptr, "onLeftMouseDown", mouse.get_lua_object(gameProps) });
                 }
                 else if (mouse.right.justPressed) {
@@ -260,6 +273,8 @@ namespace Amara {
         }
     }
     void InputManager::handleMouseUp(const Amara::Vector2& point) {
+        mouse.state.release();
+
         Amara::NodeInput* input;
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             input = *it;
@@ -289,6 +304,7 @@ namespace Amara {
                 switch (eventType) {
                     case SDL_EVENT_FINGER_DOWN: {
                         input->hover.press();
+                        input->held = true;
                         input->handleMessage({ nullptr, "onPointerDown", finger->get_lua_object(gameProps) });
                         input->handleMessage({ nullptr, "onTouchDown", finger->get_lua_object(gameProps) });
                         if (input->hover.justPressed) {
@@ -305,6 +321,7 @@ namespace Amara {
                     }
                     case SDL_EVENT_FINGER_MOTION: {
                         input->hover.press();
+                        input->held = true;
                         if (input->hover.justPressed) {
                             input->handleMessage({ nullptr, "onPointerHover", finger->get_lua_object(gameProps) });
                             input->handleMessage({ nullptr, "onTouchHover", finger->get_lua_object(gameProps) });

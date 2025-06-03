@@ -510,6 +510,59 @@ namespace Amara {
             update_canvas = true;
         }
 
+        Rectangle getRectangle() {
+            return Rectangle(
+                pos.x - (drawWidth*scale.x)*origin.x,
+                pos.y - (drawHeight*scale.y)*origin.y,
+                drawWidth*scale.x,
+                drawHeight*scale.y
+            );
+        }
+
+        Rectangle resize(const Rectangle& rect) {
+            rotation = 0;
+            pos.x = rect.x + rect.w*origin.x;
+            pos.y = rect.y + rect.h*origin.y;
+            drawWidth = rect.w;
+            drawHeight = rect.h;
+            return getRectangle();
+        }
+
+        Rectangle stretchTo(const Rectangle& rect) {
+            rotation = 0;
+            pos.x = rect.x + rect.w*origin.x;
+            pos.y = rect.y + rect.h*origin.y;
+            scale.x = rect.w / static_cast<float>(drawWidth);
+            scale.y = rect.h / static_cast<float>(drawHeight);
+            return rect;
+        }
+        
+        sol::object fitWithin(const Rectangle& rect) {
+            if (rect.w == 0 || rect.h == 0) return get_lua_object();
+
+            rotation = 0;
+
+            float horFactor = rect.w / static_cast<float>(drawWidth);
+            float verFactor = rect.h / static_cast<float>(drawHeight);
+            
+            if (horFactor < verFactor) {
+                scale.x = horFactor;
+                scale.y = horFactor;
+            }
+            else {
+                scale.x = verFactor;
+                scale.y = verFactor;
+            }
+
+            float scaledWidth  = drawWidth  * scale.x;
+            float scaledHeight = drawHeight * scale.y;
+
+            pos.x = rect.x + (rect.w - scaledWidth)/2 + scaledWidth*origin.x;
+            pos.y = rect.y + (rect.h - scaledHeight)/2 + scaledHeight*origin.y;
+            
+            return get_lua_object();
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::NineSlice>("NineSlice",
                 sol::base_classes, sol::bases<Amara::TextureContainer, Amara::Node>(),
@@ -523,7 +576,12 @@ namespace Amara {
                 "marginRight", &Amara::NineSlice::marginRight,
                 "marginTop", &Amara::NineSlice::marginTop,
                 "marginBottom", &Amara::NineSlice::marginBottom,
-                "texture", sol::property([](Amara::NineSlice& t) -> std::string { return t.image ? t.image->key : ""; }, [](Amara::NineSlice& t, std::string v) { t.setTexture(v); })
+                "texture", sol::property([](Amara::NineSlice& t) -> std::string { return t.image ? t.image->key : ""; }, [](Amara::NineSlice& t, std::string v) { t.setTexture(v); }),
+                "rect", sol::property([](Amara::NineSlice& t) -> Rectangle { return t.getRectangle(); }, [](Amara::NineSlice& t, Rectangle v) { t.resize(v); }),
+                "size", sol::property([](Amara::NineSlice& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.drawWidth, t.drawHeight); }, &NineSlice::resize),
+                "resize", &Amara::NineSlice::resize,
+                "stretchTo", &Amara::NineSlice::stretchTo,
+                "fitWithin", &Amara::NineSlice::fitWithin
             );
         }
     };
