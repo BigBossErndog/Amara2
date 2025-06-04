@@ -21,6 +21,8 @@ namespace Amara {
             /*
              * MyPlugin::bind_lua(lua);
             */
+
+            Hotkey::bind_lua(lua);
         }
 
         static void registerNodes() {

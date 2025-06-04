@@ -88,7 +88,7 @@ namespace Amara {
                     }
 
                     size_t remaining_samples = endPoint - position;
-                    size_t samples_to_write = std::min(remaining_samples, (size_t)chunk_samples);
+                    size_t samples_to_write = fmin(remaining_samples, (size_t)chunk_samples);
 
                     AudioData& audioData = gameProps->audioData;
 
@@ -285,7 +285,7 @@ namespace Amara {
                 position = (_position * audio->channels) % audio->samples.size();
             }
             else {
-                position = std::min((_position * audio->channels), (int)audio->samples.size());
+                position = fmin((_position * audio->channels), (int)audio->samples.size());
             }
         }
 

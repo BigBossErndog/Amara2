@@ -1162,6 +1162,8 @@ namespace Amara {
                 "viewport", sol::readonly(&World::viewport),
                 "vw", &World::virtualWidth,
                 "vh", &World::virtualHeight,
+                "virtualWidth", &World::virtualWidth,
+                "virtualHeight", &World::virtualHeight,
                 "assets", &World::assets,
                 "shaders", &World::shaders,
                 "base_dir_path", sol::readonly(&World::base_dir_path),

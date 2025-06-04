@@ -19,31 +19,35 @@ return Creator:createWorld({
 
         -- world.clickThrough = false
 
-        rect = world:createChild("FillRect", {
-            width = 128,
-            height = 128,
-            color = "red",
-            input = true
-        })
-        rect.input.draggable = true
-        -- rect.input:listen("onPointerHover", function(self)
-            
-        -- end)
-        rect.props.count = 0
-        rect.input:listen("onPointerDown", function(self, pointer)
-            if pointer.state.timeHeld < 0.2 then
-                rect.props.count = rect.props.count + 1
-                print(rect.props.count)
+        for i = 1, 10 do
+            rect = world:createChild("FillRect", {
+                x = math.random() * world.vw - world.vw / 2,
+                y = math.random() * world.vh - world.vh / 2,
+                width = 64,
+                height = 64,
+                color = "red",
+                input = true
+            })
+            rect.input.draggable = true
+            -- rect.input:listen("onPointerHover", function(self)
+                
+            -- end)
+            rect.props.count = 0
+            rect.input:listen("onPointerUp", function(self, pointer)
+                if pointer.state.timeHeld < 0.2 then
+                    rect.props.count = rect.props.count + 1
+                    print(rect.props.count)
 
-                self.tween:from({
-                    rotation = 0
-                }):to({
-                    rotation = math.pi,
-                    duration = 1,
-                    ease = Ease.SineInOut
-                })
-            end
-        end)
+                    self.tween:from({
+                        rotation = 0
+                    }):to({
+                        rotation = math.pi,
+                        duration = 1,
+                        ease = Ease.SineInOut
+                    })
+                end
+            end)
+        end
     end,
     onUpdate = function(world)
         if Keyboard:justPressed(Key.One) then

@@ -4,23 +4,25 @@ BUILD_NAME = Amara2
 BUILD_PATH = build
 EXE_OPTIONS = -context ../
 
+MINGW_PATH = mingw64
+
 BUILD_EXECUTABLE_WIN = $(BUILD_PATH)/$(BUILD_NAME).exe
 BUILD_EXECUTABLE_LINUX = $(BUILD_PATH)/$(BUILD_NAME).game
 
-COMPILER = clang++
+COMPILER = ./$(MINGW_PATH)/bin/clang++
 
 SDL_INCLUDE_PATHS_WIN64 = -Iresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/include
 SDL_LIBRARY_PATHS_WIN64 = -Lresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/lib
 SDL_PATHS_WIN64 = $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) 
-SDL_LINKER_FLAGS_WIN64 = -lSDL3
+SDL_LINKER_FLAGS_WIN64 = resources/libs/SDL3-3.2.8/x86_64-w64-mingw32/lib/libSDL3.dll.a
 
 SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags`
 
 RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
-LINKER_FLAGS_WIN64 = -Wl,-Bstatic -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
+LINKER_FLAGS_WIN64 = -L$(MINGW_PATH)/lib -Wl,-Bstatic -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
 
-OTHER_LIB_LINKS = -Lresources/libs/tinyxml2/lib/win -ltinyxml2
+OTHER_LIB_LINKS = -Lresources/libs/tinyxml2/lib/win resources/libs/tinyxml2/lib/win/libtinyxml2.a
 OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2/include -Iresources/libs/minimp3
 
 OTHER_LIB = $(OTHER_LIB_LINKS) $(OTHER_LIB_PATHS)
@@ -32,7 +34,7 @@ AMARA_PATH = -I ./amara2 -I ./plugins
 EXTRA_OPTIONS = -DAMARA_TESTING
 
 COMPILER_FLAGS = -w -Wall -m64 -std=c++17
-# COMPILER_FLAGS = -w -Wl,-subsystem,windows
+# COMPILER_FLAGS = -w -Wl,-subsystem,windows -std=c++17
 
 playwin:
 	$(BUILD_EXECUTABLE_WIN) $(EXE_OPTIONS)

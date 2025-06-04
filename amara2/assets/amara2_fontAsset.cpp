@@ -49,7 +49,7 @@ namespace Amara {
             }
 
             width += other.width;
-            height = std::max(height, other.height);
+            height = fmax(height, other.height);
         }
 
         int size() {
@@ -284,7 +284,7 @@ namespace Amara {
         
             // Move packing cursor
             currentX += width + 2; // Add padding
-            rowHeight = std::max(rowHeight, height);
+            rowHeight = fmax(rowHeight, height);
         
             stbtt_FreeBitmap(monobitmap, nullptr);
             delete[] rgbaBitmap;
@@ -396,7 +396,7 @@ namespace Amara {
                     line->text += codepoint;
                     line->glyphs.push_back(glyph);
 
-                    layout.width = std::max(layout.width, line->width);
+                    layout.width = fmax(layout.width, line->width);
                 }
                 layout.height += line->height;
             }
@@ -483,7 +483,7 @@ namespace Amara {
                     word.width += glyph.xadvance;
                     word.glyphs.push_back(glyph);
 
-                    layout.width = std::max(layout.width, line->width + word.width);
+                    layout.width = fmax(layout.width, line->width + word.width);
                 }
                 line->merge(word);
                 layout.height += line->height;
