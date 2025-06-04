@@ -30,10 +30,7 @@ return Creator:createWorld({
             
         -- end)
         rect.props.count = 0
-        rect.input:listen("onTouchUp", function(self)
-            print("FINGER!")
-        end)
-        rect.input:listen("onTouchUp", function(self, pointer)
+        rect.input:listen("onPointerDown", function(self, pointer)
             if pointer.state.timeHeld < 0.2 then
                 rect.props.count = rect.props.count + 1
                 print(rect.props.count)

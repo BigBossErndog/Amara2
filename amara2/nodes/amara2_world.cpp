@@ -560,15 +560,35 @@ namespace Amara {
                 Vector2 mousePos;
                 float mx, my;
                 int wx, wy;
-                SDL_GetGlobalMouseState(&mx, &my);
+                SDL_MouseButtonFlags mouseFlags = SDL_GetGlobalMouseState(&mx, &my);
                 SDL_GetWindowPosition(window, &wx, &wy);
                 mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
                 mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
 
                 if (inputManager.checkMouseHover(mousePos)) {
-                    setClickThroughState(false);
-                    SDL_RaiseWindow(window);
-                    update_mouse = true;
+                    if (clickThroughState) {
+                        setClickThroughState(false);
+                        SDL_RaiseWindow(window);
+
+                        bool any_pressed = false;
+                        if (mouseFlags & SDL_BUTTON_LMASK) {
+                            inputManager.mouse.left.press();
+                            if (inputManager.mouse.left.justPressed) any_pressed = true;
+                        }
+                        if (mouseFlags & SDL_BUTTON_RMASK) {
+                            inputManager.mouse.right.press();
+                            if (inputManager.mouse.right.justPressed) any_pressed = true;
+                        }
+                        if (mouseFlags & SDL_BUTTON_MMASK) {
+                            inputManager.mouse.middle.press();
+                            if (inputManager.mouse.middle.justPressed) any_pressed = true;
+                        }
+                        if (any_pressed) {
+                            inputManager.handleMouseDown(mousePos);
+                            inputManager.force_release_pointer = true;
+                        }
+                        else update_mouse = true;
+                    }
                 }
                 else {
                     setClickThroughState(true);
@@ -883,7 +903,6 @@ namespace Amara {
 
         virtual void run(double deltaTime) override {
             checkClickThrough();
-            inputManager.clearQueue();
 
             if (!base_dir_path.empty()) {
                 gameProps->system->setBasePath(base_dir_path);
@@ -896,7 +915,8 @@ namespace Amara {
             Amara::Node::run(deltaTime);
 
             inputManager.update(deltaTime);
-
+            inputManager.clearQueue();
+            
             if (actuated && !created_entry_scenes) {
                 for (std::string key: entryScenes) {
                     createChild(key);

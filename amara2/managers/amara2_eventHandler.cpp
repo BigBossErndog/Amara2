@@ -7,9 +7,6 @@ namespace Amara {
         KeyboardManager keyboard;
         GamepadManager gamepads;
 
-        bool force_release_mouse = false;
-        Uint32 force_release_windowID = 0;
-
         EventHandler() = default;
 
         void init() {
@@ -25,38 +22,6 @@ namespace Amara {
 
             keyboard.update(game.deltaTime);
             gamepads.update(game.deltaTime);
-
-            if (force_release_mouse) {
-                for (auto w: worlds) {
-                    if (w->window != nullptr && w->windowID == force_release_windowID) {
-                        Vector2 mousePos;
-                        float mx, my;
-                        int wx, wy;
-                        SDL_MouseButtonFlags mouseFlags = SDL_GetGlobalMouseState(&mx, &my);
-                        SDL_GetWindowPosition(w->window, &wx, &wy);
-                        mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
-                        mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
-
-                        bool any_released = false;
-                        if ((mouseFlags & SDL_BUTTON_LMASK) == 0) {
-                            w->inputManager.mouse.left.release();
-                            if (w->inputManager.mouse.left.justReleased) any_released = true;
-                        }
-                        if ((mouseFlags & SDL_BUTTON_RMASK) == 0) {
-                            w->inputManager.mouse.right.release();
-                            if (w->inputManager.mouse.right.justReleased) any_released = true;
-                        }
-                        if ((mouseFlags & SDL_BUTTON_MMASK) == 0) {
-                            w->inputManager.mouse.middle.release();
-                            if (w->inputManager.mouse.middle.justReleased) any_released = true;
-                        }
-                        if (any_released) {
-                            w->inputManager.handleMouseUp(mousePos);
-                            force_release_mouse = false;
-                        }
-                    }
-                }
-            }
             
             while (SDL_PollEvent(&e) != 0) {
                 switch (e.type) {
@@ -98,8 +63,7 @@ namespace Amara {
                                     }
                                     if (any_pressed) {
                                         w->inputManager.handleMouseDown(mousePos);
-                                        force_release_mouse = true;
-                                        force_release_windowID = w->windowID;
+                                        w->inputManager.force_release_pointer = true;
                                     }
                                 }
                                 w->update_mouse = false;
@@ -228,6 +192,37 @@ namespace Amara {
         return false;
     }
 
+    void InputManager::forceReleasePointer() {
+        if (world->window != nullptr) {
+            Vector2 mousePos;
+            float mx, my;
+            int wx, wy;
+            SDL_MouseButtonFlags mouseFlags = SDL_GetGlobalMouseState(&mx, &my);
+            SDL_GetWindowPosition(world->window, &wx, &wy);
+            mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
+            mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
+
+            bool all_released = true;
+            if ((mouseFlags & SDL_BUTTON_LMASK) == 0) {
+                mouse.left.release();
+            }
+            else all_released = false;
+            if ((mouseFlags & SDL_BUTTON_RMASK) == 0) {
+                mouse.right.release();
+            }
+            else all_released = false;
+            if ((mouseFlags & SDL_BUTTON_MMASK) == 0) {
+                mouse.middle.release();
+            }
+            else all_released = false;
+            
+            if (all_released) {
+                handleMouseUp(mousePos);
+                force_release_pointer = false;
+            }
+        }
+    }
+
     void InputManager::handleMouseMovement(const Vector2& pos) {
         Amara::NodeInput* input;
         any_hovered = false;
@@ -257,10 +252,10 @@ namespace Amara {
             if (input->shape.collidesWith(point)) {
                 input->lastPointer = &mouse;
                 input->handleMessage({ nullptr, "onMouseDown", mouse.get_lua_object(gameProps) });
-                input->handleMessage({ nullptr, "onPointerDown", mouse.get_lua_object(gameProps) });
                 if (mouse.left.justPressed) {
                     input->held = true;
                     input->handleMessage({ nullptr, "onLeftMouseDown", mouse.get_lua_object(gameProps) });
+                    input->handleMessage({ nullptr, "onPointerDown", mouse.get_lua_object(gameProps) });
                 }
                 else if (mouse.right.justPressed) {
                     input->handleMessage({ nullptr, "onRightMouseDown", mouse.get_lua_object(gameProps) });
@@ -280,9 +275,9 @@ namespace Amara {
             input = *it;
             if (input->shape.collidesWith(point)) {
                 input->handleMessage({ nullptr, "onMouseUp", mouse.get_lua_object(gameProps) });
-                input->handleMessage({ nullptr, "onPointerUp", mouse.get_lua_object(gameProps) });
                 if (mouse.left.justReleased) {
                     input->handleMessage({ nullptr, "onLeftMouseUp", mouse.get_lua_object(gameProps) });
+                    input->handleMessage({ nullptr, "onPointerUp", mouse.get_lua_object(gameProps) });
                 }
                 else if (mouse.right.justReleased) {
                     input->handleMessage({ nullptr, "onRightMouseUp", mouse.get_lua_object(gameProps) });
