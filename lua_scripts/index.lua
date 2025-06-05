@@ -9,74 +9,10 @@ return Creator:createWorld({
         transparent = true,
         clickThrough = true,
         alwaysOnTop = true,
-        vsync = true,
-        screenMode = ScreenMode.BorderlessWindowed,
         graphics = Graphics.OpenGL
     },
-    onCreate = function(world)
-        Game:uncapFPS()
-        world:fitToDisplay()
-
-        -- world.clickThrough = false
-
-        for i = 1, 10 do
-            rect = world:createChild("FillRect", {
-                x = math.random() * world.vw - world.vw / 2,
-                y = math.random() * world.vh - world.vh / 2,
-                width = 64,
-                height = 64,
-                color = "red",
-                input = true
-            })
-            rect.input.draggable = true
-            -- rect.input:listen("onPointerHover", function(self)
-                
-            -- end)
-            rect.props.count = 0
-            rect.input:listen("onPointerUp", function(self, pointer)
-                if pointer.state.timeHeld < 0.2 then
-                    rect.props.count = rect.props.count + 1
-                    print(rect.props.count)
-
-                    self.tween:from({
-                        rotation = 0
-                    }):to({
-                        rotation = math.pi,
-                        duration = 1,
-                        ease = Ease.SineInOut
-                    })
-                end
-            end)
-        end
-    end,
-    onUpdate = function(world)
-        if Keyboard:justPressed(Key.One) then
-            world.tween:to({
-                rect = Game:getDisplayBounds(1),
-                duration = 0.2,
-                ease = Ease.SineInOut
-            })
-        end
-        if Keyboard:justPressed(Key.Two) then
-            world.tween:to({
-                rect = Game:getDisplayBounds(2),
-                duration = 0.2,
-                ease = Ease.SineInOut
-            })
-        end
-        if Keyboard:justPressed(Key.Three) then
-            world.tween:to({
-                rect = Game:getDisplayBounds(3),
-                duration = 0.2,
-                ease = Ease.SineInOut
-            })
-        end
-        if Keyboard:justPressed(Key.Four) then
-            world.tween:to({
-                rect = Game:getDisplayBounds(4),
-                duration = 0.2,
-                ease = Ease.SineInOut
-            })
-        end
+    onPreload = function(world) 
+        world.load:image("uiBox", "ui/amara2_uiBox.png");
+        world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16);
     end
 })

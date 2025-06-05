@@ -8,7 +8,7 @@ namespace Amara {
         int failAttempts = 0;
 
         bool in_progress = false;
-
+        
         int frameWidth = 0;
         int frameHeight = 0;
 
