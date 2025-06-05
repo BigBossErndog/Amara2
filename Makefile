@@ -9,7 +9,7 @@ MINGW_PATH = mingw64
 BUILD_EXECUTABLE_WIN = $(BUILD_PATH)/$(BUILD_NAME).exe
 BUILD_EXECUTABLE_LINUX = $(BUILD_PATH)/$(BUILD_NAME).game
 
-COMPILER = ./$(MINGW_PATH)/bin/clang++
+COMPILER = ./$(MINGW_PATH)/bin/g++
 
 SDL_INCLUDE_PATHS_WIN64 = -Iresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/include
 SDL_LIBRARY_PATHS_WIN64 = -Lresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/lib
@@ -20,7 +20,7 @@ SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags`
 
 RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
-LINKER_FLAGS_WIN64 = -L$(MINGW_PATH)/lib -Wl,-Bstatic -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
+LINKER_FLAGS_WIN64 = -Wl,-Bstatic -L$(MINGW_PATH)/lib -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
 
 OTHER_LIB_LINKS = -Lresources/libs/tinyxml2/lib/win resources/libs/tinyxml2/lib/win/libtinyxml2.a
 OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2/include -Iresources/libs/minimp3
@@ -75,9 +75,8 @@ cpAssets_alt:
 cpDLLs:
 	cp resources/dlls/win64/* $(BUILD_PATH)/
 
-cpDLLsAlt:
-	xcopy /s /e /i /y "dlls\win64\*.*" "$(BUILD_PATH)\"
-	if not exist "$(BUILD_PATH)\saves" md "$(BUILD_PATH)\saves"
+cpDLLs_alt:
+	xcopy /s /e /i /y "resources\dlls\win64\*.*" "$(BUILD_PATH)\"
 
 # Using MinGW clang++
 win: $(ENTRY_FILES)
@@ -88,8 +87,8 @@ win: $(ENTRY_FILES)
 
 # Using MinGW clang++
 win_alt: $(ENTRY_FILES)
-	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(THEORA_WIN) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
-	make cpDLLsAlt
+	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
+	make cpDLLs_alt
 
 linux:
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_LINUX)

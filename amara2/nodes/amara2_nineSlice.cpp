@@ -272,9 +272,6 @@ namespace Amara {
             src  = { frameAtlasX + actualML + srcHorStretch, frameAtlasY + actualMT + srcVerStretch, actualMR, actualMB };
             dest = { destML + destHorStretch, destMT + destVerStretch, destMR, destMB };
             if (src.w > 0 && src.h > 0 && dest.w > 0 && dest.h > 0) drawSlice(v, src, dest);
-
-            if (depthSortChildrenEnabled) sortChildren();
-            drawChildren(v);
         }
 
         virtual void drawCanvas(const Rectangle& v) override {
@@ -486,7 +483,12 @@ namespace Amara {
                     blendMode
                 );
             }
-                
+            #endif
+
+            if (depthSortChildrenEnabled) sortChildren();
+            drawChildren(v);
+
+            #ifdef AMARA_OPENGL                
             if (rec_shader && shaderProgram && shaderProgram != rec_shader) {
                 gameProps->currentShaderProgram = rec_shader;
             }
