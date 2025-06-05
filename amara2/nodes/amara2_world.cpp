@@ -585,6 +585,10 @@ namespace Amara {
                         }
                         if (any_pressed) {
                             inputManager.handleMouseDown(mousePos);
+                            handleMouseMovement(mousePos, Vector2(0, 0));
+                            if (inputManager.mouse.left.justPressed) {
+                                inputManager.mouse.rec_position();
+                            }
                             inputManager.force_release_pointer = true;
                         }
                         else update_mouse = true;
@@ -1051,31 +1055,31 @@ namespace Amara {
                     movement.y / viewport.h
                 ),
                 Vector2(
-                    (virtualPos.x - inputManager.mouse.x),
-                    (virtualPos.y - inputManager.mouse.y)
+                    movement.x / passOn.window_zoom.x,
+                    movement.y / passOn.window_zoom.y
                 )
             );
             inputManager.handleMouseMovement(pos);
         }
 
         void handleFingerEvent(const Vector2& pos, SDL_FingerID fingerID, SDL_EventType eventType) {
-            Vector2 realPos = Vector2(
+            Vector2 real_pos = Vector2(
                 pos.x * viewport.w,
                 pos.y * viewport.h
             );
             Vector2 virtualPos = Vector2(
-                (realPos.x - viewport.w * 0.5f) / passOn.window_zoom.x,
-                (realPos.y - viewport.h * 0.5f) / passOn.window_zoom.y
+                (real_pos.x - viewport.w * 0.5f) / passOn.window_zoom.x,
+                (real_pos.y - viewport.h * 0.5f) / passOn.window_zoom.y
             );
             Pointer* pointer = inputManager.touch.activateAnyFinger(fingerID);
             if (pointer) {
                 switch (eventType) {
                     case SDL_EVENT_FINGER_MOTION: {
                         pointer->handleMovement(
-                            realPos, virtualPos,
+                            real_pos, virtualPos,
                             Vector2(
-                                (realPos.x - pointer->realPos.x),
-                                (realPos.y - pointer->realPos.y)
+                                (real_pos.x - pointer->real_pos.x),
+                                (real_pos.y - pointer->real_pos.y)
                             ),
                             Vector2(
                                 (virtualPos.x - pointer->x),
@@ -1086,9 +1090,10 @@ namespace Amara {
                     }
                     case SDL_EVENT_FINGER_DOWN: {
                         pointer->state.press();
-                        pointer->realPos = realPos;
+                        pointer->real_pos = real_pos;
                         pointer->x = virtualPos.x;
                         pointer->y = virtualPos.y;
+                        pointer->rec_position();
                         break;
                     }
                     case SDL_EVENT_FINGER_UP: {
@@ -1097,7 +1102,7 @@ namespace Amara {
                         break;
                     }
                 }
-                inputManager.handleFingerEvent(realPos, pointer, eventType);
+                inputManager.handleFingerEvent(real_pos, pointer, eventType);
             }
             else {
                 debug_log("Error: Could not create pointer finger.");
@@ -1130,7 +1135,7 @@ namespace Amara {
                 SDL_DestroyWindow(window);
                 window = nullptr;
             }
-
+            
             if (demiurge) {
                 removeFromDemiurge();
             }

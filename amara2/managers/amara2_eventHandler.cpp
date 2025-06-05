@@ -63,6 +63,10 @@ namespace Amara {
                                     }
                                     if (any_pressed) {
                                         w->inputManager.handleMouseDown(mousePos);
+                                        w->handleMouseMovement(mousePos, Vector2(0, 0));
+                                        if (w->inputManager.mouse.left.justPressed) {
+                                            w->inputManager.mouse.rec_position();
+                                        }
                                         w->inputManager.force_release_pointer = true;
                                     }
                                 }
@@ -100,6 +104,9 @@ namespace Amara {
                                         break;
                                 }
                                 w->inputManager.handleMouseDown(Vector2(e.button.x, e.button.y));
+                                if (w->inputManager.mouse.left.justPressed) {
+                                    w->inputManager.mouse.rec_position();
+                                }
                             }
                         }
                         break;
@@ -256,6 +263,8 @@ namespace Amara {
                     input->held = true;
                     input->handleMessage({ nullptr, "onLeftMouseDown", mouse.get_lua_object(gameProps) });
                     input->handleMessage({ nullptr, "onPointerDown", mouse.get_lua_object(gameProps) });
+
+                    input->rec_interact_pos = input->node->pos;
                 }
                 else if (mouse.right.justPressed) {
                     input->handleMessage({ nullptr, "onRightMouseDown", mouse.get_lua_object(gameProps) });
@@ -299,12 +308,14 @@ namespace Amara {
                 switch (eventType) {
                     case SDL_EVENT_FINGER_DOWN: {
                         input->hover.press();
-                        input->held = true;
                         input->handleMessage({ nullptr, "onPointerDown", finger->get_lua_object(gameProps) });
                         input->handleMessage({ nullptr, "onTouchDown", finger->get_lua_object(gameProps) });
                         if (input->hover.justPressed) {
+                            input->held = true;
                             input->handleMessage({ nullptr, "onPointerHover", finger->get_lua_object(gameProps) });
                             input->handleMessage({ nullptr, "onTouchHover", finger->get_lua_object(gameProps) });
+
+                            input->rec_interact_pos = input->node->pos;
                         }
                         break;
                     }
@@ -316,7 +327,6 @@ namespace Amara {
                     }
                     case SDL_EVENT_FINGER_MOTION: {
                         input->hover.press();
-                        input->held = true;
                         if (input->hover.justPressed) {
                             input->handleMessage({ nullptr, "onPointerHover", finger->get_lua_object(gameProps) });
                             input->handleMessage({ nullptr, "onTouchHover", finger->get_lua_object(gameProps) });

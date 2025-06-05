@@ -15,6 +15,8 @@ namespace Amara {
         double timeHeld = false;
         bool draggable = false;
 
+        Vector2 rec_interact_pos;
+
         void queueInput(const Amara::Shape::ShapeVariant& _shape) {
             shape = _shape;
             gameProps->inputManager->queueInput(this);
@@ -42,7 +44,7 @@ namespace Amara {
             }
 
             if (hover.isDown) {
-                if (lastPointer == nullptr || !lastPointer->active || !shape.collidesWith(lastPointer->realPos)) {
+                if (lastPointer == nullptr || !lastPointer->active || !shape.collidesWith(lastPointer->real_pos)) {
                     hover.release();
 
                     if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", sol::nil });

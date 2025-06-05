@@ -1,10 +1,12 @@
 namespace Amara {
     class Pointer: public Amara::Vector2 {
     public:
-        Amara::Vector2 realPos;
-        Amara::Vector2 realMovement;
+        Amara::Vector2 real_pos;
+        Amara::Vector2 real_movement;
 
         Amara::Vector2 movement;
+
+        Amara::Vector2 rec_pos;
 
         using Vector2::Vector2;
 
@@ -22,18 +24,27 @@ namespace Amara {
             return luaobject;
         }
 
-        void handleMovement(const Vector2& _realPos, const Vector2& _pos, const Vector2 _realMovement, const Vector2& _movement) {
-            realPos = _realPos;
-            realMovement = _realMovement;
+        void rec_position(const Vector2& _pos) {
+            x = _pos.x;
+            y = _pos.y;
+            rec_pos = _pos;
+        }
+        void rec_position() {
+            rec_position(*this);
+        }
+
+        void handleMovement(const Vector2& _real_pos, const Vector2& _pos, const Vector2 _real_movement, const Vector2& _movement) {
+            real_pos = _real_pos;
+            real_movement = _real_movement;
             movement = _movement;
             
             x = _pos.x;
             y = _pos.y;
         }
-
+        
         void update(double deltaTime) {
             state.update(deltaTime);
-            realMovement = Vector2(0, 0);
+            real_movement = Vector2(0, 0);
             movement = Vector2(0, 0);
         }
         
@@ -44,8 +55,8 @@ namespace Amara {
                 "movement", sol::readonly(&Amara::Pointer::movement),
                 "active", sol::readonly(&Amara::Pointer::active),
                 "state", sol::readonly(&Amara::Pointer::state),
-                "realPos", sol::readonly(&Amara::Pointer::realPos),
-                "realMovement", sol::readonly(&Amara::Pointer::realMovement)
+                "real_pos", sol::readonly(&Amara::Pointer::real_pos),
+                "real_movement", sol::readonly(&Amara::Pointer::real_movement)
             );
         }
     };
