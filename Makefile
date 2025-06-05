@@ -4,12 +4,11 @@ BUILD_NAME = Amara2
 BUILD_PATH = build
 EXE_OPTIONS = -context ../
 
-MINGW_PATH = mingw64
-
 BUILD_EXECUTABLE_WIN = $(BUILD_PATH)/$(BUILD_NAME).exe
 BUILD_EXECUTABLE_LINUX = $(BUILD_PATH)/$(BUILD_NAME).game
 
-COMPILER = ./$(MINGW_PATH)/bin/g++
+CLANG_LLVM_PATH = resources/clang-llvm
+COMPILER = $(CLANG_LLVM_PATH)/bin/clang++
 
 SDL_INCLUDE_PATHS_WIN64 = -Iresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/include
 SDL_LIBRARY_PATHS_WIN64 = -Lresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/lib
@@ -20,7 +19,10 @@ SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags`
 
 RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
-LINKER_FLAGS_WIN64 = -Wl,-Bstatic -L$(MINGW_PATH)/lib -Wl,-Bdynamic -static-libstdc++ -static-libgcc -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) -static
+STDLIB_FLAG = -stdlib=libc++
+
+WINDOWS_SYSTEM_LIBS = -lshell32 -luser32 # Add system libraries for Windows API
+LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) $(WINDOWS_SYSTEM_LIBS) -static
 
 OTHER_LIB_LINKS = -Lresources/libs/tinyxml2/lib/win resources/libs/tinyxml2/lib/win/libtinyxml2.a
 OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2/include -Iresources/libs/minimp3
@@ -78,20 +80,20 @@ cpDLLs:
 cpDLLs_alt:
 	xcopy /s /e /i /y "resources\dlls\win64\*.*" "$(BUILD_PATH)\"
 
-# Using MinGW clang++
+# Using clang from $(CLANG_LLVM_PATH)
 win: $(ENTRY_FILES)
 	mkdir -p ./$(BUILD_PATH)
 	rm -rf ./$(BUILD_PATH)/*
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLs
 
-# Using MinGW clang++
+# Using clang from $(CLANG_LLVM_PATH)
 win_alt: $(ENTRY_FILES)
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpDLLs_alt
 
 linux:
-	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_LINUX)
+	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(COMPILER_FLAGS) $(STDLIB_FLAG) $(LINKER_FLAGS) -o $(BUILD_EXECUTABLE_LINUX)
 	mkdir $(BUILD_PATH)/saves
 
 valgrind:

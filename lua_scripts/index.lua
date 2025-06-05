@@ -35,7 +35,10 @@ return Creator:createWorld({
                     }):to({
                         rotation = math.pi,
                         duration = 1,
-                        ease = Ease.SineInout
+                        ease = Ease.SineInout,
+                        onComplete = function()
+                            world:destroy()
+                        end
                     })
                 end
             end)
