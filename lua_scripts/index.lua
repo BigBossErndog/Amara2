@@ -29,16 +29,13 @@ return Creator:createWorld({
             uiBox.input.draggable = true
 
             uiBox.input:listen("onPointerUp", function(self, pointer)
-                if pointer.state.timeHeld < 0.2 then
+                if pointer.state.timeHeld < 0.1 then
                     self.tween:from({
                         rotation = 0
                     }):to({
                         rotation = math.pi,
                         duration = 1,
-                        ease = Ease.SineInout,
-                        onComplete = function()
-                            world:destroy()
-                        end
+                        ease = Ease.SineInout
                     })
                 end
             end)
