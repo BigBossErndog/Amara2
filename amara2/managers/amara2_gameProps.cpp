@@ -25,6 +25,7 @@ namespace Amara {
     class KeyboardManager;
     class GamepadManager;
     class ControlManager;
+    class Pointer;
 
     class GPUHandler;
     class Asset;
@@ -160,5 +161,7 @@ namespace Amara {
         KeyboardManager* keyboard = nullptr;
         GamepadManager* gamepads = nullptr;
         ControlManager* controls = nullptr;
+
+        Pointer* globalPointer = nullptr;
     };
 }

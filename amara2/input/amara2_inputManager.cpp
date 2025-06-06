@@ -16,10 +16,12 @@ namespace Amara {
 
         bool force_release_pointer = false;
 
+        Amara::InputMode pointerMode = Amara::InputMode::None;
+
         void init(Amara::GameProps* _gameProps, Amara::World* _world) {
             gameProps = _gameProps;
             world = _world;
-
+            
             mouse.active = true;
             mouse.id = 0;
         }
@@ -39,7 +41,7 @@ namespace Amara {
             touch.update(deltaTime);
         }
 
-        bool checkMouseHover(const Vector2& pos);
+        bool checkPointerHover(const Vector2& pos);
 
         void forceReleasePointer();
 

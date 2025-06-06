@@ -191,7 +191,7 @@ namespace Amara {
                 debug_log("Error: SDL_Init failed: ", SDL_GetError());
             }
 
-            eventHandler.init();
+            eventHandler.init(&gameProps);
 
             rec_tick = SDL_GetPerformanceCounter();
             Uint64 freq = SDL_GetPerformanceFrequency();

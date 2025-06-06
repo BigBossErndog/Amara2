@@ -9,7 +9,7 @@ return Creator:createWorld({
         transparent = true,
         clickThrough = true,
         alwaysOnTop = true,
-        graphics = Graphics.OpenGL
+        graphics = Graphics.Render2D
     },
     onPreload = function(world) 
         world:fitToDisplay()
@@ -24,9 +24,20 @@ return Creator:createWorld({
                 y = math.random() * world.vh - world.vh/2,
                 maxWidth = 640, maxHeight = 640,
                 width = 64, height = 64,
-                input = true
+                input = true,
+                onUpdate = function(self)
+                    if self.world.windowFocused then
+                        self.alpha = 1
+                    else
+                        self.alpha = 0.5
+                    end
+                end
             })
             uiBox.input.draggable = true
+
+            uiBox.input:listen("onPointerDown", function(self, pointer)
+                self:bringToFront()
+            end)
 
             uiBox.input:listen("onPointerUp", function(self, pointer)
                 if pointer.state.timeHeld < 0.1 then
@@ -39,6 +50,20 @@ return Creator:createWorld({
                     })
                 end
             end)
+        end
+    end,
+    onUpdate = function(world)
+        if Keyboard:justPressed(Key.One) then
+            world:fitToDisplay(1)
+        end
+        if Keyboard:justPressed(Key.Two) then
+            world:fitToDisplay(2)
+        end
+        if Keyboard:justPressed(Key.Three) then
+            world:fitToDisplay(3)
+        end
+        if Keyboard:justPressed(Key.Four) then
+            world:fitToDisplay(4)
         end
     end
 })

@@ -16,6 +16,14 @@ namespace Amara {
         BorderlessFullscreen
     };
 
+    enum class InputMode {
+        None,
+        Keyboard,
+        Gamepad,
+        Mouse,
+        Touch
+    };
+
     enum class AssetEnum {
         None = 0,
         Surface = 1,

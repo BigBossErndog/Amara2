@@ -7,9 +7,16 @@ namespace Amara {
         KeyboardManager keyboard;
         GamepadManager gamepads;
 
+        Amara::GameProps* gameProps = nullptr;
+
+        Amara::Pointer globalPointer;
+
         EventHandler() = default;
 
-        void init() {
+        void init(Amara::GameProps* _gameProps) {
+            gameProps = _gameProps;
+            gameProps->globalPointer = &globalPointer;
+            
             SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
             SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
         }
@@ -39,6 +46,8 @@ namespace Amara {
                     case SDL_EVENT_WINDOW_FOCUS_GAINED: {
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.window.windowID) {
+                                w->windowFocused = true;
+                                
                                 if (w->update_mouse) {
                                     Vector2 mousePos;
                                     float mx, my;
@@ -61,6 +70,10 @@ namespace Amara {
                                         w->inputManager.mouse.middle.press();
                                         any_pressed = true;
                                     }
+                                    if (w->inputManager.pointerMode == Amara::InputMode::Touch) {
+                                        w->inputManager.mouse.left.press();
+                                        any_pressed = true;
+                                    }
                                     if (any_pressed) {
                                         w->inputManager.handleMouseDown(mousePos);
                                         w->handleMouseMovement(mousePos, Vector2(0, 0));
@@ -71,6 +84,14 @@ namespace Amara {
                                     }
                                 }
                                 w->update_mouse = false;
+                            }
+                        }
+                        break;
+                    }
+                    case SDL_EVENT_WINDOW_FOCUS_LOST: {
+                        for (auto w: worlds) {
+                            if (w->window != nullptr && w->windowID == e.window.windowID) {
+                                w->windowFocused = false;
                             }
                         }
                         break;
@@ -186,7 +207,7 @@ namespace Amara {
         }
     };
 
-    bool InputManager::checkMouseHover(const Vector2& pos) {
+    bool InputManager::checkPointerHover(const Vector2& pos) {
         Amara::NodeInput* input;
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             input = *it;
@@ -231,6 +252,10 @@ namespace Amara {
     }
 
     void InputManager::handleMouseMovement(const Vector2& pos) {
+        pointerMode = Amara::InputMode::Mouse;
+
+        *(gameProps->globalPointer) = mouse;
+
         Amara::NodeInput* input;
         any_hovered = false;
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
@@ -251,6 +276,10 @@ namespace Amara {
         gameProps->messages->send("onMouseMove", sol::make_object(gameProps->lua, pos));
     }
     void InputManager::handleMouseDown(const Amara::Vector2& point) {
+        pointerMode = Amara::InputMode::Mouse;
+
+        *(gameProps->globalPointer) = mouse;
+
         mouse.state.press();
 
         Amara::NodeInput* input;
@@ -277,6 +306,10 @@ namespace Amara {
         }
     }
     void InputManager::handleMouseUp(const Amara::Vector2& point) {
+        pointerMode = Amara::InputMode::Mouse;
+
+        *(gameProps->globalPointer) = mouse;
+
         mouse.state.release();
 
         Amara::NodeInput* input;
@@ -300,6 +333,10 @@ namespace Amara {
     }
 
     void InputManager::handleFingerEvent(const Amara::Vector2& pos, Pointer* finger, SDL_EventType eventType) {
+        pointerMode = Amara::InputMode::Touch;
+
+        *(gameProps->globalPointer) = *finger;
+        
         Amara::NodeInput* input;
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             input = *it;

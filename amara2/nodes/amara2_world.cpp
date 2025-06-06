@@ -26,6 +26,7 @@ namespace Amara {
 
         bool windowMoved = false;
         bool windowResized = false;
+        bool windowFocused = false;
 
         ScreenModeEnum screenMode = ScreenModeEnum::Windowed;
 
@@ -565,33 +566,12 @@ namespace Amara {
                 mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
                 mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
 
-                if (inputManager.checkMouseHover(mousePos)) {
+                if (inputManager.checkPointerHover(mousePos)) {
                     if (clickThroughState) {
                         setClickThroughState(false);
                         SDL_RaiseWindow(window);
-
-                        bool any_pressed = false;
-                        if (mouseFlags & SDL_BUTTON_LMASK) {
-                            inputManager.mouse.left.press();
-                            if (inputManager.mouse.left.justPressed) any_pressed = true;
-                        }
-                        if (mouseFlags & SDL_BUTTON_RMASK) {
-                            inputManager.mouse.right.press();
-                            if (inputManager.mouse.right.justPressed) any_pressed = true;
-                        }
-                        if (mouseFlags & SDL_BUTTON_MMASK) {
-                            inputManager.mouse.middle.press();
-                            if (inputManager.mouse.middle.justPressed) any_pressed = true;
-                        }
-                        if (any_pressed) {
-                            inputManager.handleMouseDown(mousePos);
-                            handleMouseMovement(mousePos, Vector2(0, 0));
-                            if (inputManager.mouse.left.justPressed) {
-                                inputManager.mouse.rec_position();
-                            }
-                            inputManager.force_release_pointer = true;
-                        }
-                        else update_mouse = true;
+                        
+                        update_mouse = true;
                     }
                 }
                 else {
@@ -641,6 +621,9 @@ namespace Amara {
                 windowW, windowH,
                 flags
             );
+
+            windowFocused = true;
+
             if (window) {
                 setup_new_window();
                 return true;
@@ -1195,6 +1178,7 @@ namespace Amara {
                 }),
                 "windowMoved", sol::readonly(&World::windowMoved),
                 "windowResized", sol::readonly(&World::windowResized),
+                "windowFocused", sol::readonly(&World::windowFocused),
                 "resizable", sol::property([](const Amara::World& world) { return world.resizable; }, [](Amara::World& world, bool value) {
                     world.resizable = value;
                     if (world.window) {
