@@ -33,17 +33,11 @@ namespace Amara {
             if (drawWidth < 0) drawWidth = 0;
             if (drawHeight < 0) drawHeight = 0;
 
-            int targetCanvasWidth = drawWidth;
-            int targetCanvasHeight = drawHeight;
+            if (json_has(config, "maxWidth")) width = json_extract(config, "maxWidth");
+            if (json_has(config, "maxHeight")) height = json_extract(config, "maxHeight");
 
-            if (json_has(config, "maxWidth")) targetCanvasWidth = json_extract(config, "maxWidth");
-            if (json_has(config, "maxHeight")) targetCanvasHeight = json_extract(config, "maxHeight");
-
-            if (targetCanvasWidth < drawWidth) targetCanvasWidth = drawWidth;
-            if (targetCanvasHeight < drawHeight) targetCanvasHeight = drawHeight;
-            
-            if (targetCanvasWidth < 0) targetCanvasWidth = 0;
-            if (targetCanvasHeight < 0) targetCanvasHeight = 0;
+            if (width < drawWidth) width = drawWidth;
+            if (height < drawHeight) height = drawHeight;
 
             if (json_has(config, "texture")) setTexture(config["texture"]);
             if (json_has(config, "frame")) frame = config["frame"];
@@ -53,13 +47,7 @@ namespace Amara {
             if (json_has(config, "marginTop")) marginTop = json_extract(config, "marginTop");
             if (json_has(config, "marginBottom")) marginBottom = json_extract(config, "marginBottom");
 
-            nlohmann::json baseConfig = config;
-            baseConfig["width"] = targetCanvasWidth;
-            baseConfig["height"] = targetCanvasHeight;
-
-            Amara::TextureContainer::configure(baseConfig);
-
-            return this;
+            return Amara::TextureContainer::configure(config);
         }
 
         bool setTexture(std::string key) {
@@ -400,7 +388,7 @@ namespace Amara {
                 anchoredPos.x + (cropLeft - drawWidth*origin.x)*scale.x*passOn.scale.x, 
                 anchoredPos.y - anchoredPos.z + (cropTop - drawHeight*origin.y)*scale.y*passOn.scale.y,
                 (drawWidth - cropLeft - cropRight)*scale.x*passOn.scale.x,
-                (drawWidth - cropTop - cropBottom)*scale.y*passOn.scale.y
+                (drawHeight - cropTop - cropBottom)*scale.y*passOn.scale.y
             };
             
             destRect.x = vcenter.x + dim.x*totalZoom.x;

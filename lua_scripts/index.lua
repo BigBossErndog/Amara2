@@ -1,5 +1,3 @@
-local uiBox;
-
 return Creator:createWorld({
     window = {
         width = 1280,
@@ -7,6 +5,7 @@ return Creator:createWorld({
         virtualWidth = 640,
         virtualHeight = 360,
         transparent = true,
+        screenMode = ScreenMode.BorderlessFullscreen,
         clickThrough = true,
         alwaysOnTop = true,
         graphics = Graphics.Render2D
@@ -18,43 +17,10 @@ return Creator:createWorld({
     end,
     onCreate = function(world)
         for i = 1, 10 do
-            uiBox = world:createChild("NineSlice", {
-                texture = "uiBox",
+            world:createChild("ui/UIWindow", {
                 x = math.random() * world.vw - world.vw/2,
-                y = math.random() * world.vh - world.vh/2,
-                maxWidth = 640, maxHeight = 640,
-                width = 64, height = 64,
-                input = true,
-                onUpdate = function(self)
-                    if self.x < self.world.left + self.width/2 then
-                        self.x = self.world.left + self.width/2
-                    elseif self.x > self.world.right - self.width/2 then
-                        self.x = self.world.right - self.width/2
-                    end
-                    if self.y < self.world.top + self.height/2 then
-                        self.y = self.world.top + self.height/2
-                    elseif self.y > self.world.bottom - self.height/2 then
-                        self.y = self.world.bottom - self.height/2
-                    end
-                end
+                y = math.random() * world.vh - world.vh/2
             })
-            uiBox.input.draggable = true
-
-            uiBox.input:listen("onPointerDown", function(self, pointer)
-                self:bringToFront()
-            end)
-
-            uiBox.input:listen("onPointerUp", function(self, pointer)
-                if pointer.state.timeHeld < 0.15 then
-                    self.tween:from({
-                        rotation = 0
-                    }):to({
-                        rotation = math.pi,
-                        duration = 1,
-                        ease = Ease.SineInout
-                    })
-                end
-            end)
         end
     end,
     onUpdate = function(world)
