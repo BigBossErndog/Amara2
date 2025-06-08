@@ -26,10 +26,15 @@ return Creator:createWorld({
                 width = 64, height = 64,
                 input = true,
                 onUpdate = function(self)
-                    if self.world.windowFocused then
-                        self.alpha = 1
-                    else
-                        self.alpha = 0.5
+                    if self.x < self.world.left + self.width/2 then
+                        self.x = self.world.left + self.width/2
+                    elseif self.x > self.world.right - self.width/2 then
+                        self.x = self.world.right - self.width/2
+                    end
+                    if self.y < self.world.top + self.height/2 then
+                        self.y = self.world.top + self.height/2
+                    elseif self.y > self.world.bottom - self.height/2 then
+                        self.y = self.world.bottom - self.height/2
                     end
                 end
             })
@@ -40,7 +45,7 @@ return Creator:createWorld({
             end)
 
             uiBox.input:listen("onPointerUp", function(self, pointer)
-                if pointer.state.timeHeld < 0.1 then
+                if pointer.state.timeHeld < 0.15 then
                     self.tween:from({
                         rotation = 0
                     }):to({

@@ -76,6 +76,11 @@ namespace Amara {
         #endif
 
         bool update_mouse = false;
+
+        float left = 0;
+        float right = 0;
+        float top = 0;
+        float bottom = 0;
         
         World(): Node() {
             set_base_node_id("World");
@@ -189,6 +194,11 @@ namespace Amara {
                 gameProps->transparent_window = transparent;
             }
             update_window();
+
+            left = -(windowW/2) / passOn.window_zoom.x;
+            right = (windowW/2) / passOn.window_zoom.x;
+            top = -(windowH/2) / passOn.window_zoom.y;
+            bottom = (windowH/2) / passOn.window_zoom.y;
             
             Node::update_properties();
         }
@@ -1152,6 +1162,10 @@ namespace Amara {
                 "vh", &World::virtualHeight,
                 "virtualWidth", &World::virtualWidth,
                 "virtualHeight", &World::virtualHeight,
+                "left", &World::left,
+                "right", &World::right,
+                "top", &World::top,
+                "bottom", &World::bottom,
                 "assets", &World::assets,
                 "shaders", &World::shaders,
                 "base_dir_path", sol::readonly(&World::base_dir_path),

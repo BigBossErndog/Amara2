@@ -61,6 +61,15 @@ namespace Amara {
             }
         }
 
+        virtual void deactivate() override {
+            hover.release();
+            hover_by_mouse = false;
+            lastPointer = nullptr;
+            held = false;
+            timeHeld = 0;
+            MessageBox::deactivate();
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<NodeInput>("NodeInput",
                 sol::base_classes, sol::bases<Amara::MessageBox>(),
