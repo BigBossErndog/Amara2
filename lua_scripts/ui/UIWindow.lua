@@ -5,24 +5,9 @@ return NodeFactory:create("NineSlice", {
     input = true,
     onCreate = function(self)
         self.input.draggable = true
-        print(self)
-        print(self.width, self.height)
-        print(self.maxWidth, self.maxHeight)
 
         self.input:listen("onPointerDown", function(self, pointer)
             self:bringToFront()
-        end)
-
-        self.input:listen("onPointerUp", function(self, pointer)
-            if pointer.state.timeHeld < 0.15 then
-                self.tween:from({
-                    rotation = 0
-                }):to({
-                    rotation = math.pi,
-                    duration = 1,
-                    ease = Ease.SineInout
-                })
-            end
         end)
     end,
     onUpdate = function(self)
