@@ -1,12 +1,13 @@
 return NodeFactory:create("ui/UIWindow", {
     props = {
-        onCreate = function(self)
+        onCreateWindow = function(self)
             local props = self.props;
-            print(self)
 
-            props.content = self:createChild("Group")
+            props.content = self:createChild("Group", {
+                visible = false;
+            })
 
-            props.title = self:createChild("Text", {
+            props.title = self.content:createChild("Text", {
                 font = "defaultFont",
                 text = "This is a window.",
                 color = Colors.Black,

@@ -386,11 +386,13 @@ namespace Amara {
             if (destroyed) return;
             
             if (messages.active) messages.run();
-            if (input.active) input.run(deltaTime);
+            if (input.active) {
+                input.run(deltaTime);
 
-            if (input.draggable && input.held && input.lastPointer != nullptr) {
-                pos.x = input.rec_interact_pos.x + input.lastPointer->x - input.lastPointer->rec_pos.x;
-                pos.y = input.rec_interact_pos.y + input.lastPointer->y - input.lastPointer->rec_pos.y;
+                if (input.draggable && input.held && input.lastPointer != nullptr) {
+                    pos.x = input.rec_interact_pos.x + input.lastPointer->x - input.lastPointer->rec_pos.x;
+                    pos.y = input.rec_interact_pos.y + input.lastPointer->y - input.lastPointer->rec_pos.y;
+                }
             }
 
             if (destroyed) return;

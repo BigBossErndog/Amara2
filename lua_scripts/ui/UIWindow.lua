@@ -4,14 +4,15 @@ return NodeFactory:create("NineSlice", {
     width = 128, height = 64,
     input = true,
     onCreate = function(self)
+        self.input:activate()
         self.input.draggable = true
-
+        
         self.input:listen("onPointerDown", function(self, pointer)
             self:bringToFront()
         end)
 
-        if self.props.onCreate then
-            self.props:onCreate()
+        if self.props.onCreateWindow then
+            self.props:onCreateWindow()
         end
     end,
     onUpdate = function(self)
