@@ -9,6 +9,10 @@ return NodeFactory:create("NineSlice", {
         self.input:listen("onPointerDown", function(self, pointer)
             self:bringToFront()
         end)
+
+        if self.props.onCreate then
+            self.props:onCreate()
+        end
     end,
     onUpdate = function(self)
         if self.x < self.world.left + self.width/2 then
@@ -21,5 +25,30 @@ return NodeFactory:create("NineSlice", {
         elseif self.y > self.world.bottom - self.height/2 then
             self.y = self.world.bottom - self.height/2
         end
-    end
+    end,
+    props = {
+        isOpen = true,
+        open = function(self, _height, _onEnd)
+            self.visible = true
+            self.props.isOpen = true
+            self.tween:to({
+                height = _height,
+                duration = 0.1,
+                onComplete = _onEnd
+            })
+        end,
+        close = function(self, _onEnd)
+            if _onEnd == nil then
+                _onEnd = function(self) 
+                    self.visible = false
+                end
+            end
+            self.props.isOpen = false
+            self.tween:to({
+                height = 0,
+                duration = 0.1,
+                onComplete = _onEnd
+            })
+        end
+    }
 })

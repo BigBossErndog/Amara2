@@ -483,6 +483,10 @@ namespace Amara {
             #endif
         }
 
+        virtual void drawChildren(const Rectangle v) {
+            Amara::Node::drawChildren(v);
+        }
+
         void setDrawWidth(double _w) {
             drawWidth = _w;
             if (drawWidth < 0) drawWidth = 0;

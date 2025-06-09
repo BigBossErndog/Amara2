@@ -230,15 +230,6 @@ namespace Amara {
                     input.deactivate();
                 }
             }
-
-            if (json_has(config, "props")) {
-                nlohmann::json data = config["props"];
-                if (data.is_object()) {
-                    for (auto it = data.begin(); it != data.end(); ++it) {
-                        props[it.key()] = json_to_lua(gameProps->lua,it.value());
-                    }
-                }
-            }
             
             return this;
         }
@@ -264,6 +255,12 @@ namespace Amara {
                     }
                     else if (val.is<sol::userdata>()) {
                         luaConfigure(it.first.as<std::string>(), val);
+                    }
+                    else if (val.is<sol::table>() && String::equal(it.first.as<std::string>(), "props")) {
+                        sol::table props_table = val.as<sol::table>();
+                        for (const auto& prop_pair : props_table) {
+                            props[prop_pair.first] = prop_pair.second;
+                        }
                     }
                 }
             }
@@ -522,6 +519,10 @@ namespace Amara {
             if (scene) node->scene = scene;
             node->parent = this;
             children.push_back(node);
+
+            node->preload();
+            if (!node->destroyed) node->create();
+            node->actuated = true;
 
             return node;
         }

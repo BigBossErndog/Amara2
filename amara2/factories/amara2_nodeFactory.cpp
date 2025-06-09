@@ -332,7 +332,15 @@ namespace Amara {
             if (value.is<sol::function>()) {
                 sol::function callback = value.as<sol::function>();
                 sol::function func = sol::make_object(gameProps->lua, [this, callback](sol::variadic_args va)->sol::object {
-                    return callback(this->get_lua_object(), sol::as_args(va));
+                    std::vector<sol::object> remaining_args_vector;
+
+                    if (va.size() > 0) {
+                        for (auto it = va.begin() + 1; it != va.end(); ++it) {
+                            remaining_args_vector.push_back(*it);
+                        }
+                    }
+
+                    return callback(this->get_lua_object(), sol::as_args(remaining_args_vector));
                 });
                 tbl.raw_set(key, func);
             }

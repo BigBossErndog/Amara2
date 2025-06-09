@@ -134,7 +134,7 @@ namespace Amara {
             type = Amara::AssetEnum::Font;
             key = "FontAsset";
         }
-
+        
         SDL_Texture* texture = nullptr;
         #ifdef AMARA_OPENGL
         GLuint glTextureID = 0;

@@ -8,20 +8,19 @@ return Creator:createWorld({
         screenMode = ScreenMode.BorderlessFullscreen,
         clickThrough = true,
         alwaysOnTop = true,
-        graphics = Graphics.Render2D
+        graphics = Graphics.OpenGL
     },
     onPreload = function(world) 
         world:fitToDisplay()
-        world.load:image("uiBox", "ui/amara2_uiBox.png");
-        world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16);
+        world.load:image("uiBox", "ui/amara2_uiBox.png")
+        world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
+        world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
     end,
     onCreate = function(world)
-        for i = 1, 10 do
-            world:createChild("ui/UIWindow", {
-                x = math.random() * world.vw - world.vw/2,
-                y = math.random() * world.vh - world.vh/2
-            })
-        end
+        local win = world:createChild("windows/MainWindow")
+        win.height = 0
+        win.visible = false
+        win.props:open(64)
     end,
     onUpdate = function(world)
         if Keyboard:justPressed(Key.One) then

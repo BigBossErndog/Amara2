@@ -114,6 +114,10 @@ namespace Amara {
                 currentDemiurge->addWorld(new_world);
             }
 
+            new_world->preload();
+            if (!new_world->destroyed) new_world->create();
+            new_world->actuated = true;
+
             return new_world;
         }
         virtual World* createWorld() override {
