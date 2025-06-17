@@ -173,7 +173,7 @@ namespace Amara {
             pos.y = rect.y + height*origin.y;
         }
 
-        void update_size() {
+        virtual void update_size() {
             left = -width/2.0;
             right = width/2.0;
             top = -height/2.0;

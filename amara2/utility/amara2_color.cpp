@@ -40,7 +40,7 @@ namespace Amara {
             return *this; 
         }
         Color& operator= (sol::object config);
-
+        
         explicit operator std::string() const {
             return "Color(" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + ", " + std::to_string(a) + ")";
         }

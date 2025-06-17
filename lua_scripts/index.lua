@@ -1,3 +1,6 @@
+NodeFactory:load("UIWindow", "ui/UIWindow")
+NodeFactory:load("MainWindow", "windows/MainWindow")
+
 return Creator:createWorld({
     window = {
         width = 1280,
@@ -17,10 +20,13 @@ return Creator:createWorld({
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
     end,
     onCreate = function(world)
-        local win = world:createChild("windows/MainWindow")
-        win.height = 0
-        win.visible = false
-        win.props:open(64)
+        local win = world:createChild("MainWindow")
+        -- win.height = 0
+        -- print(win.call)
+        -- win.call:openBox(64)
+        win.call:openBox(64, function(win)
+            win.props.content.visible = true
+        end)
     end,
     onUpdate = function(world)
         if Keyboard:justPressed(Key.One) then

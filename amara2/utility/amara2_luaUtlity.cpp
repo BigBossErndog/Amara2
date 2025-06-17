@@ -109,6 +109,7 @@ namespace Amara {
     std::string lua_to_string(sol::object obj) {
         if (obj.is<sol::nil_t>()) return "nil";
         if (obj.is<std::string>()) return obj.as<std::string>();
+        if (obj.is<sol::function>()) return "(function)";
 
         if (obj.is<int>()) return std::to_string(obj.as<int>());
         if (obj.is<double>()) {
@@ -116,19 +117,19 @@ namespace Amara {
             if (floor(val) == val) return std::to_string((int)val);
             else return std::to_string(val);
         }
-        
-        if (is_node(obj)) return node_to_string(obj);
 
         if (obj.is<Rectangle>()) return std::string(obj.as<Rectangle>());
         if (obj.is<Vector3>()) return std::string(obj.as<Vector3>());
         if (obj.is<Vector2>()) return std::string(obj.as<Vector2>());
-        
+
+        if (obj.is<Color>()) return std::string(obj.as<Color>());
+
+        if (is_node(obj)) return node_to_string(obj);
+
         if (obj.is<sol::table>()) {
             nlohmann::json j = lua_to_json(obj);
             return j.dump();
         }
-
-        if (obj.is<sol::function>()) return "(function)";
 
         return lua_to_json(obj).dump();
     }

@@ -504,6 +504,13 @@ namespace Amara {
             update_canvas = true;
         }
 
+        virtual void update_size() override {
+            left = -drawWidth/2.0;
+            right = drawWidth/2.0;
+            top = -drawHeight/2.0;
+            bottom = drawHeight/2.0;
+        }
+
         Rectangle getRectangle() {
             return Rectangle(
                 pos.x - (drawWidth*scale.x)*origin.x,

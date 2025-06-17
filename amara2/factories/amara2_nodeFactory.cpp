@@ -17,14 +17,14 @@ namespace Amara {
         static inline std::unordered_map<std::string, std::function<sol::object(Node*)>> nodeRegistry;
 
         Amara::GameProps* gameProps = nullptr;
-
+        
         NodeFactory() = default;
 
         bool exists(std::string key) {
             if (factory.find(key) != factory.end()) return true;
             if (compiledScripts.find(key) != compiledScripts.end())  return true;
             if (readScripts.find(key) != readScripts.end()) return true;
-            if (descriptors.find(key) != descriptors.end()) return true; 
+            if (descriptors.find(key) != descriptors.end()) return true;
 
             return false;
         }
@@ -59,7 +59,7 @@ namespace Amara {
                 
                 desc.nodeID = data["nodeID"];
                 desc.baseNodeID = data["baseNodeID"];
-
+                
                 descriptors[desc.nodeID] = desc;
             }
 
@@ -331,7 +331,7 @@ namespace Amara {
         props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
             if (value.is<sol::function>()) {
                 sol::function callback = value.as<sol::function>();
-                sol::function func = sol::make_object(gameProps->lua, [this, callback](sol::variadic_args va)->sol::object {
+                sol::function func = sol::make_object(this->gameProps->lua, [this, callback](sol::variadic_args va)->sol::object {
                     std::vector<sol::object> remaining_args_vector;
 
                     if (va.size() > 0) {

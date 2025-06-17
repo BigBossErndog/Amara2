@@ -10,10 +10,6 @@ return NodeFactory:create("NineSlice", {
         self.input:listen("onPointerDown", function(self, pointer)
             self:bringToFront()
         end)
-
-        if self.props.onCreateWindow then
-            self.props:onCreateWindow()
-        end
     end,
     onUpdate = function(self)
         if self.x < self.world.left + self.width/2 then
@@ -28,28 +24,28 @@ return NodeFactory:create("NineSlice", {
         end
     end,
     props = {
-        isOpen = true,
-        open = function(self, _height, _onEnd)
-            self.visible = true
-            self.props.isOpen = true
-            self.tween:to({
-                height = _height,
-                duration = 0.1,
-                onComplete = _onEnd
-            })
-        end,
-        close = function(self, _onEnd)
-            if _onEnd == nil then
-                _onEnd = function(self) 
-                    self.visible = false
-                end
+        isOpen = true
+    },
+    openBox = function(self, _height, _onEnd)
+        self.visible = true
+        self.props.isOpen = true
+        self.tween:to({
+            height = _height,
+            duration = 0.1,
+            onComplete = _onEnd
+        })
+    end,
+    closeBox = function(self, _onEnd)
+        if _onEnd == nil then
+            _onEnd = function(self) 
+                self.visible = false
             end
-            self.props.isOpen = false
-            self.tween:to({
-                height = 0,
-                duration = 0.1,
-                onComplete = _onEnd
-            })
         end
-    }
+        self.props.isOpen = false
+        self.tween:to({
+            height = 0,
+            duration = 0.1,
+            onComplete = _onEnd
+        })
+    end
 })

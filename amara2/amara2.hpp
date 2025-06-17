@@ -165,6 +165,8 @@
     #include "managers/amara2_messages.cpp"
     #include "managers/amara2_messageBox.cpp"
 
+    #include "managers/amara2_functionManager.cpp"
+
     #include "input/amara2_nodeInput.cpp"
     
     #include "factories/amara2_scriptFactory.cpp"

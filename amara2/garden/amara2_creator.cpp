@@ -292,6 +292,7 @@ namespace Amara {
 
             MessageBox::bind_lua(lua);
             NodeInput::bind_lua(lua);
+            FunctionManager::bind_lua(lua);
             
             GameManager::bind_lua(lua);
             ControlManager::bind_lua(lua);
