@@ -304,20 +304,7 @@ namespace Amara {
 
         virtual void preload() {
             update_properties();
-            sol::function luaPreload = funcs.getFunction(nodeID, "onPreload");
-            if (luaPreload.valid()) {
-                try {
-                    sol::protected_function_result result = luaPreload();
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
-                    }
-                }
-                catch (const std::exception& e) {
-                    debug_log(e.what());
-                    gameProps->breakWorld();
-                }
-            }
+            if (funcs.hasFunction("onPreload")) funcs.callFunction("onPreload");
         }
         
         virtual void update(double deltaTime) {}
@@ -950,7 +937,12 @@ namespace Amara {
         }
     }
 
-    sol::object Amara::FunctionManager::get_node_lua_object() {
+    sol::object Amara::FunctionMap::get_lua_object(Amara::Node* node) {
+        if (node) return node->get_lua_object();
+        return sol::nil;
+    }
+
+    sol::object Amara::FunctionManager::get_lua_object() {
         if (node) return node->get_lua_object();
         return sol::nil;
     }

@@ -11,6 +11,7 @@ return Creator:createWorld({
         screenMode = ScreenMode.BorderlessFullscreen,
         clickThrough = true,
         alwaysOnTop = true,
+        vsync = true,
         graphics = Graphics.OpenGL
     },
     onPreload = function(world) 

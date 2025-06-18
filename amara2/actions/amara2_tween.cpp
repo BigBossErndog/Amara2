@@ -49,7 +49,6 @@ namespace Amara {
                 lua_actor_table = otarget.as<sol::table>();
                 lua_data["target"] = sol::nil;
             }
-
             if (lua_data["onComplete"].valid()) {
                 funcs.setFunction(nodeID, "onComplete", lua_data["onComplete"]);
                 lua_data["onComplete"] = sol::nil;
@@ -257,7 +256,7 @@ namespace Amara {
                     }
                 }
 
-                if (funcs.hasFunction("onUpdate")) funcs.callFunction(actor, "onUpdate", deltaTime);
+                if (funcs.hasFunction("onTweening")) funcs.callFunction(actor, "onTweening", deltaTime);
 
                 if (progress == 1) {
                     if (waitingYoyo) {

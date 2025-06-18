@@ -1,13 +1,65 @@
 namespace Amara {
     class Node;
 
+    class FunctionMap {
+    public:
+        GameProps* gameProps = nullptr;
+
+        sol::table func_table;
+        std::unordered_map<std::string, sol::protected_function> func_map;
+        
+        FunctionMap() = default;
+        FunctionMap(GameProps* _gameProps) {
+            gameProps = _gameProps;
+        }
+
+        void createTable() {
+            func_table = gameProps->lua.create_table();
+        }
+
+        bool hasFunction(std::string funcName) {
+            return func_map.find(funcName) != func_map.end();
+        }
+
+        void setFunction(std::string funcName, sol::function func, sol::function wrapped_func) {
+            func_map[funcName] = func;
+            func_table[funcName] = wrapped_func;
+        }
+
+        sol::function getFunction(std::string funcName) {
+            return func_map[funcName];
+        }
+
+        template<typename... CallArgs>
+        sol::object callFunction(Amara::Node* _node, std::string funcName, CallArgs&&... args) {
+            try {
+                sol::protected_function_result result = func_map[funcName](get_lua_object(_node), std::forward<CallArgs>(args)...);
+                if (result.valid()) {
+                    return result;
+                }
+                else {
+                    sol::error err = result;
+                    throw std::runtime_error("Lua Error: " + std::string(err.what()));
+                }
+            }
+            catch (const std::exception& e) {
+                debug_log(e.what());
+                gameProps->breakWorld();
+            }
+
+            return sol::nil;
+        }
+
+        sol::object get_lua_object(Amara::Node* node);
+    };
+    
     class FunctionManager {
     public:
         Amara::GameProps* gameProps = nullptr;
         Amara::Node* owner_node = nullptr;
         Amara::Node* node = nullptr;
 
-        std::unordered_map<std::string, sol::table> funcTable;
+        std::unordered_map<std::string, FunctionMap> funcMap;
         std::string lastClass;
 
         std::unordered_map<std::string, std::string> inheritance_map;
@@ -26,31 +78,36 @@ namespace Amara {
             lastRegisteredClass = className;
         }
 
-        sol::object get_node_lua_object();
         std::string owner_node_string();
 
-        sol::function _create_wrapped_function(sol::function original_callback) {
-            return sol::make_object(this->gameProps->lua, [this, original_callback](sol::variadic_args va) -> sol::object {
-                std::vector<sol::object> actual_args_vector;
+        sol::function _create_wrapped_function(std::string class_name, std::string func_name) {
+            return sol::make_object(this->gameProps->lua, [this, class_name, func_name](sol::variadic_args va) -> sol::object {
+                std::vector<sol::object> remaining_args_vector;
+
                 if (va.size() > 0) {
                     for (auto it = va.begin() + 1; it != va.end(); ++it) {
-                        actual_args_vector.push_back(*it);
+                        remaining_args_vector.push_back(*it);
                     }
                 }
-                return original_callback(this->get_node_lua_object(), sol::as_args(actual_args_vector));
+                return this->callFunction(class_name, func_name, sol::as_args(remaining_args_vector));
             });
         }
 
         void setFunction(std::string className, std::string funcName, sol::function func) {
-            if (funcTable.find(className) == funcTable.end()) createTable(className);
-            funcTable[className][funcName] = _create_wrapped_function(func);
+            if (funcMap.find(className) == funcMap.end()) createTable(className);
+            funcMap[className].setFunction(funcName, func, _create_wrapped_function(className, funcName));
         }
 
         void createTable(std::string className) {
-            sol::table new_class_tbl = gameProps->lua.create_table();
-            
-            if (!lastClass.empty() && funcTable.find(lastClass) != funcTable.end()) {
-                sol::table last_class_tbl = funcTable[lastClass];
+            funcMap[className] = FunctionMap(gameProps);
+            FunctionMap& new_map = funcMap[className];
+
+            new_map.createTable();
+
+            sol::table& new_class_tbl = funcMap[className].func_table;
+
+            if (!lastClass.empty() && funcMap.find(lastClass) != funcMap.end()) {
+                sol::table last_class_tbl = funcMap[lastClass].func_table;
                 for (const auto& pair : last_class_tbl) {
                     if (pair.second.is<sol::function>()) {
                         new_class_tbl[pair.first] = pair.second;
@@ -59,39 +116,16 @@ namespace Amara {
                 new_class_tbl["super"] = last_class_tbl;
             }
 
-            sol::table meta = gameProps->lua.create_table();
-
-            meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
-                if (value.is<sol::function>()) {
-                    sol::function callback = value.as<sol::function>();
-                    sol::function func = sol::make_object(this->gameProps->lua, [this, key, callback](sol::variadic_args va)->sol::object {
-                        std::vector<sol::object> remaining_args_vector;
-
-                        if (va.size() > 0) {
-                            for (auto it = va.begin() + 1; it != va.end(); ++it) {
-                                remaining_args_vector.push_back(*it);
-                            }
-                        }
-
-                        return callback(this->get_node_lua_object(), sol::as_args(remaining_args_vector));
-                    });
-                    tbl.raw_set(key, func);
-                }
-                else debug_log("Error: Cannot set non-functions to FunctionManager.");
-            };
-
-            new_class_tbl[sol::metatable_key] = meta;
-            funcTable[className] = new_class_tbl;
             lastClass = className;
         }
 
         bool hasTable(std::string className) {
-            return funcTable.find(className) != funcTable.end();
+            return funcMap.find(className) != funcMap.end();
         }
 
         sol::object getClassTable(std::string className) {
-            if (funcTable.find(className) != funcTable.end()) {
-                return funcTable[className];
+            if (funcMap.find(className) != funcMap.end()) {
+                return funcMap[className].func_table;
             }
             if (inheritance_map.find(className) != inheritance_map.end()) {
                 return getClassTable(inheritance_map[className]);
@@ -99,32 +133,9 @@ namespace Amara {
             return sol::nil;
         }
 
-        template<typename... CallArgs>
-        sol::function getFunction(std::string className, std::string funcName) {
-            auto class_iter = funcTable.find(className);
-            if (class_iter != funcTable.end()) {
-                sol::table class_tbl = class_iter->second;
-                sol::object func_obj = class_tbl[funcName];
-
-                if (func_obj.is<sol::function>()) {
-                    return func_obj;
-                } 
-            }
-            else if (inheritance_map.find(className) != inheritance_map.end()) {
-                return getFunction(inheritance_map[className], funcName);
-            }
-            return sol::nil;
-        }
-
         bool hasFunction(std::string className, std::string funcName) {
-            auto class_iter = funcTable.find(className);
-            if (class_iter != funcTable.end()) {
-                sol::table class_tbl = class_iter->second;
-                sol::object func_obj = class_tbl[funcName];
-
-                if (func_obj.is<sol::function>()) {
-                    return true;
-                } 
+            if (funcMap.find(className) != funcMap.end()) {
+                return funcMap[className].hasFunction(funcName);
             }
             return false;
         }
@@ -134,27 +145,10 @@ namespace Amara {
 
         template<typename... CallArgs>
         sol::object callFunction(std::string className, std::string funcName, CallArgs&&... args) {
-            auto class_iter = funcTable.find(className);
-            if (class_iter != funcTable.end()) {
-                sol::table class_tbl = class_iter->second;
-                sol::object func_obj = class_tbl[funcName];
-
-                if (func_obj.is<sol::function>()) {
-                    sol::function func = func_obj.as<sol::function>();
-                    try {
-                        sol::protected_function_result result = func.call(std::forward<CallArgs>(args)...);
-                        if (result.valid()) {
-                            return result;
-                        }
-                        else {
-                            sol::error err = result;
-                            throw std::runtime_error("Lua Error: " + std::string(err.what()));
-                        }
-                    }
-                    catch (const sol::error& e) {
-                        debug_log(e.what());
-                        gameProps->breakWorld();
-                    }
+            if (funcMap.find(className) != funcMap.end()) {
+                FunctionMap& found_map = funcMap[className];
+                if (found_map.hasFunction(funcName)) {
+                    return found_map.callFunction(node, funcName, std::forward<CallArgs>(args)...);
                 }
                 else debug_log("Error: ", owner_node_string(), " does not have the function \"", funcName, "\".");
             }
@@ -164,7 +158,7 @@ namespace Amara {
             else debug_log("Error: ", owner_node_string(), " does not have the function \"", funcName, "\".");
             return sol::nil;
         }
-
+        
         template<typename... CallArgs>
         sol::object callFunction(std::string funcName, CallArgs&&... args) {
             return callFunction(lastClass, funcName, std::forward<CallArgs>(args)...);
@@ -178,6 +172,8 @@ namespace Amara {
             node = rec;
             return ret;
         }
+
+        sol::object get_lua_object();
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<FunctionManager>("FunctionManager",
