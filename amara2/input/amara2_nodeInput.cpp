@@ -17,6 +17,15 @@ namespace Amara {
 
         Vector2 rec_interact_pos;
 
+        void configure(nlohmann::json config) {
+            if (json_is(config, "active")) {
+                active = config["active"];            
+            }
+            if (json_is(config, "draggable")) {
+                draggable = config["draggable"];
+            }
+        }
+
         void queueInput(const Amara::Shape::ShapeVariant& _shape) {
             shape = _shape;
             gameProps->inputManager->queueInput(this);

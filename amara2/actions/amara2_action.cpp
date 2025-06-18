@@ -3,10 +3,6 @@ namespace Amara {
     public:
         Amara::Node* actor = nullptr;
 
-        sol::protected_function onPrepare;
-        sol::protected_function onAct;
-        sol::protected_function onComplete;
-
         bool completed = false;
         bool hasStarted = false;
         bool waitingForChildren = false;
@@ -20,6 +16,10 @@ namespace Amara {
             sortable = false;
             is_action = true;
         }
+
+        virtual void init() override {
+            Node::init();
+        }
         
         virtual void create() override {
             if (actor == nullptr) actor = parent;
@@ -29,35 +29,15 @@ namespace Amara {
         virtual void prepare() {
             hasStarted = true;
 
-            if (onPrepare.valid()) {
-                try {
-                    sol::protected_function_result result = onPrepare(actor->get_lua_object(), get_lua_object());
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
-                    }
-                } catch (const std::exception& e) {
-                    debug_log(e.what());
-                    gameProps->breakWorld();
-                }
-            }
+            if (funcs.hasFunction("onPrepare")) funcs.callFunction(actor, "onPrepare");
         }
 
         virtual void act(double deltaTime) {
             if (!hasStarted) {
                 prepare();
             }
-            if (hasStarted && !completed && onAct.valid()) {
-                try {
-                    sol::protected_function_result result = onAct(actor->get_lua_object(), get_lua_object(), deltaTime);
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));
-                    }
-                } catch (const std::exception& e) {
-                    debug_log(e.what());
-                    gameProps->breakWorld();
-                }
+            if (hasStarted && !completed) {
+                if (funcs.hasFunction("onAct")) funcs.callFunction(actor, "onAct", deltaTime);
             }
         }
 
@@ -92,18 +72,7 @@ namespace Amara {
         virtual sol::object complete() {
             if (completed) return get_lua_object();
             completed = true;
-            if (onComplete.valid()) {
-                try {
-                    sol::protected_function_result result = onComplete(actor->get_lua_object(), get_lua_object());
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));
-                    }
-                } catch (const std::exception& e) {
-                    debug_log(e.what());
-                    gameProps->breakWorld();
-                }
-            }
+            if (funcs.hasFunction("onComplete")) funcs.callFunction(actor, "onComplete");
 
             start_child_actions();
             waitingForChildren = true;
@@ -112,18 +81,8 @@ namespace Amara {
         }
 
         sol::object whenDone(sol::function func) {
-            onComplete = func;
+            funcs.setFunction(nodeID, "onComplete", func);
             return get_lua_object();
-        }
-
-        virtual sol::object luaConfigure(std::string key, sol::object val) override {
-            if (val.is<sol::function>()) {
-                sol::function func = val.as<sol::function>();
-                if (String::equal("onPrepare", key)) onPrepare = func;
-                else if (String::equal("onAct", key)) onAct = func;
-                else if (String::equal("onComplete", key)) onComplete = func;
-            }
-            return Amara::Node::luaConfigure(key, val);
         }
 
         void start_child_actions() {
@@ -199,9 +158,6 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::Action>("Action",
                 sol::base_classes, sol::bases<Amara::Node>(),
-                "onPrepare", &Action::onPrepare,
-                "onAct", &Action::onAct,
-                "onComplete", &Action::onComplete,
                 "hasStarted", sol::readonly(&Action::hasStarted),
                 "completed", sol::readonly(&Action::completed),
                 "complete", &Action::complete,

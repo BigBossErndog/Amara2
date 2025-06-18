@@ -4,6 +4,7 @@ namespace Amara {
     class FunctionManager {
     public:
         Amara::GameProps* gameProps = nullptr;
+        Amara::Node* owner_node = nullptr;
         Amara::Node* node = nullptr;
 
         std::unordered_map<std::string, sol::table> funcTable;
@@ -17,6 +18,7 @@ namespace Amara {
         void init(Amara::GameProps* _gameProps, Amara::Node* _node) {
             gameProps = _gameProps;
             node = _node;
+            owner_node = _node;
         }
 
         void registerClass(std::string className) {
@@ -25,6 +27,7 @@ namespace Amara {
         }
 
         sol::object get_node_lua_object();
+        std::string owner_node_string();
 
         sol::function _create_wrapped_function(sol::function original_callback) {
             return sol::make_object(this->gameProps->lua, [this, original_callback](sol::variadic_args va) -> sol::object {
@@ -113,6 +116,22 @@ namespace Amara {
             return sol::nil;
         }
 
+        bool hasFunction(std::string className, std::string funcName) {
+            auto class_iter = funcTable.find(className);
+            if (class_iter != funcTable.end()) {
+                sol::table class_tbl = class_iter->second;
+                sol::object func_obj = class_tbl[funcName];
+
+                if (func_obj.is<sol::function>()) {
+                    return true;
+                } 
+            }
+            return false;
+        }
+        bool hasFunction(std::string funcName) {
+            return hasFunction(lastClass, funcName);
+        }
+
         template<typename... CallArgs>
         sol::object callFunction(std::string className, std::string funcName, CallArgs&&... args) {
             auto class_iter = funcTable.find(className);
@@ -136,14 +155,28 @@ namespace Amara {
                         debug_log(e.what());
                         gameProps->breakWorld();
                     }
-                } 
-                else debug_log("Error: Class ", className, " does not have function table.");
+                }
+                else debug_log("Error: ", owner_node_string(), " does not have the function \"", funcName, "\".");
             }
             else if (inheritance_map.find(className) != inheritance_map.end()) {
                 return callFunction(inheritance_map[className], funcName, std::forward<CallArgs>(args)...);
             }
-            else debug_log("Error: Class ", className, " does not have function table.");
+            else debug_log("Error: ", owner_node_string(), " does not have the function \"", funcName, "\".");
             return sol::nil;
+        }
+
+        template<typename... CallArgs>
+        sol::object callFunction(std::string funcName, CallArgs&&... args) {
+            return callFunction(lastClass, funcName, std::forward<CallArgs>(args)...);
+        }
+
+        template<typename... CallArgs>
+        sol::object callFunction(Amara::Node* _node, std::string funcName, CallArgs&&... args) {
+            Amara::Node* rec = node;
+            node = _node;
+            sol::object ret = callFunction(lastClass, funcName, std::forward<CallArgs>(args)...);
+            node = rec;
+            return ret;
         }
 
         static void bind_lua(sol::state& lua) {

@@ -1,7 +1,5 @@
 class Hotkey: public Amara::Action {
 public:
-    sol::function onPress;
-
     bool pressed = false;
     bool rec_pressed = false;
 
@@ -14,19 +12,20 @@ public:
     virtual Amara::Node* configure(nlohmann::json config) {
         if (Amara::json_has(config, "keys")) {
             nlohmann::json keys_json = config["keys"];
-            for (int i = 0; i < keys_json.size(); i++) {
-                keys.push_back((SDL_Keycode)keys_json[i].get<int>());
+            if (keys_json.is_array()) {
+                for (int i = 0; i < keys_json.size(); i++) {
+                    keys.push_back((SDL_Keycode)keys_json[i].get<int>());
+                }
             }
+            else {
+                keys.push_back((SDL_Keycode)keys_json.get<int>());
+            }
+        }
+        else if (Amara::json_has(config, "key")) {
+            keys.push_back((SDL_Keycode)config["key"].get<int>());
         }
 
         return Amara::Action::configure(config);
-    }
-
-    virtual sol::object luaConfigure(std::string key, sol::object val) override {
-        if (val.is<sol::function>()) {
-            if (Amara::String::equal(key, "onPress")) onPress = val.as<sol::function>();
-        }
-        return Amara::Action::luaConfigure(key, val);
     }
 
     bool is_key_pressed(int val) {
@@ -144,24 +143,12 @@ public:
         else pressed = false;
 
         if (pressed && !rec_pressed) {
-            if (onPress.valid()) {
-                try {
-                sol::protected_function_result result = onPress(actor->get_lua_object(), get_lua_object());
-                if (!result.valid()) {
-                    sol::error err = result;
-                    throw std::runtime_error("Lua Error: " + std::string(err.what()));
-                }
-                } catch (const std::exception& e) {
-                    Amara::debug_log(e.what());
-                    gameProps->breakWorld();
-                }
-            }
+            funcs.callFunction(actor, "onPress");
         }
     }
 
     static void bind_lua(sol::state& lua) {
         lua.new_usertype<Hotkey>("Hotkey",
-            "onPress", &Hotkey::onPress,
             "pressed", sol::readonly(&Hotkey::pressed)
         );
     }

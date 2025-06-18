@@ -16,9 +16,6 @@ namespace Amara {
 
         int repeats = 0;
 
-        sol::protected_function onStart;
-        sol::protected_function onUpdate;
-
         Tween(): Amara::Action() {
             set_base_node_id("Tween");
         }
@@ -54,15 +51,15 @@ namespace Amara {
             }
 
             if (lua_data["onComplete"].valid()) {
-                onComplete = lua_data["onComplete"];
+                funcs.setFunction(nodeID, "onComplete", lua_data["onComplete"]);
                 lua_data["onComplete"] = sol::nil;
             }
             if (lua_data["onStart"].valid()) {
-                onStart = lua_data["onStart"];
+                funcs.setFunction(nodeID, "onStart", lua_data["onStart"]);
                 lua_data["onStart"] = sol::nil;
             }
             if (lua_data["onUpdate"].valid()) {
-                onUpdate = lua_data["onUpdate"];
+                funcs.setFunction(nodeID, "onUpdate", lua_data["onUpdate"]);
                 lua_data["onUpdate"] = sol::nil;
             }
             if (lua_data["duration"].valid()) {
@@ -192,18 +189,7 @@ namespace Amara {
 
                 Amara::Action::prepare();
 
-                if (onStart.valid()) {
-                    try {
-                        sol::protected_function_result result = onStart(actor->get_lua_object(), get_lua_object());
-                        if (!result.valid()) {
-                            sol::error err = result;
-                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
-                        }
-                    } catch (const std::exception& e) {
-                        debug_log(e.what());
-                        gameProps->breakWorld();
-                    }
-                }
+                if (funcs.hasFunction("onStart")) funcs.callFunction(actor, "onStart");
             }
         }
 
@@ -271,18 +257,7 @@ namespace Amara {
                     }
                 }
 
-                if (onUpdate.valid()) {
-                    try {
-                        sol::protected_function_result result = onUpdate(actor->get_lua_object(), get_lua_object(), deltaTime);
-                        if (!result.valid()) {
-                            sol::error err = result;
-                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
-                        }
-                    } catch (const std::exception& e) {
-                        debug_log(e.what());
-                        gameProps->breakWorld();
-                    }
-                }
+                if (funcs.hasFunction("onUpdate")) funcs.callFunction(actor, "onUpdate", deltaTime);
 
                 if (progress == 1) {
                     if (waitingYoyo) {

@@ -10,6 +10,16 @@ return NodeFactory:create("NineSlice", {
         self.input:listen("onPointerDown", function(self, pointer)
             self:bringToFront()
         end)
+
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftAlt, Key.A },
+            onPrepare = function(self)
+                print("Hello")
+            end,
+            onPress = function(self)
+                self.world:destroy()
+            end
+        })
     end,
     onUpdate = function(self)
         if self.x < self.world.left + self.width/2 then

@@ -89,20 +89,7 @@ namespace Amara {
         }
         
         virtual void create() {
-            sol::function luaCreate = funcs.getFunction(nodeID, "onCreate");
-            if (luaCreate.valid()) {
-                try {
-                    sol::protected_function_result result = luaCreate();
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
-                    }
-                }
-                catch (const std::exception& e) {
-                    debug_log(e.what());
-                    gameProps->breakWorld();
-                }
-            }
+            if (funcs.hasFunction("onCreate")) funcs.callFunction("onCreate");
         }
 
         virtual void init() {
@@ -212,11 +199,16 @@ namespace Amara {
 
             if (json_has(config, "input")) {
                 nlohmann::json val = config["input"];
-                if (val.is_boolean() && val) {
-                    input.activate();
+                if (val.is_boolean()) {
+                    if (val) {
+                        input.activate();
+                    }
+                    else {
+                        input.deactivate();
+                    }
                 }
-                else {
-                    input.deactivate();
+                else if (val.is_object()) {
+                    input.configure(val);
                 }
             }
             
@@ -389,20 +381,7 @@ namespace Amara {
             update(deltaTime);
 
             if (!destroyed) {
-                sol::function luaUpdate = funcs.getFunction(nodeID, "onUpdate");
-                if (luaUpdate.valid()) {
-                    try {
-                        sol::protected_function_result result = luaUpdate(deltaTime);
-                        if (!result.valid()) {
-                            sol::error err = result;
-                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
-                        }
-                    }
-                    catch (const std::exception& e) {
-                        debug_log(e.what());
-                        gameProps->breakWorld();
-                    }
-                }
+                if (funcs.hasFunction("onUpdate")) funcs.callFunction("onUpdate", deltaTime);
             }
             if (yDepthLocked) depth = pos.y;
             else if (zDepthLocked) depth = pos.z;
@@ -611,20 +590,7 @@ namespace Amara {
             update_properties();
             destroyed = true;
 
-            sol::function luaDestroy = funcs.getFunction(nodeID, "onDestroy");
-            if (luaDestroy.valid()) {
-                try {
-                    sol::protected_function_result result = luaDestroy();
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
-                    }
-                }
-                catch (const std::exception& e) {
-                    debug_log(e.what());
-                    gameProps->breakWorld();
-                }
-            }
+            if (funcs.hasFunction("onDestroy")) funcs.callFunction("onDestroy");
 
             messages.destroy();
             input.destroy();
@@ -984,8 +950,13 @@ namespace Amara {
         }
     }
 
-    sol::object FunctionManager::get_node_lua_object() {
+    sol::object Amara::FunctionManager::get_node_lua_object() {
         if (node) return node->get_lua_object();
         return sol::nil;
+    }
+
+    std::string Amara::FunctionManager::owner_node_string() {
+        if (owner_node) return std::string(*owner_node);
+        return "";
     }
 }
