@@ -10,7 +10,7 @@ namespace Amara {
         bool autoDestroy = false;
         
         bool locked = false;
-
+        
         Action(): Node() {
             set_base_node_id("Action");
             sortable = false;

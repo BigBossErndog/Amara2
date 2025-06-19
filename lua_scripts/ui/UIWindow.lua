@@ -11,7 +11,7 @@ return NodeFactory:create("NineSlice", {
             self:bringToFront()
         end)
     end,
-    onUpdate = function(self)
+    onUpdate = function(self, deltaTime)
         if self.x < self.world.left + self.width/2 then
             self.x = self.world.left + self.width/2
         elseif self.x > self.world.right - self.width/2 then

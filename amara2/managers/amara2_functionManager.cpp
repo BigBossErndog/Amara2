@@ -74,6 +74,7 @@ namespace Amara {
         }
 
         void registerClass(std::string className) {
+            if (String::equal(className, lastRegisteredClass)) return;
             inheritance_map[className] = lastRegisteredClass;
             lastRegisteredClass = className;
         }
@@ -134,8 +135,11 @@ namespace Amara {
         }
 
         bool hasFunction(std::string className, std::string funcName) {
-            if (funcMap.find(className) != funcMap.end()) {
-                return funcMap[className].hasFunction(funcName);
+            if (funcMap.find(className) != funcMap.end() && funcMap[className].hasFunction(funcName)) {
+                return true;
+            }
+            if (inheritance_map.find(className) != inheritance_map.end()) {
+                return hasFunction(inheritance_map[className], funcName);
             }
             return false;
         }
@@ -150,9 +154,8 @@ namespace Amara {
                 if (found_map.hasFunction(funcName)) {
                     return found_map.callFunction(node, funcName, std::forward<CallArgs>(args)...);
                 }
-                else debug_log("Error: ", owner_node_string(), " does not have the function \"", funcName, "\".");
             }
-            else if (inheritance_map.find(className) != inheritance_map.end()) {
+            if (inheritance_map.find(className) != inheritance_map.end()) {
                 return callFunction(inheritance_map[className], funcName, std::forward<CallArgs>(args)...);
             }
             else debug_log("Error: ", owner_node_string(), " does not have the function \"", funcName, "\".");

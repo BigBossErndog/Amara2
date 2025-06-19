@@ -24,14 +24,14 @@ namespace Amara {
         sol::table props;
         sol::object luaobject;
 
-        Amara::FunctionManager funcs;
-
         Amara::PassOnProps passOn;
         bool passOnPropsEnabled = true;
         
         Amara::MessageBox messages;
 
         Amara::NodeInput input;
+
+        Amara::FunctionManager funcs;
 
         Amara::StateMachine* stateMachine = nullptr;
         Amara::Loader* loader = nullptr;
@@ -367,9 +367,10 @@ namespace Amara {
 
             update(deltaTime);
 
-            if (!destroyed) {
-                if (funcs.hasFunction("onUpdate")) funcs.callFunction("onUpdate", deltaTime);
+            if (!destroyed && funcs.hasFunction("onUpdate")) {
+                funcs.callFunction("onUpdate", deltaTime);
             }
+
             if (yDepthLocked) depth = pos.y;
             else if (zDepthLocked) depth = pos.z;
             

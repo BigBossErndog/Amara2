@@ -28,8 +28,10 @@ return Creator:createWorld({
         win.call:openBox(64, function(win)
             win.props.content.visible = true
         end)
+
+        world.props.win = win
     end,
-    onUpdate = function(world)
+    onUpdate = function(world, deltaTime)
         if Keyboard:justPressed(Key.One) then
             world:fitToDisplay(1)
         end
