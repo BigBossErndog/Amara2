@@ -197,13 +197,13 @@ namespace Amara {
 
             eventHandler.init(&gameProps);
 
+            scripts.run(path);
+            game.hasQuit = gameProps.lua_exception_thrown;
+
             rec_tick = SDL_GetPerformanceCounter();
             Uint64 freq = SDL_GetPerformanceFrequency();
             double frameTarget = 0;
             double elapsedTime = 0;
-
-            scripts.run(path);
-            game.hasQuit = gameProps.lua_exception_thrown;
 
             std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
             

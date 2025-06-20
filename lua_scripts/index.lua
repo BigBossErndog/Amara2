@@ -25,20 +25,68 @@ return Creator:createWorld({
     onCreate = function(world)
         local props = world.props;
 
-        -- props.windowShadows = world:createChild("ShaderContainer", {
-        --     tint = Colors.Black,
+        props.tc = world:createChild("TextureContainer", {
+            fill = { 0, 0, 0, 80 },
+            width = 1920,
+            height = 1080,
+            onCreate = function(self)
+                self.size = self.world.view
+            end,
+            onUpdate = function(self)
+                self.size = self.world.view
+            end
+        })
+
+        props.tc:createChild("TextureContainer", {
+            fill = Colors.Black,
+            width = 64,
+            height = 64
+        })
+        -- props.tc.size = world.view
+        -- print(world.view)
+        -- props.tc.x = 0
+        -- props.tc.y = 0
+        -- print(props.tc.rect)
+
+        -- props.tc:createChild("Sprite", {
+        --     texture = "uiBox",
+        --     onUpdate = function(self)
+        --         if Keyboard:isDown(Key.Left) then
+        --             self.x = self.x - 1
+        --         end
+        --         if Keyboard:isDown(Key.Right) then
+        --             self.x = self.x + 1
+        --         end
+        --         if Keyboard:isDown(Key.Up) then
+        --             self.y = self.y - 1
+        --         end
+        --         if Keyboard:isDown(Key.Down) then
+        --             self.y = self.y + 1
+        --         end
+        --     end
+        -- })
+
+        -- props.windowShadows = props.tc:createChild("TextureContainer", {
+        --     fill = Colors.Black,
         --     onCreate = function(self)
-        --         print("WHAT THE FUCK")
-        --         print(1, self) 
         --         self.size = self.world.view
+        --         -- 
         --     end,
         --     onUpdate = function(self)
-        --         print(2, self)
         --         self.size = self.world.view
         --     end
         -- })
 
         props.windows = world:createChild("Group")
+
+        props.sprite = props.windows:createChild("Sprite", {
+            texture = "uiBox",
+            maxWidth = 640, maxHeight = 640,
+            input = {
+                active = true,
+                draggable = true
+            }
+        })
 
         props.mainwin = props.windows:createChild("MainWindow")
         props.mainwin.height = 0
@@ -46,11 +94,12 @@ return Creator:createWorld({
             win.props.content.visible = true
         end)
 
-        -- print(props.windowShadows)
-        -- props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
-        --     target = props.windows,
-        --     x = -24, y = 24
-        -- })
+        props.windowShadows_copy = props.tc:createChild("CopyNode", {
+            target = props.windows,
+            alpha = 0.5,
+            x = -4, y = 4,
+            depth = -1
+        })
     end,
     onUpdate = function(world, deltaTime)
         if Keyboard:justPressed(Key.One) then

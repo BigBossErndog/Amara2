@@ -445,7 +445,7 @@ namespace Amara {
 					++it;
 					continue;
 				}
-
+                
                 update_properties();
 				child->draw(v);
 

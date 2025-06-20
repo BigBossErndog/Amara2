@@ -554,7 +554,7 @@ namespace Amara {
 
             float scaledWidth  = drawWidth  * scale.x;
             float scaledHeight = drawHeight * scale.y;
-
+            
             pos.x = rect.x + (rect.w - scaledWidth)/2 + scaledWidth*origin.x;
             pos.y = rect.y + (rect.h - scaledHeight)/2 + scaledHeight*origin.y;
             

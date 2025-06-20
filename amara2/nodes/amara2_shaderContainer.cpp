@@ -66,25 +66,25 @@ namespace Amara {
         virtual void createCanvas(int _w, int _h) override {
             Amara::TextureContainer::createCanvas(_w, _h);
 
-            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) { 
-                canvas2Texture = SDL_CreateTexture(
-                    gameProps->renderer,
-                    SDL_PIXELFORMAT_RGBA32,
-                    SDL_TEXTUREACCESS_TARGET,
-                    _w,
-                    _h
-                );
-            }
-            canvas1Texture = canvasTexture;
+            // if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) { 
+            //     canvas2Texture = SDL_CreateTexture(
+            //         gameProps->renderer,
+            //         SDL_PIXELFORMAT_RGBA32,
+            //         SDL_TEXTUREACCESS_TARGET,
+            //         _w,
+            //         _h
+            //     );
+            // }
+            // canvas1Texture = canvasTexture;
 
-            #ifdef AMARA_OPENGL
-            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
-                glGenTextures(1, &glCanvas2ID);
-                glBindTexture(GL_TEXTURE_2D, glCanvas2ID);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            }
-            glBuffer1ID = glBufferID;
-            #endif
+            // #ifdef AMARA_OPENGL
+            // if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+            //     glGenTextures(1, &glCanvas2ID);
+            //     glBindTexture(GL_TEXTURE_2D, glCanvas2ID);
+            //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            // }
+            // glBuffer1ID = glBufferID;
+            // #endif
         }
 
         void drawPass() {
@@ -180,46 +180,48 @@ namespace Amara {
         }
 
         void drawCanvas(const Rectangle& v) {
-            ShaderProgram* rec_shader = currentShaderProgram;
-            canvas_flip = false;
+            // ShaderProgram* rec_shader = currentShaderProgram;
+            // canvas_flip = false;
 
-            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
-                canvasTexture = canvas1Texture;
-            }
-            #ifdef AMARA_OPENGL
-            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
-                glBufferID = glBuffer1ID;
-                glCanvasID = glCanvas1ID;
-            }
-            #endif
+            // if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
+            //     canvasTexture = canvas1Texture;
+            // }
+            // #ifdef AMARA_OPENGL
+            // else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+            //     glBufferID = glBuffer1ID;
+            //     glCanvasID = glCanvas1ID;
+            // }
+            // #endif
 
-            Amara::ShaderContainer::drawCanvas(v);
+            // PassOnProps rec_props = gameProps->passOn;
 
-            PassOnProps rec_props = gameProps->passOn;
-            PassOnProps new_props;
-            new_props.insideTextureContainer = true;
+            Amara::TextureContainer::drawCanvas(v);
 
-            for (Amara::ShaderProgram* prog: shader_passes) {
-                currentShaderProgram = prog;
-                drawPass();
-                canvas_flip = !canvas_flip;
-            }
+            // PassOnProps new_props;
+            // new_props.insideTextureContainer = true;
 
-            gameProps->passOn = rec_props;
+            // for (Amara::ShaderProgram* prog: shader_passes) {
+            //     gameProps->passOn = new_props;
+            //     currentShaderProgram = prog;
+            //     drawPass();
+            //     canvas_flip = !canvas_flip;
+            // }
 
-            currentShaderProgram = rec_shader;
+            // gameProps->passOn = rec_props;
 
-            if (canvas_flip) {
-                if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
-                    canvasTexture = (canvas_flip) ? canvas1Texture : canvas2Texture;
-                }
-                #ifdef AMARA_OPENGL
-                if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
-                    glBufferID = (canvas_flip) ? glBuffer1ID : glBuffer2ID;
-                    glCanvasID = (canvas_flip) ? glCanvas1ID : glCanvas2ID;
-                }
-                #endif
-            }
+            // currentShaderProgram = rec_shader;
+
+            // if (canvas_flip) {
+            //     if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
+            //         canvasTexture = (canvas_flip) ? canvas1Texture : canvas2Texture;
+            //     }
+            //     #ifdef AMARA_OPENGL
+            //     if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+            //         glBufferID = (canvas_flip) ? glBuffer1ID : glBuffer2ID;
+            //         glCanvasID = (canvas_flip) ? glCanvas1ID : glCanvas2ID;
+            //     }
+            //     #endif
+            // }
         }
 
         static void bind_lua(sol::state& lua) {

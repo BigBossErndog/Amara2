@@ -192,7 +192,9 @@ namespace Amara {
             if (canvasTexture != nullptr && gameProps->renderer) {
                 rec_target = SDL_GetRenderTarget(gameProps->renderer);
                 SDL_SetRenderTarget(gameProps->renderer, canvasTexture);
-                SDL_SetRenderDrawColor(gameProps->renderer, 0, 0, 0, 0);
+                SDL_SetRenderDrawColor(gameProps->renderer, 
+                    fill.r, fill.g, fill.b, fill.a
+                );
 
                 SDL_Rect setv = Rectangle::makeSDLRect(container_viewport);
                 SDL_SetRenderViewport(gameProps->renderer, &setv);

@@ -52,7 +52,7 @@ namespace Amara {
         Rectangle viewport;
         Rectangle rec_windowed_size;
 
-        Rectangle view;
+        Rectangle view = { 0, 0, 0, 0 };
         
         int vsync = 0;
         bool headless = true;
@@ -196,17 +196,6 @@ namespace Amara {
                 gameProps->transparent_window = transparent;
             }
             update_window();
-
-            left = -(windowW/2) / passOn.window_zoom.x;
-            right = (windowW/2) / passOn.window_zoom.x;
-            top = -(windowH/2) / passOn.window_zoom.y;
-            bottom = (windowH/2) / passOn.window_zoom.y;
-            
-            view = Rectangle(
-                left, right,
-                right - left,
-                bottom - top
-            );
 
             Node::update_properties();
         }
@@ -955,7 +944,18 @@ namespace Amara {
             }
 
             passOn = gameProps->passOn;
-            passOnPropsEnabled = false;  
+            passOnPropsEnabled = false;
+
+            left = -(windowW/2) / passOn.window_zoom.x;
+            right = (windowW/2) / passOn.window_zoom.x;
+            top = -(windowH/2) / passOn.window_zoom.y;
+            bottom = (windowH/2) / passOn.window_zoom.y;
+            
+            view = Rectangle(
+                left, top,
+                right - left,
+                bottom - top
+            );
         }
         
         virtual void draw(const Rectangle& v) override {

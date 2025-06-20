@@ -85,6 +85,27 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object next(sol::function func) {
+            return whenDone(func);
+        }
+        sol::object next(std::string key) {
+            // Chain to child actions.
+            Amara::Action* action = nullptr;
+            Amara::Node* child = nullptr;
+            for (int i = children.size()-1; i >= 0; i++) {
+                child = children[i];
+                if (!child->destroyed && child->is_action) {
+                    action = child->as<Amara::Action*>();
+                    if (action) {
+                        return action->chain(key);
+                    }
+                }
+            }
+            if (action == nullptr) action = createChild(key)->as<Amara::Action*>();
+
+            return action->get_lua_object();
+        }
+
         void start_child_actions() {
             children_copy_list = children;
 
@@ -164,6 +185,10 @@ namespace Amara {
                 "addChild", &Action::addChild,
                 "chain", &Action::chain,
                 "whenDone", &Action::whenDone,
+                "next", sol::overload(
+                    sol::resolve<sol::object(std::string)>(&Action::next),
+                    sol::resolve<sol::object(sol::function)>(&Action::next)
+                ),
                 "autoDestroy", &Action::autoDestroy,
                 "on", &Action::on,
                 "alongside", [](Amara::Node& e, std::string key) -> sol::object {
@@ -177,23 +202,6 @@ namespace Amara {
             sol::usertype<Node> node_type = lua["Node"];
             node_type["act"] = [](Amara::Node& e, std::string key) -> sol::object {
                 Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
-                return action->get_lua_object();
-            };
-            node_type["then"] = [](Amara::Node& e, std::string key) -> sol::object {
-                // Chain to child actions.
-                Amara::Action* action = nullptr;
-                Amara::Node* child = nullptr;
-                for (int i = e.children.size()-1; i >= 0; i++) {
-                    child = e.children[i];
-                    if (!child->destroyed && child->is_action) {
-                        action = child->as<Amara::Action*>();
-                        if (action) {
-                            return action->chain(key);
-                        }
-                    }
-                }
-                if (action == nullptr) action = e.createChild(key)->as<Amara::Action*>();
-
                 return action->get_lua_object();
             };
             node_type["stopActions"] = [](Amara::Node& e) -> sol::object {
