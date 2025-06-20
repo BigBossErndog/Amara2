@@ -189,6 +189,7 @@ namespace Amara {
 
         virtual void drawCanvas(const Rectangle& v) {
             SDL_Texture* rec_target = nullptr;
+            
             if (canvasTexture != nullptr && gameProps->renderer) {
                 rec_target = SDL_GetRenderTarget(gameProps->renderer);
                 SDL_SetRenderTarget(gameProps->renderer, canvasTexture);
@@ -204,6 +205,7 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             GLint prevBuffer = 0;
+            GLint prevViewport[4];
             ShaderProgram* rec_shader = gameProps->currentShaderProgram;
             
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
@@ -212,6 +214,7 @@ namespace Amara {
                 gameProps->currentShaderProgram = currentShaderProgram;
                 
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
+                glGetIntegerv(GL_VIEWPORT, prevViewport);
                 glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
                 
                 glViewport(0, 0, width, height);
@@ -241,7 +244,7 @@ namespace Amara {
                 gameProps->currentShaderProgram = rec_shader;
 
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
-                glViewport(v.x, gameProps->window_dim.h - v.y - v.h, v.w, v.h);
+                glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
             }
             #endif
         }

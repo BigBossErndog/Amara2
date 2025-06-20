@@ -279,31 +279,28 @@ namespace Amara {
             }
             #ifdef AMARA_OPENGL
             GLint prevBuffer = 0;
+            GLint prevViewport[4];
             ShaderProgram* rec_shader = gameProps->currentShaderProgram;
 
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL && glBufferID != 0) {
-                GLint prevBuffer = 0;
-                ShaderProgram* rec_shader = gameProps->currentShaderProgram;
+                gameProps->renderBatch->flush();
                 
-                if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
-                    gameProps->renderBatch->flush();
-                    
-                    gameProps->currentShaderProgram = gameProps->defaultShaderProgram;
-                    
-                    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
-                    glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
-                    
-                    glViewport(0, 0, TextureContainer::width, TextureContainer::height);
-                    if (clearOnDraw) {
-                        glClearColor(
-                            fill.r / 255.0f,
-                            fill.g / 255.0f,
-                            fill.b / 255.0f,
-                            fill.a / 255.0f
-                        );
-                    }
-                    glClear(GL_COLOR_BUFFER_BIT);
+                gameProps->currentShaderProgram = gameProps->defaultShaderProgram;
+                
+                glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
+                glGetIntegerv(GL_VIEWPORT, prevViewport);
+                glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
+                
+                glViewport(0, 0, TextureContainer::width, TextureContainer::height);
+                if (clearOnDraw) {
+                    glClearColor(
+                        fill.r / 255.0f,
+                        fill.g / 255.0f,
+                        fill.b / 255.0f,
+                        fill.a / 255.0f
+                    );
                 }
+                glClear(GL_COLOR_BUFFER_BIT);
             }
             #endif
 
@@ -320,7 +317,7 @@ namespace Amara {
                 gameProps->currentShaderProgram = rec_shader;
 
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
-                glViewport(v.x, gameProps->window_dim.h - v.y - v.h, v.w, v.h);
+                glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
             }
             #endif
         }
