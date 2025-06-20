@@ -4,7 +4,7 @@ namespace Amara {
         Amara::Node* copyTarget = nullptr;
 
         static std::vector<Amara::CopyNode*> copy_node_stack;
-
+        
         CopyNode(): Amara::Node() {
             set_base_node_id("CopyNode");
         }
@@ -33,11 +33,7 @@ namespace Amara {
             pass_on_properties();
 
             for (Amara::CopyNode* node : copy_node_stack) {
-                if (node == this) {
-                    debug_log("Error: CopyNode found itself within its target tree.");
-                    gameProps->breakWorld();
-                    return;
-                }
+                if (node == this) return;
             }
             copy_node_stack.push_back(this);
 

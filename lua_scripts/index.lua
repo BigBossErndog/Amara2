@@ -1,3 +1,5 @@
+Scripts:run("utility/localize")
+
 NodeFactory:load("UIWindow", "ui/UIWindow")
 NodeFactory:load("MainWindow", "windows/MainWindow")
 
@@ -21,15 +23,34 @@ return Creator:createWorld({
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
     end,
     onCreate = function(world)
-        local win = world:createChild("MainWindow")
-        -- win.height = 0
-        -- print(win.call)
-        -- win.call:openBox(64)
-        win.call:openBox(64, function(win)
+        local props = world.props;
+
+        -- props.windowShadows = world:createChild("ShaderContainer", {
+        --     tint = Colors.Black,
+        --     onCreate = function(self)
+        --         print("WHAT THE FUCK")
+        --         print(1, self) 
+        --         self.size = self.world.view
+        --     end,
+        --     onUpdate = function(self)
+        --         print(2, self)
+        --         self.size = self.world.view
+        --     end
+        -- })
+
+        props.windows = world:createChild("Group")
+
+        props.mainwin = props.windows:createChild("MainWindow")
+        props.mainwin.height = 0
+        props.mainwin.func:openBox(64, function(win)
             win.props.content.visible = true
         end)
 
-        world.props.win = win
+        -- print(props.windowShadows)
+        -- props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
+        --     target = props.windows,
+        --     x = -24, y = 24
+        -- })
     end,
     onUpdate = function(world, deltaTime)
         if Keyboard:justPressed(Key.One) then

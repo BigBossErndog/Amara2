@@ -224,7 +224,7 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<ShaderContainer>("ShaderContainer",
-                sol::base_classes, sol::bases<TextureContainer>(),
+                sol::base_classes, sol::bases<Amara::TextureContainer, Amara::Node>(),
                 "shaderPasses", sol::property(&ShaderContainer::luaAddShaderPass)
             );
         }

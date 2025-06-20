@@ -51,6 +51,8 @@ namespace Amara {
 
         Rectangle viewport;
         Rectangle rec_windowed_size;
+
+        Rectangle view;
         
         int vsync = 0;
         bool headless = true;
@@ -200,6 +202,12 @@ namespace Amara {
             top = -(windowH/2) / passOn.window_zoom.y;
             bottom = (windowH/2) / passOn.window_zoom.y;
             
+            view = Rectangle(
+                left, right,
+                right - left,
+                bottom - top
+            );
+
             Node::update_properties();
         }
 
@@ -1162,12 +1170,13 @@ namespace Amara {
                 "vh", &World::virtualHeight,
                 "virtualWidth", &World::virtualWidth,
                 "virtualHeight", &World::virtualHeight,
-                "left", &World::left,
-                "right", &World::right,
-                "top", &World::top,
-                "bottom", &World::bottom,
-                "assets", &World::assets,
-                "shaders", &World::shaders,
+                "left", sol::readonly(&World::left),
+                "right", sol::readonly(&World::right),
+                "top", sol::readonly(&World::top),
+                "bottom", sol::readonly(&World::bottom),
+                "view", sol::readonly(&World::view),
+                "assets", sol::readonly(&World::assets),
+                "shaders", sol::readonly(&World::shaders),
                 "base_dir_path", sol::readonly(&World::base_dir_path),
                 "display", sol::readonly(&World::display),
                 "displayID", sol::readonly(&World::displayID),

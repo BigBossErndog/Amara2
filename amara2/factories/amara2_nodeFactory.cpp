@@ -306,9 +306,12 @@ namespace Amara {
     }
 
     sol::object Node::luaCreateChild(std::string key, sol::object config) {
-        Amara::Node* node = createChild(key);
+        Amara::Node* node = gameProps->factory->create(key);
         if (node) {
-            node->luaConfigure(config);
+            if (!config.is<sol::nil_t>()) {
+                node->luaConfigure(config);
+            }
+            addChild(node);
             return node->get_lua_object();
         }
         return sol::nil;

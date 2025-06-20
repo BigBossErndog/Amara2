@@ -104,6 +104,24 @@ namespace Amara {
     
         return nullptr;
     }
+
+    bool lua_object_is_table_array(const sol::object& obj) {
+        if (!obj.is<sol::table>()) {
+            return false;
+        }
+
+        sol::table table = obj.as<sol::table>();
+        int expected_key = 1;
+
+        for (const auto& pair : table) {
+            if (!pair.first.is<int>() || pair.first.as<int>() != expected_key) {
+                return false;
+            }
+            expected_key++;
+        }
+
+        return true;
+    }
     
     std::string node_to_string(sol::object);
     std::string lua_to_string(sol::object obj) {

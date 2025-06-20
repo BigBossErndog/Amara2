@@ -189,6 +189,16 @@ namespace Amara {
                         }
                     }
                     return sol::nil;
+                },
+                sol::meta_function::new_index, [](FunctionManager& fm, sol::object key_obj, sol::object value_obj) {
+                    if (key_obj.is<std::string>()) {
+                        std::string key_str = key_obj.as<std::string>();
+                        if (value_obj.is<sol::function>()) {
+                            sol::function func = value_obj.as<sol::function>();
+                            fm.setFunction(fm.lastClass, key_str, func);
+                        }
+                    }
+                    return value_obj;
                 }
             );
         }

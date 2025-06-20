@@ -112,7 +112,8 @@ namespace Amara {
                             g = std::stoi(hex_color.substr(2, 2), nullptr, 16);
                             b = std::stoi(hex_color.substr(4, 2), nullptr, 16);
                             a = 255;
-                        } else if (hex_color.length() == 8) {
+                        }
+                        else if (hex_color.length() == 8) {
                             r = std::stoi(hex_color.substr(0, 2), nullptr, 16);
                             g = std::stoi(hex_color.substr(2, 2), nullptr, 16);
                             b = std::stoi(hex_color.substr(4, 2), nullptr, 16);

@@ -435,7 +435,7 @@ namespace Amara {
         virtual void drawSelf(const Rectangle& v) {}
         virtual void drawChildren(const Rectangle& v) {
             children_copy_list = children;
-
+            
             pass_on_properties();
 
             Amara::Node* child;
@@ -749,7 +749,7 @@ namespace Amara {
                 "nodeID", sol::readonly(&Node::nodeID),
                 "parent", sol::readonly(&Node::parent),
                 "props", &Node::props,
-                "call", sol::property([](Node& e) {
+                "func", sol::property([](Node& e) {
                     return e.funcs.getClassTable(e.nodeID);
                 }),
                 "getClass", &Node::getClassFunctions,

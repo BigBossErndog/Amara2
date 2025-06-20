@@ -12,12 +12,9 @@ return NodeFactory:create("UIWindow", {
         props.title = props.content:createChild("Text", {
             x = 4, y = 4,
             font = "defaultFont",
-            text = "This is a window.",
+            text = Localize:get("amara2_title"),
             color = Colors.Black,
             origin = 0,
-            onUpdate = function(self)
-                self:setText(Game.FPS)
-            end,
             input = true
         })
         props.title.input:listen("onPointerHover", function(self)

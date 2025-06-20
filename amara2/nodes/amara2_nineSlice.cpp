@@ -12,7 +12,7 @@ namespace Amara {
         int drawHeight = 128;
 
         int frame = 0;
-
+        
         int textureWidth = 0;
         int textureHeight = 0;
         
@@ -47,6 +47,8 @@ namespace Amara {
             if (json_has(config, "marginTop")) marginTop = json_extract(config, "marginTop");
             if (json_has(config, "marginBottom")) marginBottom = json_extract(config, "marginBottom");
 
+            update_size();
+            
             return Amara::TextureContainer::configure(config);
         }
 
@@ -494,6 +496,7 @@ namespace Amara {
                 drawWidth = TextureContainer::width;
             }
             update_canvas = true;
+            update_size();
         }
         void setDrawHeight(double _h) {
             drawHeight = _h;
@@ -502,15 +505,9 @@ namespace Amara {
                 drawHeight = TextureContainer::height;
             }
             update_canvas = true;
+            update_size();
         }
-
-        virtual void update_size() override {
-            left = -drawWidth/2.0;
-            right = drawWidth/2.0;
-            top = -drawHeight/2.0;
-            bottom = drawHeight/2.0;
-        }
-
+        
         Rectangle getRectangle() {
             return Rectangle(
                 pos.x - (drawWidth*scale.x)*origin.x,
@@ -562,6 +559,13 @@ namespace Amara {
             pos.y = rect.y + (rect.h - scaledHeight)/2 + scaledHeight*origin.y;
             
             return get_lua_object();
+        }
+        
+        virtual void update_size() override {
+            left = -drawWidth*origin.x;
+            right = drawWidth*(1-origin.x);
+            top = -drawHeight*origin.y;
+            bottom = drawHeight*(1-origin.y);
         }
 
         static void bind_lua(sol::state& lua) {

@@ -324,6 +324,7 @@ namespace Amara {
                 "top", sol::readonly(&Camera::top),
                 "bottom", sol::readonly(&Camera::bottom),
                 "view", sol::readonly(&Camera::view),
+                "rect", sol::readonly(&Camera::view),
                 "startFollow", sol::overload(
                     sol::resolve<sol::object(Amara::Node*)>(&Camera::startFollow),
                     sol::resolve<sol::object(Amara::Node*, float, float)>(&Camera::startFollow),

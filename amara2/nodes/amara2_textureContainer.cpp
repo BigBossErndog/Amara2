@@ -1,9 +1,6 @@
 namespace Amara {
     class TextureContainer: public Amara::Node {
     public:
-        SDL_Texture* texture = nullptr;
-        SDL_GPUTexture* gpuTexture = nullptr;
-
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
         Amara::Color tint = Amara::Color::White;
 
@@ -133,7 +130,7 @@ namespace Amara {
             glCanvasID = 0;
             glBufferID = 0;
             #endif
-
+            
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = SDL_CreateTexture(
                     gameProps->renderer,
@@ -499,7 +496,7 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<TextureContainer>("TextureContainer",
-                sol::base_classes, sol::bases<Node>(),
+                sol::base_classes, sol::bases<Amara::Node>(),
                 "tint", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.tint; }, [](Amara::TextureContainer& t, sol::object v) { t.tint = v; }),
                 "fill", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.fill; }, [](Amara::TextureContainer& t, sol::object v) { t.fill = v; }),
                 "blendMode", &TextureContainer::blendMode,
