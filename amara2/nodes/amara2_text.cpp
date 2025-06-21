@@ -174,6 +174,8 @@ namespace Amara {
         }
 
         void setText(std::string str) {
+            if (String::equal(text, str)) return;
+            
             text = str;
 
             converted_text = Amara::String::utf8_to_utf32(str);  // Convert UTF-8 string to UTF-32

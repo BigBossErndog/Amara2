@@ -35,11 +35,12 @@ return NodeFactory:create("MainWindow", "UIWindow", {
             x = 6, y = 24,
             width = self.width - 12,
             height = 64,
-            color = "#161e29",
+            color = "#111d27",
             origin = 0
         })
         self.props.content:createChild("UIButton", {
             id = "exitButton",
+            toolTip = "Exit",
             x = self.right - self.left - 22,
             y = 4,
             icon = 0,
@@ -49,7 +50,18 @@ return NodeFactory:create("MainWindow", "UIWindow", {
         })
         self.props.content:createChild("UIButton", {
             id = "newProjectButton",
+            toolTip = "Minimize",
             x = self.right - self.left - 40,
+            y = 4,
+            icon = 3,
+            onPress = function(self)
+                self.world:minimizeWindow()
+            end
+        })
+        self.props.content:createChild("UIButton", {
+            id = "newProjectButton",
+            toolTip = "New Project",
+            x = self.right - self.left - 58,
             y = 4,
             icon = 1
         })

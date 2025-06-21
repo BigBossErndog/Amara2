@@ -5,6 +5,7 @@ return NodeFactory:create("UIWindow", "NineSlice", {
     input = true,
     onCreate = function(self)
         self.props.defHeight = self.height
+        self.props.targetHeight = self.height
 
         self.input:activate()
         self.input.draggable = true
@@ -18,9 +19,13 @@ return NodeFactory:create("UIWindow", "NineSlice", {
             y = self.top,
             visible = false
         })
+
+        self.props.speed = 0.1
+
+        self.func:closeInstantly()
     end,
     onUpdate = function(self, deltaTime)
-        self.props.content:goTo(self.left, self.top)
+        self.props.content:goTo(self.left, -self.props.targetHeight / 2.0)
 
         if self.x < self.world.left + self.width/2 then
             self.x = self.world.left + self.width/2
@@ -53,24 +58,23 @@ return NodeFactory:create("UIWindow", "NineSlice", {
         if _height == nil then
             _height = self.props.defHeight
         end
+        self.props.targetHeight = _height
         
         if not self.props.content.visible then
             self.props.content.visible = true
-            self.props.content.alpha = 1
-            -- self.props.content.tween:to({
-            --     alpha = 1,
-            --     duration = 0.12
-            -- })
+            self.props.content.alpha = 0
         end
 
         self.tween:to({
             height = _height,
-            duration = 0.12,
+            duration = self.props.speed,
+            onProgress = function(self, progress)
+                self.props.content.alpha = progress
+            end,
             onComplete = _onEnd
         })
     end,
     closeBox = function(self, _onEnd)
-        self.props.content.visible = false
         if _onEnd == nil then
             _onEnd = function(self) 
                 self.visible = false
@@ -80,20 +84,22 @@ return NodeFactory:create("UIWindow", "NineSlice", {
         self.props.isOpen = false
         self.tween:to({
             height = 0,
-            duration = 0.12,
+            duration = self.props.speed,
+            onProgress = function(self, progress)
+                if self.props.content and self.props.content.visible then
+                    self.props.content.alpha = 1 - progress
+                end
+            end,
             onComplete = _onEnd
         })
     end,
     closeBoxAndDestroy = function(self, _onEnd)
+        if _onEnd == nil then
+            _onEnd = function(self) 
+                self.props.content:destroyChildren()
+            end
+        end
         self.closeBox(_onEnd)
         self.props.content.visible = true
-        self.props.content.tween.to({
-            alpha = 0,
-            duration = 0.12,
-            onComplete = function(self)
-                self.visible = false
-                self:destroyChildren()
-            end
-        })
     end
 })

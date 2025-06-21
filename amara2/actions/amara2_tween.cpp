@@ -57,9 +57,9 @@ namespace Amara {
                 funcs.setFunction(nodeID, "onStart", lua_data["onStart"]);
                 lua_data["onStart"] = sol::nil;
             }
-            if (lua_data["onUpdate"].valid()) {
-                funcs.setFunction(nodeID, "onUpdate", lua_data["onUpdate"]);
-                lua_data["onUpdate"] = sol::nil;
+            if (lua_data["onProgress"].valid()) {
+                funcs.setFunction(nodeID, "onProgress", lua_data["onProgress"]);
+                lua_data["onProgress"] = sol::nil;
             }
             if (lua_data["duration"].valid()) {
                 tween_duration = lua_data["duration"];
@@ -256,7 +256,7 @@ namespace Amara {
                     }
                 }
 
-                if (funcs.hasFunction("onTweening")) funcs.callFunction(actor, "onTweening", deltaTime);
+                if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", progress, deltaTime);
 
                 if (progress == 1) {
                     if (waitingYoyo) {

@@ -7,7 +7,7 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Group>("Group",
-                sol::base_classes, sol::bases<Node>()
+                sol::base_classes, sol::bases<Amara::Node>()
             );
         }
     };

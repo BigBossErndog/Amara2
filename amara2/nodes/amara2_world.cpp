@@ -281,8 +281,8 @@ namespace Amara {
             if (json_has(config, "headless")) {
                 create_window_on_start = !config["headless"].get<bool>();
             }
-            if (json_has(config, "windowTitle")) {
-                windowTitle = config["windowTitle"];
+            if (json_has(config, "title")) {
+                windowTitle = config["title"];
                 if (window) SDL_SetWindowTitle(window, windowTitle.c_str());
                 if (id.empty()) id = windowTitle;
             }
@@ -628,6 +628,10 @@ namespace Amara {
                 windowW, windowH,
                 flags
             );
+
+            if (!windowTitle.empty()) {
+                SDL_SetWindowTitle(window, windowTitle.c_str());
+            }
 
             windowFocused = true;
 

@@ -3,6 +3,7 @@ Scripts:run("utility/project")
 
 NodeFactory:load("UIWindow", "ui/UIWindow")
 NodeFactory:load("UIButton", "ui/UIButton")
+NodeFactory:load("ToolTips", "ui/ToolTips")
 
 NodeFactory:load("MainWindow", "windows/MainWindow")
 
@@ -24,6 +25,7 @@ return Creator:createWorld({
         world:fitToDisplay()
 
         world.load:image("uiBox", "ui/amara2_uiBox.png")
+        world.load:image("toolTipBox", "ui/amara2_toolTipBox.png")
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
         world.load:spritesheet("uiIcons", "ui/amara2_icons.png", 16, 16)
         
@@ -59,13 +61,16 @@ return Creator:createWorld({
         props.windows = world:createChild("Group")
 
         props.mainwin = props.windows:createChild("MainWindow")
-        props.mainwin.func:closeInstantly()
-        props.mainwin.func:openBox()
+        props.mainwin:wait(0.5):next(function(self)
+            self.func:openBox()
+        end)
 
         props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
             target = props.windows,
             x = -8, y = 12
         })
+
+        props.toolTips = world:createChild("ToolTips")
     end,
     onUpdate = function(world, deltaTime)
         if Keyboard:justPressed(Key.One) then

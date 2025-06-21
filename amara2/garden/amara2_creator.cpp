@@ -200,14 +200,14 @@ namespace Amara {
             scripts.run(path);
             game.hasQuit = gameProps.lua_exception_thrown;
 
+            std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
+            
+            bool vsync = false;
+
             rec_tick = SDL_GetPerformanceCounter();
             Uint64 freq = SDL_GetPerformanceFrequency();
             double frameTarget = 0;
             double elapsedTime = 0;
-
-            std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
-            
-            bool vsync = false;
 
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
                 messages.update();
