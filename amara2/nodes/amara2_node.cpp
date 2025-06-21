@@ -272,26 +272,11 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::protected_function configure_override;
         sol::object luaConfigure(sol::object config) {
             update_properties();
 
-            if (configure_override.valid()) {
-                try {
-                    sol::protected_function_result result = configure_override(get_lua_object(), config);
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        throw std::runtime_error("Lua Error: " + std::string(err.what()));  
-                    }
-                }
-                catch (const std::exception& e) {
-                    debug_log(e.what());
-                    gameProps->breakWorld();
-                }
-            }
-            else {
-                super_configure(config);
-            }
+            if (funcs.hasFunction("configure")) funcs.callFunction("configure", config);
+            else super_configure(config);
 
             return get_lua_object();
         }
@@ -782,7 +767,6 @@ namespace Amara {
                     sol::resolve<sol::object(sol::object)>(&Node::luaConfigure),
                     sol::resolve<sol::object(std::string, sol::object)>(&Node::luaConfigure)
                 ),
-                "configure_override", &Node::configure_override,
                 "super_configure", &Node::super_configure,
                 "toData", &Node::toData,
                 "alpha", &Node::alpha,

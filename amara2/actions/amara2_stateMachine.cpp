@@ -92,13 +92,15 @@ namespace Amara {
         bool start() {
             if (currentState.empty()) {
                 eventLooker = 0;
-
                 return true;
             }
             return false;
         }
 
         bool state(std::string key) {
+            if (currentState.empty()) {
+                currentState = key;
+            }
             if (String::equal(key, currentState)) {
                 eventLooker = 0;
                 return true;
@@ -319,7 +321,8 @@ namespace Amara {
                 "addState", &StateMachine::addState,
                 "reset", &StateMachine::reset,
                 "resetEvent", &StateMachine::resetEvent,
-                "inState", &StateMachine::inState
+                "inState", &StateMachine::inState,
+                "state", &StateMachine::state
             );
 
             sol::usertype<Node> node_type = lua["Node"];

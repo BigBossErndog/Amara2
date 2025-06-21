@@ -1,6 +1,9 @@
 Scripts:run("utility/localize")
+Scripts:run("utility/project")
 
 NodeFactory:load("UIWindow", "ui/UIWindow")
+NodeFactory:load("UIButton", "ui/UIButton")
+
 NodeFactory:load("MainWindow", "windows/MainWindow")
 
 return Creator:createWorld({
@@ -19,9 +22,11 @@ return Creator:createWorld({
     },
     onPreload = function(world) 
         world:fitToDisplay()
-        
+
         world.load:image("uiBox", "ui/amara2_uiBox.png")
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
+        world.load:spritesheet("uiIcons", "ui/amara2_icons.png", 16, 16)
+        
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
 
         world.load:shaderProgram("gaussianHorizontal", {
@@ -32,14 +37,16 @@ return Creator:createWorld({
             vertex = "defaultVert",
             fragment = "shaders/gaussianVertical.frag"
         })
+
+        Localize:registerJSON(System:readJSON("data/localization/keywords.json"))
     end,
     onCreate = function(world)
         local props = world.props;
 
         props.windowShadows = world:createChild("ShaderContainer", {
-            alpha = 0.75,
+            alpha = 0.8,
             tint = Colors.Black,
-            repeats = 2,
+            repeats = 4,
             shaderPasses = { "gaussianHorizontal", "gaussianVertical" },
             onCreate = function(self)
                 self.size = self.world.view
@@ -52,14 +59,12 @@ return Creator:createWorld({
         props.windows = world:createChild("Group")
 
         props.mainwin = props.windows:createChild("MainWindow")
-        props.mainwin.height = 0
-        props.mainwin.func:openBox(64, function(win)
-            win.props.content.visible = true
-        end)
+        props.mainwin.func:closeInstantly()
+        props.mainwin.func:openBox()
 
         props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
             target = props.windows,
-            x = -8, y = 8
+            x = -8, y = 12
         })
     end,
     onUpdate = function(world, deltaTime)

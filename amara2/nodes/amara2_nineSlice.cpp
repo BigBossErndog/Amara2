@@ -583,7 +583,8 @@ namespace Amara {
                 "size", sol::property([](Amara::NineSlice& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.drawWidth, t.drawHeight); }, &NineSlice::resize),
                 "resize", &Amara::NineSlice::resize,
                 "stretchTo", &Amara::NineSlice::stretchTo,
-                "fitWithin", &Amara::NineSlice::fitWithin
+                "fitWithin", &Amara::NineSlice::fitWithin,
+                "frame", &Amara::NineSlice::frame
             );
         }
     };

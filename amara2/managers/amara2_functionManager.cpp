@@ -114,7 +114,7 @@ namespace Amara {
                         new_class_tbl[pair.first] = pair.second;
                     }
                 }
-                new_class_tbl["super"] = last_class_tbl;
+                new_class_tbl["func"] = last_class_tbl;
             }
 
             lastClass = className;
