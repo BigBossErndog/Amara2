@@ -775,6 +775,7 @@ namespace Amara {
                                 gameProps->graphics = g;
 
                                 SDL_GL_MakeCurrent(window, glContext);
+                                glViewport(0, 0, static_cast<GLsizei>(windowW), static_cast<GLsizei>(windowH));
 
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
@@ -999,6 +1000,7 @@ namespace Amara {
 
                 SDL_GL_MakeCurrent(window, glContext);
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glViewport(0, 0, static_cast<GLsizei>(windowW), static_cast<GLsizei>(windowH));
                 glClearColor(
                     backgroundColor.r / 255.0f,
                     backgroundColor.g / 255.0f,

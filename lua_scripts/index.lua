@@ -9,8 +9,9 @@ return Creator:createWorld({
         height = 720,
         virtualWidth = 640,
         virtualHeight = 360,
-        transparent = true,
+        -- backgroundColor = Colors.White,
         screenMode = ScreenMode.BorderlessFullscreen,
+        transparent = true,
         clickThrough = true,
         alwaysOnTop = true,
         vsync = true,
@@ -18,16 +19,28 @@ return Creator:createWorld({
     },
     onPreload = function(world) 
         world:fitToDisplay()
+        
         world.load:image("uiBox", "ui/amara2_uiBox.png")
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
+
+        world.load:shaderProgram("gaussianHorizontal", {
+            vertex = "defaultVert",
+            fragment = "shaders/gaussianHorizontal.frag"
+        })
+        world.load:shaderProgram("gaussianVertical", {
+            vertex = "defaultVert",
+            fragment = "shaders/gaussianVertical.frag"
+        })
     end,
     onCreate = function(world)
         local props = world.props;
 
-        props.windowShadows = world:createChild("TextureContainer", {
+        props.windowShadows = world:createChild("ShaderContainer", {
+            alpha = 0.75,
             tint = Colors.Black,
-            alpha = 0.7,
+            repeats = 2,
+            shaderPasses = { "gaussianHorizontal", "gaussianVertical" },
             onCreate = function(self)
                 self.size = self.world.view
             end,
@@ -38,15 +51,6 @@ return Creator:createWorld({
 
         props.windows = world:createChild("Group")
 
-        props.sprite = props.windows:createChild("Sprite", {
-            texture = "uiBox",
-            maxWidth = 640, maxHeight = 640,
-            input = {
-                active = true,
-                draggable = true
-            }
-        })
-
         props.mainwin = props.windows:createChild("MainWindow")
         props.mainwin.height = 0
         props.mainwin.func:openBox(64, function(win)
@@ -55,7 +59,7 @@ return Creator:createWorld({
 
         props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
             target = props.windows,
-            x = -4, y = 6
+            x = -8, y = 8
         })
     end,
     onUpdate = function(world, deltaTime)

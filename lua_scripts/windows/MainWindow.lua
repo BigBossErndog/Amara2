@@ -27,7 +27,8 @@ return NodeFactory:create("UIWindow", {
         self:createChild("Hotkey", {
             keys = { Key.LeftCtrl, Key.LeftAlt, Key.A },
             onPress = function(self)
-                self.call:closeBox(function(self)
+                self.props.content.visible = false
+                self.func:closeBox(function(self)
                     self.world:destroy()
                 end)
             end
