@@ -732,7 +732,7 @@ namespace Amara {
                 "id", &Node::id,
                 "baseNodeID", sol::readonly(&Node::baseNodeID),
                 "nodeID", sol::readonly(&Node::nodeID),
-                "parent", sol::readonly(&Node::parent),
+                "parent", sol::property([](Node& e) { return e.parent->get_lua_object(); }),
                 "props", &Node::props,
                 "func", sol::property([](Node& e) {
                     return e.funcs.getClassTable(e.nodeID);

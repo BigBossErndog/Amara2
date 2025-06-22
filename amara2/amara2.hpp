@@ -194,6 +194,8 @@
     #include "actions/amara2_stateMachine.cpp"
     #include "actions/amara2_delayedNode.cpp"
 
+    #include "actions/amara2_textInput.cpp"
+
     #include "actions/amara2_loader.cpp"
     
     #include "actions/amara2_autoProgress.cpp"

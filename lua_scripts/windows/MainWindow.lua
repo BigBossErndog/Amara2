@@ -22,7 +22,7 @@ return NodeFactory:create("MainWindow", "UIWindow", {
     createInitialScreen = function(self)
         self.props.content:destroyChildren()
 
-        self.props.content:createChild("Text", {
+        local title = self.props.content:createChild("Text", {
             x = 8, y = 8,
             font = "defaultFont",
             text = Localize:get("recentProjects_title"),
@@ -30,10 +30,17 @@ return NodeFactory:create("MainWindow", "UIWindow", {
             origin = 0,
             input = true
         })
+        local textInput = title:createChild("TextInput", {
+            startInput = true,
+            text = title.text,
+            onInput = function(self, text)
+                self.parent.text = text
+            end
+        })
 
         self.props.content:createChild("FillRect", {
             x = 6, y = 24,
-            width = self.width - 12,
+            width = self.props.targetWidth - 12,
             height = 64,
             color = "#111d27",
             origin = 0
@@ -41,7 +48,7 @@ return NodeFactory:create("MainWindow", "UIWindow", {
         self.props.content:createChild("UIButton", {
             id = "exitButton",
             toolTip = "Exit",
-            x = self.right - self.left - 22,
+            x = self.props.targetWidth - 22,
             y = 4,
             icon = 0,
             onPress = function()
@@ -51,7 +58,7 @@ return NodeFactory:create("MainWindow", "UIWindow", {
         self.props.content:createChild("UIButton", {
             id = "newProjectButton",
             toolTip = "Minimize",
-            x = self.right - self.left - 40,
+            x = self.props.targetWidth - 40,
             y = 4,
             icon = 3,
             onPress = function(self)
@@ -61,7 +68,7 @@ return NodeFactory:create("MainWindow", "UIWindow", {
         self.props.content:createChild("UIButton", {
             id = "newProjectButton",
             toolTip = "New Project",
-            x = self.right - self.left - 58,
+            x = self.props.targetWidth - 58,
             y = 4,
             icon = 1
         })

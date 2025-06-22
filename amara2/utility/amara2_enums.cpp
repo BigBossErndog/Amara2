@@ -59,6 +59,12 @@ namespace Amara {
         ByWord
     };
 
+    enum class TextInputEnum {
+        None,
+        Text,
+        Backspace
+    };
+
     enum class Direction {
         NoDirection = 0,
         Up = 1,

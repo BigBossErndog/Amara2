@@ -706,6 +706,10 @@ namespace Amara {
             return false;
         }
 
+        void copyToClipboard(std::string text) {
+            SDL_SetClipboardText(text.c_str());
+        }
+
         bool openWebsite(std::string url) {
             std::string command;
             int result = -1;
@@ -777,7 +781,8 @@ namespace Amara {
                 ),
                 "execute", &SystemManager::lua_execute,
                 "setEnvironmentVar", &SystemManager::setEnvironmentVar,
-                "openWebsite", &SystemManager::openWebsite
+                "openWebsite", &SystemManager::openWebsite,
+                "copyToClipboard", &SystemManager::copyToClipboard
             );
         }
     };

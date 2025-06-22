@@ -11,6 +11,11 @@ namespace Amara {
 
         Amara::Pointer globalPointer;
 
+        double backspace_counter = 0;
+        bool backspace_held = false;
+        double backspace_hold = 0.5;
+        double backspace_period = 0.05;
+
         EventHandler() = default;
 
         void init(Amara::GameProps* _gameProps) {
@@ -29,6 +34,9 @@ namespace Amara {
 
             keyboard.update(game.deltaTime);
             gamepads.update(game.deltaTime);
+
+            gameProps->text_input.clear();
+            gameProps->text_input_type = TextInputEnum::None;
             
             while (SDL_PollEvent(&e) != 0) {
                 switch (e.type) {
@@ -181,6 +189,14 @@ namespace Amara {
                     case SDL_EVENT_KEY_DOWN:
                         keyboard.press(e.key.key);
                         game.gameProps->messages->send(nullptr, "keyboarddown", sol::make_object(game.gameProps->lua, e.key.key));
+                        
+                        if(e.key.key == SDLK_V && SDL_GetModState() & SDL_KMOD_CTRL) {
+                            char* tempText{ SDL_GetClipboardText() };
+                            gameProps->text_input = tempText;
+                            SDL_free( tempText );
+
+                            gameProps->text_input_type = TextInputEnum::Text;
+                        }
                         break;
                     case SDL_EVENT_KEY_UP:
                         keyboard.release(e.key.key);
@@ -202,7 +218,42 @@ namespace Amara {
                         if (gamepad) gamepad->activateSDLButton((SDL_GamepadButton)e.gbutton.button, false);
                         break;
                     }
+                    case SDL_EVENT_TEXT_INPUT: {
+                        char firstChar = static_cast<char>(toupper( e.text.text[ 0 ]));
+                        if (!(SDL_GetModState() & SDL_KMOD_CTRL && ( firstChar == 'C' || firstChar == 'V' ))) {
+                            gameProps->text_input = e.text.text;
+                            gameProps->text_input_type = TextInputEnum::Text;
+                        }
+                        break;
+                    }
                 }
+            }
+
+            if (gameProps->recording_text_input() && keyboard.isDown(SDLK_BACKSPACE)) {
+                if (keyboard.justPressed(SDLK_BACKSPACE)) {
+                    gameProps->text_input_type = TextInputEnum::Backspace;
+                    backspace_counter = 0;
+                }
+                else {
+                    backspace_counter += game.deltaTime;
+                    if (!backspace_held) {
+                        if (backspace_counter >= backspace_hold) {
+                            backspace_held = true;
+                            gameProps->text_input_type = TextInputEnum::Backspace;
+                            backspace_counter -= backspace_hold;
+                        }
+                    }
+                    if (backspace_held) {
+                        while (backspace_counter >= backspace_period) {
+                            gameProps->text_input_type = TextInputEnum::Backspace;
+                            backspace_counter -= backspace_period;
+                        }
+                    }
+                }
+            }
+            else {
+                backspace_counter = 0;
+                backspace_held = false;
             }
         }
     };

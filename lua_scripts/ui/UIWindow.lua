@@ -4,7 +4,10 @@ return NodeFactory:create("UIWindow", "NineSlice", {
     width = 128, height = 64,
     input = true,
     onCreate = function(self)
+        self.props.defWidth = self.width
         self.props.defHeight = self.height
+
+        self.props.targetWidth = self.width
         self.props.targetHeight = self.height
 
         self.input:activate()
@@ -17,7 +20,8 @@ return NodeFactory:create("UIWindow", "NineSlice", {
         self.props.content = self:createChild("Group", {
             x = self.left,
             y = self.top,
-            visible = false
+            visible = false,
+            alpha = 0
         })
 
         self.props.speed = 0.1
@@ -25,7 +29,10 @@ return NodeFactory:create("UIWindow", "NineSlice", {
         self.func:closeInstantly()
     end,
     onUpdate = function(self, deltaTime)
-        self.props.content:goTo(self.left, -self.props.targetHeight / 2.0)
+        self.props.content:goTo(
+            -self.props.targetWidth / 2.0,
+            -self.props.targetHeight / 2.0
+        )
 
         if self.x < self.world.left + self.width/2 then
             self.x = self.world.left + self.width/2
@@ -48,29 +55,38 @@ return NodeFactory:create("UIWindow", "NineSlice", {
         self.props.content.visible = false
     end,
     closeInstantly = function(self)
+        self.width = 0
         self.height = 0
         self.visible = false
+
+        return self
     end,
-    openBox = function(self, _height, _onEnd)
+    setTarget = function(self, _width, _height)
+        if _width then
+            self.props.targetWidth = _width
+        end
+        if _height then
+            self.props.targetHeight = _height
+        end
+        return self
+    end,
+    openBox = function(self, _onEnd)
         self.visible = true
         self.props.isOpen = true
-
-        if _height == nil then
-            _height = self.props.defHeight
-        end
-        self.props.targetHeight = _height
         
         if not self.props.content.visible then
             self.props.content.visible = true
             self.props.content.alpha = 0
         end
 
+        self.props.content.tween:to({
+            alpha = 1,
+            duration = self.props.speed
+        })
         self.tween:to({
-            height = _height,
+            width = self.props.targetWidth,
+            height = self.props.targetHeight,
             duration = self.props.speed,
-            onProgress = function(self, progress)
-                self.props.content.alpha = progress
-            end,
             onComplete = _onEnd
         })
     end,
@@ -81,15 +97,16 @@ return NodeFactory:create("UIWindow", "NineSlice", {
             end
         end
 
+        self.props.content.tween:to({
+            alpha = 0,
+            duration = self.props.speed
+        })
+
         self.props.isOpen = false
         self.tween:to({
+            width = 0,
             height = 0,
             duration = self.props.speed,
-            onProgress = function(self, progress)
-                if self.props.content and self.props.content.visible then
-                    self.props.content.alpha = 1 - progress
-                end
-            end,
             onComplete = _onEnd
         })
     end,

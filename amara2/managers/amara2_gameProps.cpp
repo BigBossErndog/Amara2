@@ -121,6 +121,14 @@ namespace Amara {
         Rectangle window_dim;
         SDL_DisplayID displayID = 0;
 
+        TextInputEnum text_input_type = TextInputEnum::None;
+        std::string text_input;
+        int text_input_count = 0;
+        
+        bool recording_text_input() {
+            return text_input_count > 0;
+        }
+
         GameManager* game = nullptr;
         World* world = nullptr;
         Scene* scene = nullptr;

@@ -202,6 +202,8 @@ namespace Amara {
             registerNode<Amara::Tween>("Tween");
             registerNode<Amara::StateMachine>("StateMachine");
             registerNode<Amara::DelayedNode>("DelayedNode");
+
+            registerNode<Amara::TextInput>("TextInput");
             
             registerNode<Amara::Loader>("Loader");
             
@@ -257,6 +259,8 @@ namespace Amara {
             Amara::Tween::bind_lua(lua);
             Amara::StateMachine::bind_lua(lua);
             Amara::DelayedNode::bind_lua(lua);
+
+            Amara::TextInput::bind_lua(lua);
             
             Amara::Loader::bind_lua(lua);
 
