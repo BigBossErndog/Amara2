@@ -81,7 +81,9 @@ namespace Amara {
             );
             
             sol::usertype<Node> node_type = lua["Node"];
-            node_type["scene"] = sol::readonly(&Node::scene);
+            node_type["scene"] = sol::property([](Amara::Node& e) {
+                return e.scene ? e.scene->get_lua_object() : sol::nil;
+            });
         }
     };
 }

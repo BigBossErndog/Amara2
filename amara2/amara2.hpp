@@ -61,8 +61,10 @@
     #include <tinyxml2.h>
 
     #if defined(_WIN32)
+        #define AMARA_DESKTOP
         #include <windows.h>
     #elif defined(__linux__)
+        #define AMARA_DESKTOP
         #include <SDL_syswm.h>
         #include <sys/socket.h>
         #include <netinet/in.h>
@@ -75,11 +77,16 @@
         #include <TargetConditionals.h>
         #if TARGET_OS_IPHONE
         #else
+            #define AMARA_DESKTOP
         #endif
 
         struct NSView;
         struct NSWindow;
     #else
+    #endif
+
+    #ifdef AMARA_DESKTOP
+        #include <portable-file-dialogs.h>
     #endif
 
     #define LUA_IMPLEMENTATION

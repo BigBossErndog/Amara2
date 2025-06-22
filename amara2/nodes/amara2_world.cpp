@@ -49,6 +49,8 @@ namespace Amara {
         float virtualWidth = -1;
         float virtualHeight = -1;
 
+        Vector2 virtualScale = Vector2( 1, 1 );
+
         Rectangle viewport;
         Rectangle rec_windowed_size;
 
@@ -418,7 +420,7 @@ namespace Amara {
                     case ScreenModeEnum::Fullscreen: {
                         SDL_SetWindowBordered(window, true);
                         SDL_SetWindowFullscreen(window, true);
-
+                        
                         const SDL_DisplayMode* displayMode = SDL_GetCurrentDisplayMode(displayID);
                         if (displayMode) SDL_SetWindowFullscreenMode(window, displayMode);
                         break;
@@ -613,7 +615,10 @@ namespace Amara {
         }
 
         void restoreWindow() {
-            if (window) SDL_RestoreWindow(window);
+            if (window) {
+                SDL_RestoreWindow(window);
+                SDL_RaiseWindow(window);
+            }
         }
 
         bool create_graphics_window(int flags) {
@@ -961,6 +966,9 @@ namespace Amara {
                 right - left,
                 bottom - top
             );
+
+            virtualScale.x = passOn.window_zoom.x;
+            virtualScale.y = passOn.window_zoom.y;
         }
         
         virtual void draw(const Rectangle& v) override {
@@ -1176,6 +1184,7 @@ namespace Amara {
                 "vh", &World::virtualHeight,
                 "virtualWidth", &World::virtualWidth,
                 "virtualHeight", &World::virtualHeight,
+                "virtualScale", sol::readonly(&World::virtualScale),
                 "left", sol::readonly(&World::left),
                 "right", sol::readonly(&World::right),
                 "top", sol::readonly(&World::top),
@@ -1232,7 +1241,9 @@ namespace Amara {
             );
 
             sol::usertype<Node> node_type = lua["Node"];
-            node_type["world"] = sol::readonly(&Node::world);
+            node_type["world"] = sol::property([](Amara::Node& e) {
+                return e.world ? e.world->get_lua_object() : sol::nil;
+            });
         }
     };
 

@@ -744,6 +744,25 @@ namespace Amara {
             #endif
         }
 
+        
+        std::string browseFolder() {
+            auto path = pfd::select_folder("Select folder").result();
+            return path.empty() ? "" : path;
+        }
+        std::string browseFolder(std::string defPath) {
+            auto path = pfd::select_folder("Select folder", defPath).result();
+            return path.empty() ? "" : path;
+        }
+
+        std::string browseFile() {
+            auto result = pfd::open_file("Select a file").result();
+            return result.empty() ? "" : result[0];
+        }
+        std::string browseFile(std::string defPath) {
+            auto result = pfd::open_file("Select a file", defPath).result();
+            return result.empty() ? "" : result[0];
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<SystemManager>("SystemManager",
                 "fileExists", &SystemManager::fileExists,
@@ -782,7 +801,15 @@ namespace Amara {
                 "execute", &SystemManager::lua_execute,
                 "setEnvironmentVar", &SystemManager::setEnvironmentVar,
                 "openWebsite", &SystemManager::openWebsite,
-                "copyToClipboard", &SystemManager::copyToClipboard
+                "copyToClipboard", &SystemManager::copyToClipboard,
+                "browseFolder", sol::overload(
+                    sol::resolve<std::string(std::string)>(&SystemManager::browseFolder),
+                    sol::resolve<std::string()>(&SystemManager::browseFolder)
+                ),
+                "browseFile", sol::overload(
+                    sol::resolve<std::string(std::string)>(&SystemManager::browseFile),
+                    sol::resolve<std::string()>(&SystemManager::browseFile)
+                )
             );
         }
     };

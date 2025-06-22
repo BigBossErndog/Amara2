@@ -6,8 +6,11 @@
     "toolTip_exit": "Exit",
     "toolTip_minimize": "Minimize",
     "toolTip_back": "Back",
-    "toolTip_openFolder": "Open Folder",
+    "toolTip_browseFolder": "Browse Folder",
 
     "label_projectName": "Project Name",
-    "label_enterTextHere": "Enter Text Here"
+    "label_enterTextHere": "Enter Text Here",
+    "label_createProject": "Create Project",
+
+    "error_emptyProjectName": "Error: Project Name cannot be empty."
 }

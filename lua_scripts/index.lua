@@ -15,11 +15,9 @@ return Creator:createWorld({
         height = 720,
         virtualWidth = 640,
         virtualHeight = 360,
-        -- backgroundColor = Colors.White,
         screenMode = ScreenMode.BorderlessFullscreen,
         transparent = true,
         clickThrough = true,
-        alwaysOnTop = true,
         vsync = true,
         graphics = Graphics.OpenGL
     },
