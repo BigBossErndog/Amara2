@@ -75,17 +75,19 @@ return Creator:createWorld({
         props.toolTips = world:createChild("ToolTips")
     end,
     onUpdate = function(world, deltaTime)
-        if Keyboard:justPressed(Key.One) then
-            world:fitToDisplay(1)
-        end
-        if Keyboard:justPressed(Key.Two) then
-            world:fitToDisplay(2)
-        end
-        if Keyboard:justPressed(Key.Three) then
-            world:fitToDisplay(3)
-        end
-        if Keyboard:justPressed(Key.Four) then
-            world:fitToDisplay(4)
+        if Keyboard:isDown(Key.LeftCtrl) and Keyboard:isDown(Key.LeftAlt) then
+            if Keyboard:justPressed(Key.One) then
+                world:fitToDisplay(1)
+            end
+            if Keyboard:justPressed(Key.Two) then
+                world:fitToDisplay(2)
+            end
+            if Keyboard:justPressed(Key.Three) then
+                world:fitToDisplay(3)
+            end
+            if Keyboard:justPressed(Key.Four) then
+                world:fitToDisplay(4)
+            end
         end
     end
 })

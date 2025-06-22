@@ -6,6 +6,7 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
         self.classes.UIWindow.func:onCreate()
 
         self.props.folderPath = System:getRelativePath("projects")
+        self.props.projectPath = ""
 
         local title = self.props.content:createChild("Text", {
             x = 10, y = 8,
@@ -22,17 +23,13 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
             defaultText = "Project Name",
             onChange = function(textField, txt)
                 self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
-                if string.len(self.props.nameField.props.finalText) ~= 0 then
-                    self.props.errorMessage.visible = false
-                end
             end
         })
 
         self.props.folderField = self.props.content:createChild("TextField", {
             x = 8, y = 28 + 22,
             width = self.props.targetWidth - 34,
-            inputEnabled = false,
-            defaultText = "Project Folder Path"
+            inputEnabled = false
         })
 
         self.props.content:createChild("UIButton", {
@@ -59,10 +56,6 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
 
                     local txt = self.props.nameField.props.finalText
                     self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
-                
-                    if string.len(self.props.nameField.props.finalText) ~= 0 then
-                        self.props.errorMessage.visible = false
-                    end
                 end)
             end
         })
@@ -89,7 +82,6 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
         })
 
         self.props.errorMessage = self.props.content:createChild("Text", {
-            text = Localize:get("error_emptyProjectName"),
             font = "defaultFont",
             origin = 0,
             color = Colors.Red,
@@ -102,6 +94,13 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
             text = "label_createProject",
             onPress = function()
                 if string.len(self.props.nameField.props.finalText) == 0 then
+                    self.props.errorMessage.text = Localize:get("error_emptyProjectName")
+                    self.props.errorMessage.visible = true
+                elseif System:isDirectory(self.props.projectPath) then
+                    self.props.errorMessage.text = Localize:get("error_directoryAlreadyExists")
+                    self.props.errorMessage.visible = true
+                elseif System:fileExists(self.props.projectPath) then
+                    self.props.errorMessage.text = Localize:get("error_pathToFile")
                     self.props.errorMessage.visible = true
                 else
                     self.props.errorMessage.visible = false
@@ -123,6 +122,7 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
         else 
             str = string.concat(defPath, "/", target)
         end
+        local path = str
 
         local edited = false
         txt.text = str
@@ -130,6 +130,7 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
             str = string.sub(str, 2)
             txt.text = string.concat("...", str)
         end
+        self.props.projectPath = path
         return txt.text
     end
 })

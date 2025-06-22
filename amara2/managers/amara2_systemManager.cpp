@@ -776,6 +776,7 @@ namespace Amara {
                 "deleteFile", &SystemManager::deleteFile,
                 "createDirectory", &SystemManager::createDirectory,
                 "isDirectory", &SystemManager::isDirectory,
+                "directoryExists", &SystemManager::isDirectory,
                 "isDirectoryEmpty", &SystemManager::isDirectoryEmpty,
                 "getDirectoryContents", &SystemManager::luaGetDirectoryContents,
                 "getFilesInDirectory", &SystemManager::luaGetFilesInDirectory,

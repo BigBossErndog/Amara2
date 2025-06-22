@@ -6,11 +6,13 @@
     "toolTip_exit": "Exit",
     "toolTip_minimize": "Minimize",
     "toolTip_back": "Back",
-    "toolTip_browseFolder": "Browse Folder",
+    "toolTip_browseDirectory": "Browse Directory",
 
     "label_projectName": "Project Name",
     "label_enterTextHere": "Enter Text Here",
     "label_createProject": "Create Project",
 
-    "error_emptyProjectName": "Error: Project Name cannot be empty."
+    "error_emptyProjectName": "Error: Project Name cannot be empty.",
+    "error_directoryAlreadyExists": "Error: Directory Already Exists",
+    "error_pathToFile": "Error: File exists at path."
 }

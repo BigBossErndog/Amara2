@@ -73,7 +73,7 @@ return NodeFactory:create("TextField", "FillRect", {
                 self.props.cursor.func:show()
 
                 if self.func.onChange then
-                    self.func:onChange(txt)
+                    self.func:onChange(self.props.finalText)
                 end
             end
         })
@@ -109,6 +109,7 @@ return NodeFactory:create("TextField", "FillRect", {
             while self.props.txt.width > self.width - 16 do
                 self.props.textInput:backspace()
                 self.props.txt.text = self.props.textInput.text
+                self.props.finalText = self.props.textInput.text
             end
         end
     end,
