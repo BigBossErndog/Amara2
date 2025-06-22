@@ -1,3 +1,9 @@
 {
-    "recentProjects_title": "Recent Projects"
+    "recentProjects_title": "Recent Projects",
+    "newProject_title": "New Project",
+
+    "toolTip_newProject": "New Project",
+    "toolTip_exit": "Exit",
+    "toolTip_minimize": "Minimize",
+    "toolTip_back": "Back"
 }

@@ -6,6 +6,7 @@ NodeFactory:load("UIButton", "ui/UIButton")
 NodeFactory:load("ToolTips", "ui/ToolTips")
 
 NodeFactory:load("MainWindow", "windows/MainWindow")
+NodeFactory:load("NewProjectWindow", "windows/NewProjectWindow")
 
 return Creator:createWorld({
     window = {
@@ -39,6 +40,10 @@ return Creator:createWorld({
             vertex = "defaultVert",
             fragment = "shaders/gaussianVertical.frag"
         })
+        world.load:shaderProgram("boxBlur", {
+            vertex = "defaultVert",
+            fragment = "shaders/boxBlur.frag"
+        })
 
         Localize:registerJSON(System:readJSON("data/localization/keywords.json"))
     end,
@@ -46,10 +51,10 @@ return Creator:createWorld({
         local props = world.props;
 
         props.windowShadows = world:createChild("ShaderContainer", {
-            alpha = 0.8,
+            alpha = 0.75,
             tint = Colors.Black,
-            repeats = 4,
-            shaderPasses = { "gaussianHorizontal", "gaussianVertical" },
+            repeats = 3,
+            shaderPasses = { "boxBlur" },
             onCreate = function(self)
                 self.size = self.world.view
             end,
@@ -61,13 +66,11 @@ return Creator:createWorld({
         props.windows = world:createChild("Group")
 
         props.mainwin = props.windows:createChild("MainWindow")
-        props.mainwin:wait(0.5):next(function(self)
-            self.func:openBox()
-        end)
+        props.mainwin.func:openWindow()
 
         props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
             target = props.windows,
-            x = -8, y = 12
+            x = -6, y = 8
         })
 
         props.toolTips = world:createChild("ToolTips")

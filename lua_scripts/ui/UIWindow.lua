@@ -70,7 +70,7 @@ return NodeFactory:create("UIWindow", "NineSlice", {
         end
         return self
     end,
-    openBox = function(self, _onEnd)
+    openWindow = function(self, _onEnd)
         self.visible = true
         self.props.isOpen = true
         
@@ -90,7 +90,7 @@ return NodeFactory:create("UIWindow", "NineSlice", {
             onComplete = _onEnd
         })
     end,
-    closeBox = function(self, _onEnd)
+    closeWindow = function(self, _onEnd)
         if _onEnd == nil then
             _onEnd = function(self) 
                 self.visible = false
@@ -109,14 +109,5 @@ return NodeFactory:create("UIWindow", "NineSlice", {
             duration = self.props.speed,
             onComplete = _onEnd
         })
-    end,
-    closeBoxAndDestroy = function(self, _onEnd)
-        if _onEnd == nil then
-            _onEnd = function(self) 
-                self.props.content:destroyChildren()
-            end
-        end
-        self.closeBox(_onEnd)
-        self.props.content.visible = true
     end
 })

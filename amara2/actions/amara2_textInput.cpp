@@ -14,6 +14,7 @@ namespace Amara {
             if (json_has(config, "text")) setText(config["text"].get<std::string>());
             if (json_is(config, "startInput")) startInput();
             if (json_is(config, "stopInput")) stopInput();
+            if (json_is(config, "clear")) clear();
             
             return Amara::Node::configure(config);
         }
@@ -77,6 +78,12 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object clear() {
+            text = "";
+            selectIndex = 0;
+            return get_lua_object();
+        }
+
         virtual void destroy() {
             if (!destroyed) stopInput();
             Amara::Node::destroy();
@@ -89,7 +96,9 @@ namespace Amara {
                 "setText", &TextInput::setText,
                 "recording", sol::readonly(&TextInput::recording),
                 "startInput", &TextInput::startInput,
-                "stopInput", &TextInput::stopInput
+                "stopInput", &TextInput::stopInput,
+                "backspace", &TextInput::backspace,
+                "clear", &TextInput::clear
             );
         }
     };

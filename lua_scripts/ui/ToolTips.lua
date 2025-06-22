@@ -30,11 +30,15 @@ return NodeFactory:create("ToolTips", "NineSlice", {
         end
 
         self.props.attempt = self.props.attempt + deltaTime
-        if self.props.attempt < 0.8 then
+        if self.props.attempt < 0.6 then
             return
         end
 
-        self.props.txt.text = str
+        if Localize:has(str) then
+            self.props.txt.text = Localize:get(str)
+        else
+            self.props.txt.text = str
+        end
         
         self.width = self.props.txt.width + 8
         self.height = self.props.txt.height + 4

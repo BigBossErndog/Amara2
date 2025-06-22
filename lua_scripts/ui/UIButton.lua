@@ -4,12 +4,14 @@ return NodeFactory:create("UIButton", "NineSlice", {
     origin = 0,
     input = true,
     onCreate = function(self)
+        self.props.enabled = true
+
         self.input:listen("onPointerDown", function(self, pointer)
             self.frame = 1
         end)
         self.input:listen("onPointerUp", function(self, pointer)
             self.frame = 0
-            if self.func.onPress then
+            if self.props.enabled and self.func.onPress then
                 self.func:onPress()
             end
         end)

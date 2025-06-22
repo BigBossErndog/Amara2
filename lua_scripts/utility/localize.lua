@@ -18,5 +18,14 @@ Localize = {
             return key
         end
         return lib.words[key]
+    end,
+    has = function(lib, key)
+        if not lib.words then
+            return false
+        end
+        if lib.words[key] then
+            return true
+        end
+        return false
     end
 }
