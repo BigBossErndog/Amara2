@@ -16,7 +16,7 @@ return NodeFactory:create("UIWindow", "NineSlice", {
         self.input:listen("onPointerDown", function(self, pointer)
             self:bringToFront()
         end)
-
+        
         self.props.content = self:createChild("Group", {
             x = self.left,
             y = self.top,
@@ -81,6 +81,7 @@ return NodeFactory:create("UIWindow", "NineSlice", {
 
         self.props.content.tween:to({
             alpha = 1,
+            ease = Ease.SineIn,
             duration = self.props.speed
         })
         self.tween:to({
@@ -99,6 +100,7 @@ return NodeFactory:create("UIWindow", "NineSlice", {
 
         self.props.content.tween:to({
             alpha = 0,
+            ease = Ease.SineOut,
             duration = self.props.speed
         })
 

@@ -5,9 +5,9 @@ return NodeFactory:create("MainWindow", "UIWindow", {
         self.classes.UIWindow.func:onCreate()
 
         local title = self.props.content:createChild("Text", {
-            x = 8, y = 8,
+            x = 10, y = 8,
             font = "defaultFont",
-            text = Localize:get("recentProjects_title"),
+            text = Localize:get("title_recentProjectse"),
             color = "#f0f6ff",
             origin = 0,
             input = true
@@ -59,7 +59,7 @@ return NodeFactory:create("MainWindow", "UIWindow", {
             onPress = function()
                 self.func:closeWindow(function()
                     self.props.enabled = false
-                    
+
                     local newWindow = self.parent:createChild("NewProjectWindow")
                     newWindow.func:openWindow()
                     

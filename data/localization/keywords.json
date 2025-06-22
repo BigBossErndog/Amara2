@@ -1,9 +1,13 @@
 {
-    "recentProjects_title": "Recent Projects",
-    "newProject_title": "New Project",
+    "title_recentProjectse": "Recent Projects",
+    "title_newProject": "New Project",
 
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit",
     "toolTip_minimize": "Minimize",
-    "toolTip_back": "Back"
+    "toolTip_back": "Back",
+    "toolTip_openFolder": "Open Folder",
+
+    "label_projectName": "Project Name",
+    "label_enterTextHere": "Enter Text Here"
 }

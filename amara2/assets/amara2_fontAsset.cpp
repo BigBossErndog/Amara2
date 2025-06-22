@@ -10,7 +10,7 @@ namespace Amara {
         int xadvance;
 
         bool renderable = true;
-
+        
         bool is_config = false;
         nlohmann::json config;
     };
@@ -360,6 +360,7 @@ namespace Amara {
                         cursorX += glyph.xadvance;
                         if (wrapWidth <= 0 || ((line->width + glyph.xadvance) <= wrapWidth)) {
                             line->width += glyph.xadvance;
+                            layout.width = fmax(layout.width, line->width);
                         }
                         glyph.renderable = false;
                         line->glyphs.push_back(glyph);
@@ -372,6 +373,7 @@ namespace Amara {
                     }
 
                     if (codepoint == U'\n' || (wrapWidth > 0 && (line->width + glyph.xadvance) > wrapWidth)) {
+                        layout.width = fmax(layout.width, line->width);
                         layout.height += line->height + lineSpacing;
 
                         cursorX = 0;
@@ -392,6 +394,7 @@ namespace Amara {
                     glyph.y = fontSize + glyph.yoffset;
                     cursorX += glyph.xadvance;
                     line->width += glyph.xadvance;
+                    layout.width = fmax(layout.width, line->width);
 
                     line->text += codepoint;
                     line->glyphs.push_back(glyph);
@@ -489,6 +492,7 @@ namespace Amara {
                 layout.height += line->height;
             }
 
+            layout.width = fmax(layout.width, line->width);
             float alignmentOffset = 0;
             switch (alignment) {
                 case Amara::AlignmentEnum::Left:

@@ -4,6 +4,7 @@ Scripts:run("utility/project")
 NodeFactory:load("UIWindow", "ui/UIWindow")
 NodeFactory:load("UIButton", "ui/UIButton")
 NodeFactory:load("ToolTips", "ui/ToolTips")
+NodeFactory:load("TextField", "ui/TextField")
 
 NodeFactory:load("MainWindow", "windows/MainWindow")
 NodeFactory:load("NewProjectWindow", "windows/NewProjectWindow")

@@ -81,7 +81,9 @@ namespace Amara {
     
             keycode_enum["Unknown"] = SDLK_UNKNOWN;
             keycode_enum["Return"] = SDLK_RETURN;
+            keycode_enum["Enter"] = SDLK_RETURN;
             keycode_enum["Esc"] = SDLK_ESCAPE;
+            keycode_enum["Escape"] = SDLK_ESCAPE;
             keycode_enum["Backspace"] = SDLK_BACKSPACE;
             keycode_enum["Tab"] = SDLK_TAB;
             keycode_enum["Space"] = SDLK_SPACE;

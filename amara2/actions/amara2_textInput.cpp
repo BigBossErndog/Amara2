@@ -84,6 +84,12 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object split() {
+            std::string part1 = text.substr(0, selectIndex);
+            std::string part2 = text.substr(selectIndex);
+            return json_to_lua(gameProps->lua, nlohmann::json::array({part1, part2}));
+        }
+
         virtual void destroy() {
             if (!destroyed) stopInput();
             Amara::Node::destroy();
@@ -92,13 +98,14 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<TextInput>("TextInput",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
-                "text", &TextInput::text,
+                "text", sol::property([](TextInput& t) -> std::string { return t.text; }, &TextInput::setText),
                 "setText", &TextInput::setText,
                 "recording", sol::readonly(&TextInput::recording),
                 "startInput", &TextInput::startInput,
                 "stopInput", &TextInput::stopInput,
                 "backspace", &TextInput::backspace,
-                "clear", &TextInput::clear
+                "clear", &TextInput::clear,
+                "split", &TextInput::split
             );
         }
     };
