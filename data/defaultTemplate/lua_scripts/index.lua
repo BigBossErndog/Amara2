@@ -1,4 +1,4 @@
-
+-- Welcome to your new world
 
 return Creator:createWorld({
     window = {
@@ -8,7 +8,7 @@ return Creator:createWorld({
         virtualHeight = 360,
 
         screenMode = ScreenMode.Windowed,
-
+        
         title = "${Window_Title}"
     },
 

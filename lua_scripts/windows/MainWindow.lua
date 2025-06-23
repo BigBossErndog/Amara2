@@ -172,6 +172,7 @@ return NodeFactory:create("MainWindow", "UIWindow", {
                         projectPath = path
                     })
                     newWindow.func:openWindow()
+                    newWindow.func:openDefault()
                     
                     self:destroy()
                 end)

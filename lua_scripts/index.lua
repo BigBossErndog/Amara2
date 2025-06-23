@@ -55,6 +55,8 @@ return Creator:createWorld({
     onCreate = function(world)
         local props = world.props;
 
+        world.func:fixSettings()
+
         props.windowShadows = world:createChild("ShaderContainer", {
             alpha = 0.75,
             tint = Colors.Black,
@@ -110,6 +112,26 @@ return Creator:createWorld({
         return self.props.settings
     end,
 
+    fixSettings = function(self)
+        local settings = self.func:getSettings()
+
+        local oldProjects = settings.projects
+        settings.projects = {}
+        
+        if #oldProjects > 0 then
+            for i = 1, #oldProjects do
+                if #settings.projects >= 4 then
+                    break
+                end
+                if path ~= oldProjects[i] and System:exists(oldProjects[i]) then
+                    table.insert(settings.projects, oldProjects[i])
+                end
+            end
+        end
+
+        self.func:saveSettings()
+    end,
+
     saveSettings = function(self)
         System:writeFile("data/settings.json", self.func:getSettings())
     end,
@@ -140,24 +162,5 @@ return Creator:createWorld({
         end
 
         self.func:saveSettings()
-    end,
-
-    openCodeEditor = function(self, projectPath, filePath)
-        local settings = self.func:getSettings()
-        if not settings.codeEditor then
-            return false
-        end
-
-        if settings.codeEditor == "vscode" then
-            if Game.platform == "windows" then
-                if filePath then
-                    System:execute("code - g \"", filePath, "\" --folder-uri \"", projectPath, "\"")
-                else
-                    System:execute("code \"", projectPath, "\"")
-                end
-            end
-        end
-
-        return true
     end
 })
