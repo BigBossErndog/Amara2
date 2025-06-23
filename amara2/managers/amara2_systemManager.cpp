@@ -1,4 +1,8 @@
 namespace Amara {
+#if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
+#include <windows.h>
+#include <shellapi.h>
+#endif
     class SystemManager {
     public:
         std::string basePath;
@@ -645,14 +649,17 @@ namespace Amara {
             return compileScript(path, dest, "");
         }
 
-        bool execute_blocking = true;
-
         static int run_command(std::string command) {
+            #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
+            HINSTANCE result = ShellExecuteA(NULL, "open", "cmd.exe", ("/c " + command).c_str(), NULL, SW_HIDE);
+            return ((int)result > 32) ? 0 : 1;
+            #else
             return std::system(command.c_str());
+            #endif
         }
 
         template <typename... Args>
-        int execute(Args... args) {
+        int execute(bool dettached, Args... args) {
             std::ostringstream ss;
             ((ss << args << " && "), ...);
             
@@ -661,7 +668,7 @@ namespace Amara {
                 command.erase(command.size() - 4);
             }
             debug_log(command.c_str());
-            if (execute_blocking) return run_command(command);
+            if (!dettached) return run_command(command);
             else {
                 std::thread t(run_command, command);
                 t.detach();
@@ -678,26 +685,35 @@ namespace Amara {
                 ss << arg.as<std::string>();
                 first = false;
             }
-            return execute(ss.str());
+            return execute(false, ss.str());
+        }
+        int lua_execute_dettached(sol::variadic_args args) {
+            std::ostringstream ss;
+            bool first = true;
+            for (auto arg : args) {
+                if (!first) {
+                    ss << " && ";
+                }
+                ss << arg.as<std::string>();
+                first = false;
+            }
+            return execute(true, ss.str());
         }
 
         bool isPathInEnvironment(const std::string& path) {
             #if defined(_WIN32)
-                // Get the required buffer size
                 DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
                 if (size == 0) {
                     debug_log("Error: Unable to access environment variables.");
                     return false;
                 }
                 
-                // Use std::vector<char> to store the PATH value
                 std::vector<char> buffer(size);
                 if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
                     debug_log("Error: Unable to access environment variables.");
                     return false;
                 }
             
-                // Convert buffer to std::string and check if the path exists
                 std::string currentPath(buffer.data());
                 return currentPath.find(path) != std::string::npos;
             #else
@@ -746,8 +762,13 @@ namespace Amara {
             int result = -1;
 
             #if defined(_WIN32)
-                command = "start \"\" \"" + url + "\"";
-                result = std::system(command.c_str());
+                #if !defined(AMARA_DEBUG_BUILD)
+                    HINSTANCE hinst = ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                    result = ((int)hinst > 32) ? 0 : 1;
+                #else
+                    command = "start \"\" \"" + url + "\"";
+                    result = std::system(command.c_str());
+                #endif
             #elif defined(__APPLE__)
                 command = "open \"" + url + "\"";
                 result = std::system(command.c_str());
@@ -777,8 +798,13 @@ namespace Amara {
             std::string absolutePath = getRelativePath(path);
 
             #if defined(_WIN32)
-                command = "start \"\" \"" + absolutePath + "\"";
-                result = std::system(command.c_str());
+                #if !defined(AMARA_DEBUG_BUILD)
+                    HINSTANCE hinst = ShellExecuteA(NULL, "explore", absolutePath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                    result = ((int)hinst > 32) ? 0 : 1;
+                #else
+                    command = "start \"\" \"" + absolutePath + "\"";
+                    result = std::system(command.c_str());
+                #endif
             #elif defined(__APPLE__)
                 command = "open \"" + absolutePath + "\"";
                 result = std::system(command.c_str());
@@ -820,11 +846,39 @@ namespace Amara {
             int result;
 
             #if defined(_WIN32)
-                command = "where " + programName + " > nul 2>&1";
-                result = std::system(command.c_str());
-                return result == 0;
+                command = "where \"" + programName + "\" > nul 2>&1";
+                #if !defined(AMARA_DEBUG_BUILD)
+                    std::string params = "/c " + command;
+
+                    SHELLEXECUTEINFOA sei = { sizeof(sei) };
+                    sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+                    sei.hwnd = NULL;
+                    sei.lpVerb = "open";
+                    sei.lpFile = "cmd.exe";
+                    sei.lpParameters = params.c_str();
+                    sei.lpDirectory = NULL;
+                    sei.nShow = SW_HIDE;
+                    sei.hInstApp = NULL;
+
+                    if (!ShellExecuteExA(&sei) || sei.hProcess == NULL) {
+                        debug_log("ShellExecuteEx failed to start process for 'where' command.");
+                        return false;
+                    }
+
+                    WaitForSingleObject(sei.hProcess, INFINITE);
+
+                    DWORD exitCode;
+                    GetExitCodeProcess(sei.hProcess, &exitCode);
+
+                    CloseHandle(sei.hProcess);
+
+                    return exitCode == 0;
+                #else // AMARA_DEBUG_BUILD on Windows
+                    result = std::system(command.c_str());
+                    return result == 0;
+                #endif
             #elif defined(__linux__) || defined(__APPLE__)
-                command = "which " + programName + " > /dev/null 2>&1";
+                command = "which \"" + programName + "\" > /dev/null 2>&1";
                 result = std::system(command.c_str());
                 return result == 0;
             #else
@@ -869,6 +923,7 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::compileScript)
                 ),
                 "execute", &SystemManager::lua_execute,
+                "execute_dettached", &SystemManager::lua_execute_dettached,
                 "setEnvironmentVar", &SystemManager::setEnvironmentVar,
                 "openWebsite", &SystemManager::openWebsite,
                 "openDirectory", &SystemManager::openDirectory,
