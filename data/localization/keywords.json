@@ -10,12 +10,15 @@
     "toolTip_back": "Back",
     "toolTip_browseDirectory": "Browse Directory",
     "toolTip_openDirectory": "Open Directory",
-    "toolTip_runGame": "Run Game",
-    "toolTip_buildGame": "Build Game",
 
-    "toolTip_openInCodeEditor": "Open In Code Editor",
-    "toolTip_openInVSCode": "Open In Visual Studio Code",
-    "toolTip_openInCodeOSS": "Open In Code OSS",
+    "toolTip_runGame": "Run Game (Ctrl + Alt + A)",
+    "toolTip_buildGame": "Build Game (Ctrl + Alt + B)",
+
+    "toolTip_openDirectory_shortcut": "Open Directory (Ctrl + Alt + F)",
+
+    "toolTip_openInCodeEditor": "Open In Code Editor (Ctrl + Alt + E)",
+    "toolTip_openInVSCode": "Open In Visual Studio Code (Ctrl + Alt + E)",
+    "toolTip_openInCodeOSS": "Open In Code OSS (Ctrl + Alt + E)",
 
     "label_empty": "--",
     "label_projectName": "Project Name",

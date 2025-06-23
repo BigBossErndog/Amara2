@@ -68,10 +68,17 @@ return NodeFactory:create("ProjectWindow", "UIWindow", {
             icon = 6
         })
 
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftAlt, Key.E },
+            onPress = function()
+                self.func:openCodeEditor()
+            end
+        })
+
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.content:createChild("UIButton", {
             id = "openDirectoryButton",
-            toolTip = "toolTip_openDirectory",
+            toolTip = "toolTip_openDirectory_shortcut",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 5,
