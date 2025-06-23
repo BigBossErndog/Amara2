@@ -4,7 +4,7 @@ namespace Amara {
     struct Message {
         Amara::MessageBox* sender = nullptr;
         std::string key;
-        sol::object data;
+        sol::object data = sol::nil;
         
         bool active = true;
         bool null = false;

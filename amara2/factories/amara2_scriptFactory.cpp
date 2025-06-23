@@ -10,7 +10,7 @@ namespace Amara {
         
         bool load(std::string key, std::string path) {
             std::string script_path = gameProps->system->getScriptPath(path);
-            if (!gameProps->system->fileExists(script_path)) {
+            if (!gameProps->system->exists(script_path)) {
                 debug_log("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
                 gameProps->lua_exception_thrown = true;
                 gameProps->breakWorld();

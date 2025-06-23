@@ -186,7 +186,7 @@
     #include "nodes/amara2_nodePool.cpp"
 
     #ifdef AMARA_WEB_SERVER
-        #include "nodes/amara2_webServer.cpp"
+    #include "nodes/amara2_webServer.cpp"
     #endif
 
     #include "nodes/amara2_text.cpp"
@@ -232,8 +232,10 @@
     
     #include "nodes/amara2_world.cpp"
 
+    #ifdef AMARA_PLUGINS
     #include <amara2_plugins.cpp>
-
+    #endif
+    
     #include "factories/amara2_nodeFactory.cpp"
 
     #include "managers/amara2_garbage.cpp"

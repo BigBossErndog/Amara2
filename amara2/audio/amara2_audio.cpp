@@ -169,6 +169,8 @@ namespace Amara {
             audio = nullptr;
             destroyAudioStream();
 
+            if (destroyed) return false;
+
             if (!gameProps->assets->has(key)) {
                 debug_log("Error: Asset \"", key, "\" not found.");
                 gameProps->breakWorld();

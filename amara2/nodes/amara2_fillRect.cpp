@@ -18,6 +18,32 @@ namespace Amara {
             return Amara::Sprite::configure(config);
         }
 
+        virtual void drawChildren(const Rectangle& v) override {
+            children_copy_list = children;
+            
+            Vector2 rec_scale = gameProps->passOn.scale;
+
+            pass_on_properties();
+
+            passOn.scale = rec_scale;
+            gameProps->passOn.scale = passOn.scale;
+
+            Amara::Node* child;
+			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
+                child = *it;
+				if (child == nullptr || child->destroyed || !child->visible || child->parent != this) {
+					++it;
+					continue;
+				}
+                
+                update_properties();
+				child->draw(v);
+
+                gameProps->passOn = passOn;
+				++it;
+			}
+        }
+
         virtual void create() override {
             Amara::Sprite::create();
             image = gameProps->assets->whitePixel;

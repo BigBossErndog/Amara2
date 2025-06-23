@@ -146,7 +146,7 @@ namespace Amara {
             path = gameProps->system->getAssetPath(_p);
             fontSize = _size;
             
-            if (!gameProps->system->fileExists(path)) {
+            if (!gameProps->system->exists(path)) {
                 debug_log("Error: Font file not found at \"", path, "\".");
                 return false;
             }

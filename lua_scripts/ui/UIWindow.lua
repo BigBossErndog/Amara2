@@ -26,6 +26,15 @@ return NodeFactory:create("UIWindow", "NineSlice", {
 
         self.props.speed = 0.1
 
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftAlt, Key.F4 },
+            onPress = function()
+                self.func:closeWindow(function()
+                    self.world:destroy()
+                end)
+            end
+        })
+
         self.func:closeInstantly()
     end,
     onUpdate = function(self, deltaTime)
@@ -88,6 +97,7 @@ return NodeFactory:create("UIWindow", "NineSlice", {
             width = self.props.targetWidth,
             height = self.props.targetHeight,
             duration = self.props.speed,
+            ease = Ease.SineOut,
             onComplete = _onEnd
         })
     end,
@@ -109,6 +119,7 @@ return NodeFactory:create("UIWindow", "NineSlice", {
             width = 0,
             height = 0,
             duration = self.props.speed,
+            ease = Ease.SineIn,
             onComplete = _onEnd
         })
     end

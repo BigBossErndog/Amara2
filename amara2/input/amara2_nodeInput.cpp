@@ -15,6 +15,8 @@ namespace Amara {
         double timeHeld = false;
         bool draggable = false;
 
+        Vector2 drag = Vector2(0, 0);
+
         Vector2 rec_interact_pos;
 
         void configure(nlohmann::json config) {

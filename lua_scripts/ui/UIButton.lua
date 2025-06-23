@@ -19,7 +19,7 @@ return NodeFactory:create("UIButton", "NineSlice", {
             self.frame = 0
         end)
     end,
-    configure = function(self, config)
+    onConfigure = function(self, config)
         self:super_configure(config)
 
         if config.icon then
@@ -79,7 +79,7 @@ return NodeFactory:create("UIButton", "NineSlice", {
             end
         end
 
-        if self.props.toolTip and self.input.hovered then
+        if self.props.toolTip and self.props.enabled and self.input.hovered then
             self.world.props.toolTips.func:showToolTip(self.props.toolTip, deltaTime)
         end
     end

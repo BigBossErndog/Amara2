@@ -5,9 +5,12 @@ NodeFactory:load("UIWindow", "ui/UIWindow")
 NodeFactory:load("UIButton", "ui/UIButton")
 NodeFactory:load("ToolTips", "ui/ToolTips")
 NodeFactory:load("TextField", "ui/TextField")
+NodeFactory:load("CodeEditorButton", "ui/CodeEditorButton")
+NodeFactory:load("DropDownMenu", "ui/DropDownMenu")
 
 NodeFactory:load("MainWindow", "windows/MainWindow")
 NodeFactory:load("NewProjectWindow", "windows/NewProjectWindow")
+NodeFactory:load("ProjectWindow", "windows/ProjectWindow")
 
 return Creator:createWorld({
     window = {
@@ -21,9 +24,10 @@ return Creator:createWorld({
         vsync = true,
         graphics = Graphics.OpenGL
     },
+
     onPreload = function(world) 
         world:fitToDisplay()
-
+        
         world.load:image("uiBox", "ui/amara2_uiBox.png")
         world.load:image("toolTipBox", "ui/amara2_toolTipBox.png")
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
@@ -45,7 +49,9 @@ return Creator:createWorld({
         })
 
         Localize:registerJSON(System:readJSON("data/localization/keywords.json"))
+        world.windowTitle = Localize:get("title_windowTitle")
     end,
+
     onCreate = function(world)
         local props = world.props;
 
@@ -74,6 +80,7 @@ return Creator:createWorld({
 
         props.toolTips = world:createChild("ToolTips")
     end,
+
     onUpdate = function(world, deltaTime)
         if Keyboard:isDown(Key.LeftCtrl) and Keyboard:isDown(Key.LeftAlt) then
             if Keyboard:justPressed(Key.One) then
@@ -89,5 +96,68 @@ return Creator:createWorld({
                 world:fitToDisplay(4)
             end
         end
+    end,
+
+    getSettings = function(self)
+        if not self.props.settings then
+            if System:exists("data/settings.json") then
+                self.props.settings = System:readJSON("data/settings.json")
+            else
+                self.props.settings = {}
+            end
+        end
+
+        return self.props.settings
+    end,
+
+    saveSettings = function(self)
+        System:writeFile("data/settings.json", self.func:getSettings())
+    end,
+
+    registerProject = function(self, path)
+        local settings = self.func:getSettings()
+
+        if not settings.projects then
+            settings.projects = {}
+        end
+
+        local oldProjects = settings.projects
+        settings.projects = {}
+        
+        if System:exists(path) then
+            table.insert(settings.projects, path)
+        end
+        
+        if #oldProjects > 0 then
+            for i = 1, #oldProjects do
+                if #settings.projects >= 4 then
+                    break
+                end
+                if path ~= oldProjects[i] and System:exists(oldProjects[i]) then
+                    table.insert(settings.projects, oldProjects[i])
+                end
+            end
+        end
+
+        self.func:saveSettings()
+    end,
+
+    openCodeEditor = function(self, projectPath, filePath)
+        local settings = self.func:getSettings()
+        if not settings.codeEditor then
+            return false
+        end
+
+        if settings.codeEditor == "vscode" then
+            if Game.platform == "windows" then
+                if filePath then
+                    System:execute("code - g \"", filePath, "\" --folder-uri \"", projectPath, "\"")
+                else
+                    System:execute("code \"", projectPath, "\"")
+                end
+            end
+        end
+
+        return true
     end
 })

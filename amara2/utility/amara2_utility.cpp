@@ -72,24 +72,6 @@ namespace Amara {
         }
     }
 
-    #if defined(_WIN32)
-        std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
-            #ifdef AMARA_OPENGL
-            GraphicsEnum::OpenGL,
-            #endif
-            GraphicsEnum::Render2D,
-            GraphicsEnum::VulkanMetalDirectX
-        };
-    #else
-        std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
-            #ifdef AMARA_OPENGL
-            GraphicsEnum::OpenGL,
-            #endif
-            GraphicsEnum::Render2D,
-            GraphicsEnum::VulkanMetalDirectX,
-        };
-    #endif
-
     inline std::vector<unsigned char> base64_decode(const std::string& encoded_string) {
         // TODO: Replace with a real Base64 decoding implementation ***
         debug_log("Warning: Base64 decoding is not implemented!");

@@ -1126,7 +1126,7 @@ namespace Amara {
 
         virtual void destroy() override {
             Amara::Node::destroy();
-
+            
             assets.clear();
             shaders.clear();
             animations.clear();

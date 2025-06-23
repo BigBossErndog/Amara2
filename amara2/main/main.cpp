@@ -4,8 +4,14 @@ int main(int argc, char** argv) {
     Amara::Creator creator(argc, argv);
     
     std::string indexPath = creator.system.getScriptPath("index");
-    if (creator.system.fileExists(indexPath)) {
+    if (creator.system.exists(indexPath)) {
         creator.startCreation(indexPath);
     }
     return 0;
 }
+
+#if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    return main(__argc, __argv);
+}
+#endif

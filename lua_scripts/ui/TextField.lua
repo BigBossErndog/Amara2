@@ -4,12 +4,13 @@ return NodeFactory:create("TextField", "FillRect", {
     origin = 0,
     color = "#111d27",
     input = true,
+
     props = {
         defaultText = Localize:get("label_enterTextHere"),
         inputEnabled = true,
     },
 
-    configure = function(self, config)
+    onConfigure = function(self, config)
         self:super_configure(config)
 
         if config.defaultText then
@@ -23,18 +24,15 @@ return NodeFactory:create("TextField", "FillRect", {
     onCreate = function(self)
         self.props.selected = false
         self.props.finalText = ""
-
-        self.props.txt = self.parent:createChild("Text",{
+        
+        self.props.txt = self:createChild("Text",{
+            x = 8, y = 2,
             font = "defaultFont",
             origin = 0,
             wrapMode = WrapMode.ByWord,
             props = {
                 backing = self
-            },
-            onUpdate = function(self)
-                self.x = self.props.backing.x + 8
-                self.y = self.props.backing.y + 2
-            end
+            }
         })
 
         self.props.cursor = self.props.txt:createChild("FillRect", {
@@ -79,15 +77,19 @@ return NodeFactory:create("TextField", "FillRect", {
         })
 
         self.input:listen("onPointerDown", function(self)
-            if self.props.inputEnabled then
-                self.props.selected = true
-                self.props.cursor.func:show()
-                self.func:setText(self.props.finalText)
-                self.props.textInput:startInput()
-            end
+            self.func:focusField()
         end)
 
         self.func:setText("")
+    end,
+
+    focusField = function(self)
+        if self.props.inputEnabled then
+            self.props.selected = true
+            self.props.cursor.func:show()
+            self.func:setText(self.props.finalText)
+            self.props.textInput:startInput()
+        end
     end,
 
     setText = function(self, txt)
@@ -134,6 +136,12 @@ return NodeFactory:create("TextField", "FillRect", {
                 self.props.cursor.func:hide()
                 self.props.textInput:stopInput()
                 self.func:setText(self.props.finalText)
+
+                if Keyboard:justPressed(Key.Enter) then
+                    if self.func.onEnter then
+                        self.func:onEnter()
+                    end
+                end
             end
         end
     end

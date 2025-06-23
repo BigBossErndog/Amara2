@@ -41,7 +41,7 @@ namespace Amara {
             
             std::string script_path = gameProps->system->getScriptPath(path);
 
-            if (!gameProps->system->fileExists(script_path)) {
+            if (!gameProps->system->exists(script_path)) {
                 debug_log("Error: Failed to load Node \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
@@ -113,7 +113,7 @@ namespace Amara {
             }
             
             std::string script_path = gameProps->system->getScriptPath(key);
-            if (gameProps->system->fileExists(script_path)) {
+            if (gameProps->system->exists(script_path)) {
                 if (String::endsWith(script_path, ".lua") || String::endsWith(script_path, ".luac")) {
                     sol::object result = gameProps->system->run(script_path);
                     Amara::Node* node = result.as<Amara::Node*>();

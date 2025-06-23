@@ -200,6 +200,9 @@ namespace Amara {
 
         bool setFont(std::string key) {
             font = nullptr;
+
+            if (destroyed) return false;
+            
             if (!gameProps->assets->has(key)) {
                 debug_log("Error: Asset \"", key, "\" was not found.");
                 return false;

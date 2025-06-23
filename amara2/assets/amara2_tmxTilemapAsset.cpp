@@ -221,7 +221,7 @@ namespace Amara {
         imageLayers.clear();
         mapProperties.clear();
         
-        if (!gameProps->system->fileExists(path)) {
+        if (!gameProps->system->exists(path)) {
             debug_log("Error: Tilemap file not found at \"", path, "\".");
             gameProps->breakWorld();
             return false;

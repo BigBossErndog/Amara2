@@ -23,6 +23,13 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
             defaultText = "Project Name",
             onChange = function(textField, txt)
                 self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
+            end,
+            onEnter = function()
+                if not self.func:checkPath() then
+                    self.props.nameField.func:focusField()
+                else
+                    self.func:createProject()
+                end
             end
         })
 
@@ -34,7 +41,7 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
 
         self.props.content:createChild("UIButton", {
             id = "browseButton",
-            toolTip = "toolTip_browseFolder",
+            toolTip = "toolTip_browseDirectory",
             x = self.props.folderField.x + self.props.folderField.width + 4,
             y = self.props.folderField.y,
             icon = 5,
@@ -43,7 +50,7 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
                 self.world:minimizeWindow()
 
                 self:wait(0.2):next(function()
-                    local path = System:browseFolder(self.props.folderPath)
+                    local path = System:browseDirectory(self.props.folderPath)
 
                     self.world:restoreWindow()
                     self.world.screenMode = ScreenMode.BorderlessFullscreen
@@ -61,8 +68,36 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
         })
 
         local buttonPos = self.props.targetWidth - 22
-        local buttonSpacing = 18
+        local buttonSpacing = 20
 
+        self.props.content:createChild("UIButton", {
+            id = "exitButton",
+            toolTip = "toolTip_exit",
+            x = buttonPos,
+            y = 4,
+            icon = 0,
+            onPress = function()
+                self.func:closeWindow(function(self)
+                    self.world:destroy()
+                end)
+                self.props.enabled = false
+            end
+        })
+
+        buttonPos = buttonPos - buttonSpacing
+        self.props.content:createChild("UIButton", {
+            id = "newProjectButton",
+            toolTip = "toolTip_minimize",
+            x = buttonPos,
+            y = 4,
+            icon = 3,
+            onPress = function(self)
+                self.world:minimizeWindow()
+                self.props.enabled = false
+            end
+        })
+
+        buttonPos = buttonPos - buttonSpacing
         self.props.content:createChild("UIButton", {
             id = "exitButton",
             toolTip = "toolTip_back",
@@ -73,7 +108,9 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
                 self.func:closeWindow(function()
                     self.props.enabled = false
                     
-                    local newWindow = self.parent:createChild("MainWindow")
+                    local newWindow = self.parent:createChild("MainWindow", {
+                        x = self.x, y = self.y
+                    })
                     newWindow.func:openWindow()
                     
                     self:destroy()
@@ -93,17 +130,8 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
             id = "createProjectButton",
             text = "label_createProject",
             onPress = function()
-                if string.len(self.props.nameField.props.finalText) == 0 then
-                    self.props.errorMessage.text = Localize:get("error_emptyProjectName")
-                    self.props.errorMessage.visible = true
-                elseif System:isDirectory(self.props.projectPath) then
-                    self.props.errorMessage.text = Localize:get("error_directoryAlreadyExists")
-                    self.props.errorMessage.visible = true
-                elseif System:fileExists(self.props.projectPath) then
-                    self.props.errorMessage.text = Localize:get("error_pathToFile")
-                    self.props.errorMessage.visible = true
-                else
-                    self.props.errorMessage.visible = false
+                if self.func:checkPath() then
+                    self.func:createProject()
                 end
             end
         })
@@ -112,6 +140,23 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
 
         local txt = self.props.nameField.props.finalText
         self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
+    end,
+
+    checkPath = function(self)
+        if string.len(self.props.nameField.props.finalText) == 0 then
+            self.props.errorMessage.text = Localize:get("error_emptyProjectName")
+            self.props.errorMessage.visible = true
+        elseif System:isDirectory(self.props.projectPath) then
+            self.props.errorMessage.text = Localize:get("error_directoryAlreadyExists")
+            self.props.errorMessage.visible = true
+        elseif System:exists(self.props.projectPath) then
+            self.props.errorMessage.text = Localize:get("error_pathToFile")
+            self.props.errorMessage.visible = true
+        else
+            self.props.errorMessage.visible = false
+            return true
+        end
+        return false
     end,
 
     makePath = function(self, defPath, target)
@@ -132,5 +177,37 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
         end
         self.props.projectPath = path
         return txt.text
+    end,
+
+    createProject = function(self)
+        System:createDirectory(self.props.projectPath)
+        System:copy(
+            System:join(System:getBasePath(), "data", "defaultTemplate"),
+            self.props.projectPath
+        )
+
+        local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
+        projectData["project-name"] = self.props.nameField.props.finalText
+        projectData["executable-name"] = self.props.nameField.props.finalText
+
+        System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
+        
+        local indexFile = System:readFile(System:join(self.props.projectPath, "lua_scripts", "index.lua"))
+        local fixedIndexFile = string.gsub(indexFile, "${Window_Title}", self.props.nameField.props.finalText)
+        System:writeFile(System:join(self.props.projectPath, "lua_scripts", "index.lua"), fixedIndexFile)
+
+        self.func:closeWindow(function()
+            self.func:closeWindow(function()
+                self.props.enabled = false
+
+                local newWindow = self.parent:createChild("ProjectWindow", {
+                    projectPath = self.props.projectPath
+                })
+                newWindow.func:openWindow()
+                newWindow.func:openDefault()
+                
+                self:destroy()
+            end)
+        end)
     end
 })

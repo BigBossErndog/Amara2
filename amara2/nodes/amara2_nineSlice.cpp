@@ -56,6 +56,8 @@ namespace Amara {
             image = nullptr;
             spritesheet = nullptr;
 
+            if (destroyed) return false;
+
             if (!gameProps->assets->has(key)) {
                 debug_log("Error: Asset \"", key, "\" was not found.");
                 return false;

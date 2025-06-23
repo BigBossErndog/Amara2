@@ -7,17 +7,23 @@ namespace Amara {
 
         SystemManager() = default;
         
-        bool fileExists(std::string path) {
+        bool exists(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
             return std::filesystem::exists(filePath);
         }
 
         std::string readFile(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
+
+            if (!exists(filePath.string())) {
+                debug_log("Error: File does not exist \"", filePath.string(), "\"");
+                gameProps->breakWorld();
+                return "";
+            }
             
             SDL_IOStream *rw = SDL_IOFromFile(filePath.string().c_str(), "rb");
             if (!rw) {
-                debug_log("Failed to open file: ", SDL_GetError());
+                debug_log("Error: Failed to open file ", SDL_GetError());
                 gameProps->breakWorld();
                 return "";
             }
@@ -45,8 +51,11 @@ namespace Amara {
         }
 
         nlohmann::json readJSON(std::string path) {
-            if (fileExists(path)) return nlohmann::json::parse(readFile(path));
-            return nullptr;
+            if (!exists(path)) {
+                debug_log("Error: File does not exist \"", path, "\"");
+                return nullptr;
+            }
+            return nlohmann::json::parse(readFile(path));
         }
         sol::object luaReadJSON(std::string path) {
             return json_to_lua(gameProps->lua, readJSON(path));
@@ -132,7 +141,6 @@ namespace Amara {
                 return false;
             }
 
-            debug_log("Written file: ", filePath.string(), " (", size_to_write, " bytes)");
             return true;
         }
         bool writeFile(std::string path, std::string input) {
@@ -148,7 +156,7 @@ namespace Amara {
 
         bool encryptFile(std::string path, std::string dest, std::string encryptionKey) {
             std::filesystem::path filePath = getRelativePath(path);
-            if (!fileExists(filePath.string())) {
+            if (!exists(filePath.string())) {
                 debug_log("Error: Input file not found \"", filePath.string(), "\".");
                 return false;
             }
@@ -216,35 +224,49 @@ namespace Amara {
 
             if (bytesWritten != currentSize) {
                 debug_log("Error: Failed to finish writing to \"", destPath.string(), "\".");
-                deleteFile(destPath.string());
+                remove(destPath.string());
                 return false;
             }
 
-            debug_log("Successfully encrypted \"", filePath.string(), "\" to \"", destPath.string(), "\"");
             return true;
         }
 
-        bool deleteFile(std::string path) {
+        bool remove(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
 
-            if (!std::filesystem::exists(path)) {
-                debug_log("Error: File does not exist: \"", filePath.string(), "\".");
+            if (!std::filesystem::exists(filePath)) {
+                debug_log("Error: \"", filePath.string(), "\" does not exist.");
                 return false;
             }
 
             try {
-                if (std::filesystem::remove(path)) {
-                    debug_log("File deleted successfully: \"", filePath.string(), "\"");
-                    return true;
-                } else {
-                    debug_log("Error: Failed to delete file (unknown reason): \"", filePath.string(), "\".");
-                    return false;
+                if (std::filesystem::is_directory(filePath)) {
+                    if (std::filesystem::remove_all(filePath)) {
+                        return true;
+                    }
+                    else {
+                        debug_log("Error: Failed to delete directory \"", filePath.string(), "\" (unknown reason).");
+                        return false;
+                    }
+                } 
+                else {
+                    if (std::filesystem::remove(filePath)) {
+                        return true;
+                    }
+                    else {
+                        debug_log("Error: Failed to delete file \"", filePath.string(), "\" (unknown reason).");
+                        return false;
+                    }
                 }
-            } catch (const std::exception& e) {
-                debug_log("Error: Exception while deleting file:  \"", filePath.string(), "\".");
+            }
+            catch (const std::filesystem::filesystem_error& e) {
+                debug_log("Error: Filesystem exception while deleting \"", filePath.string(), "\": ", e.what());
                 return false;
             }
-		    return false;
+            catch (const std::exception& e) { // Catch other exceptions
+                debug_log("Error: General exception while deleting \"", filePath.string(), "\": ", e.what());
+                return false;
+            }
 		}
 
         bool isDirectory(std::string path) {
@@ -355,7 +377,7 @@ namespace Amara {
                     std::vector<std::string> contents = getDirectoryContents(dirPath.string());
                     for (const auto& file : contents) {
                         if (std::filesystem::is_regular_file(file)) {
-                            deleteFile(file);
+                            remove(file);
                         }
                         else if (std::filesystem::is_directory(file)) {
                             clearDirectory(file);
@@ -400,13 +422,13 @@ namespace Amara {
 
         std::string getScriptPath(std::string path) {
             std::filesystem::path filePath = getRelativePath(gameProps->lua_script_path) / (std::filesystem::path)path;
-            if (!fileExists(filePath.string())) {
+            if (!exists(filePath.string())) {
                 path = filePath.string() + ".luac";
-                if (fileExists(path)) return path;
+                if (exists(path)) return path;
                 path = filePath.string() + ".lua";
-                if (fileExists(path)) return path;
+                if (exists(path)) return path;
                 path = filePath.string() + ".amara";
-                if (fileExists(path)) return path;
+                if (exists(path)) return path;
             }
             return filePath.string();
         }
@@ -443,12 +465,12 @@ namespace Amara {
             std::filesystem::path source = getRelativePath(input);
             std::filesystem::path destination = getRelativePath(output);
             try {
-                if (!fileExists(source.string())) {
+                if (!exists(source.string())) {
                     debug_log("Error: \"", source.string(), "\" does not exist.");
                     return false;
                 }
-                if (fileExists(destination.string())) {
-                    if (overwrite) deleteFile(destination.string());
+                if (exists(destination.string())) {
+                    if (overwrite) remove(destination.string());
                     else {
                         debug_log("Error: \"", destination.string(), "\" already exists.");
                         return false;
@@ -468,7 +490,6 @@ namespace Amara {
                     return false;
                 }
         
-                debug_log("Copied \"", source.string(), "\" to \"", destination.string(), "\".");
                 return true;
             }
             catch (const std::exception& e) {
@@ -542,6 +563,16 @@ namespace Amara {
             }
         }
 
+        std::string lua_join(sol::variadic_args args) {
+            std::filesystem::path current;
+
+            std::ostringstream ss;
+            for (auto arg : args) {
+                current = current / std::filesystem::path(lua_to_string(arg));
+            }
+            return current.string();
+        }
+
         sol::load_result load_script(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
             bool fileExists = std::filesystem::exists(filePath);
@@ -573,7 +604,7 @@ namespace Amara {
 
         bool compileScript(std::string path, std::string dest, std::string encryptionKey) {
             std::filesystem::path filePath = getRelativePath(path);
-            if (!fileExists(filePath.string())) {
+            if (!exists(filePath.string())) {
                 debug_log("Error: Script not found \"", filePath.string(), "\".");
                 return false;
             }
@@ -716,22 +747,18 @@ namespace Amara {
 
             #if defined(_WIN32)
                 command = "start \"\" \"" + url + "\"";
-                debug_log("SystemManager: Executing command: ", command);
                 result = std::system(command.c_str());
             #elif defined(__APPLE__)
                 command = "open \"" + url + "\"";
-                debug_log("SystemManager: Executing command: ", command);
                 result = std::system(command.c_str());
             #elif defined(__linux__) && !defined(__EMSCRIPTEN__)
                 command = "xdg-open \"" + url + "\"";
-                debug_log("SystemManager: Executing command: ", command);
                 result = std::system(command.c_str());
             #elif defined(__EMSCRIPTEN__)
-                debug_log("SystemManager: Opening URL via Emscripten: ", url);
                 emscripten_open_url_in_new_tab(url.c_str());
                 return true;
             #else
-                debug_log("Error: System.openWebsite is not supported on this platform.");
+                debug_log("Error: System:openWebsite is not supported on this platform.");
                 return false;
             #endif
 
@@ -744,12 +771,37 @@ namespace Amara {
             #endif
         }
 
+        bool openDirectory(std::string path) {
+            std::string command;
+            int result = -1;
+            std::string absolutePath = getRelativePath(path);
+
+            #if defined(_WIN32)
+                command = "start \"\" \"" + absolutePath + "\"";
+                result = std::system(command.c_str());
+            #elif defined(__APPLE__)
+                command = "open \"" + absolutePath + "\"";
+                result = std::system(command.c_str());
+            #elif defined(__linux__) && !defined(__EMSCRIPTEN__)
+                command = "xdg-open \"" + absolutePath + "\"";
+                result = std::system(command.c_str());
+            #else
+                debug_log("Error: System:openDirectory is not supported on this platform.");
+                return false;
+            #endif
+            
+            if (result != 0) {
+                debug_log("Warning: Failed to open directory: ", absolutePath);
+                return false;
+            }
+            return true;
+        }
         
-        std::string browseFolder() {
+        std::string browseDirectory() {
             auto path = pfd::select_folder("Select folder").result();
             return path.empty() ? "" : path;
         }
-        std::string browseFolder(std::string defPath) {
+        std::string browseDirectory(std::string defPath) {
             auto path = pfd::select_folder("Select folder", defPath).result();
             return path.empty() ? "" : path;
         }
@@ -763,9 +815,26 @@ namespace Amara {
             return result.empty() ? "" : result[0];
         }
 
+        bool programInstalled(std::string programName) {
+            std::string command;
+            int result;
+
+            #if defined(_WIN32)
+                command = "where " + programName + " > nul 2>&1";
+                result = std::system(command.c_str());
+                return result == 0;
+            #elif defined(__linux__) || defined(__APPLE__)
+                command = "which " + programName + " > /dev/null 2>&1";
+                result = std::system(command.c_str());
+                return result == 0;
+            #else
+                debug_log("Warning: programInstalled is not fully supported on this platform.");
+                return false;
+            #endif
+        }
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<SystemManager>("SystemManager",
-                "fileExists", &SystemManager::fileExists,
+                "exists", &SystemManager::exists,
                 "readFile", &SystemManager::readFile,
                 "readJSON", &SystemManager::luaReadJSON,
                 "writeFile", sol::overload(
@@ -773,7 +842,6 @@ namespace Amara {
                     sol::resolve<bool(std::string, sol::object)>(&SystemManager::luaWriteFile)
                 ),
                 "encryptFile", &SystemManager::encryptFile,
-                "deleteFile", &SystemManager::deleteFile,
                 "createDirectory", &SystemManager::createDirectory,
                 "isDirectory", &SystemManager::isDirectory,
                 "directoryExists", &SystemManager::isDirectory,
@@ -790,6 +858,7 @@ namespace Amara {
                 "getFileExtension", &SystemManager::getFileExtension,
                 "removeFileExtension", &SystemManager::removeFileExtension,
                 "mergePaths", &SystemManager::mergePaths,
+                "remove", &SystemManager::remove,
                 "copy", sol::overload(
                     sol::resolve<bool(std::string, std::string, bool)>(&SystemManager::copy),
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::copy)
@@ -802,15 +871,18 @@ namespace Amara {
                 "execute", &SystemManager::lua_execute,
                 "setEnvironmentVar", &SystemManager::setEnvironmentVar,
                 "openWebsite", &SystemManager::openWebsite,
+                "openDirectory", &SystemManager::openDirectory,
                 "copyToClipboard", &SystemManager::copyToClipboard,
-                "browseFolder", sol::overload(
-                    sol::resolve<std::string(std::string)>(&SystemManager::browseFolder),
-                    sol::resolve<std::string()>(&SystemManager::browseFolder)
+                "browseDirectory", sol::overload(
+                    sol::resolve<std::string(std::string)>(&SystemManager::browseDirectory),
+                    sol::resolve<std::string()>(&SystemManager::browseDirectory)
                 ),
                 "browseFile", sol::overload(
                     sol::resolve<std::string(std::string)>(&SystemManager::browseFile),
                     sol::resolve<std::string()>(&SystemManager::browseFile)
-                )
+                ),
+                "join", &SystemManager::lua_join,
+                "programInstalled", &SystemManager::programInstalled
             );
         }
     };

@@ -1,4 +1,6 @@
 /build
 /resources/clang-llvm
 /gimp
+/projects
+/settings.json
 .vscode/

@@ -1,4 +1,22 @@
 namespace Amara {
+    #if defined(_WIN32)
+    std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
+        #ifdef AMARA_OPENGL
+        GraphicsEnum::OpenGL,
+        #endif
+        GraphicsEnum::Render2D,
+        GraphicsEnum::VulkanMetalDirectX
+    };
+    #else
+    std::vector<GraphicsEnum> Amara_Default_Graphics_Priority = {
+        #ifdef AMARA_OPENGL
+        GraphicsEnum::OpenGL,
+        #endif
+        GraphicsEnum::Render2D,
+        GraphicsEnum::VulkanMetalDirectX,
+    };
+    #endif
+
     struct PositionColorVertex {
         float x, y, z;
         Uint8 r, g, b, a;

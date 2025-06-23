@@ -143,7 +143,7 @@ public:
         else pressed = false;
 
         if (pressed && !rec_pressed) {
-            funcs.callFunction(actor, "onPress");
+            if (funcs.hasFunction("onPress")) funcs.callFunction(actor, "onPress");
         }
     }
 

@@ -18,6 +18,8 @@ namespace Amara {
         World* currentWorld = nullptr;
         Demiurge* currentDemiurge = nullptr;
 
+        std::vector<std::string> starting_scripts;
+
         Creator(): Demiurge() {
             demiurgic = false;
 
@@ -83,6 +85,16 @@ namespace Amara {
                                 system.resetBasePath();
                             }
                         }
+                        #ifndef AMARA_DISABLE_EXTERNAL_SCRIPTS
+                        if (String::equal(arg, "-script")) {
+                            ++it;
+                            if (it == game.arguments.end()) break;
+                            nlohmann::json& path = *it;
+                            if (path.is_string()) {
+                                starting_scripts.push_back(path);
+                            }
+                        }
+                        #endif
                     }
                     ++it;
                 }
@@ -198,6 +210,13 @@ namespace Amara {
             eventHandler.init(&gameProps);
 
             scripts.run(path);
+
+            #ifndef AMARA_DISABLE_EXTERNAL_SCRIPTS
+            for (auto it = starting_scripts.begin(); it != starting_scripts.end(); it++) {
+                scripts.run(*it);
+            }
+            #endif
+
             game.hasQuit = gameProps.lua_exception_thrown;
 
             std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());

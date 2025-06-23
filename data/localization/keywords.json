@@ -1,5 +1,7 @@
 {
-    "title_recentProjectse": "Recent Projects",
+    "title_windowTitle": "Amara2",
+    "title_recentProjects": "Recent Projects",
+    "title_codeEditor": "Code Editor",
     "title_newProject": "New Project",
 
     "toolTip_newProject": "New Project",
@@ -7,12 +9,23 @@
     "toolTip_minimize": "Minimize",
     "toolTip_back": "Back",
     "toolTip_browseDirectory": "Browse Directory",
+    "toolTip_openDirectory": "Open Directory",
+    "toolTip_runGame": "Run Game",
+    "toolTip_buildGame": "Build Game",
 
+    "toolTip_openInCodeEditor": "Open In Code Editor",
+    "toolTip_openInVSCode": "Open In Visual Studio Code",
+    "toolTip_openInCodeOSS": "Open In Code OSS",
+
+    "label_empty": "--",
     "label_projectName": "Project Name",
     "label_enterTextHere": "Enter Text Here",
     "label_createProject": "Create Project",
+    "label_noCodeEditorAvailable": "No code editors available.",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",
-    "error_pathToFile": "Error: File exists at path."
+    "error_pathToFile": "Error: File exists at path.",
+
+    "codeEditor_VSCode": "Visual Studio Code"
 }
