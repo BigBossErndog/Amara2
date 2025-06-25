@@ -275,8 +275,8 @@ namespace Amara {
         sol::object luaConfigure(sol::object config) {
             update_properties();
 
+            super_configure(config);
             if (funcs.hasFunction("onConfigure")) funcs.callFunction("onConfigure", config);
-            else super_configure(config);
 
             return get_lua_object();
         }

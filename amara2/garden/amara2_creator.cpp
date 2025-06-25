@@ -202,7 +202,7 @@ namespace Amara {
             new_worlds.clear();
         }
 
-        void startCreation(std::string path) {
+        int startCreation(std::string path) {
             if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK)) {
                 debug_log("Error: SDL_Init failed: ", SDL_GetError());
             }
@@ -217,8 +217,9 @@ namespace Amara {
             }
             #endif
 
-            game.hasQuit = gameProps.lua_exception_thrown;
+            game.hasQuit = gameProps.lua_exception_thrown || gameProps.error_code != 0;
 
+            cleanDestroyedWorlds();
             std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
             
             bool vsync = false;
@@ -294,6 +295,9 @@ namespace Amara {
             garbageCollector.clearImmediately();
 
             SDL_Quit();
+
+            if (gameProps.lua_exception_thrown) return 1;
+            return gameProps.error_code;
         }
 
         void bind_lua() {

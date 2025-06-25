@@ -5,9 +5,9 @@ int main(int argc, char** argv) {
     
     std::string indexPath = creator.system.getScriptPath("index");
     if (creator.system.exists(indexPath)) {
-        creator.startCreation(indexPath);
+        return creator.startCreation(indexPath);
     }
-    return 0;
+    return 1;
 }
 
 #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)

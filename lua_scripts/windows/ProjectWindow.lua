@@ -1,10 +1,8 @@
-return NodeFactory:create("ProjectWindow", "UIWindow", {
-    width = 128,
-    height = 40,
+return Nodes:create("ProjectWindow", "UIWindow", {
+    width = 110,
+    height = 60,
 
     onConfigure = function(self, config)
-        self:super_configure(config)
-
         if config.projectPath then
             self.props.projectPath = config.projectPath
         end
@@ -48,18 +46,6 @@ return NodeFactory:create("ProjectWindow", "UIWindow", {
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.content:createChild("UIButton", {
-            id = "buildButton",
-            toolTip = "toolTip_buildGame",
-            x = buttonPos.x,
-            y = buttonPos.y,
-            icon = 7,
-            onPress = function()
-                
-            end
-        })
-
-        buttonPos.x = buttonPos.x + buttonSpacing
         self.props.codeEditorButton = self.props.content:createChild("CodeEditorButton", {
             id = "openCodeEditorButton",
             toolTip = "toolTip_openCodeEditor",
@@ -78,7 +64,7 @@ return NodeFactory:create("ProjectWindow", "UIWindow", {
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.content:createChild("UIButton", {
             id = "openDirectoryButton",
-            toolTip = "toolTip_openDirectory_shortcut",
+            toolTip = "toolTip_openProjectDirectory",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 5,
@@ -88,7 +74,7 @@ return NodeFactory:create("ProjectWindow", "UIWindow", {
         })
 
         self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftAlt, Key.F },
+            keys = { Key.LeftCtrl, Key.LeftAlt, Key.P },
             onPress = function()
                 System:openDirectory(self.props.projectPath)
             end
@@ -125,6 +111,32 @@ return NodeFactory:create("ProjectWindow", "UIWindow", {
                     self.world:destroy()
                 end)
                 self.props.enabled = false
+            end
+        })
+
+        buttonPos.x = 6
+        buttonPos.y = buttonPos.y + buttonSpacing
+        
+        self.props.content:createChild("UIButton", {
+            id = "buildButton",
+            toolTip = "toolTip_buildGame",
+            x = buttonPos.x,
+            y = buttonPos.y,
+            icon = 7,
+            onPress = function()
+                
+            end
+        })
+
+        buttonPos.x = buttonPos.x + buttonSpacing
+        self.props.content:createChild("UIButton", {
+            id = "messageLogButton",
+            toolTip = "toolTip_openMessageLog",
+            x = buttonPos.x,
+            y = buttonPos.y,
+            icon = 10,
+            onPress = function()
+                
             end
         })
 
@@ -196,6 +208,21 @@ return NodeFactory:create("ProjectWindow", "UIWindow", {
     end,
 
     runGame = function(self)
-        
+        local exe = Game.executable
+
+        self.props.gameTest = self:createChild("ProcessNode", {
+            arguments = {
+                exe,
+                "-context",
+                self.props.projectPath
+            },
+            onExit = function(process, exitCode)
+                System:writeFile(
+                    System:join(self.props.projectPath, "error_log.json"),
+                    process.output
+                )
+                print("EXIT CODE", exitCode)
+            end
+        })
     end
 })

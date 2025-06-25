@@ -1,4 +1,4 @@
-return NodeFactory:create("UIWindow", "NineSlice", {
+return Nodes:create("UIWindow", "NineSlice", {
     texture = "uiBox",
     maxWidth = 640, maxHeight = 640,
     width = 128, height = 64,

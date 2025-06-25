@@ -3,7 +3,11 @@ namespace Amara {
     void debug_log(Args... args) {
         std::ostringstream ss;
         (ss << ... << args);
-        std::cout << ss.str().c_str() << std::endl;
+        std::cout << ss.str() << std::endl;
+        
+        #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
+        SDL_Log("%s", ss.str().c_str());
+        #endif
     }
 
     template <class T> bool vector_contains(std::vector<T> list, T f) {

@@ -1,4 +1,4 @@
-return NodeFactory:create("TextField", "FillRect", {
+return Nodes:create("TextField", "FillRect", {
     width = 256,
     height = 18,
     origin = 0,
@@ -11,8 +11,6 @@ return NodeFactory:create("TextField", "FillRect", {
     },
 
     onConfigure = function(self, config)
-        self:super_configure(config)
-
         if config.defaultText then
             self.props.defaultText = config.defaultText
         end

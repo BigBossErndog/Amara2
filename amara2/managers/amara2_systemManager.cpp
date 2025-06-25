@@ -539,7 +539,7 @@ namespace Amara {
 
                 if (!loadResult.valid()) {
                     sol::error err = loadResult;
-                    debug_log("Error loading script '", filePath.string(), "': ", err.what());
+                    debug_log("Error loading script \"", filePath.string(), "\"\n", err.what());
                     gameProps->lua_exception_thrown = true;
                     gameProps->breakWorld();
                     return sol::nil;
@@ -550,7 +550,7 @@ namespace Amara {
 
                 if (!execResult.valid()) {
                     sol::error err = execResult;
-                    debug_log("Error: Error while executing script \"", filePath.string(), "\": ", err.what());
+                    debug_log("Error: Error while executing script \"", filePath.string(), "\".\n", err.what());
                     gameProps->lua_exception_thrown = true;
                     gameProps->breakWorld();
                     return sol::nil;
@@ -591,7 +591,7 @@ namespace Amara {
                 }
                 gameProps->breakWorld();
             }
-
+            
             if (String::endsWith(filePath.string(), ".luac")) {
                 return gameProps->lua.load(
                     std::string_view(scriptContent.data(), scriptContent.size()), 
@@ -667,7 +667,6 @@ namespace Amara {
             if (!command.empty()) {
                 command.erase(command.size() - 4);
             }
-            debug_log(command.c_str());
             if (!dettached) return run_command(command);
             else {
                 std::thread t(run_command, command);

@@ -1,4 +1,4 @@
-return NodeFactory:create("MainWindow", "UIWindow", {
+return Nodes:create("MainWindow", "UIWindow", {
     width = 256,
     height = 140,
     onCreate = function(self)
@@ -25,10 +25,11 @@ return NodeFactory:create("MainWindow", "UIWindow", {
 
         local spacing = 15
 
+        local failedProjects = 0
         if settings.projects then
             for i = 1, #settings.projects do
                 local projectPath = settings.projects[i]
-                if System:exists(projectPath) then
+                if System:exists(projectPath) and System:exists(System:join(projectPath, "project.json")) then
                     local projectData = System:readJSON(System:join(projectPath, "project.json"))
                     local projectName = projectData["project-name"]
                     
@@ -36,7 +37,7 @@ return NodeFactory:create("MainWindow", "UIWindow", {
 
                     local optBacker = self.props.content:createChild("FillRect", {
                         x = backer.x + 6,
-                        y = backer.y + 6 + (i - 1) * spacing,
+                        y = backer.y + 6 + (i - 1 - failedProjects) * spacing,
                         width = backer.width - 12,
                         height = spacing - 2,
                         color = Colors.Transparent,
@@ -78,6 +79,8 @@ return NodeFactory:create("MainWindow", "UIWindow", {
                         str = string.sub(str, 2)
                         txt.text = string.concat("...", str)
                     end
+                else
+                    failedProjects = failedProjects + 1
                 end
             end
         end
@@ -202,25 +205,10 @@ return NodeFactory:create("MainWindow", "UIWindow", {
     end,
 
     loadCodeEditors = function(self)
-        local settings = self.world.func:getSettings()
+        local editors = self.world.props.editors
 
-        local editors = {}
-
-        if System:programInstalled("code") then
-            table.insert(editors, "codeEditor_VSCode")
-        end
-        if System:programInstalled("code-oss") then
-            table.insert(editors, "codeEditor_CodeOSS")
-        end
-
-        if #editors > 0 then
-            if not settings.codeEditor then
-                settings.codeEditor = editors[1]
-            end
-
+        if editors then
             self.props.editorMenu.func:createOptions(editors)
         end
-
-        self.world.func:saveSettings()
     end
 })

@@ -1,4 +1,4 @@
-return NodeFactory:create("ToolTips", "NineSlice", {
+return Nodes:create("ToolTips", "NineSlice", {
     id = "toolTip",
     texture = "toolTipBox",
 

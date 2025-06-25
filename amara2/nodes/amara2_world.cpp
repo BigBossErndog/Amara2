@@ -1249,5 +1249,10 @@ namespace Amara {
 
     void GameProps::breakWorld() {
         if (world) world->destroy();
+        if (error_code == 0) error_code = 1;
+    }
+    void GameProps::breakWorld(int _error_code) {
+        breakWorld();
+        error_code = _error_code;
     }
 }

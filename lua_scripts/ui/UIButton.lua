@@ -1,4 +1,4 @@
-return NodeFactory:create("UIButton", "NineSlice", {
+return Nodes:create("UIButton", "NineSlice", {
     texture = "uiButton",
     width = 16, height = 18,
     origin = 0,
@@ -20,8 +20,6 @@ return NodeFactory:create("UIButton", "NineSlice", {
         end)
     end,
     onConfigure = function(self, config)
-        self:super_configure(config)
-
         if config.icon then
             if not self.props.icon then
                 self.props.icon = self:createChild("Sprite", {

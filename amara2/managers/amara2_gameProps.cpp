@@ -136,7 +136,11 @@ namespace Amara {
         std::vector<World*>* world_list = nullptr;
         double worldLifetime = 0;
 
+        bool lua_exception_thrown = false;
+        int error_code = 0;
+
         void breakWorld();
+        void breakWorld(int);
 
         NodeFactory* factory = nullptr;
         ScriptFactory* scripts = nullptr;
@@ -151,8 +155,6 @@ namespace Amara {
 
         std::vector<SDL_Keycode> key_pressed_buffer;
         std::vector<SDL_Keycode> key_released_buffer;
-
-        bool lua_exception_thrown = false;
 
         void queue_garbage(Amara::Node*, double);
         void queue_garbage(Amara::Node* node) {

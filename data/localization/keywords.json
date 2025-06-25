@@ -14,11 +14,12 @@
     "toolTip_runGame": "Run Game (Ctrl + Alt + A)",
     "toolTip_buildGame": "Build Game (Ctrl + Alt + B)",
 
-    "toolTip_openDirectory_shortcut": "Open Directory (Ctrl + Alt + F)",
+    "toolTip_openProjectDirectory": "Open Project Directory (Ctrl + Alt + P)",
 
     "toolTip_openInCodeEditor": "Open In Code Editor (Ctrl + Alt + E)",
     "toolTip_openInVSCode": "Open In Visual Studio Code (Ctrl + Alt + E)",
     "toolTip_openInCodeOSS": "Open In Code OSS (Ctrl + Alt + E)",
+    "toolTip_openMessageLog": "Open In Message Log (Ctrl + Alt + M)",
 
     "label_empty": "--",
     "label_projectName": "Project Name",

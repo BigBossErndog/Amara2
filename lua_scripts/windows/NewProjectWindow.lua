@@ -1,4 +1,4 @@
-return NodeFactory:create("NewProjectWindow", "UIWindow", {
+return Nodes:create("NewProjectWindow", "UIWindow", {
     width = 256,
     height = 120,
 
@@ -189,6 +189,8 @@ return NodeFactory:create("NewProjectWindow", "UIWindow", {
         local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
         projectData["project-name"] = self.props.nameField.props.finalText
         projectData["executable-name"] = self.props.nameField.props.finalText
+
+        projectData.uninitiated = true
 
         System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
         

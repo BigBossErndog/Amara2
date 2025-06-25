@@ -16,7 +16,7 @@ namespace Amara {
         bool hasQuit = false;
 
         Amara::GameProps* gameProps = nullptr;
-
+        
         std::string executable;
 
         bool testing = false;

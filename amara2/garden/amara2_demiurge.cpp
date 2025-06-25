@@ -27,7 +27,7 @@ namespace Amara {
             gameProps->lua["Creator"] = this;
             gameProps->lua["Game"] = &game;
             gameProps->lua["System"] = &system;
-            gameProps->lua["NodeFactory"] = &factory;
+            gameProps->lua["Nodes"] = &factory;
             gameProps->lua["Scripts"] = &scripts;
             gameProps->lua["Controls"] = &controls;
             

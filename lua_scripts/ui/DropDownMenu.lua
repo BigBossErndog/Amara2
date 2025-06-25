@@ -1,4 +1,4 @@
-return NodeFactory:create("DropDownMenu", "FillRect", {
+return Nodes:create("DropDownMenu", "FillRect", {
     width = 256,
     height = 16,
     origin = 0,
@@ -11,8 +11,6 @@ return NodeFactory:create("DropDownMenu", "FillRect", {
     },
 
     onConfigure = function(self, config)
-        self:super_configure(config)
-
         if config.options then
             self.props.options = config.options
         end

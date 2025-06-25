@@ -1,16 +1,15 @@
 Scripts:run("utility/localize")
-Scripts:run("utility/project")
 
-NodeFactory:load("UIWindow", "ui/UIWindow")
-NodeFactory:load("UIButton", "ui/UIButton")
-NodeFactory:load("ToolTips", "ui/ToolTips")
-NodeFactory:load("TextField", "ui/TextField")
-NodeFactory:load("CodeEditorButton", "ui/CodeEditorButton")
-NodeFactory:load("DropDownMenu", "ui/DropDownMenu")
+Nodes:load("UIWindow", "ui/UIWindow")
+Nodes:load("UIButton", "ui/UIButton")
+Nodes:load("ToolTips", "ui/ToolTips")
+Nodes:load("TextField", "ui/TextField")
+Nodes:load("CodeEditorButton", "ui/CodeEditorButton")
+Nodes:load("DropDownMenu", "ui/DropDownMenu")
 
-NodeFactory:load("MainWindow", "windows/MainWindow")
-NodeFactory:load("NewProjectWindow", "windows/NewProjectWindow")
-NodeFactory:load("ProjectWindow", "windows/ProjectWindow")
+Nodes:load("MainWindow", "windows/MainWindow")
+Nodes:load("NewProjectWindow", "windows/NewProjectWindow")
+Nodes:load("ProjectWindow", "windows/ProjectWindow")
 
 return Creator:createWorld({
     window = {
@@ -29,6 +28,7 @@ return Creator:createWorld({
         world:fitToDisplay()
         
         world.load:image("uiBox", "ui/amara2_uiBox.png")
+        world.load:image("teminalWindow", "ui/amara2_terminalWindow.png")
         world.load:image("toolTipBox", "ui/amara2_toolTipBox.png")
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
         world.load:spritesheet("uiIcons", "ui/amara2_icons.png", 16, 16)
@@ -50,6 +50,8 @@ return Creator:createWorld({
 
         Localize:registerJSON(System:readJSON("data/localization/keywords.json"))
         world.windowTitle = Localize:get("title_windowTitle")
+
+        world.func:loadCodeEditors()
     end,
 
     onCreate = function(world)
@@ -116,6 +118,11 @@ return Creator:createWorld({
         local settings = self.func:getSettings()
 
         local oldProjects = settings.projects
+        if not oldProjects then
+            oldProjects = {}
+            settings.projects = {}
+        end
+
         settings.projects = {}
         
         if #oldProjects > 0 then
@@ -123,7 +130,7 @@ return Creator:createWorld({
                 if #settings.projects >= 4 then
                     break
                 end
-                if path ~= oldProjects[i] and System:exists(oldProjects[i]) then
+                if path ~= oldProjects[i] and System:exists(oldProjects[i]) and System:exists(System:join(oldProjects[i], "project.json")) then
                     table.insert(settings.projects, oldProjects[i])
                 end
             end
@@ -160,6 +167,34 @@ return Creator:createWorld({
                 end
             end
         end
+
+        self.func:saveSettings()
+    end,
+
+    loadCodeEditors = function(self)
+        local settings = self.func:getSettings()
+
+        local editors = {}
+
+        if System:programInstalled("code") then
+            table.insert(editors, "codeEditor_VSCode")
+        end
+        if System:programInstalled("code-oss") then
+            table.insert(editors, "codeEditor_CodeOSS")
+        end
+
+        if #editors > 0 then
+            if not settings.codeEditor then
+                settings.codeEditor = editors[1]
+            end
+        end
+
+        if #editors > 0 then
+            self.props.editors = editors
+        else
+            self.props.editors = nil
+        end
+
 
         self.func:saveSettings()
     end
