@@ -2,10 +2,10 @@
 
 return Creator:createWorld({
     window = {
-        width = 1280,
-        height = 720,
-        virtualWidth = 640,
-        virtualHeight = 360,
+        width = 640,
+        height = 360,
+        virtualWidth = 320,
+        virtualHeight = 180,
 
         screenMode = ScreenMode.Windowed,
         

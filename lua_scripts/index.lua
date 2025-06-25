@@ -21,7 +21,7 @@ return Creator:createWorld({
         transparent = true,
         clickThrough = true,
         vsync = true,
-        graphics = Graphics.OpenGL
+        graphics = Graphics.Render2D
     },
 
     onPreload = function(world) 
@@ -60,7 +60,7 @@ return Creator:createWorld({
         world.func:fixSettings()
 
         props.windowShadows = world:createChild("ShaderContainer", {
-            alpha = 0.75,
+            alpha = 0.5,
             tint = Colors.Black,
             repeats = 3,
             shaderPasses = { "boxBlur" },

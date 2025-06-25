@@ -6,7 +6,7 @@ return Nodes:create("CodeEditorButton", "UIButton", {
         elseif settings.codeEditor == "codeEditor_CodeOSS" then
             self.props.toolTip = "toolTip_openInCodeOSS"
         else
-            self.props.toolTip = "toolTip_openInCodeEditor"
+            self.props.toolTip = "toolTip_noCodeEditor"
         end
 
         self.classes.UIButton.func:onCreate()
@@ -22,13 +22,19 @@ return Nodes:create("CodeEditorButton", "UIButton", {
         
         local indexAppend = ""
         if projectData.uninitiated then
-            indexAppend = string.concat(" -g \"", indexPath, "\"")
+            indexAppend = string.concat(" \"", indexPath, "\"")
         end
 
         if settings.codeEditor then
             if settings.codeEditor == "codeEditor_VSCode" then
+                if projectData.uninitiated then
+                    indexAppend = string.concat(" -g \"", indexPath, "\"")
+                end
                 System:execute(string.concat("code \"", projectPath, "\"", indexAppend))
             elseif settings.codeEditor == "codeEditor_CodeOSS" then
+                if projectData.uninitiated then
+                    indexAppend = string.concat(" -g \"", indexPath, "\"")
+                end
                 System:execute(string.concat("code-oss \"", projectPath, "\"", indexAppend))
             end
         end

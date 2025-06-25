@@ -190,7 +190,10 @@ namespace Amara {
         virtual void drawCanvas(const Rectangle& v) {
             SDL_Texture* rec_target = nullptr;
             
+            SDL_Rect prevSDLViewport;
             if (canvasTexture != nullptr && gameProps->renderer) {
+                SDL_GetRenderViewport(gameProps->renderer, &prevSDLViewport);
+                
                 rec_target = SDL_GetRenderTarget(gameProps->renderer);
                 SDL_SetRenderTarget(gameProps->renderer, canvasTexture);
                 SDL_SetRenderDrawColor(gameProps->renderer, 
@@ -234,8 +237,7 @@ namespace Amara {
 
             if (canvasTexture && gameProps->renderer) {
                 SDL_SetRenderTarget(gameProps->renderer, rec_target);
-                SDL_Rect setv = Rectangle::makeSDLRect(v);
-                SDL_SetRenderViewport(gameProps->renderer, &setv);
+                SDL_SetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL
             else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {

@@ -81,6 +81,9 @@ public:
                     }
                     io = nullptr;
 
+                    SDL_DestroyProcess(process);
+                    process = nullptr;
+
                     complete();
 
                     if (funcs.hasFunction("onExit")) {
@@ -104,6 +107,7 @@ public:
 
     virtual void destroy() override {
         if (process) {
+            SDL_KillProcess(process, false);
             SDL_DestroyProcess(process);
             process = nullptr;
         }

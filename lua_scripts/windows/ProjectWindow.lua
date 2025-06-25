@@ -27,24 +27,28 @@ return Nodes:create("ProjectWindow", "UIWindow", {
         local buttonPos = Vector2.new(6, 18)
         local buttonSpacing = 20
 
-        self.props.content:createChild("UIButton", {
+        self.props.playButton = self.props.content:createChild("UIButton", {
             id = "playButton",
             toolTip = "toolTip_runGame",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 2,
             onPress = function()
-                self.func:runGame()
+                if not self.props.gameProcess then
+                    self.func:runGame()
+                else 
+                    self.func:stopGame()
+                end
             end
         })
         
         self:createChild("Hotkey", {
             keys = { Key.LeftCtrl, Key.LeftAlt, Key.A },
             onPress = function()
-                self.func:runGame()
+                self.props.playButton.func:forcePress()
             end
         })
-
+        
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.codeEditorButton = self.props.content:createChild("CodeEditorButton", {
             id = "openCodeEditorButton",
@@ -57,12 +61,12 @@ return Nodes:create("ProjectWindow", "UIWindow", {
         self:createChild("Hotkey", {
             keys = { Key.LeftCtrl, Key.LeftAlt, Key.E },
             onPress = function()
-                self.func:openCodeEditor()
+                self.props.codeEditorButton.func:forcePress()
             end
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.props.openDirectoryButton = self.props.content:createChild("UIButton", {
             id = "openDirectoryButton",
             toolTip = "toolTip_openProjectDirectory",
             x = buttonPos.x,
@@ -76,7 +80,7 @@ return Nodes:create("ProjectWindow", "UIWindow", {
         self:createChild("Hotkey", {
             keys = { Key.LeftCtrl, Key.LeftAlt, Key.P },
             onPress = function()
-                System:openDirectory(self.props.projectPath)
+                self.props.openDirectoryButton.func:forcePress()
             end
         })
 
@@ -130,11 +134,23 @@ return Nodes:create("ProjectWindow", "UIWindow", {
 
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.content:createChild("UIButton", {
-            id = "messageLogButton",
-            toolTip = "toolTip_openMessageLog",
+            id = "printLogButton",
+            toolTip = "toolTip_openPrintLog",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 10,
+            onPress = function()
+                
+            end
+        })
+
+        buttonPos.x = buttonPos.x + buttonSpacing
+        self.props.content:createChild("UIButton", {
+            id = "copyProjectButton",
+            toolTip = "toolTip_copyProject",
+            x = buttonPos.x,
+            y = buttonPos.y,
+            icon = 11,
             onPress = function()
                 
             end
@@ -208,21 +224,41 @@ return Nodes:create("ProjectWindow", "UIWindow", {
     end,
 
     runGame = function(self)
+        self.func:stopGame()
+
         local exe = Game.executable
 
-        self.props.gameTest = self:createChild("ProcessNode", {
+        self.props.gameProcess = self:createChild("ProcessNode", {
             arguments = {
                 exe,
                 "-context",
                 self.props.projectPath
             },
+            onOutput = function(self, msg)
+                if self.props.printLog then
+                    self.props.printLog.func:pipeMessage(msg)
+                else
+                    
+                end
+            end,
             onExit = function(process, exitCode)
-                System:writeFile(
-                    System:join(self.props.projectPath, "error_log.json"),
-                    process.output
-                )
-                print("EXIT CODE", exitCode)
+                if self.props.printLog then
+                    self.props.printLog.func:unbindGameProcess()
+                end
+                self.props.gameProcess = nil
+                self.props.playButton.func:setIcon(2)
             end
         })
+
+        self.props.playButton.func:setIcon(12)
+    end,
+
+    stopGame = function(self)
+        if self.props.gameProcess then
+            self.props.gameProcess:destroy()
+            self.props.gameProcess = nil
+        end
+
+        self.props.playButton.func:setIcon(2)
     end
 })

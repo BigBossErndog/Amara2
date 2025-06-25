@@ -40,7 +40,7 @@ return Nodes:create("MainWindow", "UIWindow", {
                         y = backer.y + 6 + (i - 1 - failedProjects) * spacing,
                         width = backer.width - 12,
                         height = spacing - 2,
-                        color = Colors.Transparent,
+                        color = "#111d27",
                         origin = 0,
                         input = true,
                         props = {
@@ -51,7 +51,7 @@ return Nodes:create("MainWindow", "UIWindow", {
                         self.color = "#333e4d"
                     end)
                     optBacker.input:listen("onPointerExit", function(self)
-                        self.color = Colors.Transparent
+                        self.color = "#111d27"
                     end)
                     optBacker.input:listen("onPointerUp", function(self)
                         self.input:deactivate()
@@ -141,7 +141,7 @@ return Nodes:create("MainWindow", "UIWindow", {
         buttonPos = buttonPos - buttonSpacing
         self.props.content:createChild("UIButton", {
             id = "openDirectoryButton",
-            toolTip = "toolTip_openDirectory",
+            toolTip = "toolTip_openExistingProject",
             x = buttonPos,
             y = 4,
             icon = 5,

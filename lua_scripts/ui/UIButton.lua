@@ -3,6 +3,7 @@ return Nodes:create("UIButton", "NineSlice", {
     width = 16, height = 18,
     origin = 0,
     input = true,
+
     onCreate = function(self)
         self.props.enabled = true
 
@@ -19,6 +20,7 @@ return Nodes:create("UIButton", "NineSlice", {
             self.frame = 0
         end)
     end,
+
     onConfigure = function(self, config)
         if config.icon then
             if not self.props.icon then
@@ -60,6 +62,7 @@ return Nodes:create("UIButton", "NineSlice", {
             self.props.toolTip = config.toolTip
         end
     end,
+
     onUpdate = function(self, deltaTime)
         if self.frame == 0 then
             if self.props.icon then
@@ -80,5 +83,21 @@ return Nodes:create("UIButton", "NineSlice", {
         if self.props.toolTip and self.props.enabled and self.input.hovered then
             self.world.props.toolTips.func:showToolTip(self.props.toolTip, deltaTime)
         end
+    end,
+
+    setIcon = function(self, frame)
+        if self.props.icon then
+            self.props.icon.frame = frame
+        end
+    end,
+
+    forcePress = function(self)
+        self.frame = 1
+        if self.props.enabled and self.func.onPress then
+            self.func:onPress()
+        end
+        self:wait(0.1):next(function()
+            self.frame = 0
+        end)
     end
 })

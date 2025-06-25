@@ -212,6 +212,8 @@
 
     #include "nodes/amara2_fillRect.cpp"
 
+    #include "nodes/amara2_container.cpp"
+
     #include "nodes/amara2_textureContainer.cpp"
     #include "nodes/amara2_shaderContainer.cpp"
     

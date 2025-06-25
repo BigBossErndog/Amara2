@@ -9,17 +9,19 @@
     "toolTip_minimize": "Minimize",
     "toolTip_back": "Back",
     "toolTip_browseDirectory": "Browse Directory",
-    "toolTip_openDirectory": "Open Directory",
+    "toolTip_openExistingProject": "Open Existing Project",
 
     "toolTip_runGame": "Run Game (Ctrl + Alt + A)",
     "toolTip_buildGame": "Build Game (Ctrl + Alt + B)",
 
     "toolTip_openProjectDirectory": "Open Project Directory (Ctrl + Alt + P)",
 
-    "toolTip_openInCodeEditor": "Open In Code Editor (Ctrl + Alt + E)",
+    "toolTip_noCodeEditor": "No Code Editor Available",
     "toolTip_openInVSCode": "Open In Visual Studio Code (Ctrl + Alt + E)",
     "toolTip_openInCodeOSS": "Open In Code OSS (Ctrl + Alt + E)",
-    "toolTip_openMessageLog": "Open In Message Log (Ctrl + Alt + M)",
+    
+    "toolTip_openPrintLog": "Open In Print Log (Ctrl + Alt + M)",
+    "toolTip_copyProject": "Copy Project To New Location",
 
     "label_empty": "--",
     "label_projectName": "Project Name",

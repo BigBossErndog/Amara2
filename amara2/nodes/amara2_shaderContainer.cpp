@@ -105,8 +105,11 @@ namespace Amara {
                 SDL_SetRenderTarget(gameProps->renderer, target_texture);
                 SDL_SetRenderDrawColor(gameProps->renderer, 0, 0, 0, 0);
                 SDL_RenderClear(gameProps->renderer);
-                SDL_SetRenderDrawColor(gameProps->renderer, 255, 255, 255, 255);
 
+                
+                SDL_Rect setv = Rectangle::makeSDLRect(container_viewport);
+                SDL_SetRenderViewport(gameProps->renderer, &setv);
+                
                 SDL_SetTextureScaleMode(stamp_texture, SDL_SCALEMODE_NEAREST);
                 SDL_SetTextureColorMod(stamp_texture, 255, 255, 255);
                 SDL_SetTextureAlphaMod(stamp_texture, 255);
@@ -192,8 +195,10 @@ namespace Amara {
             ShaderProgram* rec_shader = currentShaderProgram;
             canvas_flip = true;
 
+            SDL_Rect prevSDLViewport;
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = canvas1Texture;
+                SDL_GetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
@@ -234,6 +239,7 @@ namespace Amara {
             currentShaderProgram = rec_shader;
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = (canvas_flip) ? canvas1Texture : canvas2Texture;
+                SDL_SetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {

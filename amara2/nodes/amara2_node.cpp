@@ -440,7 +440,7 @@ namespace Amara {
                 
                 update_properties();
 				child->draw(v);
-
+                
                 gameProps->passOn = passOn;
 				++it;
 			}

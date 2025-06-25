@@ -88,7 +88,7 @@ namespace Amara {
 
         void drawSlice(const Rectangle& v, const SDL_FRect& srcRect, const SDL_FRect& destRect) {
             if (image == nullptr) return;
-
+            
             if (image->texture && gameProps->renderer) {
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
                 SDL_SetTextureColorMod(image->texture, 255, 255, 255);
@@ -268,7 +268,11 @@ namespace Amara {
 
         virtual void drawCanvas(const Rectangle& v) override {
             SDL_Texture* rec_target = nullptr;
+            SDL_Rect prevSDLViewport;
+
             if (canvasTexture != nullptr && gameProps->renderer) {
+                SDL_GetRenderViewport(gameProps->renderer, &prevSDLViewport);
+                
                 rec_target = SDL_GetRenderTarget(gameProps->renderer);
                 SDL_SetRenderTarget(gameProps->renderer, canvasTexture);
                 if (clearOnDraw) SDL_SetRenderDrawColor(gameProps->renderer, fill.r, fill.g, fill.b, fill.a);
@@ -310,8 +314,7 @@ namespace Amara {
 
             if (canvasTexture && gameProps->renderer) {
                 SDL_SetRenderTarget(gameProps->renderer, rec_target);
-                SDL_Rect setv = Rectangle::makeSDLRect(v);
-                SDL_SetRenderViewport(gameProps->renderer, &setv);
+                SDL_SetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL
             else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL && glBufferID != 0) {

@@ -214,6 +214,8 @@ namespace Amara {
 
             registerNode<Amara::FillRect>("FillRect");
 
+            registerNode<Amara::Container>("Container");
+
             registerNode<Amara::TextureContainer>("TextureContainer");
             registerNode<Amara::ShaderContainer>("ShaderContainer");
 
@@ -270,6 +272,8 @@ namespace Amara {
             Amara::Animation::bind_lua(lua);
 
             Amara::FillRect::bind_lua(lua);
+
+            Amara::Container::bind_lua(lua);
             
             Amara::TextureContainer::bind_lua(lua);
             Amara::ShaderContainer::bind_lua(lua);

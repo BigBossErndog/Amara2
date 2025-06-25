@@ -370,7 +370,7 @@ namespace Amara {
                             v.x - diag_distance, v.y - diag_distance,
                             v.w + diag_distance*2, v.h + diag_distance*2
                         )
-                    )) return;
+                    )) continue;
 
                     if (font->texture && gameProps->renderer) {
                         SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);

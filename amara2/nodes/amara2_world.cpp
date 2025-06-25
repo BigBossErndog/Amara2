@@ -938,6 +938,8 @@ namespace Amara {
         void basePassOnProps() {
             reset_pass_on_props();
 
+            viewport = Rectangle( 0, 0, windowW, windowH );
+
             if (virtualWidth > 0 || virtualHeight > 0) {
                 if (virtualWidth <= 0) virtualWidth = windowW;
                 if (virtualHeight <= 0) virtualHeight = windowH;
@@ -997,6 +999,8 @@ namespace Amara {
             if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
                 SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
                 SDL_RenderClear(renderer);
+                SDL_SetRenderTarget(gameProps->renderer, NULL);
+                SDL_SetRenderViewport(gameProps->renderer, NULL);
                 gameProps->master_viewport = viewport;
                 gameProps->graphics = graphics;
             }
