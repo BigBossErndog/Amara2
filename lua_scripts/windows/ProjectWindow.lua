@@ -178,6 +178,14 @@ return Nodes:create("ProjectWindow", "UIWindow", {
             y = buttonPos.y,
             icon = 11,
             onPress = function()
+                if self.props.gameProcess then
+                    self.func:stopGame()
+                end
+                if self.props.printLog then
+                    self.props.printLog.func:unbindGameProcess()
+                    self.props.printLog.func:closeWindow()
+                    self.props.printLog = nil
+                end
                 self.func:closeWindow(function()
                     self.props.enabled = false
                     

@@ -23,7 +23,7 @@ return Creator:createWorld({
         transparent = true,
         clickThrough = true,
         vsync = true,
-        graphics = Graphics.OpenGL
+        graphics = Graphics.Render2D
     },
 
     onPreload = function(world) 
@@ -37,19 +37,6 @@ return Creator:createWorld({
         world.load:spritesheet("tickBox", "ui/amara2_tickBox.png", 9, 9)
         
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
-        
-        world.load:shaderProgram("gaussianHorizontal", {
-            vertex = "defaultVert",
-            fragment = "shaders/gaussianHorizontal.frag"
-        })
-        world.load:shaderProgram("gaussianVertical", {
-            vertex = "defaultVert",
-            fragment = "shaders/gaussianVertical.frag"
-        })
-        world.load:shaderProgram("boxBlur", {
-            vertex = "defaultVert",
-            fragment = "shaders/boxBlur.frag"
-        })
 
         Localize:registerJSON(System:readJSON("data/localization/keywords.json"))
         world.windowTitle = Localize:get("title_windowTitle")
@@ -62,11 +49,9 @@ return Creator:createWorld({
 
         world.func:fixSettings()
 
-        props.windowShadows = world:createChild("ShaderContainer", {
+        props.windowShadows = world:createChild("TextureContainer", {
             alpha = 0.5,
             tint = Colors.Black,
-            repeats = 3,
-            shaderPasses = { "boxBlur" },
             onCreate = function(self)
                 self.size = self.world.view
             end,

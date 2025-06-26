@@ -34,7 +34,7 @@ namespace Amara {
         int textWidth = 0;
         int textHeight = 0;
 
-        int wrapWidth = -1;
+        double wrapWidth = -1;
         Amara::WrapModeEnum wrapMode = Amara::WrapModeEnum::ByCharacter;
 
         int lineSpacing = 0;
@@ -223,7 +223,7 @@ namespace Amara {
             return true;
         }
 
-        sol::object setWrapWidth(int width) {
+        sol::object setWrapWidth(double width) {
             wrapWidth = width;
             updateText();
             return get_lua_object();

@@ -28,6 +28,7 @@
     
     "toolTip_openPrintLog": "Open In Print Log (Ctrl + Alt + M)",
     "toolTip_copyProject": "Copy Project To New Location",
+    "toolTip_toggleBGOpacity": "Toggle Background Opacity",
 
     "label_empty": "--",
     "label_projectName": "Project Name",

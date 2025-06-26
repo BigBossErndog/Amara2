@@ -1,7 +1,7 @@
 return Nodes:create("TerminalWindow", "UIWindow", {
     texture = "terminalWindow",
     width = 256,
-    height = 120,
+    height = 80,
 
     input = true,
 
@@ -38,7 +38,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         self.props.bottomLocked = true
 
         if not self.props.poolSize then
-            self.props.poolSize = 64
+            self.props.poolSize = 32
         end
 
         if self.props.gameProcess then
@@ -101,6 +101,8 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             end
         end
 
+        local buttonSpacing = 20
+
         self.props.exitButton = self.props.content:createChild("UIButton", {
             id = "exitButton",
             toolTip = "toolTip_exit",
@@ -120,6 +122,27 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                 if self.func.onExit then
                     self.func:onExit()
                 end
+            end
+        })
+
+        self.frame = terminalWindowData.darkened and 1 or 0
+        self.props.darkenButton = self.props.content:createChild("UIButton", {
+            id = "darkenButton",
+            toolTip = "toolTip_toggleBGOpacity",
+            y = 4,
+            icon = terminalWindowData.darkened and 14 or 13,
+            onUpdate = function(button, deltaTime)
+                button.classes.UIButton.func:onUpdate(deltaTime)
+
+                button.x = self.props.targetWidth - button.width - 4 - buttonSpacing
+            end,
+            onPress = function()
+                terminalWindowData.darkened = not terminalWindowData.darkened
+                self.props.darkenButton.func:setIcon(terminalWindowData.darkened and 14 or 13)
+
+                self.frame = terminalWindowData.darkened and 1 or 0
+
+                self.world.func:saveSettings()
             end
         })
 
@@ -173,6 +196,11 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         item:activate()
         item.text = msg
 
+        local wrapWidth = self.props.cont.width - self.props.marginLeft - self.props.marginRight
+        if item.wrapWidth ~= wrapWidth then
+            item.wrapWidth = wrapWidth
+        end
+
         if string.find(msg, "%f[%w]Error%f[%W]") then
             item.color = Colors.Red
         else
@@ -203,6 +231,29 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         self.world.func:saveSettings()
     end,
 
+    onSizeChange = function(self)
+        local wrapWidth = self.props.cont.width - self.props.marginLeft - self.props.marginRight
+        local lastitem = nil
+        self.props.wallHeight = 0
+        if #self.props.activePool > 0 then
+            for i = 1, #self.props.activePool do
+                local item = self.props.activePool[i]
+
+                if item.wrapWidth ~= wrapWidth then
+                    item.wrapWidth = wrapWidth
+                end
+
+                if lastitem then
+                    item.y = lastitem.y + lastitem.height + self.props.lineSpacing
+                else
+                    item.y = 0
+                end
+                lastitem = item
+            end
+            self.props.wallHeight = lastitem.y + lastitem.height
+        end
+    end,
+
     onUpdate = function(self)
         self.classes.UIWindow.func:onUpdate(self)
 
@@ -216,53 +267,35 @@ return Nodes:create("TerminalWindow", "UIWindow", {
 
         self.props.cont.width = self.props.targetWidth - self.props.paddingLeft - self.props.paddingRight
         self.props.cont.height = self.props.targetHeight - self.props.paddingTop - self.props.paddingBottom
-
         self.props.pool.x = self.props.cont.left + self.props.marginLeft
 
-        local wrapWidth = self.props.cont.width - self.props.marginLeft - self.props.marginRight
+        if #self.props.activePool > 0 then
+            local firstItem = self.props.activePool[1]
+            local lastItem = self.props.activePool[#self.props.activePool]
+            local viewableHeight = self.props.cont.height - self.props.marginBottom - self.props.marginTop
 
-        local lastitem = nil
-        for i = 1, #self.props.activePool do
-            local item = self.props.activePool[i]
-
-            if item.wrapWidth ~= wrapWidth then
-                item.wrapWidth = wrapWidth
-            end
-
-            if lastitem then
-                item.y = lastitem.y + lastitem.height + self.props.lineSpacing
-            end
-
-            if i == 1 then
-                if self.props.wallHeight < (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
-                    if self.props.pool.y + item.y < self.props.cont.top + self.props.marginTop then
-                        self.props.pool.y = self.props.cont.top + self.props.marginTop - item.y
+            if self.props.wallHeight <= viewableHeight then
+                self.props.pool.y = self.props.cont.top + self.props.marginTop - firstItem.y
+                self.props.bottomLocked = true
+            else
+                if self.props.bottomLocked then
+                    self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - lastItem.y - lastItem.height
+                else
+                    if self.props.pool.y + firstItem.y > self.props.cont.top + self.props.marginTop then
+                        self.props.pool.y = self.props.cont.top + self.props.marginTop - firstItem.y
                     end
-                end
-                if self.props.pool.y + item.y > self.props.cont.top + self.props.marginTop then
-                    self.props.pool.y = self.props.cont.top + self.props.marginTop - item.y
-                end
-            end
-
-            if i == #self.props.activePool then
-                if self.props.wallHeight > (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
-                    if self.props.pool.y + item.y + item.height < self.props.cont.bottom - self.props.marginBottom then
-                        self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - item.y - item.height
+                    if self.props.pool.y + lastItem.y + lastItem.height < self.props.cont.bottom - self.props.marginBottom then
+                        self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - lastItem.y - lastItem.height
                         self.props.bottomLocked = true
                     end
                 end
-                if self.props.bottomLocked and self.props.pool.y + item.y + item.height > self.props.cont.bottom - self.props.marginBottom then
-                    self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - item.y - item.height
-                end
             end
-
-            lastitem = item
         end
-
+        
         if self.props.wallHeight > (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
             self.props.scrollBar.func:manageScrollPosition(self.props.scrollBar)
         else
-            self.props.scrollBar.visible = false 
+            self.props.scrollBar.visible = false
         end
     end,
 

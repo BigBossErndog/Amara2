@@ -324,7 +324,7 @@ namespace Amara {
             else return contents_str;
         }
 
-        TextLayout generateLayout(const std::u32string& str, int wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing) {
+        TextLayout generateLayout(const std::u32string& str, double wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing) {
             TextLayout layout = TextLayout();
             layout.text = str;
 
@@ -343,7 +343,7 @@ namespace Amara {
                         glyph.is_config = true;
 
                         glyph.config = getTextConfig(i, str);
-
+                        
                         line->glyphs.push_back(glyph);
                         continue;
                     }
