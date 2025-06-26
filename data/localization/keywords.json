@@ -18,6 +18,10 @@
 
     "toolTip_noCodeEditor": "No Code Editor Available",
     "toolTip_openInVSCode": "Open In Visual Studio Code (Ctrl + Alt + E)",
+    "toolTip_openInVSCodeInsiders": "Open In Visual Studio Code Insiders (Ctrl + Alt + E)",
+    "toolTip_openInSublimeText": "Open In Sublime Text (Ctrl + Alt + E)",
+    "toolTip_openInAtom": "Open In Atom (Ctrl + Alt + E)",
+    "toolTip_openInNotepad": "Open In Notepad (Ctrl + Alt + E)",
     "toolTip_openInCodeOSS": "Open In Code OSS (Ctrl + Alt + E)",
     
     "toolTip_openPrintLog": "Open In Print Log (Ctrl + Alt + M)",
@@ -33,5 +37,10 @@
     "error_directoryAlreadyExists": "Error: Directory Already Exists",
     "error_pathToFile": "Error: File exists at path.",
 
-    "codeEditor_VSCode": "Visual Studio Code"
+    "codeEditor_VSCode": "Visual Studio Code",
+    "codeEditor_CodeOSS": "Code OSS",
+    "codeEditor_VSCodeInsiders": "Visual Studio Code Insiders",
+    "codeEditor_SublimeText": "Sublime Text",
+    "codeEditor_Atom": "Atom",
+    "codeEditor_Notepad": "Notepad"
 }

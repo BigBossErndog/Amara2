@@ -98,7 +98,11 @@ return Nodes:create("MainWindow", "UIWindow", {
             x = backer.x,
             y = editorTitle.y + editorTitle.height + 4,
             width = backer.width,
-            defaultText = Localize:get("label_noCodeEditorAvailable")
+            defaultText = Localize:get("label_noCodeEditorAvailable"),
+            onSelect = function(menu, opt)
+                settings.codeEditor = opt
+                self.world.func:saveSettings()
+            end
         })
         self.props.editorMenu = editorMenu
 

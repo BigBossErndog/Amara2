@@ -188,8 +188,23 @@ return Creator:createWorld({
         if System:programInstalled("code") then
             table.insert(editors, "codeEditor_VSCode")
         end
+        if System:programInstalled("code-insiders") then
+            table.insert(editors, "codeEditor_VSCodeInsiders")
+        end
         if System:programInstalled("code-oss") then
             table.insert(editors, "codeEditor_CodeOSS")
+        end
+        if System:programInstalled("atom") then
+            table.insert(editors, "codeEditor_Atom")
+        end
+        if System:programInstalled("sublime_text") then
+            table.insert(editors, "codeEditor_Sublime-Text")
+        end
+        if System:programInstalled("subl") then
+            table.insert(editors, "codeEditor_Sublime")
+        end
+        if System:programInstalled("notepad") then
+            table.insert(editors, "codeEditor_Notepad")
         end
 
         if #editors > 0 then
