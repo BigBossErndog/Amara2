@@ -33,6 +33,7 @@
     "label_enterTextHere": "Enter Text Here",
     "label_createProject": "Create Project",
     "label_noCodeEditorAvailable": "No code editors available.",
+    "label_autoOpenCodeEditor": "Auto Open Code Editor",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",

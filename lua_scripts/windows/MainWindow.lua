@@ -106,6 +106,15 @@ return Nodes:create("MainWindow", "UIWindow", {
         })
         self.props.editorMenu = editorMenu
 
+        local autoOpenTitle = self.props.content:createChild("Text", {
+            x = backer.x + backer.width,
+            y = editorTitle.y,
+            origin = { 1, 0 },
+            font = "defaultFont",
+            color = Colors.White,
+            text = Localize:get("label_autoOpenCodeEditor")
+        })
+
         self.func:loadCodeEditors()
 
         if settings.codeEditor then
