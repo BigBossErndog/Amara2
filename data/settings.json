@@ -1,14 +1,17 @@
 {
     "codeEditor": "codeEditor_VSCode",
     "projectWindowData": {
-        "x": 249.33343505859375,
-        "y": 111.33328247070313
+        "x": 258.0000915527344,
+        "y": 125.99993133544922
     },
     "projects": [
+        "C:\\Users\\ernes\\Documents\\Creations\\amara2\\projects\\Test Project",
         "C:\\Users\\ernes\\Documents\\Creations\\amara2\\projects\\Test"
     ],
     "terminalWindowData": {
-        "x": -192.0,
-        "y": 75.0000228881836
+        "height": 120,
+        "width": 256,
+        "x": -152.33334350585938,
+        "y": 98.3333740234375
     }
 }
