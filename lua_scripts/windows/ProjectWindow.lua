@@ -48,7 +48,7 @@ return Nodes:create("ProjectWindow", "UIWindow", {
                 self.props.playButton.func:forcePress()
             end
         })
-        
+
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.codeEditorButton = self.props.content:createChild("CodeEditorButton", {
             id = "openCodeEditorButton",
@@ -133,14 +133,32 @@ return Nodes:create("ProjectWindow", "UIWindow", {
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.props.printLogButton = self.props.content:createChild("UIButton", {
             id = "printLogButton",
             toolTip = "toolTip_openPrintLog",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 10,
             onPress = function()
-                
+                if not self.props.printLog then
+                    self.props.printLog = self.parent:createChild("TerminalWindow", {
+                        gameProcess = self.props.gameProcess,
+                        onExit = function()
+                            self.props.printLog = nil
+                            self.props.printLogButton.func:setIcon(10)
+                        end
+                    })
+                    self.props.printLog.func:openWindow()
+                else
+                    self.props.printLog.props.exitButton.func:forcePress()
+                end
+            end
+        })
+
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftAlt, Key.M },
+            onPress = function()
+                self.props.printLogButton.func:forcePress()
             end
         })
 
@@ -234,16 +252,16 @@ return Nodes:create("ProjectWindow", "UIWindow", {
                 "-context",
                 self.props.projectPath
             },
-            onOutput = function(self, msg)
+            onOutput = function(process, msg)
                 if self.props.printLog then
                     self.props.printLog.func:pipeMessage(msg)
-                else
-                    
                 end
             end,
             onExit = function(process, exitCode)
                 if self.props.printLog then
                     self.props.printLog.func:unbindGameProcess()
+                elseif exitCode ~= 0 then
+                    self.props.printLogButton.func:forcePress()
                 end
                 self.props.gameProcess = nil
                 self.props.playButton.func:setIcon(2)

@@ -63,14 +63,10 @@ namespace Amara {
         Creator(int argv, char** args): Creator() {
             game.executable = system.getRelativePath(system.getFileName(std::string(args[0])));
             if (argv > 1) {
-                std::cout << "Arguments: ";
                 for (int i = 1; i < argv; i++) {
-                    std::cout << args[i];
-                    if (i < argv-1) std::cout << ", ";
                     if (nlohmann::json::accept(args[i])) game.arguments.push_back(nlohmann::json::parse(args[i]));
                     else game.arguments.push_back(std::string(args[i]));
                 }
-                std::cout << std::endl;
             }
             if (game.arguments.size() > 0) {
                 for (auto it = game.arguments.begin(); it != game.arguments.end();) {

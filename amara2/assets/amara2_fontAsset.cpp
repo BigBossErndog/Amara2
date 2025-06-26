@@ -358,7 +358,7 @@ namespace Amara {
 
                     if (codepoint == U'\t' || codepoint == U' ') {
                         cursorX += glyph.xadvance;
-                        if (wrapWidth <= 0 || ((line->width + glyph.xadvance) <= wrapWidth)) {
+                        if (wrapWidth <= 0 || ((line->width + glyph.xadvance) < wrapWidth)) {
                             line->width += glyph.xadvance;
                             layout.width = fmax(layout.width, line->width);
                         }
@@ -372,7 +372,7 @@ namespace Amara {
                         continue;
                     }
 
-                    if (codepoint == U'\n' || (wrapWidth > 0 && (line->width + glyph.xadvance) > wrapWidth)) {
+                    if (codepoint == U'\n' || (wrapWidth > 0 && (line->width + glyph.xadvance) >= wrapWidth)) {
                         layout.width = fmax(layout.width, line->width);
                         layout.height += line->height + lineSpacing;
 
@@ -430,7 +430,7 @@ namespace Amara {
                     Glyph glyph = glyphCache[codepoint];
 
                     if (codepoint == U'\t' || codepoint == U' ') {
-                        if (wrapWidth > 0 && (line->width + word.width) > wrapWidth) {
+                        if (wrapWidth > 0 && (line->width + word.width) >= wrapWidth) {
                             layout.height += line->height + lineSpacing;
                             
                             cursorY += lineHeight + lineSpacing;
@@ -449,7 +449,7 @@ namespace Amara {
                         word = TextLine();
                         word.x += cursorX;
                         cursorX = 0;
-
+                        
                         glyph.renderable = false;
                         word.glyphs.push_back(glyph);
                         continue;
@@ -478,6 +478,27 @@ namespace Amara {
                         continue;
                     }
 
+                    if (wrapWidth > 0 && word.width + glyph.xadvance >= wrapWidth) {
+                        layout.height += line->height + lineSpacing;
+                        cursorY += lineHeight + lineSpacing;
+                        line = &layout.newLine();
+                        line->height = lineHeight;
+                        line->y = cursorY;
+
+                        layout.height += line->height;
+                        word.x = 0;
+
+                        line->merge(word);
+                        
+                        cursorY += lineHeight + lineSpacing;
+                        line = &layout.newLine();
+                        line->height = lineHeight;
+                        line->y = cursorY;
+
+                        word = TextLine();
+                        cursorX = 0;
+                    }
+
                     glyph.x = cursorX + glyph.xoffset;
                     glyph.y = fontSize + glyph.yoffset;
                     cursorX += glyph.xadvance;
@@ -487,6 +508,16 @@ namespace Amara {
                     word.glyphs.push_back(glyph);
 
                     layout.width = fmax(layout.width, line->width + word.width);
+                }
+                if (wrapWidth > 0 && (line->width + word.width) >= wrapWidth) {
+                    layout.height += line->height + lineSpacing;
+                    
+                    cursorY += lineHeight + lineSpacing;
+                    line = &layout.newLine();
+                    line->height = lineHeight;
+                    line->y = cursorY;
+                    
+                    word.x = 0;
                 }
                 line->merge(word);
                 layout.height += line->height;

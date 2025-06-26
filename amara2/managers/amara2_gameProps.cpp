@@ -141,7 +141,7 @@ namespace Amara {
 
         void breakWorld();
         void breakWorld(int);
-
+        
         NodeFactory* factory = nullptr;
         ScriptFactory* scripts = nullptr;
         SystemManager* system = nullptr;

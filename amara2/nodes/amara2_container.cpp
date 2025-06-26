@@ -9,8 +9,6 @@ namespace Amara {
         float top = 0;
         float bottom = 0;
 
-        Vector2 center = { 0, 0 };
-
         Vector2 origin = { 0.5, 0.5 };
 
         Container(): Amara::Node() {
@@ -23,12 +21,10 @@ namespace Amara {
         }
 
         void update_size() {
-            left = pos.x + -width/2.0;
-            right = pos.x + width/2.0;
-            top = pos.y + -height/2.0;
-            bottom = pos.y + height/2.0;
-
-            center = Vector2( left + width*origin.x, top + height*origin.y );
+            left = -width/2.0;
+            right = width/2.0;
+            top = -height/2.0;
+            bottom = height/2.0;
         }
 
         void setWidth(float _w) {
@@ -120,7 +116,7 @@ namespace Amara {
                 
                 update_properties();
 				child->draw({ 0, 0, static_cast<float>(new_sdl_viewport.w), static_cast<float>(new_sdl_viewport.h) });
-                
+
                 gameProps->passOn = passOn;
 				++it;
 			}
@@ -141,13 +137,18 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Container>("Container",
                 sol::base_classes, sol::bases<Amara::Node>(),
-                "width", sol::property([](Amara::Container& c) -> float { return c.width; }, [](Amara::Container& c, float v) { c.setWidth(v); }),
-                "height", sol::property([](Amara::Container& c) -> float { return c.height; }, [](Amara::Container& c, float v) { c.setHeight(v); }),
+                "width", sol::property([](Amara::Container& c) -> float { return c.width; }, [](Amara::Container& c, sol::object v) {
+                    if (v.is<float>()) c.setWidth(v.as<float>());
+                    else if (v.is<int>()) c.setWidth(static_cast<float>(v.as<int>()));
+                }),
+                "height", sol::property([](Amara::Container& c) -> float { return c.height; }, [](Amara::Container& c, sol::object v) {
+                    if (v.is<float>()) c.setHeight(v.as<float>());
+                    else if (v.is<int>()) c.setHeight(static_cast<float>(v.as<int>()));
+                }),
                 "left", sol::readonly(&Container::left),
                 "right", sol::readonly(&Container::right),
                 "top", sol::readonly(&Container::top),
                 "bottom", sol::readonly(&Container::bottom),
-                "center", sol::readonly(&Container::center),
                 "origin", &Container::origin
             );
         }

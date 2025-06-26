@@ -574,9 +574,15 @@ namespace Amara {
                 "originX", sol::property([](Amara::Text& t) -> float { return t.origin.x; }, [](Amara::Text& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::Text& t) -> float { return t.origin.y; }, [](Amara::Text& t, float v) { t.origin.y = v; }),
                 "alignment", sol::property([](Amara::Text& t) -> int { return static_cast<int>(t.alignment); }, [](Amara::Text& t, int v) { t.align(static_cast<Amara::AlignmentEnum>(v)); }),
-                "lineSpacing", sol::property([](Amara::Text& t) -> int { return t.lineSpacing; }, [](Amara::Text& t, int v) { t.setLineSpacing(v); }),
+                "lineSpacing", sol::property([](Amara::Text& t) -> int { return t.lineSpacing; }, [](Amara::Text& t, sol::object v) { 
+                    if (v.is<int>()) t.setLineSpacing(v.as<int>());
+                    else if (v.is<double>()) t.setLineSpacing(floor(v.as<double>())); 
+                }),
                 "wrapMode", sol::property([](Amara::Text& t) -> int { return static_cast<int>(t.wrapMode); }, [](Amara::Text& t, int v) { t.setWrapMode(static_cast<Amara::WrapModeEnum>(v)); }),
-                "wrapWidth", sol::property([](Amara::Text& t) -> int { return t.wrapWidth; }, [](Amara::Text& t, int v) { t.setWrapWidth(v); }),
+                "wrapWidth", sol::property([](Amara::Text& t) -> int { return t.wrapWidth; }, [](Amara::Text& t, sol::object v) {
+                    if (v.is<int>()) t.setWrapWidth(v.as<int>());
+                    else if (v.is<double>()) t.setWrapWidth(floor(v.as<double>()));
+                }),
                 "progress", &Text::progress,
                 "progressText", &Text::progressText,
                 "resetProgress", &Text::resetProgress,

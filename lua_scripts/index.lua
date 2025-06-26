@@ -10,6 +10,7 @@ Nodes:load("DropDownMenu", "ui/DropDownMenu")
 Nodes:load("MainWindow", "windows/MainWindow")
 Nodes:load("NewProjectWindow", "windows/NewProjectWindow")
 Nodes:load("ProjectWindow", "windows/ProjectWindow")
+Nodes:load("TerminalWindow", "windows/TerminalWindow")
 
 return Creator:createWorld({
     window = {
@@ -21,14 +22,14 @@ return Creator:createWorld({
         transparent = true,
         clickThrough = true,
         vsync = true,
-        graphics = Graphics.Render2D
+        graphics = Graphics.OpenGL
     },
 
     onPreload = function(world) 
         world:fitToDisplay()
         
         world.load:image("uiBox", "ui/amara2_uiBox.png")
-        world.load:image("teminalWindow", "ui/amara2_terminalWindow.png")
+        world.load:image("terminalWindow", "ui/amara2_terminalWindow.png")
         world.load:image("toolTipBox", "ui/amara2_toolTipBox.png")
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
         world.load:spritesheet("uiIcons", "ui/amara2_icons.png", 16, 16)
