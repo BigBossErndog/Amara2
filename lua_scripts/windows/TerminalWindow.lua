@@ -39,7 +39,8 @@ return Nodes:create("TerminalWindow", "UIWindow", {
 
         if self.props.gameProcess then
             self.props.messages = self.props.gameProcess.output
-        elseif not self.props.messages then
+        end
+        if not self.props.messages then
             self.props.messages = {}
         end
 
@@ -76,9 +77,15 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                 origin = 0,
                 wrapMode = WrapMode.ByWord
             })
-            if i <= #self.props.messages then
+            if self.props.messages and i <= #self.props.messages then
                 item:activate()
                 item.text = self.props.messages[i]
+
+                if string.find(self.props.messages[i], "%f[%w]Error%f[%W]") then
+                    item.color = Colors.Red
+                else
+                    item.color = Colors.White
+                end
 
                 item.y = self.props.wallHeight
                 self.props.wallHeight = self.props.wallHeight + item.height + self.props.lineSpacing
@@ -125,7 +132,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
 
         item:activate()
         item.text = msg
-        
+
         if string.find(msg, "%f[%w]Error%f[%W]") then
             item.color = Colors.Red
         else
