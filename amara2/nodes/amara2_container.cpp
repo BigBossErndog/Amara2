@@ -115,7 +115,7 @@ namespace Amara {
 				}
                 
                 update_properties();
-				child->draw({ 0, 0, static_cast<float>(new_sdl_viewport.w), static_cast<float>(new_sdl_viewport.h) });
+				child->draw(Rectangle(new_viewport_f));
 
                 gameProps->passOn = passOn;
 				++it;

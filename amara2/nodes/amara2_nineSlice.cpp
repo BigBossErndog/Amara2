@@ -410,7 +410,7 @@ namespace Amara {
             float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
             if (!Shape::collision(
                 Rectangle(destRect), Rectangle(
-                    v.x - diag_distance, v.y - diag_distance,
+                    -diag_distance, -diag_distance,
                     v.w + diag_distance*2, v.h + diag_distance*2
                 )
             )) return;

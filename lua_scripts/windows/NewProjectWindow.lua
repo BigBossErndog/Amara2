@@ -77,7 +77,7 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
             y = 4,
             icon = 0,
             onPress = function()
-                self.func:closeWindow(function(self)
+                self.world.props.windows.func:closeAll(function(self)
                     self.world:destroy()
                 end)
                 self.props.enabled = false
@@ -99,7 +99,7 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
 
         buttonPos = buttonPos - buttonSpacing
         self.props.content:createChild("UIButton", {
-            id = "exitButton",
+            id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos,
             y = 4,

@@ -118,7 +118,7 @@ return Nodes:create("MainWindow", "UIWindow", {
             y = 4,
             icon = 0,
             onPress = function()
-                self.func:closeWindow(function(self)
+                self.world.props.windows.func:closeAll(function(self)
                     self.world:destroy()
                 end)
                 self.props.enabled = false

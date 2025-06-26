@@ -73,7 +73,15 @@ return Creator:createWorld({
             end
         })
 
-        props.windows = world:createChild("Group")
+        props.windows = world:createChild("Group", {
+            closeAll = function(self, _onEnd)
+                for _, child in ipairs(self.children) do
+                    if child.func.closeWindow then
+                        child.func:closeWindow(_onEnd)
+                    end
+                end
+            end
+        })
 
         props.mainwin = props.windows:createChild("MainWindow")
         props.mainwin.func:openWindow()

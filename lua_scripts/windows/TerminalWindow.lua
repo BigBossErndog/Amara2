@@ -78,8 +78,15 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             toolTip = "toolTip_exit",
             y = 4,
             icon = 0,
-            onUpdate = function(button)
+            onUpdate = function(button, deltaTime)
+                button.classes.UIButton.func:onUpdate(deltaTime)
+
                 button.x = self.props.targetWidth - button.width - 4
+                if button.input.hovered then
+                    button.alpha = 1
+                else
+                    button.alpha = 0.25
+                end
             end,
             onPress = function()
                 self.func:closeWindow(function(self)
