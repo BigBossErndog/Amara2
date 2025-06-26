@@ -364,11 +364,11 @@ namespace Amara {
                 gameProps->system->setBasePath(base_dir_path);
             }
 
-            if (json_has(config, "entryScene")) {
-                entryScenes.push_back(config["entryScene"]);
+            if (json_has(config, "scene")) {
+                entryScenes.push_back(config["scene"]);
             }
-            if (json_has(config, "entryScenes")) {
-                nlohmann::json keys = config["entryScenes"];
+            if (json_has(config, "scenes")) {
+                nlohmann::json keys = config["scenes"];
                 if (keys.is_string()) {
                     for (int i = 0; i < keys.size(); i++) {
                         entryScenes.push_back(keys[i]);
@@ -901,7 +901,15 @@ namespace Amara {
         }
 
         virtual void create() override {
+            if (!created_entry_scenes) {
+                for (std::string key: entryScenes) {
+                    createChild(key);
+                }
+                created_entry_scenes = true;
+            }
+
             Amara::Node::create();
+
             audio = createChild("AudioMaster")->as<Amara::AudioMaster*>();
         }
 
@@ -920,13 +928,6 @@ namespace Amara {
 
             inputManager.update(deltaTime);
             inputManager.clearQueue();
-            
-            if (actuated && !created_entry_scenes) {
-                for (std::string key: entryScenes) {
-                    createChild(key);
-                }
-                created_entry_scenes = true;
-            }
 
             if (window) gameProps->display = viewport;
             

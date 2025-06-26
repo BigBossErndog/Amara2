@@ -162,6 +162,13 @@ namespace Amara {
                         }
                         break;
                     }
+                    case SDL_EVENT_MOUSE_WHEEL: {
+                        for (auto w: worlds) {
+                            if (w->window != nullptr && w->windowID == e.wheel.windowID) {
+                                w->inputManager.mouse.wheel = Vector2(e.wheel.x, e.wheel.y);
+                            }
+                        }
+                    }
                     case SDL_EVENT_FINGER_DOWN: {
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.tfinger.windowID) {

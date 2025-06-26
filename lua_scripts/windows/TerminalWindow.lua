@@ -3,6 +3,8 @@ return Nodes:create("TerminalWindow", "UIWindow", {
     width = 256,
     height = 120,
 
+    input = true,
+
     onConfigure = function(self, config)
         if config.gameProcess then
             self.props.gameProcess = config.gameProcess
@@ -33,8 +35,10 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         self.props.marginTop = 2
         self.props.marginBottom = 2
 
+        self.props.bottomLocked = true
+
         if not self.props.poolSize then
-            self.props.poolSize = 24
+            self.props.poolSize = 64
         end
 
         if self.props.gameProcess then
@@ -87,8 +91,11 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                     item.color = Colors.White
                 end
 
+                if self.props.wallHeight > 0 then
+                    self.props.wallHeight = self.props.wallHeight + self.props.lineSpacing
+                end
                 item.y = self.props.wallHeight
-                self.props.wallHeight = self.props.wallHeight + item.height + self.props.lineSpacing
+                self.props.wallHeight = self.props.wallHeight + item.height
 
                 table.insert(self.props.activePool, item)
             end
@@ -116,6 +123,39 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             end
         })
 
+        self.props.scrollBar = self.props.content:createChild("FillRect", {
+            color = { 80, 80, 80 },
+            width = 2,
+            origin = 0,
+            visible = false,
+
+            onCreate = function(scrollBar)
+                scrollBar.props.pos = scrollBar:createChild("FillRect", {
+                    color = { 200, 200, 200 },
+                    width = 2,
+                    origin = 0
+                })
+
+            end,
+            manageScrollPosition = function(scrollBar)
+                scrollBar.visible = true
+
+                scrollBar.x = self.props.cont.x + self.props.cont.width + scrollBar.width - 1
+                scrollBar.y = self.props.cont.y + 2
+                
+                scrollBar.height = self.props.cont.height - 4
+
+                local pos = scrollBar.props.pos
+
+                local firstItem = self.props.activePool[1]
+                local lastItem = self.props.activePool[#self.props.activePool]
+
+                pos.height = scrollBar.height * ((self.props.cont.height) / (self.props.wallHeight - self.props.marginBottom - self.props.marginTop))
+                pos.y = -(scrollBar.height - pos.height) * ((-self.props.pool.y + self.props.cont.top + self.props.marginTop - firstItem.y) / ((self.props.cont.bottom - self.props.marginBottom - lastItem.y - lastItem.height) - (self.props.cont.top + self.props.marginTop - firstItem.y)))
+
+            end
+        })
+
         self.input:listen("onPointerUp", function(self)
             self.func:savePosition()
         end)
@@ -139,6 +179,9 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             item.color = Colors.White
         end
 
+        if self.props.wallHeight > 0 then
+            self.props.wallHeight = self.props.wallHeight + self.props.lineSpacing
+        end
         item.y = self.props.wallHeight
         self.props.wallHeight = self.props.wallHeight + item.height + self.props.lineSpacing
 
@@ -163,6 +206,14 @@ return Nodes:create("TerminalWindow", "UIWindow", {
     onUpdate = function(self)
         self.classes.UIWindow.func:onUpdate(self)
 
+        if self.input.hovered then
+            self.props.pool.y = self.props.pool.y + self.input.mouse.wheel.y * 5
+
+            if self.input.mouse.wheel.y ~= 0 and self.props.wallHeight > (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
+                self.props.bottomLocked = false
+            end
+        end
+
         self.props.cont.width = self.props.targetWidth - self.props.paddingLeft - self.props.paddingRight
         self.props.cont.height = self.props.targetHeight - self.props.paddingTop - self.props.paddingBottom
 
@@ -183,17 +234,35 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             end
 
             if i == 1 then
-                if self.props.pool.y + item.y < self.props.cont.top + self.props.marginTop then
+                if self.props.wallHeight < (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
+                    if self.props.pool.y + item.y < self.props.cont.top + self.props.marginTop then
+                        self.props.pool.y = self.props.cont.top + self.props.marginTop - item.y
+                    end
+                end
+                if self.props.pool.y + item.y > self.props.cont.top + self.props.marginTop then
                     self.props.pool.y = self.props.cont.top + self.props.marginTop - item.y
                 end
             end
+
             if i == #self.props.activePool then
-                if self.props.pool.y + item.y + item.height > self.props.cont.bottom - self.props.marginBottom then
+                if self.props.wallHeight > (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
+                    if self.props.pool.y + item.y + item.height < self.props.cont.bottom - self.props.marginBottom then
+                        self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - item.y - item.height
+                        self.props.bottomLocked = true
+                    end
+                end
+                if self.props.bottomLocked and self.props.pool.y + item.y + item.height > self.props.cont.bottom - self.props.marginBottom then
                     self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - item.y - item.height
                 end
             end
 
             lastitem = item
+        end
+
+        if self.props.wallHeight > (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
+            self.props.scrollBar.func:manageScrollPosition(self.props.scrollBar)
+        else
+            self.props.scrollBar.visible = false 
         end
     end,
 

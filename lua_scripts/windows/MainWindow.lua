@@ -131,7 +131,7 @@ return Nodes:create("MainWindow", "UIWindow", {
 
         buttonPos = buttonPos - buttonSpacing
         self.props.content:createChild("UIButton", {
-            id = "newProjectButton",
+            id = "minimizeButton",
             toolTip = "toolTip_minimize",
             x = buttonPos,
             y = 4,

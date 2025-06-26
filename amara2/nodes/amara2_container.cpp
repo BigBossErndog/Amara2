@@ -59,6 +59,7 @@ namespace Amara {
             }
             #endif
 
+            Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
             Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
 
             Vector3 anchoredPos = Vector3(
@@ -76,13 +77,25 @@ namespace Amara {
             float world_top_left_x = anchoredPos.x + (-width*origin.x)*scale.x*passOn.scale.x;
             float world_top_left_y = anchoredPos.y - anchoredPos.z + (-height*origin.y)*scale.y*passOn.scale.y;
 
-            SDL_FRect new_viewport_f;
-            new_viewport_f.x = (gameProps->master_viewport.w / 2.0f) + world_top_left_x * totalZoom.x;
-            new_viewport_f.y = (gameProps->master_viewport.h / 2.0f) + world_top_left_y * totalZoom.y;
-            new_viewport_f.w = width*scale.x*passOn.scale.x * totalZoom.x;
-            new_viewport_f.h = height*scale.y*passOn.scale.y * totalZoom.y;
+            SDL_FRect destRect;
+            destRect.x = vcenter.x + world_top_left_x * totalZoom.x;
+            destRect.y = vcenter.y + world_top_left_y * totalZoom.y;
+            destRect.w = width*scale.x*passOn.scale.x * totalZoom.x;
+            destRect.h = height*scale.y*passOn.scale.y * totalZoom.y;
 
-            SDL_Rect new_sdl_viewport = Rectangle::makeSDLRect(Rectangle(new_viewport_f));
+            float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
+            if (!Shape::collision(
+                Rectangle(destRect), Rectangle(
+                    -diag_distance, -diag_distance,
+                    v.w + diag_distance*2, v.h + diag_distance*2
+                )
+            )) return;
+
+            if (input.active) {
+                input.queueInput(Quad(destRect));
+            }
+            
+            SDL_Rect new_sdl_viewport = Rectangle::makeSDLRect(Rectangle(destRect));
 
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 SDL_SetRenderViewport(gameProps->renderer, &new_sdl_viewport);
@@ -115,7 +128,7 @@ namespace Amara {
 				}
                 
                 update_properties();
-				child->draw(Rectangle(new_viewport_f));
+				child->draw(Rectangle(destRect));
 
                 gameProps->passOn = passOn;
 				++it;

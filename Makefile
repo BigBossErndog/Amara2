@@ -78,13 +78,13 @@ cpAssets_alt:
 	if not exist "build\assets" md "build\assets"
 	xcopy /s /e /i /y "assets\*.*" "build\assets"
 
-cpDLLs:
+cpdll:
 	cp resources/dlls/win64/* $(BUILD_PATH)/
 
-cpDLLs_alt:
+cpdll-alt:
 	xcopy /s /e /i /y "resources\dlls\win64\*.*" "$(BUILD_PATH)\"
 
-cpDirs:
+cpdirs:
 	cp -R assets/ $(BUILD_PATH)/
 	cp -R data/ $(BUILD_PATH)/
 	cp -R lua_scripts/ $(BUILD_PATH)/
@@ -94,12 +94,12 @@ win: $(ENTRY_FILES)
 	mkdir -p ./$(BUILD_PATH)
 	rm -rf ./$(BUILD_PATH)/*
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
-	make cpDLLs
+	make cpdll
 
 # Using clang from $(CLANG_LLVM_PATH)
-win_alt: $(ENTRY_FILES)
+win-alt: $(ENTRY_FILES)
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
-	make cpDLLs_alt
+	make cpdll-alt
 	
 linux:
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(LINUX_COMPILER_FLAGS) $(STDLIB_FLAG) $(LINKER_FLAGS_LINUX) -o $(BUILD_EXECUTABLE_LINUX)

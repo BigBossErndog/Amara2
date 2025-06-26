@@ -4,7 +4,7 @@ return Nodes:create("DropDownMenu", "FillRect", {
     origin = 0,
     color = "#111d27",
     input = true,
-
+    
     props = {
         defaultText = Localize:get("label_empty"),
         inputEnabled = true
