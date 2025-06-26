@@ -109,12 +109,13 @@ return Nodes:create("MainWindow", "UIWindow", {
         local tickBox = self.props.content:createChild("Sprite", {
             origin = { 1, 0 },
             x = backer.x + backer.width,
-            y = editorTitle.y + 1,
+            y = editorTitle.y + 2,
             input = true,
-            frame = settings.autoOpenCodeEditor and 1 or 0
+            frame = settings.autoOpenCodeEditor and 1 or 0,
+            texture = "tickBox"
         })
         tickBox.input:listen("onPointerDown", function()
-            settings.autoOpenCodeEditor = settings.autoOpenCodeEditor and 0 or 1
+            settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
             tickBox.frame = settings.autoOpenCodeEditor and 1 or 0
             self.world.func:saveSettings()
         end)

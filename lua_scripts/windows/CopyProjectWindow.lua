@@ -1,6 +1,12 @@
-return Nodes:create("NewProjectWindow", "UIWindow", {
+return Nodes:create("CopyProjectWindow", "UIWindow", {
     width = 256,
     height = 120,
+
+    onConfigure = function(self, config)
+        if config.projectPath then
+            self.props.oldProjectPath = config.projectPath
+        end
+    end,
 
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
@@ -11,7 +17,7 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
         local title = self.props.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
-            text = Localize:get("title_newProject"),
+            text = Localize:get("title_copyProject"),
             color = "#f0f6ff",
             origin = 0,
             input = true
@@ -20,7 +26,7 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
         self.props.nameField = self.props.content:createChild("TextField", {
             x = 8, y = 28,
             width = self.props.targetWidth - 16,
-            defaultText = Localize:get("label_projectName"),
+            defaultText = Localize:get("label_renameProject"),
             onChange = function(textField, txt)
                 self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
             end,
@@ -108,8 +114,8 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
                 self.func:closeWindow(function()
                     self.props.enabled = false
                     
-                    local newWindow = self.parent:createChild("MainWindow", {
-                        x = self.x, y = self.y
+                    local newWindow = self.parent:createChild("ProjectWindow", {
+                        projectPath = self.props.oldProjectPath
                     })
                     newWindow.func:openWindow()
                     
@@ -128,7 +134,7 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
 
         local createButton = self.props.content:createChild("UIButton", {
             id = "createProjectButton",
-            text = "label_createProject",
+            text = "label_copyProject",
             onPress = function()
                 if self.func:checkPath() then
                     self.func:createProject()
@@ -182,7 +188,7 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
     createProject = function(self)
         System:createDirectory(self.props.projectPath)
         System:copy(
-            System:join(System:getBasePath(), "data", "defaultTemplate"),
+            self.props.oldProjectPath,
             self.props.projectPath
         )
 
@@ -193,10 +199,6 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
         projectData.uninitiated = true
 
         System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
-        
-        local indexFile = System:readFile(System:join(self.props.projectPath, "lua_scripts", "index.lua"))
-        local fixedIndexFile = string.gsub(indexFile, "${Window_Title}", self.props.nameField.props.finalText)
-        System:writeFile(System:join(self.props.projectPath, "lua_scripts", "index.lua"), fixedIndexFile)
 
         self.func:closeWindow(function()
             self.func:closeWindow(function()

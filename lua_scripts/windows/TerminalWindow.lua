@@ -24,7 +24,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         end
 
         self.classes.UIWindow.func:onCreate(self, config)
-
+        
         self.props.paddingLeft = 8
         self.props.paddingRight = 8
         self.props.paddingTop = 22
@@ -133,6 +133,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                 scrollBar.props.pos = scrollBar:createChild("FillRect", {
                     color = { 200, 200, 200 },
                     width = 2,
+                    height = 1,
                     origin = 0
                 })
 
@@ -150,9 +151,8 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                 local firstItem = self.props.activePool[1]
                 local lastItem = self.props.activePool[#self.props.activePool]
 
-                pos.height = scrollBar.height * ((self.props.cont.height) / (self.props.wallHeight - self.props.marginBottom - self.props.marginTop))
+                pos.height = scrollBar.height * ((self.props.cont.height - self.props.marginBottom - self.props.marginTop) / (self.props.wallHeight + self.props.marginBottom + self.props.marginTop - firstItem.y))
                 pos.y = -(scrollBar.height - pos.height) * ((-self.props.pool.y + self.props.cont.top + self.props.marginTop - firstItem.y) / ((self.props.cont.bottom - self.props.marginBottom - lastItem.y - lastItem.height) - (self.props.cont.top + self.props.marginTop - firstItem.y)))
-
             end
         })
 
@@ -183,7 +183,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             self.props.wallHeight = self.props.wallHeight + self.props.lineSpacing
         end
         item.y = self.props.wallHeight
-        self.props.wallHeight = self.props.wallHeight + item.height + self.props.lineSpacing
+        self.props.wallHeight = self.props.wallHeight + item.height
 
         table.insert(self.props.activePool, item)
     end,

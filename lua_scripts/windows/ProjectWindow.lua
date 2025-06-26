@@ -178,7 +178,16 @@ return Nodes:create("ProjectWindow", "UIWindow", {
             y = buttonPos.y,
             icon = 11,
             onPress = function()
-                
+                self.func:closeWindow(function()
+                    self.props.enabled = false
+                    
+                    local newWindow = self.parent:createChild("CopyProjectWindow", {
+                        projectPath = self.props.projectPath
+                    })
+                    newWindow.func:openWindow()
+                    
+                    self:destroy()
+                end)
             end
         })
 

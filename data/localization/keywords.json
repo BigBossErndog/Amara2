@@ -4,6 +4,7 @@
     "title_codeEditor": "Code Editor",
     "title_newProject": "New Project",
     "title_printLog": "Print Log",
+    "title_copyProject": "Copy Project",
 
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit",
@@ -30,8 +31,10 @@
 
     "label_empty": "--",
     "label_projectName": "Project Name",
+    "label_renameProject": "Rename Project",
     "label_enterTextHere": "Enter Text Here",
     "label_createProject": "Create Project",
+    "label_copyProject": "Copy Project",
     "label_noCodeEditorAvailable": "No code editors available.",
     "label_autoOpenCodeEditor": "Auto Open Code Editor",
 

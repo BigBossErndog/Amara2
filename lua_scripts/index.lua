@@ -11,6 +11,7 @@ Nodes:load("MainWindow", "windows/MainWindow")
 Nodes:load("NewProjectWindow", "windows/NewProjectWindow")
 Nodes:load("ProjectWindow", "windows/ProjectWindow")
 Nodes:load("TerminalWindow", "windows/TerminalWindow")
+Nodes:load("CopyProjectWindow", "windows/CopyProjectWindow")
 
 return Creator:createWorld({
     window = {
@@ -33,7 +34,7 @@ return Creator:createWorld({
         world.load:image("toolTipBox", "ui/amara2_toolTipBox.png")
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
         world.load:spritesheet("uiIcons", "ui/amara2_icons.png", 16, 16)
-        world.load:spritesheet("tickBox", "ui/amara2_tickBox.png", 8, 8)
+        world.load:spritesheet("tickBox", "ui/amara2_tickBox.png", 9, 9)
         
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
         
@@ -144,6 +145,10 @@ return Creator:createWorld({
                     table.insert(settings.projects, oldProjects[i])
                 end
             end
+        end
+
+        if settings.autoOpenCodeEditor == nil then
+            settings.autoOpenCodeEditor = true
         end
 
         self.func:saveSettings()
