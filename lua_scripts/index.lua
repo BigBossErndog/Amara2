@@ -33,9 +33,10 @@ return Creator:createWorld({
         world.load:image("toolTipBox", "ui/amara2_toolTipBox.png")
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
         world.load:spritesheet("uiIcons", "ui/amara2_icons.png", 16, 16)
+        world.load:spritesheet("tickBox", "ui/amara2_tickBox.png", 8, 8)
         
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
-
+        
         world.load:shaderProgram("gaussianHorizontal", {
             vertex = "defaultVert",
             fragment = "shaders/gaussianHorizontal.frag"

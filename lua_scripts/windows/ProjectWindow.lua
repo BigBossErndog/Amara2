@@ -242,10 +242,12 @@ return Nodes:create("ProjectWindow", "UIWindow", {
     openDefault = function(self)
         local settings = self.world.func:getSettings()
 
-        if settings.codeEditor then
-            self.func:openCodeEditor()
-        else
-            self.func:openDirectory()
+        if settings.autoOpenCodeEditor then
+            if settings.codeEditor then
+                self.func:openCodeEditor()
+            else
+                self.func:openDirectory()
+            end
         end
     end,
 

@@ -106,8 +106,21 @@ return Nodes:create("MainWindow", "UIWindow", {
         })
         self.props.editorMenu = editorMenu
 
-        local autoOpenTitle = self.props.content:createChild("Text", {
+        local tickBox = self.props.content:createChild("Sprite", {
+            origin = { 1, 0 },
             x = backer.x + backer.width,
+            y = editorTitle.y + 1,
+            input = true,
+            frame = settings.autoOpenCodeEditor and 1 or 0
+        })
+        tickBox.input:listen("onPointerDown", function()
+            settings.autoOpenCodeEditor = settings.autoOpenCodeEditor and 0 or 1
+            tickBox.frame = settings.autoOpenCodeEditor and 1 or 0
+            self.world.func:saveSettings()
+        end)
+
+        local autoOpenTitle = self.props.content:createChild("Text", {
+            x = tickBox.x - tickBox.width - 2,
             y = editorTitle.y,
             origin = { 1, 0 },
             font = "defaultFont",
