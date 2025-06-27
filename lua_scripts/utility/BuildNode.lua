@@ -124,6 +124,7 @@ return Nodes:create("BuildNode", "ProcessNode", {
             props = {
                 projectPath = self.props.projectPath
             },
+            allowMinimize = true,
             disableSavePosition = true,
             onExit = function(self)
                 local newWindow = self.world.props.windows:createChild("ProjectWindow", {

@@ -12,6 +12,9 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         if config.disableSavePosition then
             self.props.disableSavePosition = config.disableSavePosition
         end
+        if config.allowMinimize then
+            self.props.allowMinimize = config.allowMinimize
+        end
     end,
 
     onCreate = function(self, config)
@@ -20,18 +23,22 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         
         if not self.props.disableSavePosition then
             if terminalWindowData then
-                self:goTo(
-                    terminalWindowData.x,
-                    terminalWindowData.y
-                )
-                self.props.targetWidth = terminalWindowData.width
-                self.props.targetHeight = terminalWindowData.height
+                if terminalWindowData.x and terminalWindowData.y then
+                    self:goTo(
+                        terminalWindowData.x,
+                        terminalWindowData.y
+                    )
+                end
+                if terminalWindowData.width and terminalWindowData.height then
+                    self.props.targetWidth = terminalWindowData.width
+                    self.props.targetHeight = terminalWindowData.height
+                end
             else
                 settings.terminalWindowData = {
                     darkened = true
                 }
                 terminalWindowData = settings.terminalWindowData
-                
+
                 self.world.func:saveSettings()
             end
         elseif not terminalWindowData then
@@ -123,6 +130,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             end
         end
 
+        local buttonPosX = 0
         local buttonSpacing = 20
 
         self.props.exitButton = self.props.content:createChild("UIButton", {
@@ -130,10 +138,13 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             toolTip = "toolTip_exit",
             y = 4,
             icon = 0,
+            props = {
+                buttonPosX = buttonPosX
+            },
             onUpdate = function(button, deltaTime)
                 button.classes.UIButton.func:onUpdate(deltaTime)
 
-                button.x = self.props.targetWidth - button.width - 4
+                button.x = self.props.targetWidth - button.width - 4 - button.props.buttonPosX
             end,
             onPress = function()
                 self.func:closeWindow(function(self)
@@ -147,16 +158,42 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             end
         })
 
+        if self.props.allowMinimize then
+            buttonPosX = buttonPosX + buttonSpacing
+            self.props.content:createChild("UIButton", {
+                id = "minimizeButton",
+                toolTip = "toolTip_minimize",
+                y = 4,
+                icon = 3,
+                props = {
+                    buttonPosX = buttonPosX
+                },
+                onUpdate = function(button, deltaTime)
+                    button.classes.UIButton.func:onUpdate(deltaTime)
+
+                    button.x = self.props.targetWidth - button.width - 4 - button.props.buttonPosX
+                end,
+                onPress = function(self)
+                    self.world:minimizeWindow()
+                end
+            })
+        end
+
+        buttonPosX = buttonPosX + buttonSpacing
+
         self.frame = terminalWindowData.darkened and 1 or 0
         self.props.darkenButton = self.props.content:createChild("UIButton", {
             id = "darkenButton",
             toolTip = "toolTip_toggleBGOpacity",
             y = 4,
             icon = terminalWindowData.darkened and 14 or 13,
+            props = {
+                buttonPosX = buttonPosX
+            },
             onUpdate = function(button, deltaTime)
                 button.classes.UIButton.func:onUpdate(deltaTime)
 
-                button.x = self.props.targetWidth - button.width - 4 - buttonSpacing
+                button.x = self.props.targetWidth - button.width - 4 - button.props.buttonPosX
             end,
             onPress = function()
                 terminalWindowData.darkened = not terminalWindowData.darkened
@@ -168,6 +205,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             end
         })
 
+        
         self.props.scrollBar = self.props.content:createChild("FillRect", {
             color = { 80, 80, 80 },
             width = 2,

@@ -161,7 +161,6 @@ return Nodes:create("MainWindow", "UIWindow", {
             icon = 3,
             onPress = function(self)
                 self.world:minimizeWindow()
-                self.props.enabled = false
             end
         })
 
