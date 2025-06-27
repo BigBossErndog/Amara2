@@ -76,6 +76,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         self.props.activePool = {}
         
         self.props.wallHeight = 0;
+        local wrapWidth = self.props.cont.width - self.props.marginLeft - self.props.marginRight
 
         for i = 1, self.props.poolSize do
             local item = self.props.pool:createChild("Text", {
@@ -92,6 +93,10 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                     item.color = Colors.Red
                 else
                     item.color = Colors.White
+                end
+
+                if item.wrapWidth ~= wrapWidth then
+                    item.wrapWidth = wrapWidth
                 end
 
                 if self.props.wallHeight > 0 then

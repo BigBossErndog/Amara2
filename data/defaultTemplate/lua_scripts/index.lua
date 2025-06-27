@@ -23,7 +23,7 @@ return Creator:createWorld({
         })
     end,
 
-    onUpdate = function(self)
+    onUpdate = function(self, deltaTime)
 
     end
 })
