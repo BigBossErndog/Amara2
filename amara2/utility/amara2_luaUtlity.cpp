@@ -301,7 +301,10 @@ namespace Amara {
         });
         string_metatable.set_function("concat", &Amara::lua_string_concat);
         string_metatable.set_function("sep_concat", &Amara::lua_string_sep_concat);
-        
+        string_metatable.set_function("json_string", [](sol::object obj) {
+            return lua_to_json(obj).dump();
+        });
+
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("round", [](double num) -> int {
             return std::round(num);

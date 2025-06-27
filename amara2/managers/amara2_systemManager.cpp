@@ -295,7 +295,6 @@ namespace Amara {
 
             if (!std::filesystem::exists(dir)) {
                 if (std::filesystem::create_directory(dir)) {
-                    debug_log("Directory created: \"", dir.string(), "\".");
                     return true;
                 } else {
                     debug_log("Error: Failed to create directory: \"", dir.string(), "\".");
@@ -453,6 +452,9 @@ namespace Amara {
         }
         std::string removeFileExtension(std::string path) {
             return std::filesystem::path(path).replace_extension().string();
+        }
+        std::string getDirectoryOf(std::string path) {
+            return std::filesystem::path(path).parent_path().string();
         }
 
         std::string mergePaths(std::string str1, std::string str2) {
@@ -942,6 +944,7 @@ namespace Amara {
                 "getDirectoryName", &SystemManager::getDirectoryName,
                 "getFileExtension", &SystemManager::getFileExtension,
                 "removeFileExtension", &SystemManager::removeFileExtension,
+                "getDirectoryOf", &SystemManager::getDirectoryOf,
                 "mergePaths", &SystemManager::mergePaths,
                 "remove", &SystemManager::remove,
                 "copy", sol::overload(
@@ -968,8 +971,10 @@ namespace Amara {
                     sol::resolve<std::string()>(&SystemManager::browseFile)
                 ),
                 "join", &SystemManager::lua_join,
-                "programInstalled", &SystemManager::programInstalled,
-                "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled
+                #if defined(_WIN32) && defined(AMARA_BUILD_CHAIN)
+                "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled,
+                #endif
+                "programInstalled", &SystemManager::programInstalled
             );
         }
     };

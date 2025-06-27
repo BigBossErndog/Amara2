@@ -32,11 +32,11 @@ LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthre
 LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl2-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
 
 OTHER_LIB_LINKS = -Lresources/libs/tinyxml2/lib/win resources/libs/tinyxml2/lib/win/libtinyxml2.a
-OTHER_LIB_PATHS = -I./src -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2/include -Iresources/libs/minimp3 -Iresources/libs/portable-file-dialogs
+OTHER_LIB_PATHS = -Isrc -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2/include -Iresources/libs/minimp3 -Iresources/libs/portable-file-dialogs
 
 OTHER_LIB = $(OTHER_LIB_LINKS) $(OTHER_LIB_PATHS)
 
-AMARA_PATH = -I ./amara2 -I ./plugins
+AMARA_PATH = -Iamara2 -Iplugins
 
 # INCLUDE_DEPTH = 1000
 # EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)
@@ -89,6 +89,15 @@ cpdirs:
 	cp -R data/ $(BUILD_PATH)/
 	cp -R lua_scripts/ $(BUILD_PATH)/
 
+cpdirs-alt:
+	if not exist $(BUILD_PATH) md $(BUILD_PATH)
+	if not exist "$(BUILD_PATH)\assets" md "$(BUILD_PATH)\assets"
+	if not exist "$(BUILD_PATH)\data" md "$(BUILD_PATH)\data"
+	if not exist "$(BUILD_PATH)\lua_scripts" md "$(BUILD_PATH)\lua_scripts"
+	xcopy /s /e /i /y "assets\*.*" "$(BUILD_PATH)\assets"
+	xcopy /s /e /i /y "data\*.*" "$(BUILD_PATH)\data"
+	xcopy /s /e /i /y "lua_scripts\*.*" "$(BUILD_PATH)\lua_scripts"
+
 # Using clang from $(CLANG_LLVM_PATH)
 win: $(ENTRY_FILES)
 	mkdir -p ./$(BUILD_PATH)
@@ -96,10 +105,21 @@ win: $(ENTRY_FILES)
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpdll
 
+win-release:
+	make win
+	make cpdirs
+	cp clang-llvm/ $(BUILD_PATH)
+
 # Using clang from $(CLANG_LLVM_PATH)
 win-alt: $(ENTRY_FILES)
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpdll-alt
+
+win-release-alt:
+	make win-alt
+	make cpdirs-alt
+	if not exist "$(BUILD_PATH)\clang-llvm" md "$(BUILD_PATH)\clang-llvm"
+	xcopy /s /e /i /y "clang-llvm\*.*" "$(BUILD_PATH)\clang-llvm"
 	
 linux:
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(LINUX_COMPILER_FLAGS) $(STDLIB_FLAG) $(LINKER_FLAGS_LINUX) -o $(BUILD_EXECUTABLE_LINUX)

@@ -783,7 +783,7 @@ namespace Amara {
                 "fixedToCamera", &Node::fixedToCamera,
                 "createChild", &Node::luaCreateChild,
                 "addChild", &Node::addChild,
-                "get", &Node::luaGetChild,
+                "getChild", &Node::luaGetChild,
                 "destroyed", sol::readonly(&Node::destroyed),
                 "destroy", &Node::destroy,
                 "destroyChildren", &Node::destroyChildren,

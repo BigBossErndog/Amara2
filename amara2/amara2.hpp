@@ -119,6 +119,7 @@
 
     #include "utility/amara2_enums.cpp"
     #include "utility/amara2_string.cpp"
+    #include "utility/amara2_jsonUtility.cpp"
     #include "utility/amara2_utility.cpp"
     #include "utility/amara2_color.cpp"
     #include "utility/amara2_encryption.cpp"
@@ -201,6 +202,7 @@
     #include "actions/amara2_stateMachine.cpp"
     #include "actions/amara2_delayedNode.cpp"
     #include "actions/amara2_periodicAction.cpp"
+    #include "actions/amara2_processNode.cpp"
 
     #include "actions/amara2_textInput.cpp"
 

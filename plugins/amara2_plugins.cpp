@@ -4,7 +4,6 @@
  */
 
  #include "hotkeys/hotkey.cpp"
- #include "processNode/processNode.cpp"
 
 namespace Amara {
     class NodeFactory;
@@ -24,7 +23,6 @@ namespace Amara {
             */
 
             Hotkey::bind_lua(lua);
-            ProcessNode::bind_lua(lua);
         }
 
         static void registerNodes() {
@@ -35,7 +33,6 @@ namespace Amara {
              */
 
             registerNode<Hotkey>("Hotkey");
-            registerNode<ProcessNode>("ProcessNode");   
         }
 
         static bool load(const LoadTask& task) {

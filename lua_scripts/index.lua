@@ -13,6 +13,8 @@ Nodes:load("ProjectWindow", "windows/ProjectWindow")
 Nodes:load("TerminalWindow", "windows/TerminalWindow")
 Nodes:load("CopyProjectWindow", "windows/CopyProjectWindow")
 
+Nodes:load("BuildNode", "utility/BuildNode")
+
 return Creator:createWorld({
     window = {
         width = 1280,
@@ -22,12 +24,14 @@ return Creator:createWorld({
         screenMode = ScreenMode.BorderlessFullscreen,
         transparent = true,
         clickThrough = true,
+        alwaysOnTop = true,
         vsync = true,
         graphics = Graphics.Render2D
     },
 
     onPreload = function(world) 
         world:fitToDisplay()
+        world:restoreWindow()
         
         world.load:image("uiBox", "ui/amara2_uiBox.png")
         world.load:spritesheet("terminalWindow", "ui/amara2_terminalWindow.png", 32, 32)

@@ -9,12 +9,15 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         if config.gameProcess then
             self.props.gameProcess = config.gameProcess
         end
+        if config.disableSavePosition then
+            self.props.disableSavePosition = config.disableSavePosition
+        end
     end,
 
     onCreate = function(self, config)
         local terminalWindowData = self.world.func:getSettings().terminalWindowData
 
-        if terminalWindowData then
+        if terminalWindowData and not self.props.disableSavePosition then
             self:goTo(
                 terminalWindowData.x,
                 terminalWindowData.y
@@ -217,24 +220,24 @@ return Nodes:create("TerminalWindow", "UIWindow", {
     end,
 
     handleMessage = function(self, msg)
-        if self.props.bottomLocked then
-            self.func:pipeMessage(msg)
-        end
+        self.func:pipeMessage(msg)
     end,
 
     savePosition = function(self)
-        local setting = self.world.func:getSettings()
-        if not setting.terminalWindowData then
-            setting.terminalWindowData = {}
+        if not self.props.disableSavePosition then
+            local setting = self.world.func:getSettings()
+            if not setting.terminalWindowData then
+                setting.terminalWindowData = {}
+            end
+
+            setting.terminalWindowData.x = self.x
+            setting.terminalWindowData.y = self.y
+
+            setting.terminalWindowData.width = self.props.targetWidth
+            setting.terminalWindowData.height = self.props.targetHeight
+
+            self.world.func:saveSettings()
         end
-
-        setting.terminalWindowData.x = self.x
-        setting.terminalWindowData.y = self.y
-
-        setting.terminalWindowData.width = self.props.targetWidth
-        setting.terminalWindowData.height = self.props.targetHeight
-
-        self.world.func:saveSettings()
     end,
 
     onSizeChange = function(self)

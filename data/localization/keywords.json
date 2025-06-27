@@ -38,6 +38,9 @@
     "label_copyProject": "Copy Project",
     "label_noCodeEditorAvailable": "No code editors available.",
     "label_autoOpenCodeEditor": "Auto Open Code Editor",
+    "label_building": "Building... Please wait.",
+    "label_buildSuccess": "Build successfully completed.",
+    "label_buildFailed": "Build failed to complete.",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",

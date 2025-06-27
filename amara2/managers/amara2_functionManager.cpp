@@ -75,6 +75,8 @@ namespace Amara {
 
         void registerClass(std::string className) {
             if (String::equal(className, lastRegisteredClass)) return;
+            if (funcMap.find(className) == funcMap.end()) createTable(className);
+            
             inheritance_map[className] = lastRegisteredClass;
             lastRegisteredClass = className;
         }

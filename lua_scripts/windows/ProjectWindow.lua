@@ -10,7 +10,6 @@ return Nodes:create("ProjectWindow", "UIWindow", {
     
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
-        self.world.alwaysOnTop = true
 
         local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
         local projectName = projectData["project-name"]
@@ -100,8 +99,8 @@ return Nodes:create("ProjectWindow", "UIWindow", {
                     self.props.printLog.func:closeWindow()
                     self.props.printLog = nil
                 end
-                self.func:closeWindow(function()
-                    self.props.enabled = false
+                self.func:closeWindow(function(button)
+                    button.props.enabled = false
                     
                     local newWindow = self.parent:createChild("MainWindow")
                     newWindow.func:openWindow()
@@ -118,11 +117,11 @@ return Nodes:create("ProjectWindow", "UIWindow", {
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 0,
-            onPress = function()
+            onPress = function(button)
                 self.world.props.windows.func:closeAll(function(self)
                     self.world:destroy()
                 end)
-                self.props.enabled = false
+                button.props.enabled = false
             end
         })
 
@@ -135,8 +134,9 @@ return Nodes:create("ProjectWindow", "UIWindow", {
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 7,
-            onPress = function()
-                
+            onPress = function(button)
+                button.props.enabled = false
+                self.func:buildGame()
             end
         })
 
@@ -186,8 +186,8 @@ return Nodes:create("ProjectWindow", "UIWindow", {
                     self.props.printLog.func:closeWindow()
                     self.props.printLog = nil
                 end
-                self.func:closeWindow(function()
-                    self.props.enabled = false
+                self.func:closeWindow(function(button)
+                    button.props.enabled = false
                     
                     local newWindow = self.parent:createChild("CopyProjectWindow", {
                         projectPath = self.props.projectPath
@@ -305,5 +305,18 @@ return Nodes:create("ProjectWindow", "UIWindow", {
         end
 
         self.props.playButton.func:setIcon(2)
+    end,
+
+    buildGame = function(self)
+        self.func:stopGame()
+        
+        self.world.props.windows.func:closeAll(function(window)
+            window:destroy()
+        end)
+
+        self.world.props.windows:createChild("BuildNode", {
+            projectPath = self.props.projectPath,
+            platform = "windows"
+        })
     end
 })

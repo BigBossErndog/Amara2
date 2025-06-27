@@ -20,36 +20,6 @@ namespace Amara {
         for (T element: list2) list1.push_back(element);
     }
 
-    bool json_has(const nlohmann::json& data, std::string key) {
-        return (data.find(key) != data.end()) ? true : false;
-    }
-
-    template<typename... Keys>
-    inline bool json_has(const nlohmann::json& data, const std::string& first_key, const Keys&... other_keys) {
-        return json_has(data, first_key) && (json_has(data, other_keys) && ...);
-    }
-
-    bool json_is(const nlohmann::json& data, std::string key) {
-        return json_has(data, key) && data[key].is_boolean() && data[key];
-    }
-    
-    bool json_erase(nlohmann::json& data, std::string key) {
-        if (json_has(data, key)) {
-            data.erase(key);
-            return true;
-        }
-        return false;
-    }
-
-    nlohmann::json json_extract(nlohmann::json& data, std::string key) {
-        if (json_has(data, key)) {
-            nlohmann::json value = data[key];
-            data.erase(key);
-            return value;
-        }
-        return nullptr;
-    }
-
     float fixed_range(float num, float min, float max) {
         if (num < min) return min;
         if (num > max) return max;
