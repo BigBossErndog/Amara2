@@ -49,6 +49,8 @@ return Creator:createWorld({
 
         world.func:fixSettings()
 
+        world.func:checkBuildTools()
+
         props.windowShadows = world:createChild("TextureContainer", {
             alpha = 0.5,
             tint = Colors.Black,
@@ -212,5 +214,12 @@ return Creator:createWorld({
 
 
         self.func:saveSettings()
+    end,
+
+    checkBuildTools = function(self)
+        if Game.platform == "windows" then
+            return System:VSBuildToolsInstalled()
+        end
+        return false
     end
 })

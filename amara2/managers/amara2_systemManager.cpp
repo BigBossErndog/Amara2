@@ -840,6 +840,37 @@ namespace Amara {
             return result.empty() ? "" : result[0];
         }
 
+        #if defined(_WIN32) && defined(AMARA_BUILD_CHAIN)
+        bool VSBuildToolsInstalled() {
+            const std::string vswherePath =
+                "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe\"";
+            const std::string command = vswherePath +
+                " -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath";
+            
+            std::array<char, 256> buffer;
+            std::string result;
+            std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(command.c_str(), "r"), _pclose);
+
+            if (!pipe) {
+                return false;
+            }
+
+            while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+                result += buffer.data();
+            }
+
+            result.erase(result.begin(), std::find_if(result.begin(), result.end(), [](unsigned char ch) {
+                return !std::isspace(ch);
+            }));
+
+            result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
+                return !std::isspace(ch);
+            }).base(), result.end());
+
+            return !result.empty();
+        }
+        #endif
+
         bool programInstalled(std::string programName) {
             std::string command;
             int result;
@@ -885,6 +916,7 @@ namespace Amara {
                 return false;
             #endif
         }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<SystemManager>("SystemManager",
                 "exists", &SystemManager::exists,
@@ -936,7 +968,8 @@ namespace Amara {
                     sol::resolve<std::string()>(&SystemManager::browseFile)
                 ),
                 "join", &SystemManager::lua_join,
-                "programInstalled", &SystemManager::programInstalled
+                "programInstalled", &SystemManager::programInstalled,
+                "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled
             );
         }
     };
