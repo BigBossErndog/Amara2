@@ -15,15 +15,29 @@ return Nodes:create("TerminalWindow", "UIWindow", {
     end,
 
     onCreate = function(self, config)
-        local terminalWindowData = self.world.func:getSettings().terminalWindowData
+        local settings = self.world.func:getSettings()
+        local terminalWindowData = settings.terminalWindowData
         
-        if terminalWindowData and not self.props.disableSavePosition then
-            self:goTo(
-                terminalWindowData.x,
-                terminalWindowData.y
-            )
-            self.props.targetWidth = terminalWindowData.width
-            self.props.targetHeight = terminalWindowData.height
+        if not self.props.disableSavePosition then
+            if terminalWindowData then
+                self:goTo(
+                    terminalWindowData.x,
+                    terminalWindowData.y
+                )
+                self.props.targetWidth = terminalWindowData.width
+                self.props.targetHeight = terminalWindowData.height
+            else
+                settings.terminalWindowData = {
+                    darkened = true
+                }
+                terminalWindowData = settings.terminalWindowData
+                
+                self.world.func:saveSettings()
+            end
+        elseif not terminalWindowData then
+            terminalWindowData = {
+                darkened = true
+            }
         end
 
         self.classes.UIWindow.func:onCreate(self, config)
@@ -132,10 +146,6 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                 end
             end
         })
-
-        if not terminalWindowData then
-            terminalWindowData = {}
-        end
 
         self.frame = terminalWindowData.darkened and 1 or 0
         self.props.darkenButton = self.props.content:createChild("UIButton", {
