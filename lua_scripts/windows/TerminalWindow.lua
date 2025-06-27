@@ -16,7 +16,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
 
     onCreate = function(self, config)
         local terminalWindowData = self.world.func:getSettings().terminalWindowData
-
+        
         if terminalWindowData and not self.props.disableSavePosition then
             self:goTo(
                 terminalWindowData.x,
@@ -128,6 +128,10 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             end
         })
 
+        if not terminalWindowData then
+            terminalWindowData = {}
+        end
+
         self.frame = terminalWindowData.darkened and 1 or 0
         self.props.darkenButton = self.props.content:createChild("UIButton", {
             id = "darkenButton",
@@ -154,7 +158,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             width = 2,
             origin = 0,
             visible = false,
-
+            
             onCreate = function(scrollBar)
                 scrollBar.props.pos = scrollBar:createChild("FillRect", {
                     color = { 200, 200, 200 },

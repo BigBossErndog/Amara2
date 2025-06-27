@@ -56,20 +56,6 @@ all:
 	@echo "Options: win linux"
 	@echo "Options: play(default windows) playwin playlinux"
 
-cpamara:
-	rm -rf amara/*
-	cp -T -r ../amara/amara ./amara
-	rm -rf amaraWeb/*
-	cp -T -r ../amara/amaraWeb ./amaraWeb
-	rm -rf amaraRPG/*
-	cp -T -r ../amaraRPG/amaraRPG ./amaraRPG
-
-cplibs:
-	rm -rf resources/libs/*
-	cp -T -r ../amara/libs ./libs
-	rm -rf resources/dlls/*
-	cp -T -r ../amara/dlls ./dlls
-
 cpAssets:
 	cp -R assets/ $(BUILD_PATH)/
 
@@ -88,6 +74,7 @@ cpdirs:
 	cp -R assets/ $(BUILD_PATH)/
 	cp -R data/ $(BUILD_PATH)/
 	cp -R lua_scripts/ $(BUILD_PATH)/
+	rm -f $(BUILD_PATH)/data/settings.json
 
 cpdirs-alt:
 	if not exist $(BUILD_PATH) md $(BUILD_PATH)
@@ -97,6 +84,7 @@ cpdirs-alt:
 	xcopy /s /e /i /y "assets\*.*" "$(BUILD_PATH)\assets"
 	xcopy /s /e /i /y "data\*.*" "$(BUILD_PATH)\data"
 	xcopy /s /e /i /y "lua_scripts\*.*" "$(BUILD_PATH)\lua_scripts"
+	if exist "$(BUILD_PATH)/data/settings.json: del "$(BUILD_PATH)/data/settings.json"
 
 # Using clang from $(CLANG_LLVM_PATH)
 win: $(ENTRY_FILES)
@@ -108,7 +96,8 @@ win: $(ENTRY_FILES)
 win-release:
 	make win
 	make cpdirs
-	cp clang-llvm/ $(BUILD_PATH)
+	cp -R amara2/ $(BUILD_PATH)/
+	cp -R resources/ $(BUILD_PATH)/
 
 # Using clang from $(CLANG_LLVM_PATH)
 win-alt: $(ENTRY_FILES)
@@ -118,8 +107,10 @@ win-alt: $(ENTRY_FILES)
 win-release-alt:
 	make win-alt
 	make cpdirs-alt
-	if not exist "$(BUILD_PATH)\clang-llvm" md "$(BUILD_PATH)\clang-llvm"
-	xcopy /s /e /i /y "clang-llvm\*.*" "$(BUILD_PATH)\clang-llvm"
+	if not exist "$(BUILD_PATH)\amara2\" md "$(BUILD_PATH)\amara2\"
+	xcopy /s /e /i /y "amara2\*.*" "$(BUILD_PATH)\amara2"
+	if not exist "$(BUILD_PATH)\resources\" md "$(BUILD_PATH)\resources\"
+	xcopy /s /e /i /y "resources\*.*" "$(BUILD_PATH)\resources"
 	
 linux:
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(LINUX_COMPILER_FLAGS) $(STDLIB_FLAG) $(LINKER_FLAGS_LINUX) -o $(BUILD_EXECUTABLE_LINUX)

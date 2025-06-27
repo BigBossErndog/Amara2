@@ -9,6 +9,10 @@ return Nodes:create("BuildNode", "ProcessNode", {
             return
         end
 
+        if config.installPlugins then
+            self.props.installPlugins = config.installPlugins
+        end
+
         local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
         if projectData then
             if projectData["executable-name"] then
@@ -47,7 +51,9 @@ return Nodes:create("BuildNode", "ProcessNode", {
             
             -- AMARA_PATH
             table.insert(args, "-Iamara2")
-            table.insert(args, "-Iplugins")
+            if self.props.installPlugins then
+                table.insert(args, "-I", System:join(self.props.projectPath, "plugins"))
+            end
 
             -- OTHER_LIB_LINKS
             table.insert(args, "-L" .. System:join(tinyxml2Path, "lib/win"))
@@ -76,7 +82,9 @@ return Nodes:create("BuildNode", "ProcessNode", {
             table.insert(args, "-std=c++17")
 
             -- EXTRA_OPTIONS
-            table.insert(args, "-DAMARA_PLUGINS")
+            if self.props.installPlugins then
+                table.insert(args, "-DAMARA_PLUGINS")
+            end
 
             -- LINKER_FLAGS_WIN64
             table.insert(args, "-fuse-ld=lld")
@@ -133,6 +141,8 @@ return Nodes:create("BuildNode", "ProcessNode", {
             if exitCode ~= 0 then
                 System:remove(System:join(self.props.projectPath, "build", "windows"))
             else
+                System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
+                
                 System:copy(
                     System:join(self.props.projectPath, "lua_scripts"),
                     System:join(self.props.projectPath, "build", "windows", "lua_scripts")
@@ -150,13 +160,8 @@ return Nodes:create("BuildNode", "ProcessNode", {
             end
         end
         
-        self.world:restoreWindow()
-        self.world.alwaysOnTop = true
-        
         if exitCode == 0 then
             self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
-            
-            System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
         else
             self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
         end
