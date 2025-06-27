@@ -105,7 +105,7 @@ namespace Amara {
                 return 1;
             }
 
-            std::cout << "Server running on http://localhost:" << port << std::endl;
+            debug_log("Server running on http://localhost: ", port);
             server_running = true;
 
             while (server_running) {
@@ -132,7 +132,7 @@ namespace Amara {
                 }
             }
 
-            std::cout << "Shutting down server on port " << port << "...\n";
+            debug_log("Shutting down server on port ", port, "...");
             CLOSE_SOCKET(server_fd);
             CLEANUP_SOCKETS();
             return 0;

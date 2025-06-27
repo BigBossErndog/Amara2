@@ -45,6 +45,7 @@
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",
     "error_pathToFile": "Error: File exists at path.",
+    "error_failedToRunGame": "Error: Failed to run game.",
 
     "codeEditor_VSCode": "Visual Studio Code",
     "codeEditor_CodeOSS": "Code OSS",

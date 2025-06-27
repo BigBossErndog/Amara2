@@ -221,6 +221,9 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         self.props.wallHeight = self.props.wallHeight + item.height
 
         table.insert(self.props.activePool, item)
+
+        self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - item.y - item.height
+        self.props.bottomLocked = true
     end,
 
     handleMessage = function(self, msg)

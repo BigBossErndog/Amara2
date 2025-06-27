@@ -284,11 +284,17 @@ return Nodes:create("ProjectWindow", "UIWindow", {
                     self.props.printLog.func:handleMessage(msg)
                 end
             end,
-            onExit = function(process, exitCode)
+            onExit = function(process, exitCode, errorMessage)
                 if self.props.printLog then
                     self.props.printLog.func:unbindGameProcess()
                 elseif exitCode ~= 0 then
                     self.props.printLogButton.func:forcePress()
+                end
+                if exitCode == -1 then
+                    self.props.printLog.func:handleMessage(Localize:get("error_failedToRunGame"))
+                end
+                if errorMessage then
+                    self.props.printLog.func:handleMessage(errorMessage)
                 end
                 self.props.gameProcess = nil
                 self.props.playButton.func:setIcon(2)

@@ -49,8 +49,13 @@ namespace Amara {
                 io = SDL_GetProcessOutput(process);
             }
             else {
-                Amara::debug_log("Error: Failed to creeate process.");
+                Amara::debug_log("Error: Failed to create process.");
                 Amara::debug_log("Arguments: ", nlohmann::json(args));
+                destroy();
+                if (funcs.hasFunction("onExit")) {
+                    std::string msg = SDL_GetError();
+                    funcs.callFunction(this, "onExit", -1, msg);
+                }
             }
         }
 

@@ -222,7 +222,7 @@ namespace Amara {
         if (error != GL_NO_ERROR) {
             std::ostringstream ss;
             (ss << ... << args);
-            std::cout << ss.str().c_str() << error << std::endl;
+            debug_log(ss.str().c_str(), error);
             return;
         }
     }

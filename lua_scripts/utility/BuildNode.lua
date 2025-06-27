@@ -25,7 +25,7 @@ return Nodes:create("BuildNode", "ProcessNode", {
         if self.props.platform == "windows" then
             local buildDir = System:join(self.props.projectPath, "build", "windows")
             local clangLLVMPath = System:getRelativePath("resources/clang-llvm")
-            local sdl3Path = System:getRelativePath("resources/libs/SDL3-3.2.8/x86_64-w64-mingw32")
+            local sdl3Path = System:getRelativePath("resources/libs/SDL3-3.2.16")
             local tinyxml2Path = System:getRelativePath("resources/libs/tinyxml2")
             local nlohmannPath = System:getRelativePath("resources/libs/nlohmann/include")
             local murmurhash3Path = System:getRelativePath("resources/libs/murmurhash3")
@@ -73,8 +73,8 @@ return Nodes:create("BuildNode", "ProcessNode", {
 
             -- SDL_PATHS_WIN64
             table.insert(args, "-I" .. System:join(sdl3Path, "include"))
-            table.insert(args, "-L" .. System:join(sdl3Path, "lib"))
-
+            table.insert(args, "-L" .. System:join(sdl3Path, "lib", "x64"))
+            
             -- WINDOWS_COMPILER_FLAGS
             table.insert(args, "-w")
             table.insert(args, "-m64")
@@ -93,9 +93,15 @@ return Nodes:create("BuildNode", "ProcessNode", {
             table.insert(args, "-pthread")
             table.insert(args, "-DAMARA_OPENGL")
             table.insert(args, "-lopengl32")
-            table.insert(args, System:join(sdl3Path, "lib/libSDL3.dll.a"))
+            table.insert(args, "-lSDL3")
             table.insert(args, "-lshell32")
             table.insert(args, "-luser32")
+            table.insert(args, "-lgdi32")
+            table.insert(args, "-lwinmm")
+            table.insert(args, "-limm32")
+            table.insert(args, "-lole32")
+            table.insert(args, "-loleaut32")
+            table.insert(args, "-lversion")
             table.insert(args, "-static")
 
             -- Output file

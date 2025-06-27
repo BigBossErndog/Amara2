@@ -15,10 +15,10 @@ WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -std=c++17
 
 # LINUX_COMPILER_FLAGS = -w -Wall -m32 -std=c++17
 
-SDL_INCLUDE_PATHS_WIN64 = -Iresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/include
-SDL_LIBRARY_PATHS_WIN64 = -Lresources/libs/SDL3-3.2.8/x86_64-w64-mingw32/lib
+SDL_INCLUDE_PATHS_WIN64 = -Iresources/libs/SDL3-3.2.16/include
+SDL_LIBRARY_PATHS_WIN64 = -Lresources/libs/SDL3-3.2.16/lib/x64
 SDL_PATHS_WIN64 = $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64) 
-SDL_LINKER_FLAGS_WIN64 = resources/libs/SDL3-3.2.8/x86_64-w64-mingw32/lib/libSDL3.dll.a
+SDL_LINKER_FLAGS_WIN64 = -lSDL3
 
 SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags`
 
@@ -26,7 +26,7 @@ RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
 STDLIB_FLAG = -stdlib=libc++
 
-WINDOWS_SYSTEM_LIBS = -lshell32 -luser32 # Add system libraries for Windows API
+WINDOWS_SYSTEM_LIBS = -lshell32 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lversion # Add system libraries for Windows API
 LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) $(WINDOWS_SYSTEM_LIBS) -static
 
 LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl2-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl

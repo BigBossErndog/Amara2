@@ -1,0 +1,2 @@
+Info: (World: "Test 1") rendering to window using Render2D
+Note: Gamepad connected "Xbox 360 Controller" (ID: 4)
