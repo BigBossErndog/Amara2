@@ -216,6 +216,12 @@ return Nodes:create("TerminalWindow", "UIWindow", {
         table.insert(self.props.activePool, item)
     end,
 
+    handleMessage = function(self, msg)
+        if self.props.bottomLocked then
+            self.func:pipeMessage(msg)
+        end
+    end,
+
     savePosition = function(self)
         local setting = self.world.func:getSettings()
         if not setting.terminalWindowData then

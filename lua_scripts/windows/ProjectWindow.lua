@@ -281,7 +281,7 @@ return Nodes:create("ProjectWindow", "UIWindow", {
             },
             onOutput = function(process, msg)
                 if self.props.printLog then
-                    self.props.printLog.func:pipeMessage(msg)
+                    self.props.printLog.func:handleMessage(msg)
                 end
             end,
             onExit = function(process, exitCode)
