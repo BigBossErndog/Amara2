@@ -624,6 +624,8 @@ namespace Amara {
         bool create_graphics_window(int flags) {
             if (window != nullptr) return false;
 
+            flags |= SDL_WINDOW_HIDDEN;
+
             if (resizable) flags |= SDL_WINDOW_RESIZABLE;
             if (transparent) flags |= SDL_WINDOW_TRANSPARENT;
             if (alwaysOnTop) flags |= SDL_WINDOW_ALWAYS_ON_TOP;
@@ -842,6 +844,8 @@ namespace Amara {
                 assets.init();
 
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
+
+                SDL_ShowWindow(window);
             }
             else if (graphics == GraphicsEnum::None && gameProps->current_window != nullptr) {
                 pos.x = (gameProps->master_viewport.w - windowW) / 2.0f;
