@@ -3,6 +3,12 @@ A light-weight C++ SDL3 game engine with Lua scripting.
 
 ## Setup
 ### Windows
+Download the windows zip file from the latest release:
+
+https://github.com/BigBossErndog/Amara2/releases
+
+Run "Amara2.exe".
+
 Amara2 requires VS Build Tools from Microsoft to build your final game.
 You don't have to install it until you need to build your game.
 
