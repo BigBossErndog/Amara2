@@ -11,8 +11,8 @@ CLANG_LLVM_PATH = resources/clang-llvm
 COMPILER = $(CLANG_LLVM_PATH)/bin/clang++
 RC_COMPILER = $(CLANG_LLVM_PATH)/bin/llvm-rc
 
-# WINDOWS_COMPILER_FLAGS = -w -Wall -m64 -std=c++17 -DAMARA_DEBUG_BUILD
-WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -std=c++17
+WINDOWS_COMPILER_FLAGS = -w -Wall -m64 -std=c++17 -DAMARA_DEBUG_BUILD
+# WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -std=c++17
 
 # LINUX_COMPILER_FLAGS = -w -Wall -m32 -std=c++17
 
@@ -62,7 +62,7 @@ ICON_RC = assets/icons/icon.rc
 ICON_RES = assets/icons/icon.res
 build-icon:
 	@echo '1 ICON "$(ICON_SRC)"' > $(ICON_RC)
-	$(RC_COMPILER) $(ICON_RC)
+	$(RC_COMPILER) -o $(ICON_RES) $(ICON_RC)
 
 cpAssets:
 	cp -R assets/ $(BUILD_PATH)/

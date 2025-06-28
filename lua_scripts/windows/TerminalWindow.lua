@@ -35,7 +35,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                 end
             else
                 settings.terminalWindowData = {
-                    darkened = true
+                    darkened = false
                 }
                 terminalWindowData = settings.terminalWindowData
 
@@ -43,7 +43,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
             end
         elseif not terminalWindowData then
             terminalWindowData = {
-                darkened = true
+                darkened = false
             }
         end
 
@@ -230,7 +230,7 @@ return Nodes:create("TerminalWindow", "UIWindow", {
                 scrollBar.height = self.props.cont.height - 4
 
                 local pos = scrollBar.props.pos
-
+                
                 local firstItem = self.props.activePool[1]
                 local lastItem = self.props.activePool[#self.props.activePool]
 

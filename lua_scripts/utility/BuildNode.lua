@@ -46,9 +46,35 @@ return Nodes:create("BuildNode", "ProcessNode", {
                 buildDir
             )
 
+            if not config.iconPath then
+                local defaultIcon = System:getRelativePath("assets/icons/icon.png")
+                if System:exists(defaultIcon) then
+                    config.iconPath = defaultIcon
+                end
+            end
+
+            if config.iconPath then
+                self.props.iconPath = config.iconPath
+
+                self.props.iconDest = System:join(buildDir, "icon.ico")
+                System:WriteICO(config.iconPath, self.props.iconDest)
+                
+                self.props.resFile = System:join(buildDir, "icon.rc")
+                System:writeFile(self.props.resFile, "1 ICON \"" .. self.props.iconDest .. "\"\n")
+                
+                local command = string.format("%s \"%s\"", System:getRelativePath("resources/clang-llvm/bin/llvm-rc"), self.props.resFile)
+                System:execute(command)
+
+                self.props.resOutputFile = System:join(buildDir, "icon.res")
+            end
+
             table.insert(args, System:getRelativePath("resources/clang-llvm/bin/clang++"))
             table.insert(args, System:getRelativePath("amara2/main/main.cpp"))
-            
+
+            if self.props.resOutputFile then
+                table.insert(args, self.props.resOutputFile)
+            end
+
             -- AMARA_PATH
             table.insert(args, "-Iamara2")
             if self.props.installPlugins then
@@ -134,6 +160,11 @@ return Nodes:create("BuildNode", "ProcessNode", {
                 
                 if self.props.gameProcess then
                     self.props.gameProcess:destroy()
+                    self.props.gameProcess = nil
+                    
+                    if self.props.platform == "windows" then
+                        System:remove(System:join(self.props.projectPath, "build", "windows"))
+                    end
                 end
             end
         })
@@ -148,8 +179,16 @@ return Nodes:create("BuildNode", "ProcessNode", {
             if exitCode ~= 0 then
                 System:remove(System:join(self.props.projectPath, "build", "windows"))
             else
-                System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
-                
+                if self.props.iconDest then
+                    System:remove(self.props.iconDest)
+                end
+                if self.props.resFile then
+                    System:remove(self.props.resFile)
+                end
+                if self.props.resOutputFile then
+                    System:remove(self.props.resOutputFile)
+                end
+
                 System:copy(
                     System:join(self.props.projectPath, "lua_scripts"),
                     System:join(self.props.projectPath, "build", "windows", "lua_scripts")
@@ -164,6 +203,8 @@ return Nodes:create("BuildNode", "ProcessNode", {
                         System:join(self.props.projectPath, "build", "windows", "data")
                     )
                 end
+
+                System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
             end
         end
         

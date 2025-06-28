@@ -842,7 +842,7 @@ namespace Amara {
             return result.empty() ? "" : result[0];
         }
 
-        #if defined(_WIN32) && defined(AMARA_BUILD_CHAIN)
+        #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
         bool VSBuildToolsInstalled() {
             const std::string vswherePath =
                 "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe\"";
@@ -870,6 +870,113 @@ namespace Amara {
             }).base(), result.end());
 
             return !result.empty();
+        }
+
+        bool WriteICO(const std::string& input_path, const std::string& output_path) {
+            int width, height, channels;
+
+            SDL_IOStream *rw = SDL_IOFromFile(input_path.c_str(), "rb");
+            if (!rw) {
+                debug_log("Error: Failed to open file: ", SDL_GetError());
+                return false;
+            }
+
+            Sint64 fileSize = SDL_GetIOSize(rw);
+            unsigned char *buffer = (unsigned char*)SDL_malloc(fileSize);
+            SDL_ReadIO(rw, buffer, fileSize);
+            SDL_CloseIO(rw);
+
+            stbi_set_flip_vertically_on_load(0);
+
+            uint8_t* rgba_pixels = stbi_load_from_memory(buffer, fileSize, &width, &height, &channels, 4);
+            SDL_free(buffer);
+
+            if (!rgba_pixels) {
+                std::cerr << "Failed to load image: " << input_path << "\n";
+                return false;
+            }
+
+            if (width != 256 || height != 256) {
+                std::cerr << "Image must be 256x256 pixels for ICO: " << input_path << "\n";
+                stbi_image_free(rgba_pixels);
+                return false;
+            }
+
+            const int bytes_per_pixel = 4;
+            const int image_size = width * height * bytes_per_pixel;
+
+            std::ofstream out(output_path, std::ios::binary);
+            if (!out) {
+                std::cerr << "Failed to write output: " << output_path << "\n";
+                stbi_image_free(rgba_pixels);
+                return false;
+            }
+
+            // ICONDIR (6 bytes)
+            out.put(0); out.put(0);             // Reserved
+            out.put(1); out.put(0);             // Type = Icon
+            out.put(1); out.put(0);             // Count = 1
+
+            // ICONDIRENTRY (16 bytes)
+            out.put(0);                         // Width = 256 (0 means 256)
+            out.put(0);                         // Height = 256
+            out.put(0);                         // Color count
+            out.put(0);                         // Reserved
+            out.put(1); out.put(0);             // Planes
+            out.put(32); out.put(0);            // Bits per pixel
+            uint32_t bmp_size_pos = static_cast<uint32_t>(out.tellp());
+            out.write("\0\0\0\0", 4);           // Size placeholder
+            uint32_t bmp_offset = 6 + 16;
+            out.write(reinterpret_cast<const char*>(&bmp_offset), 4); // Offset to BMP
+
+            // BITMAPINFOHEADER (40 bytes)
+            uint32_t header_size = 40;
+            uint32_t dib_width = width;
+            uint32_t dib_height = height * 2; // includes AND mask
+            uint16_t planes = 1;
+            uint16_t bpp = 32;
+            uint32_t compression = 0;
+            uint32_t image_size_bmp = image_size;
+            uint32_t ppm = 2835; // 72 DPI
+
+            out.write(reinterpret_cast<const char*>(&header_size), 4);
+            out.write(reinterpret_cast<const char*>(&dib_width), 4);
+            out.write(reinterpret_cast<const char*>(&dib_height), 4);
+            out.write(reinterpret_cast<const char*>(&planes), 2);
+            out.write(reinterpret_cast<const char*>(&bpp), 2);
+            out.write(reinterpret_cast<const char*>(&compression), 4);
+            out.write(reinterpret_cast<const char*>(&image_size_bmp), 4);
+            out.write(reinterpret_cast<const char*>(&ppm), 4);
+            out.write(reinterpret_cast<const char*>(&ppm), 4);
+            out.write("\0\0\0\0", 4); // Colors used
+            out.write("\0\0\0\0", 4); // Important colors
+
+            // Pixel data (BGRA, bottom-up)
+            for (int y = height - 1; y >= 0; --y) {
+                const uint8_t* row = rgba_pixels + y * width * 4;
+                for (int x = 0; x < width; ++x) {
+                    out.put(row[x * 4 + 2]); // B
+                    out.put(row[x * 4 + 1]); // G
+                    out.put(row[x * 4 + 0]); // R
+                    out.put(row[x * 4 + 3]); // A
+                }
+            }
+
+            // AND mask (empty, 1 bit per pixel, padded to 32-bit rows)
+            int mask_row_bytes = ((width + 31) / 32) * 4;
+            std::vector<uint8_t> mask_row(mask_row_bytes, 0x00);
+            for (int y = 0; y < height; ++y) {
+                out.write(reinterpret_cast<const char*>(mask_row.data()), mask_row_bytes);
+            }
+
+            // Backfill size
+            std::streampos file_end = out.tellp();
+            uint32_t bmp_size = static_cast<uint32_t>(file_end) - bmp_offset;
+            out.seekp(bmp_size_pos);
+            out.write(reinterpret_cast<const char*>(&bmp_size), 4);
+
+            stbi_image_free(rgba_pixels);
+            return true;
         }
         #endif
 
@@ -971,8 +1078,9 @@ namespace Amara {
                     sol::resolve<std::string()>(&SystemManager::browseFile)
                 ),
                 "join", &SystemManager::lua_join,
-                #if defined(_WIN32) && defined(AMARA_BUILD_CHAIN)
+                #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
                 "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled,
+                "WriteICO", &SystemManager::WriteICO,
                 #endif
                 "programInstalled", &SystemManager::programInstalled
             );
