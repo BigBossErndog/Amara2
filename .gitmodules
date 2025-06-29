@@ -13,3 +13,6 @@
 [submodule "resources/libs/tinyxml2"]
 	path = resources/libs/tinyxml2
 	url = https://github.com/leethomason/tinyxml2.git
+[submodule "resources/libs/box2d"]
+	path = resources/libs/box2d
+	url = https://github.com/erincatto/box2d.git
