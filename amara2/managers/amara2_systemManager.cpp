@@ -466,6 +466,16 @@ namespace Amara {
             }
             return p2.string();
         }
+        
+        std::string lua_join(sol::variadic_args args) {
+            std::filesystem::path current;
+
+            std::ostringstream ss;
+            for (auto arg : args) {
+                current = current / std::filesystem::path(lua_to_string(arg));
+            }
+            return current.string();
+        }
 
         bool copy(std::string input, std::string output, bool overwrite) {
             std::filesystem::path source = getRelativePath(input);
@@ -569,16 +579,6 @@ namespace Amara {
             }
         }
 
-        std::string lua_join(sol::variadic_args args) {
-            std::filesystem::path current;
-
-            std::ostringstream ss;
-            for (auto arg : args) {
-                current = current / std::filesystem::path(lua_to_string(arg));
-            }
-            return current.string();
-        }
-
         sol::load_result load_script(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
             bool fileExists = std::filesystem::exists(filePath);
@@ -651,6 +651,11 @@ namespace Amara {
             return compileScript(path, dest, "");
         }
 
+        void copyToClipboard(std::string text) {
+            SDL_SetClipboardText(text.c_str());
+        }
+
+        #if defined(AMARA_DESKTOP)
         static int run_command(std::string command) {
             #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
             HINSTANCE result = ShellExecuteA(NULL, "open", "cmd.exe", ("/c " + command).c_str(), NULL, SW_HIDE);
@@ -754,10 +759,6 @@ namespace Amara {
             return false;
         }
 
-        void copyToClipboard(std::string text) {
-            SDL_SetClipboardText(text.c_str());
-        }
-
         bool openWebsite(std::string url) {
             std::string command;
             int result = -1;
@@ -841,6 +842,7 @@ namespace Amara {
             auto result = pfd::open_file("Select a file", defPath).result();
             return result.empty() ? "" : result[0];
         }
+        #endif
 
         #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
         bool VSBuildToolsInstalled() {
@@ -1053,6 +1055,7 @@ namespace Amara {
                 "removeFileExtension", &SystemManager::removeFileExtension,
                 "getDirectoryOf", &SystemManager::getDirectoryOf,
                 "mergePaths", &SystemManager::mergePaths,
+                "join", &SystemManager::lua_join,
                 "remove", &SystemManager::remove,
                 "copy", sol::overload(
                     sol::resolve<bool(std::string, std::string, bool)>(&SystemManager::copy),
@@ -1063,12 +1066,13 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string, std::string)>(&SystemManager::compileScript),
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::compileScript)
                 ),
+                "copyToClipboard", &SystemManager::copyToClipboard,
+                #if defined(AMARA_DESKTOP)
                 "execute", &SystemManager::lua_execute,
                 "execute_dettached", &SystemManager::lua_execute_dettached,
                 "setEnvironmentVar", &SystemManager::setEnvironmentVar,
                 "openWebsite", &SystemManager::openWebsite,
                 "openDirectory", &SystemManager::openDirectory,
-                "copyToClipboard", &SystemManager::copyToClipboard,
                 "browseDirectory", sol::overload(
                     sol::resolve<std::string(std::string)>(&SystemManager::browseDirectory),
                     sol::resolve<std::string()>(&SystemManager::browseDirectory)
@@ -1077,7 +1081,7 @@ namespace Amara {
                     sol::resolve<std::string(std::string)>(&SystemManager::browseFile),
                     sol::resolve<std::string()>(&SystemManager::browseFile)
                 ),
-                "join", &SystemManager::lua_join,
+                #endif
                 #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
                 "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled,
                 "WriteICO", &SystemManager::WriteICO,

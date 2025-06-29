@@ -853,7 +853,8 @@ namespace Amara {
 
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
 
-                SDL_ShowWindow(window);
+                showWindow();
+                restoreWindow();
             }
             else if (graphics == GraphicsEnum::None && gameProps->current_window != nullptr) {
                 pos.x = (gameProps->master_viewport.w - windowW) / 2.0f;
