@@ -20,11 +20,38 @@ namespace Amara {
         Vector2 rec_interact_pos;
 
         void configure(nlohmann::json config) {
-            if (json_is(config, "active")) {
-                active = config["active"];            
+            if (config.is_boolean()) {
+                if (config.get<bool>()) {
+                    activate();
+                }
+                else {
+                    deactivate();
+                }
             }
-            if (json_is(config, "draggable")) {
-                draggable = config["draggable"];
+            else if (config.is_object()) {
+                if (json_has(config, "active")) {
+                    if (config["active"]) activate();
+                    else deactivate();
+                }
+                if (json_has(config, "draggable")) {
+                    draggable = config["draggable"];
+                }
+            }
+        }
+        void configure(sol::object config) {
+            configure(lua_to_json(config));
+            
+            if (config.is<sol::table>()) {
+                sol::table tbl = config.as<sol::table>();
+                for (const auto& it: tbl) {
+                    sol::object val = it.second;
+                    if (val.is<sol::function>()) {
+                        std::string key = it.first.as<std::string>();
+                        sol::function func = val.as<sol::function>();
+                        
+                        listen(key, func);
+                    }
+                }
             }
         }
 
@@ -89,7 +116,8 @@ namespace Amara {
                 "lastPointer", sol::readonly(&NodeInput::lastPointer),
                 "held", sol::readonly(&NodeInput::held),
                 "timeHeld", sol::readonly(&NodeInput::timeHeld),
-                "draggable", &NodeInput::draggable
+                "draggable", &NodeInput::draggable,
+                "configure", sol::resolve<void(sol::object)>(&NodeInput::configure)
             );
         }
     };

@@ -6,7 +6,7 @@
     "title_printLog": "Print Log",
     "title_copyProject": "Copy Project",
     "title_buildOptions": "Build Options",
-    "title_executableIcon": "Executable Icon",
+    "title_executableIcon": "Executable Icon (optional)",
 
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit",

@@ -131,6 +131,11 @@ namespace Amara {
         return false;
     }
 
+    bool Shape::collision(const Circle& c1, const Circle& c2) {
+        double distance = distanceBetween(c1.x, c1.y, c2.x, c2.y);
+        if (distance <= (c1.radius + c2.radius)) return true;
+    }
+
     bool Shape::collision(const Vector2& p, const Quad& q) {
         return isPointInside(q, p);
     }
@@ -139,6 +144,10 @@ namespace Amara {
         return (p.x >= r.x && p.x <= r.x + r.w &&
                 p.y >= r.y && p.y <= r.y + r.h &&
                 r.w > 0 && r.h > 0);
+    }
+
+    bool Shape::collision(const Rectangle& rect, const Quad& quad) {
+        return Shape::collision(quad, Quad(rect));
     }
 
     Vector2 stringToPosition(std::string str) {

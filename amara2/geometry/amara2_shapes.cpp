@@ -248,9 +248,11 @@ namespace Amara {
         }
 
         static bool collision(const Quad& q1, const Quad& q2);
+        static bool collision(const Circle& c1, const Circle& c2);
         static bool collision(const Vector2& p, const Quad& q);
         static bool collision(const Vector2& p, const Rectangle& r);
-
+        static bool collision(const Rectangle& rect, const Quad& quad);
+        
         template <typename T1, typename T2>
         static std::enable_if_t<!std::is_same_v<T1, T2>, bool> collision(const T1& a, const T2& b) {
             // Swap and call the correct function
@@ -275,6 +277,47 @@ namespace Amara {
                 return std::string(r);
             },
             "center", sol::property(&Rectangle::getCenter)
+        );
+
+        lua.new_usertype<Quad>("Quad",
+            sol::constructors<Quad(), Quad(const Rectangle&)>(),
+            "p1", &Quad::p1,
+            "p2", &Quad::p2,
+            "p3", &Quad::p3,
+            "p4", &Quad::p4,
+            "string", [](const Quad& q) {
+                return std::string(q);
+            }
+        );
+
+        lua["collision"] = sol::overload(
+            [](const Rectangle& r1, const Rectangle& r2) {
+                return Shape::collision(r1, r2);
+            },
+            [](const Quad& q1, const Quad& q2) {
+                return Shape::collision(q1, q2);
+            },
+            [](const Circle& c1, const Circle& c2) {
+                return Shape::collision(c1, c2);
+            },
+            [](const Vector2& p, const Quad& q) {
+                return Shape::collision(p, q);
+            },
+            [](const Quad& q, const Vector2& p) {
+                return Shape::collision(p, q);
+            },
+            [](const Vector2& p, const Rectangle& r) {
+                return Shape::collision(p, r);
+            },
+            [](const Rectangle& r, const Vector2& p) {
+                return Shape::collision(p, r);
+            },
+            [](const Rectangle& rect, const Quad& quad) {
+                return Shape::collision(rect, quad);
+            },
+            [](const Quad& q, const Rectangle& r) {
+                return Shape::collision(r, q);
+            }
         );
     }
 }

@@ -197,20 +197,7 @@ namespace Amara {
 
             if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
 
-            if (json_has(config, "input")) {
-                nlohmann::json val = config["input"];
-                if (val.is_boolean()) {
-                    if (val) {
-                        input.activate();
-                    }
-                    else {
-                        input.deactivate();
-                    }
-                }
-                else if (val.is_object()) {
-                    input.configure(val);
-                }
-            }
+            if (json_has(config, "input")) input.configure(config["input"]);
             
             return this;
         }
@@ -234,10 +221,16 @@ namespace Amara {
                     else if (val.is<sol::userdata>()) {
                         luaConfigure(it.first.as<std::string>(), val);
                     }
-                    else if (val.is<sol::table>() && String::equal(it.first.as<std::string>(), "props")) {
-                        sol::table props_table = val.as<sol::table>();
-                        for (const auto& prop_pair : props_table) {
-                            props[prop_pair.first] = prop_pair.second;
+                    else if (val.is<sol::table>()) {
+                        std::string key = it.first.as<std::string>();
+                        if (String::equal(key, "props")) {
+                            sol::table props_table = val.as<sol::table>();
+                            for (const auto& prop_pair : props_table) {
+                                props[prop_pair.first] = prop_pair.second;
+                            }
+                        }
+                        else if (String::equal(key, "input")) {
+                            input.configure(val);
                         }
                     }
                 }

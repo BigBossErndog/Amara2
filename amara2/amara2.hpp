@@ -58,7 +58,7 @@
     #define MINIMP3_ENABLE_MP3_FLOAT
     #include <minimp3_ex.h>
 
-    #include <tinyxml2.h>
+    #include <tinyxml2.cpp>
 
     #if defined(_WIN32)
         #define AMARA_DESKTOP
