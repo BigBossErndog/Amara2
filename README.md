@@ -14,6 +14,7 @@ https://github.com/BigBossErndog/Amara2/releases
 
 Run "Amara2.exe".
 
+#### Building your project
 Amara2 requires VS Build Tools from Microsoft to build your final game.
 You don't have to install it until you need to build your game.
 
