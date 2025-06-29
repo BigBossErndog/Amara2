@@ -94,8 +94,6 @@
     
     #include <lua_single.h>
     #include <sol/sol.hpp>
-
-    #include <box2d/box2d.h>
 #endif
 
 #ifndef AMARA_SDL
