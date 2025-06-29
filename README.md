@@ -13,7 +13,7 @@ Download the windows zip file from the latest release:
 
 https://github.com/BigBossErndog/Amara2/releases
 
-Run "Amara2.exe".
+Run "*Amara2.exe*".
 
 #### *Building your project*
 Amara2 requires VS Build Tools from Microsoft to build your final game.
