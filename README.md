@@ -1,6 +1,7 @@
 # Amara2
 A light-weight C++ SDL3 game engine with Lua scripting.
 ### Features
+- Setting up a new project is easy as heck.
 - Go from downloading Amara2, creating a project and running a test of your game in a matter of seconds.
 - Game architecture inspired by the best elements of the Phaser framework and the Godot Engine.
 - Code-focused game engine that attempts to unify all existing tools a game developer may use into a cohesive experience.
