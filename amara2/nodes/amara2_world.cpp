@@ -621,6 +621,14 @@ namespace Amara {
             }
         }
 
+        void showWindow() {
+            if (window) SDL_ShowWindow(window); 
+        }
+
+        void hideWindow() {
+            if (window) SDL_HideWindow(window); 
+        }
+
         bool create_graphics_window(int flags) {
             if (window != nullptr) return false;
 
@@ -1234,6 +1242,8 @@ namespace Amara {
                 }),
                 "minimizeWindow", &World::minimizeWindow,
                 "maximizeWindow", &World::maximizeWindow,
+                "hideWindow", &World::hideWindow,
+                "showWindow", &World::showWindow,
                 "restoreWindow", &World::restoreWindow,
                 "depth", sol::property(
                     [](const Amara::World& world) {

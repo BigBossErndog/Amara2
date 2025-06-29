@@ -12,6 +12,7 @@ Nodes:load("NewProjectWindow", "windows/NewProjectWindow")
 Nodes:load("ProjectWindow", "windows/ProjectWindow")
 Nodes:load("TerminalWindow", "windows/TerminalWindow")
 Nodes:load("CopyProjectWindow", "windows/CopyProjectWindow")
+Nodes:load("BuildOptions", "windows/BuildOptions")
 
 Nodes:load("BuildNode", "utility/BuildNode")
 
@@ -28,7 +29,7 @@ return Creator:createWorld({
         vsync = true,
         graphics = Graphics.Render2D
     },
-
+    
     onPreload = function(world) 
         world:fitToDisplay()
         world:restoreWindow()

@@ -320,9 +320,9 @@ return Nodes:create("ProjectWindow", "UIWindow", {
             window:destroy()
         end)
 
-        self.world.props.windows:createChild("BuildNode", {
-            projectPath = self.props.projectPath,
-            platform = "windows"
+        local newWindow = self.world.props.windows:createChild("BuildOptions", {
+            projectPath = self.props.projectPath
         })
+        newWindow.func:openWindow()
     end
 })

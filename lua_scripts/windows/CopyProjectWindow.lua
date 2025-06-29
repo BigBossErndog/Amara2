@@ -52,14 +52,12 @@ return Nodes:create("CopyProjectWindow", "UIWindow", {
             y = self.props.folderField.y,
             icon = 5,
             onPress = function()
-                self.world.screenMode = ScreenMode.BorderlessWindowed
-                self.world:minimizeWindow()
+                self.world:hideWindow()
 
                 self:wait(0.2):next(function()
                     local path = System:browseDirectory(self.props.folderPath)
-
-                    self.world:restoreWindow()
-                    self.world.screenMode = ScreenMode.BorderlessFullscreen
+                    
+                    self.world:showWindow()
 
                     if string.len(path) == 0 then
                         return
@@ -82,11 +80,11 @@ return Nodes:create("CopyProjectWindow", "UIWindow", {
             x = buttonPos,
             y = 4,
             icon = 0,
-            onPress = function()
+            onPress = function(button)
                 self.world.props.windows.func:closeAll(function(self)
                     self.world:destroy()
                 end)
-                self.props.enabled = false
+                button.props.enabled = false
             end
         })
 
@@ -97,9 +95,9 @@ return Nodes:create("CopyProjectWindow", "UIWindow", {
             x = buttonPos,
             y = 4,
             icon = 3,
-            onPress = function(self)
+            onPress = function(button)
                 self.world:minimizeWindow()
-                self.props.enabled = false
+                button.props.enabled = false
             end
         })
 
@@ -110,10 +108,9 @@ return Nodes:create("CopyProjectWindow", "UIWindow", {
             x = buttonPos,
             y = 4,
             icon = 4,
-            onPress = function()
+            onPress = function(button)
+                button.props.enabled = false
                 self.func:closeWindow(function()
-                    self.props.enabled = false
-                    
                     local newWindow = self.parent:createChild("ProjectWindow", {
                         projectPath = self.props.oldProjectPath
                     })

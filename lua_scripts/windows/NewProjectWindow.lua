@@ -15,7 +15,7 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
             color = "#f0f6ff",
             origin = 0,
             input = true
-        })
+        }) 
 
         self.props.nameField = self.props.content:createChild("TextField", {
             x = 8, y = 28,
@@ -46,14 +46,12 @@ return Nodes:create("NewProjectWindow", "UIWindow", {
             y = self.props.folderField.y,
             icon = 5,
             onPress = function()
-                self.world.screenMode = ScreenMode.BorderlessWindowed
-                self.world:minimizeWindow()
+                self.world:hideWindow()
 
                 self:wait(0.2):next(function()
                     local path = System:browseDirectory(self.props.folderPath)
 
-                    self.world:restoreWindow()
-                    self.world.screenMode = ScreenMode.BorderlessFullscreen
+                    self.world:showWindow()
 
                     if string.len(path) == 0 then
                         return

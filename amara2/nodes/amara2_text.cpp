@@ -554,9 +554,28 @@ namespace Amara {
                 "h", sol::property([](Amara::Text& t) -> float { return t.textHeight; }, &Text::setHeight),
                 "width", sol::property([](Amara::Text& t) -> float { return t.textWidth; }, &Text::setWidth),
                 "height", sol::property([](Amara::Text& t) -> float { return t.textHeight; }, &Text::setHeight),
-                "rect", sol::property(&Text::getRectangle, &Text::stretchTo),
-                "stretchTo", &Text::stretchTo,
-                "fitWithin", &Text::fitWithin,
+                "rect", sol::property(
+                    &Text::getRectangle,
+                    [](Amara::Text& t, sol::object v) {
+                        Rectangle r = v;
+                        t.stretchTo(r);
+                        return t.getRectangle();
+                    }
+                ),
+                "stretchTo", sol::property(
+                    [](Amara::Text& t, sol::object v) {
+                        Rectangle r = v;
+                        t.stretchTo(r);
+                        return t.getRectangle();
+                    }
+                ),
+                "fitWithin", sol::property(
+                    [](Amara::Text& t, sol::object v) {
+                        Rectangle r = v;
+                        t.fitWithin(r);
+                        return t.getRectangle();
+                    }
+                ),
                 "center", sol::property(&Text::getCenter),
                 "length", sol::property(&Text::length),
                 "text", sol::property(

@@ -173,15 +173,12 @@ return Nodes:create("MainWindow", "UIWindow", {
             icon = 5,
             onPress = function(button)
                 self.props.enabled = false
-
-                self.world.screenMode = ScreenMode.BorderlessWindowed
-                self.world:minimizeWindow()
+                self.world:hideWindow()
 
                 self:wait(0.2):next(function()
                     local path = System:browseDirectory()
 
-                    self.world:restoreWindow()
-                    self.world.screenMode = ScreenMode.BorderlessFullscreen
+                    self.world:showWindow()
 
                     if string.len(path) == 0 then
                         return

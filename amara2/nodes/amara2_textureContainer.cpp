@@ -511,12 +511,45 @@ namespace Amara {
                 "h", sol::property([](Amara::TextureContainer& t) -> int { return t.height; }, [](Amara::TextureContainer& t, double v) { t.setHeight(v); }),
                 "width", sol::property([](Amara::TextureContainer& t) -> int { return t.width; }, [](Amara::TextureContainer& t, double v) { t.setWidth(v); }),
                 "height", sol::property([](Amara::TextureContainer& t) -> int { return t.height; }, [](Amara::TextureContainer& t, double v) { t.setHeight(v); }),
-                "canvas", sol::property(&TextureContainer::getCanvasSize, &TextureContainer::setCanvasSize),
-                "rect", sol::property(&TextureContainer::getRectangle, &TextureContainer::stretchTo),
-                "size", sol::property([](Amara::TextureContainer& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.width, t.height); }, &TextureContainer::resize),
-                "resize", &TextureContainer::resize,
-                "stretchTo", &TextureContainer::stretchTo,
-                "fitWithin", &TextureContainer::fitWithin,
+                "canvas", sol::property(
+                    &TextureContainer::getCanvasSize,
+                    [](Amara::TextureContainer& t, sol::object v) {
+                        Rectangle r = v;
+                        t.setCanvasSize(r);
+                    }
+                ),
+                "rect", sol::property(
+                    &TextureContainer::getRectangle, 
+                    [](Amara::TextureContainer& t, sol::object v) {
+                        Rectangle r = v;
+                        t.stretchTo(r);
+                    }
+                ),
+                "size", sol::property(
+                    [](Amara::TextureContainer& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.width, t.height); },
+                    [](Amara::TextureContainer& t, sol::object v) {
+                        Rectangle r = v;
+                        t.resize(r);
+                    }
+                ),
+                "resize", sol::property(
+                    [](TextureContainer& t, sol::object v) {
+                        Rectangle r = v;
+                        t.resize(r);
+                    }
+                ),
+                "stretchTo", sol::property(
+                    [](TextureContainer& t, sol::object v) {
+                        Rectangle r = v;
+                        t.stretchTo(r);
+                    }
+                ),
+                "fitWithin", sol::property(
+                    [](TextureContainer& t, sol::object v) {
+                        Rectangle r = v;
+                        t.fitWithin(r);
+                    }
+                ),
                 "center", sol::property(&TextureContainer::getCenter),
                 "cropLeft", &TextureContainer::cropLeft,
                 "cropRight", &TextureContainer::cropRight,

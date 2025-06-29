@@ -46,6 +46,12 @@ namespace Amara {
             image = nullptr;
             spritesheet = nullptr;
 
+            textureWidth = 0;
+            textureHeight = 0;
+
+            frameWidth = 0;
+            frameHeight = 0;
+
             if (destroyed) return false;
 
             if (!gameProps->assets->has(key)) {
@@ -368,9 +374,18 @@ namespace Amara {
                 "h", sol::property(&Sprite::getHeight),
                 "width", sol::property(&Sprite::getWidth, &Sprite::setWidth),
                 "height", sol::property(&Sprite::getHeight, &Sprite::setHeight),
-                "rect", sol::property(&Sprite::getRectangle, &Sprite::stretchTo),
-                "stretchTo", &Sprite::stretchTo,
-                "fitWithin", &Sprite::fitWithin,
+                "rect", sol::property(&Sprite::getRectangle, [](Amara::Sprite& t, sol::object v) {
+                    Rectangle r = v;
+                    t.stretchTo(r);
+                }),
+                "stretchTo", [](Amara::Sprite& t, sol::object v) {
+                    Rectangle r = v;
+                    t.stretchTo(r);
+                },
+                "fitWithin", [](Amara::Sprite& t, sol::object v) {
+                    Rectangle r = v;
+                    t.fitWithin(r);
+                },
                 "center", sol::property(&Sprite::getCenter)
             );
         }
