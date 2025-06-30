@@ -11,8 +11,13 @@ Built in C++ using SDL3.
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
 
 ## Philosophy
-This is a game engine for people who dislike game engine GUIs. Get the benefits of an easy to use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
-All your core necessities sit on top of your desktop, so you can use whichever tools you want without having to switch out of the engine. Over time I want this program to tie in with all your favorite game dev tools, easy access to everything you need.
+This is a game engine for people who dislike game engine GUIs. 
+
+Get the benefits of an easy to use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
+
+All your core necessities sit on top of your desktop, so you can use whichever tools you want without having to switch out of the engine. 
+
+Over time I want this program to tie in with all your favorite game dev tools, easy access to everything you need.
 
 ![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
 
