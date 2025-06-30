@@ -167,3 +167,11 @@ Here is a compehensive list of what nodes are available:
 - *Transition* : Base node used to create your own transition between scenes.
 - *FillTransition* : Used to fade in and out between scenes.
 - *World* : The big node used to contain the game and manage the window.
+
+## Global Objects
+There are some important global objects to know when using Amara2.
+- *Creator* : Used to create new worlds.
+- *Game* : Manage various aspects of the game such as FPS.
+- *System* : For interacting with the system (e.g. reading and writing files).
+- *Nodes* : Used to load and define custom nodes.
+- *Scripts* : Used for loading and running lua scripts.
