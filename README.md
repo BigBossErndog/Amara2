@@ -41,6 +41,8 @@ local mySprite
 
 return Nodes:Create("MyScene", "Scene", {
     onPreload = function(self)
+        -- General rule of thumb, call a function with a color (: passes itself as first argument).
+
         -- Loading a font of size 10
         self.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
 
