@@ -15,6 +15,51 @@ Built in C++ using SDL3.
 - Code Editors such as VS Code, Atom, Sublime.
 - Tiled .tmx file support.
 
+## Node System
+Amara2 defines every entity in the game as nodes, which exist in a tree starting with your World. Extend existing nodes and add nodes as children to other nodes in this easy-to-use modular system.
+Here is an example of how you would write a scene in Amara2:
+*lua_scripts/MyScene.lua*
+```
+local mySprite
+
+return Nodes:Create("MyScene", "Scene", {
+    onPreload = function(self)
+        # Loading a font of size 10
+        self.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
+
+        # Loading a spritesheet with frame of size 32 x 32 px.
+        self.load:spritesheet("mySpritesheet", "spritesheets/mySpritesheet.png", 32, 32) 
+        
+        self.animations:add({
+            key = "waveHello",
+            texture = "mySpritesheet",
+            frameRate = 12,
+            frames = { 0, 1, 2 },
+            loop = true
+        })
+    end,
+    
+    onCreate = function(self)
+        self:createChild("Text", {
+            x = 0, y = -100,
+            font = "defaultFont",
+            text = "Hello!"
+        })
+
+        mySprite = self:createChild("Sprite", {
+            x = 0, y = 0, # (0, 0) is the center of the screen/view.
+            texture = "mySpritesheet"
+        })
+    end,
+
+    onUpdate = function(self, deltaTime)
+        if Keyboard:justPressed(Key.Space) then
+            mySprite:play("waveHello")
+        end
+    end
+})
+```
+
 ## Setup
 ### Windows
 Download the windows zip file from the latest release:
@@ -35,7 +80,7 @@ When you run the installer, select "Desktop development with C++".
 
 Once installation is completed, you are ready to use Amara2.
 
-## Nodes
+## List Of Nodes
 Here is a compehensive list of what nodes are available:
 - Node : The base node object.
 - Group : A copy of Node for use of grouping Nodes as one entity.
