@@ -165,7 +165,7 @@ Here is a compehensive list of what nodes are available:
 - *Audio* : A node used to manage the playing of an audio.
 - *AudioPool* : If a sound is supposed to be layered, or a different sound to be played each time then use an AudioPool.
 - *AudioGroup* : Used to group audio. Also used to manage the volume of a collection of audio.
-- *AudioMaster* : The root audio node used by the World class. Add your audio nodes as a child to world.audio.
+- *AudioMaster* : The root audio node used by the World class. Add your audio nodes as a child to node.audio (accessible from any node).
 - *Transition* : Base node used to create your own transition between scenes.
 - *FillTransition* : Used to fade in and out between scenes.
 - *World* : The big node used to contain the game and manage the window.
