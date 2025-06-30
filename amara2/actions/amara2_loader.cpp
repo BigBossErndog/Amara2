@@ -22,7 +22,10 @@ namespace Amara {
         std::vector<LoadTask> tasks;
 
         int loadRate = 0;
+        int totalTasks = 0;
         int maxFailAttempts = 1;
+
+        double loadProgress = 0.0;
         
         bool replaceExisting = true;
 
@@ -188,13 +191,16 @@ namespace Amara {
             queueTask(task);
             return get_lua_object();
         }
-
+        
         void queueTask(const LoadTask& task) {
             if (loadRate > 0) tasks.push_back(task);
             else processTask(task);
         }
         
         virtual void act(double deltaTime) override {
+            if (!hasStarted) {
+                totalTasks = tasks.size();
+            }
             Amara::Action::act(deltaTime);
 
             if (hasStarted) {
@@ -225,6 +231,7 @@ namespace Amara {
                         break;
                     }
                 }
+                loadProgress = (double)(totalTasks - tasks.size()) / (double)totalTasks;
             }
             if (tasks.size() == 0) complete();
         }
@@ -252,7 +259,9 @@ namespace Amara {
                 "audio", &Loader::audio,
                 "custom", &Loader::custom,
                 "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
-                "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; })
+                "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; }),
+                "loadProgress", sol::readonly(&Loader::loadProgress),
+                "totalTasks", sol::readonly(&Loader::totalTasks)
             );
             
             sol::usertype<Node> node_type = lua["Node"];

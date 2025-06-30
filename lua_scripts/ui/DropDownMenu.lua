@@ -43,13 +43,17 @@ return Nodes:create("DropDownMenu", "FillRect", {
     end,
 
     createOptions = function(self, options)
+        self.props.menuOptions = {}
+        if self.props.menu then
+            self.props.menu:destroy()
+            self.props.menu = nil
+        end
+
         if options and #options > 0 then
             self.props.menu = self:createChild("Group", {
                 y = self.height + 2,
                 visible = false
             })
-
-            self.props.menuOptions = {}
 
             local optHeight = 16
 
@@ -92,7 +96,7 @@ return Nodes:create("DropDownMenu", "FillRect", {
 
                     self.props.dropIcon.frame = 8
                 end)
-
+                
                 table.insert(self.props.menuOptions, txt)
             end
 

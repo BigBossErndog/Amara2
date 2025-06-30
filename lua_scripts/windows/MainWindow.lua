@@ -4,6 +4,8 @@ return Nodes:create("MainWindow", "UIWindow", {
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
+        local settings = self.world.func:getSettings()
+
         local title = self.props.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
@@ -87,7 +89,7 @@ return Nodes:create("MainWindow", "UIWindow", {
 
         local editorTitle = self.props.content:createChild("Text", {
             x = title.x,
-            y = backer.y + backer.height + 4,
+            y = backer.y + backer.height + 6,
             origin = 0,
             font = "defaultFont",
             color = Colors.White,
@@ -96,7 +98,7 @@ return Nodes:create("MainWindow", "UIWindow", {
 
         local editorMenu = self.props.content:createChild("DropDownMenu", {
             x = backer.x,
-            y = editorTitle.y + editorTitle.height + 4,
+            y = editorTitle.y + editorTitle.height + 6,
             width = backer.width,
             defaultText = Localize:get("label_noCodeEditorAvailable"),
             onSelect = function(menu, opt)
@@ -105,6 +107,20 @@ return Nodes:create("MainWindow", "UIWindow", {
             end
         })
         self.props.editorMenu = editorMenu
+        self.func:loadCodeEditors()
+
+        local refreshButton = self.props.content:createChild("UIButton", {
+            id = "refreshEditorsButton",
+            toolTip = "toolTip_refreshCodeEditors",
+            x = editorTitle.x + editorTitle.width + 4,
+            icon = 17,
+            onPress = function()
+                local settings = self.world.func:getSettings()
+                settings.codeEditorList = nil
+                self.world.func:loadCodeEditors()
+            end
+        })
+        refreshButton.y = editorMenu.y - refreshButton.height - 2
 
         local tickBox = self.props.content:createChild("Sprite", {
             origin = { 1, 0 },
@@ -128,12 +144,6 @@ return Nodes:create("MainWindow", "UIWindow", {
             color = Colors.White,
             text = Localize:get("label_autoOpenCodeEditor")
         })
-
-        self.func:loadCodeEditors()
-
-        if settings.codeEditor then
-            editorMenu.func:select(settings.codeEditor)
-        end
 
         local buttonPos = self.props.targetWidth - 22
         local buttonSpacing = 20
@@ -228,10 +238,15 @@ return Nodes:create("MainWindow", "UIWindow", {
     end,
 
     loadCodeEditors = function(self)
-        local editors = self.world.props.editors
+        local settings = self.world.func:getSettings()
+        local editors = self.world.func:getCodeEditors()
 
         if editors then
             self.props.editorMenu.func:createOptions(editors)
+        end
+
+        if settings.codeEditor then
+            self.props.editorMenu.func:select(settings.codeEditor)
         end
     end
 })

@@ -45,16 +45,12 @@ return Creator:createWorld({
 
         Localize:registerJSON(System:readJSON("data/localization/keywords.json"))
         world.windowTitle = Localize:get("title_windowTitle")
-
-        world.func:loadCodeEditors()
     end,
 
     onCreate = function(world)
         local props = world.props;
 
         world.func:fixSettings()
-
-        world.func:checkBuildTools()
 
         props.windowShadows = world:createChild("TextureContainer", {
             alpha = 0.5,
@@ -212,13 +208,20 @@ return Creator:createWorld({
         end
 
         if #editors > 0 then
-            self.props.editors = editors
+            settings.codeEditorList = editors
         else
-            self.props.editors = nil
+            settings.codeEditorList = nil
         end
 
-
         self.func:saveSettings()
+    end,
+
+    getCodeEditors = function(self)
+        local settings = self.func:getSettings()
+        if not settings.codeEditorList then
+            self.func:loadCodeEditors()
+        end
+        return settings.codeEditorList
     end,
 
     checkBuildTools = function(self)

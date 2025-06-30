@@ -21,6 +21,7 @@
 
     "toolTip_openProjectDirectory": "Open Project Directory (Ctrl + Alt + P)",
 
+    "toolTip_refreshCodeEditors": "Refresh Code Editors",
     "toolTip_noCodeEditor": "No Code Editor Available",
     "toolTip_openInVSCode": "Open In Visual Studio Code (Ctrl + Alt + E)",
     "toolTip_openInVSCodeInsiders": "Open In Visual Studio Code Insiders (Ctrl + Alt + E)",

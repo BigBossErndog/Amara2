@@ -13,27 +13,23 @@ namespace Amara {
             set_base_node_id("PhysicsBody");
         }
 
-        virtual sol::object luaConfigure(sol::object config) override {
-            Amara::Action::luaConfigure(config);
-            if (config.is<sol::table>()) {
-                sol::table table = config.as<sol::table>();
-                if (table["velocity"].valid()) {
-                    velocity = table["velocity"].as<Vector2>();
-                }
-                if (table["rec_position"].valid()) {
-                    rec_position = table["rec_position"].as<Vector2>();
-                }
-                if (table["space"].valid()) {
-                    sol::object spaceObj = table["space"];
-                    if (spaceObj.is<Amara::PhysicsSpace>()) {
-                        spaceNode = spaceObj.as<Amara::PhysicsSpace*>();
-                        if (spaceNode && spaceNode->space) {
-                            spaceNode->addBody(this);
-                        }
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            if (json_has(config, "velocity")) {
+                velocity = config["velocity"];
+            }
+            return Amara::Action::configure(config);
+        }
+
+        virtual sol::object luaConfigure(std::string key, sol::object val) override {
+            if (String::equal(key, "space")) {
+                if (val.is<Amara::PhysicsSpace>()) {
+                    spaceNode = val.as<Amara::PhysicsSpace*>();
+                    if (spaceNode && spaceNode->space) {
+                        spaceNode->addBody(this);
                     }
                 }
             }
-            return get_lua_object();
+            return Amara::Action::luaConfigure(key, val);
         }
 
         virtual void prepare() override {
