@@ -99,6 +99,14 @@ return Nodes:define("MyScene", "Scene", { -- define MyScene from already existin
     end
 })
 ```
+You would then load it in within your *index.lua* or another script file via the following.
+```lua
+Nodes:load("MyScene", "MyScene.lua") -- searches for MyScene.lua in the foler "lua_scripts"
+
+-- Additionally, you can omit ".lua" to search for either ".lua" or a compiled ".luac".
+-- Handy for later when you are able to compile your lua scripts.
+Nodes:load("MyScene", "MyScene") -- Searches for MyScene.lua or MyScene.luac
+```
 
 ## Documentation
 *TODO*
