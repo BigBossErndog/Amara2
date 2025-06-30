@@ -47,9 +47,16 @@ return Nodes:Create("MyScene", "Scene", {
             text = "Hello!"
         })
 
+        # Sprite that will play the "waveHello" animation if clicked or the space key is pressed.
         mySprite = self:createChild("Sprite", {
             x = 0, y = 0, # (0, 0) is the center of the screen/view.
-            texture = "mySpritesheet"
+            texture = "mySpritesheet",
+            input = {
+                active = true,
+                onMouseDown = function(self)
+                    self:play("waveHello")
+                end
+            }
         })
     end,
 
