@@ -19,7 +19,7 @@ Built in C++ using SDL3.
 Amara2 defines every entity in the game as nodes, which exist in a tree starting with your World. Extend existing nodes and add nodes as children to other nodes in this easy-to-use modular system.
 Here is an example of how you would write a scene in Amara2:
 *lua_scripts/MyScene.lua*
-```
+```lua
 local mySprite
 
 return Nodes:Create("MyScene", "Scene", {
