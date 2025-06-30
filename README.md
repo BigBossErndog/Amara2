@@ -40,10 +40,12 @@ Example file: "*lua_scripts/MyScene.lua*"
 local mySprite
 
 return Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node Scene
+    -- Three main functions of a node: onPreload, onCreate and onUpdate
+    
     onPreload = function(self)
-        -- General rule of thumb, call a function with a color (: passes itself as first argument).
 
         -- Loading a font of size 10
+        -- General rule of thumb, call a function with a colon.
         self.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
 
         -- Loading a spritesheet with frame of size 32 x 32 px.
