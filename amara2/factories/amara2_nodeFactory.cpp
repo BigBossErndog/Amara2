@@ -230,6 +230,9 @@ namespace Amara {
             
             registerNode<Amara::PathFinder>("PathFinder");
 
+            registerNode<Amara::PhysicsSpace>("PhysicsSpace");
+            registerNode<Amara::PhysicsBody>("PhysicsBody");
+
             registerNode<Amara::Audio>("Audio");
             registerNode<Amara::AudioPool>("AudioPool");
             registerNode<Amara::AudioGroup>("AudioGroup");
@@ -292,6 +295,9 @@ namespace Amara {
             Amara::NineSlice::bind_lua(lua);
 
             Amara::PathFinder::bind_lua(lua);
+
+            Amara::PhysicsSpace::bind_lua(lua);
+            Amara::PhysicsBody::bind_lua(lua);
             
             Amara::Audio::bind_lua(lua);
             Amara::AudioPool::bind_lua(lua);

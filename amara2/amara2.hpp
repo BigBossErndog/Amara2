@@ -229,6 +229,9 @@
 
     #include "nodes/amara2_pathFinder.cpp"
 
+    #include "physics/amara2_physicsSpace.cpp"
+    #include "physics/amara2_physicsBody.cpp"
+
     #include "audio/amara2_audio.cpp"
     #include "audio/amara2_audiogroup.cpp"
     #include "audio/amara2_audioPool.cpp"
