@@ -26,10 +26,10 @@ local mySprite
 
 return Nodes:Create("MyScene", "Scene", {
     onPreload = function(self)
-        # Loading a font of size 10
+        -- Loading a font of size 10
         self.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
 
-        # Loading a spritesheet with frame of size 32 x 32 px.
+        -- Loading a spritesheet with frame of size 32 x 32 px.
         self.load:spritesheet("mySpritesheet", "spritesheets/mySpritesheet.png", 32, 32) 
         
         self.animations:add({
@@ -48,7 +48,7 @@ return Nodes:Create("MyScene", "Scene", {
             text = "Hello!"
         })
 
-        # Sprite that will play the "waveHello" animation if clicked or the space key is pressed.
+        -- Sprite that will play the "waveHello" animation if clicked or the space key is pressed.
         mySprite = self:createChild("Sprite", {
             x = 0, y = 0, # (0, 0) is the center of the screen/view.
             texture = "mySpritesheet",
