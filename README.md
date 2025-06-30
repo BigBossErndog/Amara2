@@ -19,7 +19,7 @@ This is a game engine for people who dislike game engine GUIs.
 
 Get the benefits of an easy to use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
 
-All your core necessities sit on top of your desktop, so you can use whichever tools you want without having to switch out of the engine. 
+All your core necessities sit in small windows on top of your desktop over the program you're currently using, so you can use whichever tools you want without having to switch out of the engine. 
 
 Over time I want this program to tie in with all your favorite game dev tools, easy access to everything you need.
 
