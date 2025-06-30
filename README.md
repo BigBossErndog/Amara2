@@ -29,6 +29,7 @@ Over time I want this program to tie in with all your favorite game dev tools, e
 ## Supported Tools
 - Code Editors such as VS Code, Atom, Sublime.
 - Tiled .tmx file support.
+  
 *More will be supported along the way.*
 
 ## Node System
