@@ -34,6 +34,8 @@ void EnsureStandardHandles() {
 #endif
 
 int main(int argc, char** argv) {
+    Amara::debug_log("Chipmunk: ", cpVersionString);
+
     #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
     EnsureStandardHandles();
     #endif

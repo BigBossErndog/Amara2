@@ -89,6 +89,8 @@
         #include <portable-file-dialogs.h>
     #endif
 
+    #include <chipmunk/chipmunk.h>
+
     #define LUA_IMPLEMENTATION
     #define SOL_ALL_SAFETIES_ON 1
     

@@ -26,7 +26,6 @@ return Nodes:create("BuildNode", "ProcessNode", {
             local buildDir = System:join(self.props.projectPath, "build", "windows")
             local clangLLVMPath = System:getRelativePath("resources/clang-llvm")
             local sdl3Path = System:getRelativePath("resources/libs/SDL3-3.2.16")
-            local tinyxml2Path = System:getRelativePath("resources/libs/tinyxml2")
             local nlohmannPath = System:getRelativePath("resources/libs/nlohmann/include")
             local murmurhash3Path = System:getRelativePath("resources/libs/murmurhash3")
             local luaPath = System:getRelativePath("resources/libs/lua")
@@ -35,7 +34,9 @@ return Nodes:create("BuildNode", "ProcessNode", {
             local glmPath = System:getRelativePath("resources/libs/glm")
             local minimp3Path = System:getRelativePath("resources/libs/minimp3")
             local pfdPath = System:getRelativePath("resources/libs/portable-file-dialogs")
-
+            local tinyxml2Path = System:getRelativePath("resources/libs/tinyxml2")
+            local chipmunkPath = System:getRelativePath("resources/libs/Chipmunk2D_build")
+            
             -- Clean and create build directory as per Makefile
             if System:exists(buildDir) then
                 System:remove(buildDir)
@@ -82,8 +83,7 @@ return Nodes:create("BuildNode", "ProcessNode", {
             end
 
             -- OTHER_LIB_LINKS
-            table.insert(args, "-L" .. System:join(tinyxml2Path, "lib/win"))
-            table.insert(args, System:join(tinyxml2Path, "lib/win/libtinyxml2.a"))
+            table.insert(args, System:join(chipmunkPath, "win/chipmunk.lib"))
 
             -- OTHER_LIB_PATHS
             table.insert(args, "-Isrc")
@@ -96,6 +96,8 @@ return Nodes:create("BuildNode", "ProcessNode", {
             table.insert(args, "-I" .. System:join(tinyxml2Path, "include"))
             table.insert(args, "-I" .. minimp3Path)
             table.insert(args, "-I" .. pfdPath)
+            table.insert(args, "-I" .. tinyxml2Path)
+            table.insert(args, "-I" .. System:join(chipmunkPath, "include"))
 
             -- SDL_PATHS_WIN64
             table.insert(args, "-I" .. System:join(sdl3Path, "include"))
@@ -105,6 +107,7 @@ return Nodes:create("BuildNode", "ProcessNode", {
             table.insert(args, "-w")
             table.insert(args, "-m64")
             table.insert(args, "-Wl,/SUBSYSTEM:WINDOWS")
+            table.insert(args, "-Wl,/NOIMPLIB")
             table.insert(args, "-std=c++17")
 
             -- EXTRA_OPTIONS
