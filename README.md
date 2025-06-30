@@ -1,5 +1,7 @@
 # Amara2
-A light-weight C++ SDL3 2D game engine with Lua scripting.
+A light-weight 2D game engine with Lua scripting.
+Built in C++ using SDL3.
+
 *Note: Amara2 is currently only available for Windows only.*
 
 ### Features
