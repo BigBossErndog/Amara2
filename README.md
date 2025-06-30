@@ -87,7 +87,7 @@ Once installation is completed, you are ready to use Amara2.
 ## List Of Nodes
 Here is a compehensive list of what nodes are available:
 - *Node* : The base node object.
-- *Group* : A copy of Node for use of grouping Nodes as one entity.
+- *Group* : Used to grouping Nodes as one entity (by creating them as children of the Group).
 - *CopyNode* : Used to re-render a node in another location.
 - *NodePool* : Used to pool nodes for reuse.
 - *Text* : Used to render text from a ttf.
