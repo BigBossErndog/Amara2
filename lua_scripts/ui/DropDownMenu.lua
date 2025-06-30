@@ -3,11 +3,19 @@ return Nodes:create("DropDownMenu", "FillRect", {
     height = 16,
     origin = 0,
     color = "#111d27",
-    input = true,
     
     props = {
         defaultText = Localize:get("label_empty"),
         inputEnabled = true
+    },
+
+    input = {
+        active = true,
+        onPointerDown = function(self, pointer)
+            if self.props.inputEnabled then
+                self.func:openMenu()
+            end
+        end
     },
 
     onConfigure = function(self, config)
@@ -36,10 +44,6 @@ return Nodes:create("DropDownMenu", "FillRect", {
         if self.props.options then
             self.func:createOptions(self.props.options)
         end
-
-        self.input:listen("onPointerDown", function(self)
-            self.func:openMenu()
-        end)
     end,
 
     createOptions = function(self, options)
@@ -48,7 +52,7 @@ return Nodes:create("DropDownMenu", "FillRect", {
             self.props.menu:destroy()
             self.props.menu = nil
         end
-        
+
         if options and #options > 0 then
             self.props.menu = self:createChild("Group", {
                 y = self.height + 2,

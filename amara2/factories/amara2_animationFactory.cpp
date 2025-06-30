@@ -125,7 +125,7 @@ namespace Amara {
             if (json_has(config, "yoyo")) {
                 anim.yoyo = config["yoyo"];
             }
-
+            
             if (textureMap.find(textureKey) == textureMap.end()) textureMap[textureKey] = TextureAnimations();
             TextureAnimations& texAnims = textureMap[textureKey];
             texAnims.animations[animKey] = anim;

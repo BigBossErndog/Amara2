@@ -2,25 +2,29 @@ return Nodes:create("UIButton", "NineSlice", {
     texture = "uiButton",
     width = 16, height = 18,
     origin = 0,
-    input = true,
 
-    onCreate = function(self)
-        self.props.enabled = true
-
-        self.input:listen("onPointerDown", function(self, pointer)
-            self.frame = 1
-        end)
-        self.input:listen("onPointerUp", function(self, pointer)
+    input = {
+        active = true,
+        onPointerDown = function(self, pointer)
+            if self.props.enabled then
+                self.frame = 1
+            end
+        end,
+        onPointerUp = function(self, pointer)
             self.frame = 0
             if self.props.enabled and self.func.onPress then
                 self.func:onPress()
             end
-        end)
-        self.input:listen("onPointerExit", function(self, pointer)
+        end,
+        onPointerExit = function(self, pointer)
             self.frame = 0
-        end)
-    end,
+        end
+    },
 
+    onCreate = function(self)
+        self.props.enabled = true
+    end,
+    
     onConfigure = function(self, config)
         if config.icon then
             if not self.props.icon then

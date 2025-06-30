@@ -11,8 +11,7 @@ return Nodes:create("MainWindow", "UIWindow", {
             font = "defaultFont",
             text = Localize:get("title_recentProjects"),
             color = "#f0f6ff",
-            origin = 0,
-            input = true
+            origin = 0
         })
 
        local backer = self.props.content:createChild("FillRect", {
@@ -44,29 +43,31 @@ return Nodes:create("MainWindow", "UIWindow", {
                         height = spacing - 2,
                         color = "#111d27",
                         origin = 0,
-                        input = true,
                         props = {
                             projectPath = projectPath
+                        },
+                        input = {
+                            active = true,
+                            onPointerHover = function(self, pointer)
+                                self.color = "#333e4d"
+                            end,
+                            onPointerExit = function(self, pointer)
+                                self.color = "#111d27"
+                            end,
+                            onPointerUp = function(self, pointer)
+                                self.input:deactivate()
+                                window.func:closeWindow(function()
+                                    local newWindow = window.parent:createChild("ProjectWindow", {
+                                        projectPath = self.props.projectPath
+                                    })
+                                    newWindow.func:openWindow()
+                                    newWindow.func:openDefault()
+                                    
+                                    window:destroy()
+                                end)
+                            end
                         }
                     })
-                    optBacker.input:listen("onPointerHover", function(self)
-                        self.color = "#333e4d"
-                    end)
-                    optBacker.input:listen("onPointerExit", function(self)
-                        self.color = "#111d27"
-                    end)
-                    optBacker.input:listen("onPointerUp", function(self)
-                        self.input:deactivate()
-                        window.func:closeWindow(function()
-                            local newWindow = window.parent:createChild("ProjectWindow", {
-                                projectPath = self.props.projectPath
-                            })
-                            newWindow.func:openWindow()
-                            newWindow.func:openDefault()
-                            
-                            window:destroy()
-                        end)
-                    end)
 
                     local txt = self.props.content:createChild("Text", {
                         text = projectName,
@@ -122,19 +123,22 @@ return Nodes:create("MainWindow", "UIWindow", {
         })
         refreshButton.y = editorMenu.y - refreshButton.height - 2
 
-        local tickBox = self.props.content:createChild("Sprite", {
+        local tickBox
+        tickBox = self.props.content:createChild("Sprite", {
             origin = { 1, 0 },
             x = backer.x + backer.width,
             y = editorTitle.y + 2,
-            input = true,
             frame = settings.autoOpenCodeEditor and 1 or 0,
-            texture = "tickBox"
+            texture = "tickBox",
+            input = {
+                active = true,
+                onPointerDown = function()
+                    settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
+                    tickBox.frame = settings.autoOpenCodeEditor and 1 or 0
+                    self.world.func:saveSettings()
+                end
+            }
         })
-        tickBox.input:listen("onPointerDown", function()
-            settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
-            tickBox.frame = settings.autoOpenCodeEditor and 1 or 0
-            self.world.func:saveSettings()
-        end)
 
         local autoOpenTitle = self.props.content:createChild("Text", {
             x = tickBox.x - tickBox.width - 2,
@@ -142,7 +146,15 @@ return Nodes:create("MainWindow", "UIWindow", {
             origin = { 1, 0 },
             font = "defaultFont",
             color = Colors.White,
-            text = Localize:get("label_autoOpenCodeEditor")
+            text = Localize:get("label_autoOpenCodeEditor"),
+            input = {
+                active = true,
+                onPointerDown = function()
+                    settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
+                    tickBox.frame = settings.autoOpenCodeEditor and 1 or 0
+                    self.world.func:saveSettings()
+                end
+            }
         })
 
         local buttonPos = self.props.targetWidth - 22

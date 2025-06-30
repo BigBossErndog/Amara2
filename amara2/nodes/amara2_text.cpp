@@ -277,8 +277,8 @@ namespace Amara {
             float diag_distance;
 
             Rectangle dim = {
-                anchoredPos.x + (textWidth*origin.x)*scale.x*passOn.scale.x, 
-                anchoredPos.y - anchoredPos.z + (textHeight*origin.y)*scale.y*passOn.scale.y,
+                anchoredPos.x + (-textWidth*origin.x)*scale.x*passOn.scale.x, 
+                anchoredPos.y - anchoredPos.z + (-textHeight*origin.y)*scale.y*passOn.scale.y,
                 textWidth*scale.x*passOn.scale.x,
                 textHeight*scale.y*passOn.scale.y
             };
