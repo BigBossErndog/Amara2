@@ -191,7 +191,7 @@ namespace Amara {
             queueTask(task);
             return get_lua_object();
         }
-        
+
         void queueTask(const LoadTask& task) {
             if (loadRate > 0) tasks.push_back(task);
             else processTask(task);
@@ -232,9 +232,17 @@ namespace Amara {
                     }
                 }
                 loadProgress = (double)(totalTasks - tasks.size()) / (double)totalTasks;
+                if (funcs.hasFunction("onLoadProgress")) {
+                    funcs.callFunction(actor, "onLoadProgress", loadProgress);
+                }
             }
             if (tasks.size() == 0) complete();
         }
+
+        void onLoadProgress(sol::function callback) {
+            funcs.setFunction(nodeID, "onLoadProgress", callback);
+        } 
+        
 
         virtual sol::object complete() override {
             if (parent && parent->loader == this) {
@@ -261,7 +269,8 @@ namespace Amara {
                 "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
                 "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; }),
                 "loadProgress", sol::readonly(&Loader::loadProgress),
-                "totalTasks", sol::readonly(&Loader::totalTasks)
+                "totalTasks", sol::readonly(&Loader::totalTasks),
+                "onLoadProgress", &Loader::onLoadProgress
             );
             
             sol::usertype<Node> node_type = lua["Node"];
