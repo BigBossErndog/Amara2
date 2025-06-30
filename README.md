@@ -67,7 +67,7 @@ return Nodes:Create("MyScene", "Scene", {
         })
         
         mySprite = self:createChild("Sprite", {
-            x = 0, y = 0, # (0, 0) is the center of the screen/view.
+            x = 0, y = 0, -- (0, 0) is the center of the screen / view.
             texture = "mySpritesheet",
             input = {
                 active = true,
