@@ -59,7 +59,7 @@ return Nodes:Create("MyScene", "Scene", {
     end,
     
     onCreate = function(self)
-        self:createChild("Text", {
+        self:createChild("Text", { -- pass a definition table to setup a node
             x = 0, y = -100,
             font = "defaultFont",
             text = "Hello!",
@@ -76,7 +76,8 @@ return Nodes:Create("MyScene", "Scene", {
                     self.func:jump()
                 end
             },
-            -- custom function
+
+            -- Add functions to definition table to create custom functions
             jump = function(self)
                 self.y = 0
                 self.tween:to({
