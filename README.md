@@ -45,7 +45,8 @@ return Nodes:Create("MyScene", "Scene", {
         self:createChild("Text", {
             x = 0, y = -100,
             font = "defaultFont",
-            text = "Hello!"
+            text = "Hello!",
+            color = Color.Green
         })
 
         -- Sprite that will play the "waveHello" animation if clicked or the space key is pressed.
