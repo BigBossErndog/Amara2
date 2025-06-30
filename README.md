@@ -4,14 +4,20 @@ Built in C++ using SDL3.
 
 *Note: Amara2 is currently only available for Windows only.*
 
-### Features
-- Setting up a new project is easy as heck.
-- Go from downloading Amara2, creating a project and running a test of your game in a matter of seconds.
+## Features
+- Setting up a new project and running a test is easy as heck.
 - Game architecture inspired by my favorite elements of the Phaser framework and the Godot Engine.
-- Code-focused game engine that attempts to unify all existing tools a game developer may use into a cohesive experience.
+- Minimal GUI. Get the necessities while making your commonly used tools more cohesive.
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
 
-### Supported Tools
+## Philosophy
+This is a game engine for people who dislike game engine GUIs. Get the benefits of an easy to use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
+All your core necessities sit on top of your desktop, so you can use whichever tools you want without having to switch out of the engine. Over time I want this program to tie in with all your favorite game dev tools, easy access to everything you need.
+
+![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
+
+
+## Supported Tools
 - Code Editors such as VS Code, Atom, Sublime.
 - Tiled .tmx file support.
 
