@@ -29,6 +29,7 @@ Over time I want this program to tie in with all your favorite game dev tools, e
 ## Supported Tools
 - Code Editors such as VS Code, Atom, Sublime.
 - Tiled .tmx file support.
+*More will be supported along the way.*
 
 ## Node System
 Amara2 defines every entity in the game as nodes, all of which exist in a tree starting with your World. Extend existing nodes and add nodes as children to other nodes in this easy-to-use modular system. And define them all with easy to read Lua tables!
