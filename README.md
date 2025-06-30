@@ -20,7 +20,7 @@ Amara2 defines every entity in the game as nodes, all of which exist in a tree s
 
 Here is an example of how you would write a scene in Amara2:
 
-Example file: *lua_scripts/MyScene.lua*
+Example file: "*lua_scripts/MyScene.lua*"
 ```lua
 local mySprite
 
