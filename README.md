@@ -17,7 +17,7 @@ https://github.com/BigBossErndog/Amara2/releases
 ## Philosophy
 This is a game engine for people who dislike game engine GUIs. If you're like me, you may get overwhelmed by endless text fields and drop down menus.
 
-Get the benefits of an easy to use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
+Get the benefits of an easy-to-use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
 
 All your core necessities sit in small windows on top of your desktop over the program you're currently using, so you can use whichever tools you want without having to switch out of the engine. 
 
