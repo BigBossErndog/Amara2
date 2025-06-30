@@ -175,3 +175,6 @@ There are some important global objects to know when using Amara2.
 - *System* : For interacting with the system (e.g. reading and writing files).
 - *Nodes* : Used to load and define custom nodes.
 - *Scripts* : Used for loading and running lua scripts.
+- *Keyboard* : Used for handling keyboard input.
+- *Gamepads* : Used for handling gamepad input.
+- *Controls* : Used for creating and handling your own control schemes (e.g. define multiple inputs to the same action, or handling user-defined controls).
