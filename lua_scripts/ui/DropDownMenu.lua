@@ -105,15 +105,21 @@ return Nodes:define("DropDownMenu", "FillRect", {
             end
 
             if options and #options > 0 then
-                local dropIcon = self:createChild("Sprite", {
-                    texture = "uiIcons",
-                    origin = 0.5,
-                    frame = 8
-                })
-                dropIcon.x = self.width - dropIcon.width/2.0 - 4
-                dropIcon.y = self.height/2.0
-                
-                self.props.dropIcon = dropIcon
+                if not self.props.dropIcon then
+                    local dropIcon = self:createChild("Sprite", {
+                        texture = "uiIcons",
+                        origin = 0.5
+                    })
+                    dropIcon.x = self.width - dropIcon.width/2.0 - 4
+                    dropIcon.y = self.height/2.0
+                    
+                    self.props.dropIcon = dropIcon
+                end
+                self.props.dropIcon.frame = 8
+            else
+                if self.props.dropIcon then
+                    self.props.dropIcon.visible = false
+                end
             end
         end
     end,
