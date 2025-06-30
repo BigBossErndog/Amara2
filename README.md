@@ -39,11 +39,13 @@ Example file: "*lua_scripts/MyScene.lua*"
 ```lua
 local mySprite
 
-return Nodes:Create("MyScene", "Scene", {
+return Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node Scene
+    -- Three main functions of a node: onPreload, onCreate and onUpdate
+    
     onPreload = function(self)
-        -- General rule of thumb, call a function with a color (: passes itself as first argument).
 
         -- Loading a font of size 10
+        -- General rule of thumb, call a function with a colon.
         self.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
 
         -- Loading a spritesheet with frame of size 32 x 32 px.
@@ -96,6 +98,14 @@ return Nodes:Create("MyScene", "Scene", {
         end
     end
 })
+```
+You would then load it in within your *index.lua* or another script file via the following.
+```lua
+Nodes:load("MyScene", "MyScene.lua") -- searches for MyScene.lua in the foler "lua_scripts"
+
+-- Additionally, you can omit ".lua" to search for either ".lua" or a compiled ".luac".
+-- Handy for later when you are able to compile your lua scripts.
+Nodes:load("MyScene", "MyScene") -- Searches for MyScene.lua or MyScene.luac
 ```
 
 ## Documentation
