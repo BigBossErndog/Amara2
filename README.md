@@ -4,6 +4,10 @@ Built in C++ using SDL3.
 
 *Note: Amara2 is currently only available for Windows only.*
 
+Get the latest version from:
+
+https://github.com/BigBossErndog/Amara2/releases
+
 ## Features
 - Setting up a new project and running a test is easy as heck.
 - Game architecture inspired by my favorite elements of the Phaser framework and the Godot Engine.
