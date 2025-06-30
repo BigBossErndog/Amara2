@@ -96,7 +96,7 @@ return Nodes:define("MyScene", "Scene", { -- define MyScene from already existin
     onUpdate = function(self, deltaTime)
         -- Keyboard global object handles key input
         if Keyboard:justPressed(Key.Space) then
-            mySprite:play("waveHello")
+            mySprite:animate("waveHello")
         end
     end
 })
@@ -107,7 +107,7 @@ Nodes:load("MyScene", "MyScene.lua") -- searches for MyScene.lua in the folder "
 
 -- Additionally, you can omit ".lua" to search for either ".lua" or a compiled ".luac".
 -- Handy for later when you are able to compile your lua scripts.
-Nodes:load("MyScene", "MyScene") -- Searches for MyScene.lua or MyScene.luac
+Nodes:load("MyScene", "MyScene") -- searches for MyScene.lua or MyScene.luac
 ```
 
 ## Documentation
@@ -165,7 +165,7 @@ Here is a compehensive list of what nodes are available:
 - *Audio* : A node used to manage the playing of an audio.
 - *AudioPool* : If a sound is supposed to be layered, or a different sound to be played each time then use an AudioPool.
 - *AudioGroup* : Used to group audio. Also used to manage the volume of a collection of audio.
-- *AudioMaster* : The root audio node used by the World class. Add your audio nodes as a child to world.audio.
+- *AudioMaster* : The root audio node used by the World class. Add your audio nodes as a child to node.audio (accessible from any node).
 - *Transition* : Base node used to create your own transition between scenes.
 - *FillTransition* : Used to fade in and out between scenes.
 - *World* : The big node used to contain the game and manage the window.
