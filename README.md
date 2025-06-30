@@ -33,7 +33,7 @@ Over time I want this program to tie in with all your favorite game dev tools, e
 ## Node System
 Amara2 defines every entity in the game as nodes, all of which exist in a tree starting with your World. Extend existing nodes and add nodes as children to other nodes in this easy-to-use modular system. And define them all with easy to read Lua tables!
 
-Here is an example of how you would write a scene in Amara2:
+Here is an example of how you would write a scene in Amara2.
 
 Example file: "*lua_scripts/MyScene.lua*"
 ```lua
