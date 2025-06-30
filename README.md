@@ -39,7 +39,7 @@ Example file: "*lua_scripts/MyScene.lua*"
 ```lua
 local mySprite
 
-return Nodes:Create("MyScene", "Scene", {
+return Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node Scene
     onPreload = function(self)
         -- General rule of thumb, call a function with a color (: passes itself as first argument).
 
