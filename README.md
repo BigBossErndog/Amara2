@@ -107,7 +107,7 @@ Nodes:load("MyScene", "MyScene.lua") -- searches for MyScene.lua in the folder "
 
 -- Additionally, you can omit ".lua" to search for either ".lua" or a compiled ".luac".
 -- Handy for later when you are able to compile your lua scripts.
-Nodes:load("MyScene", "MyScene") -- Searches for MyScene.lua or MyScene.luac
+Nodes:load("MyScene", "MyScene") -- searches for MyScene.lua or MyScene.luac
 ```
 
 ## Documentation
