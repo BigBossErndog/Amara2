@@ -1,4 +1,4 @@
-return Nodes:create("MainWindow", "UIWindow", {
+return Nodes:define("MainWindow", "UIWindow", {
     width = 256,
     height = 140,
     onCreate = function(self)

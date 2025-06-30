@@ -1,4 +1,4 @@
-return Nodes:create("BuildNode", "ProcessNode", {
+return Nodes:define("BuildNode", "ProcessNode", {
     id = "buildNode",
     onConfigure = function(self, config)
         if config.projectPath and config.platform then
@@ -215,6 +215,11 @@ return Nodes:create("BuildNode", "ProcessNode", {
             self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
         else
             self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
+            if self.props.platform == "windows" then
+                if not System:VSBuildToolsInstalled() then
+                    self.props.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
+                end
+            end
         end
     end
 })

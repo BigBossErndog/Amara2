@@ -1,4 +1,4 @@
-return Nodes:create("CopyProjectWindow", "UIWindow", {
+return Nodes:define("CopyProjectWindow", "UIWindow", {
     width = 256,
     height = 120,
 

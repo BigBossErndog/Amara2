@@ -1,4 +1,4 @@
-return Nodes:create("TerminalWindow", "UIWindow", {
+return Nodes:define("TerminalWindow", "UIWindow", {
     texture = "terminalWindow",
     width = 256,
     height = 80,

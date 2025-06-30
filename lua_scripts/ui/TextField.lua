@@ -1,4 +1,4 @@
-return Nodes:create("TextField", "FillRect", {
+return Nodes:define("TextField", "FillRect", {
     width = 256,
     height = 18,
     origin = 0,

@@ -1,4 +1,4 @@
-return Nodes:create("DropDownMenu", "FillRect", {
+return Nodes:define("DropDownMenu", "FillRect", {
     width = 256,
     height = 16,
     origin = 0,

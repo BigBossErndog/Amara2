@@ -1,4 +1,4 @@
-return Nodes:create("BuildOptions", "UIWindow", {
+return Nodes:define("BuildOptions", "UIWindow", {
     width = 256,
     height = 106,
 

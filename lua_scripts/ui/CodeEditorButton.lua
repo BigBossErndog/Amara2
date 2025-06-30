@@ -1,4 +1,4 @@
-return Nodes:create("CodeEditorButton", "UIButton", {
+return Nodes:define("CodeEditorButton", "UIButton", {
     onCreate = function(self)
         local settings = self.world.func:getSettings()
         if settings.codeEditor == "codeEditor_VSCode" then

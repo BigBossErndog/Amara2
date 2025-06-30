@@ -153,7 +153,7 @@ namespace Amara {
             return node->get_lua_object();
         }
 
-        sol::object luaCreate(std::string nodeName, std::string baseName, sol::object config) {
+        sol::object defineNode(std::string nodeName, std::string baseName, sol::object config) {
             Amara::Node* node = create(baseName);
             if (!node) return sol::nil;
 
@@ -320,10 +320,8 @@ namespace Amara {
             lua.new_usertype<NodeFactory>("NodeFactory",
                 "load", &NodeFactory::load,
                 "add", &NodeFactory::add,
-                "create", sol::overload(
-                    sol::resolve<sol::object(std::string, sol::object)>(&NodeFactory::luaCreate),
-                    sol::resolve<sol::object(std::string, std::string, sol::object)>(&NodeFactory::luaCreate)
-                )
+                "create", &NodeFactory::luaCreate,
+                "define", &NodeFactory::defineNode
             );
         }
 

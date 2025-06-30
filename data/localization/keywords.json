@@ -54,7 +54,8 @@
     "error_failedToRunGame": "Error: Failed to run game.",
     "error_invalidIcon": "Error: Icon must be png, jpg, jpeg or bmp.",
     "error_invalidIconSize": "Error: Icon size must be 256 x 256 pixels.",
-
+    "error_vsBuildToolsNotFound": "Error: Visual Studio Build Tools is not installed.",
+    
     "codeEditor_VSCode": "Visual Studio Code",
     "codeEditor_CodeOSS": "Code OSS",
     "codeEditor_VSCodeInsiders": "Visual Studio Code Insiders",

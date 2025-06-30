@@ -1,8 +1,9 @@
-return Nodes:create("UIWindow", "NineSlice", {
+return Nodes:define("UIWindow", "NineSlice", {
     texture = "uiBox",
     maxWidth = 640, maxHeight = 640,
     width = 128, height = 64,
     input = true,
+    
     onCreate = function(self)
         self.props.defWidth = self.width
         self.props.defHeight = self.height
