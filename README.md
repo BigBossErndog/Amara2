@@ -89,6 +89,7 @@ return Nodes:Create("MyScene", "Scene", {
     end,
 
     onUpdate = function(self, deltaTime)
+        -- Keyboard global object handles key input
         if Keyboard:justPressed(Key.Space) then
             mySprite:play("waveHello")
         end
