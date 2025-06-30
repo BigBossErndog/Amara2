@@ -117,7 +117,7 @@ return Nodes:create("MainWindow", "UIWindow", {
             onPress = function()
                 local settings = self.world.func:getSettings()
                 settings.codeEditorList = nil
-                self.world.func:loadCodeEditors()
+                self.func:loadCodeEditors()
             end
         })
         refreshButton.y = editorMenu.y - refreshButton.height - 2
@@ -241,9 +241,7 @@ return Nodes:create("MainWindow", "UIWindow", {
         local settings = self.world.func:getSettings()
         local editors = self.world.func:getCodeEditors()
 
-        if editors then
-            self.props.editorMenu.func:createOptions(editors)
-        end
+        self.props.editorMenu.func:createOptions(editors)
 
         if settings.codeEditor then
             self.props.editorMenu.func:select(settings.codeEditor)
