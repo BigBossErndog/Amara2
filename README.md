@@ -15,7 +15,7 @@ https://github.com/BigBossErndog/Amara2/releases
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
 
 ## Philosophy
-This is a game engine for people who dislike game engine GUIs. 
+This is a game engine for people who dislike game engine GUIs. If you're like me, you may get overwhelmed by endless text fields and drop down menus.
 
 Get the benefits of an easy to use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
 
