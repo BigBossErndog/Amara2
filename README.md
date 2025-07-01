@@ -9,7 +9,9 @@ Get the latest version from:
 https://github.com/BigBossErndog/Amara2/releases
 
 ## Support Development
-I have a ko-fi available for people to make donations to. You support would be greatly appreciated!
+I have a ko-fi available for people to make donations to. 
+
+Your support would be greatly appreciated!
 
 https://ko-fi.com/ernestplacido
 
