@@ -8,6 +8,12 @@ Get the latest version from:
 
 https://github.com/BigBossErndog/Amara2/releases
 
+## Features
+- Setting up a new project and running a test is easy as heck.
+- Game architecture inspired by my favorite elements of the Phaser framework and the Godot Engine.
+- Minimal GUI. Get the necessities while making your commonly used tools more cohesive.
+- A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
+
 ![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
 
 ## Community
@@ -21,12 +27,6 @@ I have a ko-fi available for people who would like to donate.
 Your support would be greatly appreciated!
 
 https://ko-fi.com/ernestplacido
-
-## Features
-- Setting up a new project and running a test is easy as heck.
-- Game architecture inspired by my favorite elements of the Phaser framework and the Godot Engine.
-- Minimal GUI. Get the necessities while making your commonly used tools more cohesive.
-- A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
 
 ## Philosophy
 This is a game engine for people who dislike game engine GUIs. If you're like me, you may get overwhelmed by endless text fields and drop down menus.
