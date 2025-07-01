@@ -8,7 +8,12 @@ Get the latest version from:
 
 https://github.com/BigBossErndog/Amara2/releases
 
-## Support Development
+### Community
+Join the Discord community where you can ask questions, promote your work and interact with fellow users of Amara2!
+
+https://discord.gg/wEfZN8zGnT
+
+### Support Development
 I have a ko-fi available for people to make donations to. 
 
 Your support would be greatly appreciated!
