@@ -67,7 +67,7 @@ namespace Amara {
             }
         }
 
-        void addBody(Amara::PhysicsBody* body);
+        void addBody(sol::object);
         void addBody(cpBody* body) {
             if (space && body) {
                 cpSpaceAddBody(space, body);

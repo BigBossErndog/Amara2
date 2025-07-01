@@ -43,7 +43,7 @@ namespace Amara {
                 if (val.is<Amara::PhysicsSpace>()) {
                     spaceNode = val.as<Amara::PhysicsSpace*>();
                     if (spaceNode && spaceNode->space) {
-                        spaceNode->addBody(this);
+                        if (body) cpSpaceAddBody(spaceNode->space, body);
                     }
                 }
             }
@@ -187,6 +187,11 @@ namespace Amara {
             cpBodySetVelocity(body, cpv(velocity.x, velocity.y));
             rec_velocity = velocity;
 
+            if (spaceNode && spaceNode->space) {
+                cpSpaceAddBody(spaceNode->space, body);
+            }
+     
+
             processShape();
         }
         
@@ -254,6 +259,18 @@ namespace Amara {
             }
         }
 
+        void addToSpace(sol::object _obj) {
+            if (_obj.is<Amara::PhysicsSpace>()) {
+                Amara::PhysicsSpace* space = _obj.as<Amara::PhysicsSpace*>();
+                if (space && space->space) {
+                    if (body) cpSpaceAddBody(space->space, body);
+                }
+            }
+            else {
+                debug_log("Error: Expected a PhysicsSpace object.");
+            }
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::PhysicsBody>("PhysicsBody",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
@@ -262,18 +279,31 @@ namespace Amara {
                 "setFriction", &Amara::PhysicsBody::setFriction,
                 "setElasticity", &Amara::PhysicsBody::setElasticity,
                 "friction", sol::property(&Amara::PhysicsBody::friction, &Amara::PhysicsBody::setFriction),
-                "elasticity", sol::property(&Amara::PhysicsBody::elasticity, &Amara::PhysicsBody::setElasticity)
+                "elasticity", sol::property(&Amara::PhysicsBody::elasticity, &Amara::PhysicsBody::setElasticity),
+                "addToSpace", &Amara::PhysicsBody::addToSpace
             );
         }
     };
 
-    void Amara::PhysicsSpace::addBody(Amara::PhysicsBody* bodyNode) {
-        if (space && bodyNode && bodyNode->body) {
-            cpSpaceAddBody(space, bodyNode->body);
-            bodyNode->spaceNode = this;
+    void Amara::PhysicsSpace::addBody(sol::object body_obj) {
+        if (body_obj.is<Amara::PhysicsBody>()) {
+            Amara::PhysicsBody* bodyNode = body_obj.as<Amara::PhysicsBody*>();
+            if (space && bodyNode && bodyNode->body) {
+                cpSpaceAddBody(space, bodyNode->body);
+                bodyNode->spaceNode = this;
+            }
+            else {
+                debug_log("Error: Physics space or body is not initialized.");
+            }
         }
-        else {
-            debug_log("Error: Physics space or body is not initialized.");
+        else if (body_obj.is<Amara::Node>()) {
+            auto& node_children = body_obj.as<Amara::Node*>()->children; 
+            for (auto& child : node_children) {
+                if (child->is<Amara::PhysicsBody>()) {
+                    cpSpaceAddBody(space, child->as<Amara::PhysicsBody*>()->body);
+                    child->as<Amara::PhysicsBody*>()->spaceNode = this;
+                }
+            }
         }
     }
 }

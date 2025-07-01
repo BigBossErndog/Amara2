@@ -689,6 +689,11 @@ namespace Amara {
         template <typename T>
         T as();
 
+        template <typename T>
+        bool is() const {
+            return dynamic_cast<const T*>(this) != nullptr;
+        }
+
         sol::object get_lua_object();
         
         explicit operator std::string() const {
