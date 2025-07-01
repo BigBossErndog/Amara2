@@ -10,12 +10,12 @@ https://github.com/BigBossErndog/Amara2/releases
 
 ![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
 
-### Community
+## Community
 Join the Discord community where you can ask questions, promote your work and interact with fellow users of Amara2!
 
 https://discord.gg/wEfZN8zGnT
 
-### Support Development
+## Support Development
 I have a ko-fi available for people to make donations to. 
 
 Your support would be greatly appreciated!
