@@ -2,7 +2,7 @@
 A 2D game engine with Lua scripting.
 Built in C++ using SDL3.
 
-*Note: Amara2 is currently only available for Windows only.*
+*Note: Amara2 is currently available for Windows only.*
 
 Get the latest version from:
 
@@ -13,6 +13,7 @@ https://github.com/BigBossErndog/Amara2/releases
 - Game architecture inspired by my favorite elements of the Phaser framework and the Godot Engine.
 - Minimal GUI. Get the necessities while making your commonly used tools more cohesive.
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
+- Built using SDL3, so porting companies should find it simple to port to other platforms.
 
 ![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
 
@@ -24,7 +25,7 @@ https://discord.gg/wEfZN8zGnT
 ## Support Development
 I have a ko-fi available for people who would like to donate.
 
-Your support would be greatly appreciated!
+I have many plans to support more tools and more target platforms, so your support would be greatly appreciated!
 
 https://ko-fi.com/ernestplacido
 
