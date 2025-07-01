@@ -2,7 +2,7 @@
 A 2D game engine with Lua scripting.
 Built in C++ using SDL3.
 
-*Note: Amara2 is currently only available for Windows only.*
+*Note: Amara2 is currently available for Windows only.*
 
 Get the latest version from:
 
