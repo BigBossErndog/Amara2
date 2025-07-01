@@ -30,6 +30,14 @@ namespace Amara {
                         addShaderPass(s);
                     }
                 }
+                else if (passes.is_string()) {
+                    addShaderPass(passes);
+                }
+            }
+            if (json_has(config, "shaderPass")) {
+                if (config["shaderPass"].is_string()) {
+                    addShaderPass(config["shaderPass"]);
+                }
             }
             if (json_has(config, "repeats")) {
                 repeats = config["repeats"];

@@ -5,6 +5,10 @@ namespace Amara {
     public:
         cpSpace* space = nullptr;
 
+        Vector2 gravity = Vector2(0, 0);
+
+        double damping = 1;
+
         PhysicsSpace() : Amara::Node() {
             set_base_node_id("PhysicsSpace");
         }
@@ -13,11 +17,18 @@ namespace Amara {
             Amara::Node::configure(config);
             if (json_has(config, "gravity")) {
                 if (config["gravity"].is_array() && config["gravity"].size() == 2) {
-                    setGravity(config["gravity"][0].get<double>(), config["gravity"][1].get<double>());
+                    setGravity(config["gravity"][0], config["gravity"][1]);
                 }
                 else if (config["gravity"].is_number()) {
-                    setGravity(config["gravity"].get<double>());
+                    setGravity(config["gravity"]);
                 }
+                else if (config["gravity"].is_object()) {
+                    gravity = config["gravity"];
+                    setGravity(gravity.x, gravity.y);
+                }
+            }
+            if (json_has(config, "damping")) {
+                setDamping(config["damping"]);
             }
             return this;
         }
@@ -28,22 +39,32 @@ namespace Amara {
             }
             space = cpSpaceNew();
             if (!space) {
-                debug_log("Error: Failed to create Chipmunk physics space.");
+                debug_log("Error: Failed to initiate PhysicsSpace.");
                 return;
+            }
+            else {
+                setGravity(gravity.x, gravity.y);
+                setDamping(damping);
             }
         }
 
         void setGravity(double x, double y) {
+            gravity = Vector2(x, y);
+
             if (space) {
                 cpVect gravity = cpv(x, y);
                 cpSpaceSetGravity(space, gravity);
             }
-            else {
-                debug_log("Error: Physics space is not initialized.");
-            }
         }
         void setGravity(double value) {
             setGravity(0, value);
+        }
+
+        void setDamping(double value) {
+            damping = value;
+            if (space) {
+                cpSpaceSetDamping(space, value);
+            }
         }
 
         void addBody(Amara::PhysicsBody* body);
@@ -76,7 +97,10 @@ namespace Amara {
                 "setGravity", sol::overload(
                     static_cast<void (Amara::PhysicsSpace::*)(double, double)>(&Amara::PhysicsSpace::setGravity),
                     static_cast<void (Amara::PhysicsSpace::*)(double)>(&Amara::PhysicsSpace::setGravity)
-                )
+                ),
+                "gravity", sol::property(&Amara::PhysicsSpace::gravity, sol::resolve<void(double)>(&Amara::PhysicsSpace::setGravity)),
+                "setDamping", &Amara::PhysicsSpace::setDamping,
+                "damping", sol::property(&Amara::PhysicsSpace::damping, &Amara::PhysicsSpace::setDamping)
             );
         }
     };

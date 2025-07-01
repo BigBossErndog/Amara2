@@ -81,6 +81,16 @@ namespace Amara {
     std::vector<Amara::Direction> CardinalDirections = { Direction::Right, Direction::Down, Direction::Left, Direction::Up };
     std::vector<Amara::Direction> OrdinalDirections = { Direction::DownLeft, Direction::UpLeft, Direction::UpRight, Direction::DownRight };
 
+    enum class ShapeEnum {
+        None = 0,
+        Rectangle = 1,
+        Circle = 2,
+        Quad = 3,
+        Triangle = 4,
+        Polygon = 5,
+        Line = 6
+    };
+
     void bind_lua_Enums(sol::state& lua) {
         lua.new_enum("Graphics",
             "None", Amara::GraphicsEnum::None,
@@ -149,6 +159,16 @@ namespace Amara {
 
             "Right", Amara::Direction::Right,
             "East", Amara::Direction::Right
+        );
+
+        lua.new_enum("Shape",
+            "None", Amara::ShapeEnum::None,
+            "Rectangle", Amara::ShapeEnum::Rectangle,
+            "Circle", Amara::ShapeEnum::Circle,
+            "Quad", Amara::ShapeEnum::Quad,
+            "Triangle", Amara::ShapeEnum::Triangle,
+            "Polygon", Amara::ShapeEnum::Polygon,
+            "Line", Amara::ShapeEnum::Line
         );
     }
 }

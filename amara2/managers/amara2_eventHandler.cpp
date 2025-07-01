@@ -15,7 +15,7 @@ namespace Amara {
         bool backspace_held = false;
         double backspace_hold = 0.5;
         double backspace_period = 0.05;
-
+        
         EventHandler() = default;
 
         void init(Amara::GameProps* _gameProps) {

@@ -82,10 +82,12 @@ namespace Amara {
             else if (config.is_object()) {
                 if (json_has(config, "x")) x = config["x"];
                 if (json_has(config, "y")) y = config["y"];
+
                 if (json_has(config, "w")) w = config["w"];
+                else if (json_has(config, "width")) w = config["width"];
+                
                 if (json_has(config, "h")) h = config["h"];
-                if (json_has(config, "width")) w = config["width"];
-                if (json_has(config, "height")) h = config["height"];
+                else if (json_has(config, "height")) h = config["height"];
             }
             return *this;
         }
@@ -140,6 +142,58 @@ namespace Amara {
         Circle() = default;
         Circle(float x_, float y_, float r_) : Vector2(x_, y_), radius(r_) {}
         float radius = 0;
+
+        Circle(const Vector2& v) : Vector2(v.x, v.y), radius(0) {}
+        Circle(const SDL_FPoint& p) : Vector2(p.x, p.y), radius(0) {}
+        Circle(const SDL_Point& p) : Vector2(p.x, p.y), radius(0) {}
+        Circle(nlohmann::json config) {
+            *this = config;
+        }
+        Circle(sol::object obj) {
+            *this = obj;
+        }
+
+        bool operator==(const Circle& other) const {
+            return x == other.x && y == other.y && radius == other.radius;
+        }
+        bool operator !=(const Circle& other) const {
+            return x != other.x || y != other.y || radius != other.radius;
+        }
+        explicit operator std::string() const {
+            return "{ x: " + String::float_to_string(x) + ", y: " + String::float_to_string(y) + ", radius: " + String::float_to_string(radius) + " }";
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Circle& v) {
+            return os << static_cast<std::string>(v);
+        }
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"x", x},
+                {"y", y},
+                {"r", radius}
+            });
+        }
+        Circle& operator= (const nlohmann::json& config) {
+            if (config.is_array()) {
+                if (config.size() == 3) {
+                    x = config[0];
+                    y = config[1];
+                    radius = config[2];
+                }
+                else if (config.size() == 2) {
+                    x = config[0];
+                    y = config[1];
+                }
+            }
+            else if (config.is_object()) {
+                if (json_has(config, "x")) x = config["x"];
+                if (json_has(config, "y")) y = config["y"];
+                if (json_has(config, "r")) radius = config["r"];
+                else if (json_has(config, "radius")) radius = config["radius"];
+            }
+            return *this;
+        }
+        Circle& operator= (sol::object obj);
     };
     
     struct Triangle {
@@ -281,13 +335,59 @@ namespace Amara {
 
         lua.new_usertype<Quad>("Quad",
             sol::constructors<Quad(), Quad(const Rectangle&)>(),
-            "p1", &Quad::p1,
-            "p2", &Quad::p2,
-            "p3", &Quad::p3,
-            "p4", &Quad::p4,
+            "p1", sol::property(
+                [](const Quad& q) { return q.p1; },
+                [](Quad& q, sol::object v) { q.p1 = v; }
+            ),
+            "p2", sol::property(
+                [](const Quad& q) { return q.p2; },
+                [](Quad& q, sol::object v) { q.p2 = v; }
+            ),
+            "p3", sol::property(
+                [](const Quad& q) { return q.p3; },
+                [](Quad& q, sol::object v) { q.p3 = v; }
+            ),
+            "p4", sol::property(
+                [](const Quad& q) { return q.p4; },
+                [](Quad& q, sol::object v) { q.p4 = v; }
+            ),
             "string", [](const Quad& q) {
                 return std::string(q);
             }
+        );
+
+        lua.new_usertype<Circle>("Circle",
+            sol::constructors<Circle(), Circle(float, float, float)>(),
+            sol::base_classes, sol::bases<Vector2>(),
+            "radius", &Circle::radius
+        );
+
+        lua.new_usertype<Triangle>("Triangle",
+            sol::constructors<Triangle(), Triangle(Vector2, Vector2, Vector2)>(),
+            "p1", sol::property(
+                [](const Triangle& t) { return t.p1; },
+                [](Triangle& t, sol::object v) { t.p1 = v; }
+            ),
+            "p2", sol::property(
+                [](const Triangle& t) { return t.p2; },
+                [](Triangle& t, sol::object v) { t.p2 = v; }
+            ),
+            "p3", sol::property(
+                [](const Triangle& t) { return t.p3; },
+                [](Triangle& t, sol::object v) { t.p3 = v; }
+            )
+        );
+
+        lua.new_usertype<Line>("Line",
+            sol::constructors<Line(), Line(float, float, float, float), Line(Vector2, Vector2)>(),
+            "start", sol::property(
+                [](const Line& l) { return l.start; },
+                [](Line& l, sol::object v) { l.start = v; }
+            ),
+            "end", sol::property(
+                [](const Line& l) { return l.end; },
+                [](Line& l, sol::object v) { l.end = v; }
+            )
         );
 
         lua["collision"] = sol::overload(

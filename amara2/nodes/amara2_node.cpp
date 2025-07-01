@@ -467,9 +467,11 @@ namespace Amara {
             node->parent = this;
             children.push_back(node);
 
-            node->preload();
-            if (!node->destroyed) node->create();
-            node->actuated = true;
+            if (!node->actuated) {
+                node->preload();
+                if (!node->destroyed) node->create();
+                node->actuated = true;
+            }
 
             return node;
         }

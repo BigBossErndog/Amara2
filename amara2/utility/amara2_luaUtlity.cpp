@@ -49,6 +49,8 @@ namespace Amara {
             return obj.as<Vector4>().toJSON();
         } else if (obj.is<Rectangle>()) {
             return obj.as<Rectangle>().toJSON();
+        } else if (obj.is<Circle>()) {
+            return obj.as<Circle>().toJSON();
         } else if (obj.get_type() == sol::type::table) {
             sol::table tbl = obj.as<sol::table>();
             nlohmann::json json;
@@ -253,6 +255,12 @@ namespace Amara {
     }
     Rectangle& Rectangle::operator= (sol::object obj) {
         if (obj.is<Rectangle>()) *this = obj.as<Rectangle>();
+        else *this = lua_to_json(obj);
+        return *this;
+    }
+    Circle& Circle::operator= (sol::object obj) {
+        if (obj.is<Circle>()) *this = obj.as<Circle>();
+        else if (obj.is<Vector2>()) *this = Circle(obj.as<Vector2>());
         else *this = lua_to_json(obj);
         return *this;
     }

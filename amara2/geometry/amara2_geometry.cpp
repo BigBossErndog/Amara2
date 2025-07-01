@@ -162,6 +162,7 @@ namespace Amara {
         if (String::equal(str, "bottomRight")) return { 1, 1 };
         return { 0.5, 0.5 };
     }
+    
     Vector2& Vector2::operator= (nlohmann::json config) {
         if (config.is_string()) *this = stringToPosition(config.get<std::string>());
         else if (config.is_number()) {
