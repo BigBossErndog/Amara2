@@ -16,7 +16,7 @@ Join the Discord community where you can ask questions, promote your work and in
 https://discord.gg/wEfZN8zGnT
 
 ## Support Development
-I have a ko-fi available for people to make donations to. 
+I have a ko-fi available for people who would like to donate.
 
 Your support would be greatly appreciated!
 
