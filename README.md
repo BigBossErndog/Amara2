@@ -30,6 +30,8 @@ All your core necessities sit in small windows on top of your desktop over the p
 
 Over time I want this program to tie in with all your favorite game dev tools, easy access to everything you need.
 
+I'm also committed to using this to create all my games from now on (1st July 2025).
+
 ![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
 
 
