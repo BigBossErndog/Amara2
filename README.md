@@ -72,7 +72,7 @@ return Nodes:define("MyScene", "Scene", { -- define MyScene from already existin
             key = "waveHello",
             texture = "mySpritesheet",
             frameRate = 12,
-            frames = { 0, 1, 2 },
+            frames = { 1, 2, 3 }, -- frames start at 1 in the top-left of texture.
             loop = true
         })
     end,
