@@ -320,7 +320,7 @@ namespace Amara {
                             sol::protected_function_result result = temp_props.manipulator(count, lifeTime, (char)glyph.codepoint);
                             if (!result.valid()) {
                                 sol::error err = result;
-                                throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                                throw std::runtime_error(std::string(err.what()));  
                             }
                             else {
                                 configure(lua_to_json(result));

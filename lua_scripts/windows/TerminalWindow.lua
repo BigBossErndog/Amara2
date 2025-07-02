@@ -239,12 +239,12 @@ return Nodes:define("TerminalWindow", "UIWindow", {
             item.color = Colors.Red
             local filename, details = string.match(msg, '%[string "([^"]+)"]:(.*)')
             if filename and details then
-                item.text = string.format('[File: "%s"]:%s', filename, details)
+                item.text = string.format('[Error: "%s"]:%s', filename, details)
             else
-                item.text = string.gsub(msg, "%[string ", "[File: ")
+                item.text = string.gsub(msg, "%[string ", "[Error: ")
             end
             ret = true
-        elseif string.starts_with(msg, "Error: ") then
+        elseif string.starts_with(msg, "Error") then
             item.color = Colors.Red
             ret = true
         else
@@ -263,20 +263,31 @@ return Nodes:define("TerminalWindow", "UIWindow", {
                     item.input:activate()
                     item.input.cursor = Cursor.Pointer
                     item.input:listen("onPointerUp", function(txt)
-                        OpenCodeEditor(settings, self.props.projectPath, filePath)
+                        OpenCodeEditor(settings, self.props.projectPath, targetPath)
 
                         txt.color = txt.props.isError and Colors.White or "#82adc2"
                         txt.tween:to({
                             color = txt.props.defColor,
-                            duration = 0.2
+                            duration = 0.1,
+                            onComplete = function(txt)
+                                txt.color = txt.props.defColor
+                            end
                         })
                     end)
                     item.input:listen("onPointerHover", function(txt)
-                        txt.color = "#ff4646"
+                        if txt.props.isError then
+                            txt.color = "#ff4646"
+                        else
+                            txt.color = "#c5ecff"
+                        end
                         txt.props.defColor = txt.color
                     end)
                     item.input:listen("onPointerExit", function(txt)
-                        txt.color = Colors.Red
+                        if txt.props.isError then
+                            txt.color = Colors.Red
+                        else
+                            txt.color = Colors.White
+                        end
                         txt.props.defColor = txt.color
                     end)
                 else

@@ -39,7 +39,7 @@ namespace Amara {
                 }
                 else {
                     sol::error err = result;
-                    throw std::runtime_error("Lua Error: " + std::string(err.what()));
+                    throw std::runtime_error(std::string(err.what()));
                 }
             }
             catch (const std::exception& e) {

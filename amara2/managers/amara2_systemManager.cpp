@@ -580,7 +580,7 @@ namespace Amara {
 
                 if (!loadResult.valid()) {
                     sol::error err = loadResult;
-                    debug_log("Error loading script \"", filePath.string(), "\"\n", err.what());
+                    debug_log(err.what());
                     gameProps->lua_exception_thrown = true;
                     gameProps->breakWorld();
                     return sol::nil;
@@ -591,7 +591,7 @@ namespace Amara {
 
                 if (!execResult.valid()) {
                     sol::error err = execResult;
-                    debug_log("Error: Error while executing script \"", chunkFileName, "\".\n", err.what());
+                    debug_log(err.what());
                     gameProps->lua_exception_thrown = true;
                     gameProps->breakWorld();
                     return sol::nil;
@@ -600,7 +600,6 @@ namespace Amara {
                 return execResult;
             }
             catch (const sol::error& e) {
-                debug_log("Error: Unexpected error during script processing \"", chunkFileName, "\".");
                 debug_log(e.what());
                 gameProps->lua_exception_thrown = true;
                 gameProps->breakWorld();
@@ -662,7 +661,7 @@ namespace Amara {
 
             if (!script.valid()) {
                 sol::error err = script;
-                debug_log("Error: Failed to load script: ", err.what());
+                debug_log(err.what());
             } else {
                 sol::function func = script;
 

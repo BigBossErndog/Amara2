@@ -25,10 +25,6 @@ namespace Amara {
 
         const float stream_expiry_time = 60;
         float stream_expiry_counter = 0;
-        
-        sol::protected_function onPlay;
-        sol::protected_function onComplete;
-        sol::protected_function onLoop;
 
         Audio(): Amara::Node() {
             set_base_node_id("Audio");
@@ -47,16 +43,6 @@ namespace Amara {
             if (json_is(config, "playing")) play();
 
             return Amara::Node::configure(config);
-        }
-
-        virtual sol::object luaConfigure(std::string key, sol::object val) override {
-            if (val.is<sol::function>()) {
-                sol::function func = val.as<sol::function>();
-                if (String::equal("onPlay", key)) onPlay = func;
-                else if (String::equal("onComplete", key)) onComplete = func;
-                else if (String::equal("onLoop", key)) onLoop = func;
-            }
-            return Amara::Node::luaConfigure(key, val);
         }
 
         virtual void update(double deltaTime) override {
@@ -123,34 +109,16 @@ namespace Amara {
                             if (loop) {
                                 setPosition(audio->loopStart);
 
-                                if (onLoop.valid()) {
-                                    try {
-                                        sol::protected_function_result result = onLoop(get_lua_object());
-                                        if (!result.valid()) {
-                                            sol::error err = result;
-                                            throw std::runtime_error("Lua Error: " + std::string(err.what()));
-                                        }
-                                    } catch (const std::exception& e) {
-                                        debug_log(e.what());
-                                        gameProps->breakWorld();
-                                    }
+                                if (funcs.hasFunction("onLoop")) {
+                                    funcs.callFunction("onLoop");
                                 }
                             }
                             else {
                                 setPosition(0);
                                 playing = false;
 
-                                if (onComplete.valid()) {
-                                    try {
-                                        sol::protected_function_result result = onComplete(get_lua_object());
-                                        if (!result.valid()) {
-                                            sol::error err = result;
-                                            throw std::runtime_error("Lua Error: " + std::string(err.what()));
-                                        }
-                                    } catch (const std::exception& e) {
-                                        debug_log(e.what());
-                                        gameProps->breakWorld();
-                                    }
+                                if (funcs.hasFunction("onComplete")) {
+                                    funcs.callFunction("onComplete");
                                 }
                             }
                         }
@@ -244,17 +212,8 @@ namespace Amara {
             if (!playing) {
                 playDuration = 0;
 
-                if (onPlay.valid()) {
-                    try {
-                        sol::protected_function_result result = onPlay(get_lua_object());
-                        if (!result.valid()) {
-                            sol::error err = result;
-                            throw std::runtime_error("Lua Error: " + std::string(err.what()));
-                        }
-                    } catch (const std::exception& e) {
-                        debug_log(e.what());
-                        gameProps->breakWorld();
-                    }
+                if (funcs.hasFunction("onPlay")) {
+                    funcs.callFunction("onPlay");
                 }
             }
             else if (!paused) {
@@ -316,10 +275,7 @@ namespace Amara {
                 "setAudio", sol::resolve<bool(std::string)>(&Audio::setAudio),
                 "play", &Audio::play,
                 "stop", &Audio::stop,
-                "restart", &Audio::restart,
-                "onPlay", &Audio::onPlay,
-                "onComplete", &Audio::onComplete,
-                "onLoop", &Audio::onLoop
+                "restart", &Audio::restart
             );
         }
     };

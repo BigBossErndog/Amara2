@@ -11,6 +11,7 @@ return Nodes:define("DropDownMenu", "FillRect", {
 
     input = {
         active = true,
+        cursor = Cursor.Pointer,
         onPointerDown = function(self, pointer)
             if self.props.inputEnabled then
                 self.func:openMenu()
@@ -70,7 +71,10 @@ return Nodes:define("DropDownMenu", "FillRect", {
                     y = (i - 1) * optHeight,
                     origin = 0,
                     color = self.color,
-                    input = true
+                    input = {
+                        active = true,
+                        cursor = Cursor.Pointer
+                    }
                 })
 
                 local txt = backer:createChild("Text", {

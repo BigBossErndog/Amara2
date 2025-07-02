@@ -43,7 +43,7 @@ namespace Amara {
                         sol::protected_function_result result = func(actor->get_lua_object(), get_lua_object(), deltaTime);
                         if (!result.valid()) {
                             sol::error err = result;
-                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                            throw std::runtime_error(std::string(err.what()));  
                         }
                     } catch (const std::exception& e) {
                         debug_log(e.what());

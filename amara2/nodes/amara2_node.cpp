@@ -918,7 +918,7 @@ namespace Amara {
                         sol::protected_function_result result = callback(node->get_lua_object(), msg.data);
                         if (!result.valid()) {
                             sol::error err = result;
-                            throw std::runtime_error("Lua Error: " + std::string(err.what()));  
+                            throw std::runtime_error(std::string(err.what()));  
                         }
                     }
                     catch (const std::exception& e) {
