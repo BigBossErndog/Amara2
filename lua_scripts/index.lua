@@ -202,7 +202,7 @@ return Creator:createWorld({
         if System:programInstalled("notepad") then
             table.insert(editors, "codeEditor_Notepad")
         end
-
+        
         if #editors > 0 then
             if not settings.codeEditor then
                 settings.codeEditor = editors[1]

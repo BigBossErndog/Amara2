@@ -698,15 +698,19 @@ namespace Amara {
         sol::object get_lua_object();
         
         explicit operator std::string() const {
+            std::string id_str = "";
+            if (!id.empty()) id_str = String::concat(", id = ", id);
             if (String::equal(baseNodeID, nodeID)) {
                 return String::concat(
-                    "(", baseNodeID, ": \"", id, "\")"
+                    "( ", baseNodeID, id_str, " )"
                 );
             }
             return String::concat(
-                "(", baseNodeID, ", ", 
-                nodeID, ": \"",
-                id, "\")"
+                "( ",
+                    baseNodeID, " -> ",
+                    nodeID,
+                    id_str,
+                " )"
             );
         }
         friend std::ostream& operator<<(std::ostream& os, const Node& e) {
