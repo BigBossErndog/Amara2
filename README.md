@@ -13,7 +13,7 @@ https://github.com/BigBossErndog/Amara2/releases
 - Game architecture inspired by my favorite elements of the Phaser framework and the Godot Engine.
 - Minimal GUI. Get the necessities while making your commonly used tools more cohesive.
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
-- Built using SDL3, so porting companies should find it simple to port to other platforms.
+- Built using SDL3, so porting to other platforms shouldn't be too great a task for porting companies.
 
 ![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
 
@@ -72,7 +72,7 @@ return Nodes:define("MyScene", "Scene", { -- define MyScene from already existin
             key = "waveHello",
             texture = "mySpritesheet",
             frameRate = 12,
-            frames = { 0, 1, 2 },
+            frames = { 1, 2, 3 }, -- frames start at 1 in the top-left of texture.
             loop = true
         })
     end,
@@ -88,6 +88,7 @@ return Nodes:define("MyScene", "Scene", { -- define MyScene from already existin
         mySprite = self:createChild("Sprite", {
             x = 0, y = 0, -- (0, 0) is the center of the screen / view.
             texture = "mySpritesheet",
+            frame = 4, -- set starting frame, first frame (top-left) is 1
             input = {
                 active = true,
                 onMouseDown = function(self)
@@ -195,3 +196,14 @@ There are some important global objects to know when using Amara2.
 - *Keyboard* : Used for handling keyboard input.
 - *Gamepads* : Used for handling gamepad input.
 - *Controls* : Used for creating and handling your own control schemes (e.g. define multiple inputs to the same action, or handling user-defined controls).
+- 
+
+## Not-Yet-Frequently Asked Questions
+### - Can I contribute code to development?
+
+Sorry, I'm not accepting code contributions. I made this engine so I can spend more time making my own games than to manage an open source project. However I am happy for people to fork this repo and extend functionality! There is also a plugin system, so creating your own plugins and sharing them is also an option. If there are any forks or plugins that I like and can see becoming core functionality, I will be reaching out to see if we can make a deal to integrate it into the engine.
+
+### - Why Amara'2'?
+The first Amara was a C++ game framework (built on SDL2) that I created during university. It was used to make the game [Pry In The Void](https://store.steampowered.com/app/1234990/Pry_Into_The_Void/).
+
+This new version vastly improves on it, while adding Lua scripting (so I don't have to compile the dang thing every time lol). The name itself is a reference that some people in my community may recognize from way back when.
