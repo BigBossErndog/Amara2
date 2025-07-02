@@ -88,6 +88,7 @@ return Nodes:define("MyScene", "Scene", { -- define MyScene from already existin
         mySprite = self:createChild("Sprite", {
             x = 0, y = 0, -- (0, 0) is the center of the screen / view.
             texture = "mySpritesheet",
+            frame = 4, -- set starting frame, first frame (top-left) is 1
             input = {
                 active = true,
                 onMouseDown = function(self)
