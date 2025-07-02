@@ -1,7 +1,7 @@
 return Nodes:define("TerminalWindow", "UIWindow", {
     texture = "terminalWindow",
     width = 256,
-    height = 80,
+    height = 100,
 
     input = true,
 
@@ -14,6 +14,9 @@ return Nodes:define("TerminalWindow", "UIWindow", {
         end
         if config.allowMinimize then
             self.props.allowMinimize = config.allowMinimize
+        end
+        if config.projectPath then
+            self.props.projectPath = config.projectPath
         end
     end,
 
@@ -106,27 +109,12 @@ return Nodes:define("TerminalWindow", "UIWindow", {
                 origin = 0,
                 wrapMode = WrapMode.ByWord
             })
-            if self.props.messages and i <= #self.props.messages then
-                item:activate()
-                item.text = self.props.messages[i]
+        end
 
-                if string.find(self.props.messages[i], "%f[%w]Error%f[%W]") then
-                    item.color = Colors.Red
-                else
-                    item.color = Colors.White
-                end
-
-                if item.wrapWidth ~= wrapWidth then
-                    item.wrapWidth = wrapWidth
-                end
-
-                if self.props.wallHeight > 0 then
-                    self.props.wallHeight = self.props.wallHeight + self.props.lineSpacing
-                end
-                item.y = self.props.wallHeight
-                self.props.wallHeight = self.props.wallHeight + item.height
-
-                table.insert(self.props.activePool, item)
+        if self.props.messages and #self.props.messages > 0 then
+            for i = 1, #self.props.messages do
+                local msg = self.props.messages[i]
+                self.func:pipeMessage(msg)
             end
         end
 
@@ -244,7 +232,67 @@ return Nodes:define("TerminalWindow", "UIWindow", {
         end)
     end,
 
+    checkForError  = function(self, msg, item)
+        local ret = false
+
+        if string.starts_with(msg, "[string ") then
+            item.color = Colors.Red
+            local filename, details = string.match(msg, '%[string "([^"]+)"]:(.*)')
+            if filename and details then
+                item.text = string.format('[File: "%s"]:%s', filename, details)
+            else
+                item.text = string.gsub(msg, "%[string ", "[File: ")
+            end
+            ret = true
+        elseif string.starts_with(msg, "Error: ") then
+            item.color = Colors.Red
+            ret = true
+        else
+            item.color = Colors.White
+            ret = false
+        end
+        item.props.defColor = item.color
+        item.props.isError = ret
+
+        local filePath = string.match(msg, '"([^"]+%.lua[c]?)"')
+        if filePath and string.len(filePath) > 0 then
+            if self.props.projectPath then
+                local targetPath = System:join(self.props.projectPath, "lua_scripts", filePath)
+                local settings = self.world.func:getSettings()
+                if System:exists(targetPath) then
+                    item.input:activate()
+                    item.input.cursor = Cursor.Pointer
+                    item.input:listen("onPointerUp", function(txt)
+                        OpenCodeEditor(settings, self.props.projectPath, filePath)
+
+                        txt.color = txt.props.isError and Colors.White or "#82adc2"
+                        txt.tween:to({
+                            color = txt.props.defColor,
+                            duration = 0.2
+                        })
+                    end)
+                    item.input:listen("onPointerHover", function(txt)
+                        txt.color = "#ff4646"
+                        txt.props.defColor = txt.color
+                    end)
+                    item.input:listen("onPointerExit", function(txt)
+                        txt.color = Colors.Red
+                        txt.props.defColor = txt.color
+                    end)
+                else
+                    item.input:stopListening("onPointerUp")
+                end
+            end
+        end
+
+        return ret
+    end,
+
     pipeMessage = function(self, msg)
+        if string.starts_with(msg, "\t[") or string.contains(msg, "stack traceback") then
+            return;
+        end
+
         table.insert(self.props.messages, msg)
 
         local item = self.props.pool:grab()
@@ -255,16 +303,14 @@ return Nodes:define("TerminalWindow", "UIWindow", {
 
         item:activate()
         item.text = msg
+        item.input:stopListening()
+        item.input:deactivate()
+
+        self.func:checkForError(msg, item)
 
         local wrapWidth = self.props.cont.width - self.props.marginLeft - self.props.marginRight
         if item.wrapWidth ~= wrapWidth then
             item.wrapWidth = wrapWidth
-        end
-
-        if string.find(msg, "%f[%w]Error%f[%W]") then
-            item.color = Colors.Red
-        else
-            item.color = Colors.White
         end
 
         if self.props.wallHeight > 0 then

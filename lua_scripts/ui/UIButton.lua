@@ -5,6 +5,7 @@ return Nodes:define("UIButton", "NineSlice", {
 
     input = {
         active = true,
+        cursor = Cursor.Pointer,
         onPointerDown = function(self, pointer)
             if self.props.enabled then
                 self.frame = 2

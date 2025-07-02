@@ -1,4 +1,6 @@
+
 Scripts:run("utility/localize")
+Scripts:run("utility/OpenCodeEditor")
 
 Nodes:load("UIWindow", "ui/UIWindow")
 Nodes:load("UIButton", "ui/UIButton")
@@ -14,7 +16,7 @@ Nodes:load("TerminalWindow", "windows/TerminalWindow")
 Nodes:load("CopyProjectWindow", "windows/CopyProjectWindow")
 Nodes:load("BuildOptions", "windows/BuildOptions")
 
-Nodes:load("BuildNode", "utility/BuildNode")
+Nodes:load("WindowsBuildNode", "utility/WindowsBuildNode")
 
 return Creator:createWorld({
     window = {

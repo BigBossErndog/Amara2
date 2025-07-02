@@ -97,23 +97,28 @@ namespace Amara {
                 }
                 lua_data["zoom"] = sol::nil;
             }
+
             if (lua_data["color"].valid()) {
-                Amara::Color color = lua_data["color"];
+                sol::object color_obj = lua_data["color"];
+                Amara::Color color = color_obj;
                 target_data["color"] = color.toJSON();
                 lua_data["color"] = sol::nil;
             }
             if (lua_data["tint"].valid()) {
-                Amara::Color color = lua_data["tint"];
+                sol::object color_obj = lua_data["tint"];
+                Amara::Color color = color_obj;
                 target_data["tint"] = color.toJSON();
                 lua_data["tint"] = sol::nil;
             }
             if (lua_data["fill"].valid()) {
-                Amara::Color color = lua_data["fill"];
+                sol::object color_obj = lua_data["fill"];
+                Amara::Color color = color_obj;
                 target_data["fill"] = color.toJSON();
                 lua_data["fill"] = sol::nil;
             }
             if (lua_data["backgroundColor"].valid()) {
-                Amara::Color color = lua_data["backgroundColor"];
+                sol::object color_obj = lua_data["backgroundColor"];
+                Amara::Color color = color_obj;
                 target_data["fill"] = color.toJSON();
                 lua_data["backgroundColor"] = sol::nil;
             }

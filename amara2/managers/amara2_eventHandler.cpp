@@ -24,6 +24,12 @@ namespace Amara {
             
             SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
             SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
+            
+            gameProps->cursor_default = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+            gameProps->cursor_pointer = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
+            if (gameProps->cursor_default) {
+                SDL_SetCursor(gameProps->cursor_default);
+            }
         }
 
         void handleEvents(
@@ -37,6 +43,10 @@ namespace Amara {
 
             gameProps->text_input.clear();
             gameProps->text_input_type = TextInputEnum::None;
+
+            if (gameProps->cursor_pointer) {
+                SDL_SetCursor(gameProps->cursor_pointer);
+            }
             
             while (SDL_PollEvent(&e) != 0) {
                 switch (e.type) {
@@ -266,11 +276,12 @@ namespace Amara {
     };
 
     bool InputManager::checkPointerHover(const Vector2& pos) {
-        Amara::NodeInput* input;
+        Amara::InputDef inputDef;
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
-            input = *it;
-            if (input->shape.collidesWith(pos)) {
+            inputDef = *it;
+            if (inputDef.shape.collidesWith(pos) && Shape::collision(inputDef.viewport, pos)) {
                 any_hovered = true;
+                gameProps->system->setCursor(inputDef.input->cursor);
                 return true;
             }
         }
@@ -314,12 +325,18 @@ namespace Amara {
 
         *(gameProps->globalPointer) = mouse;
 
-        Amara::NodeInput* input;
+        InputDef inputDef;
+        NodeInput* input;
+
         any_hovered = false;
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
-            input = *it;
-            if (input->shape.collidesWith(pos)) {
-                input->lastPointer = &mouse;
+            inputDef = *it;
+            input = inputDef.input;
+
+            if (inputDef.shape.collidesWith(pos) && Shape::collision(inputDef.viewport, pos)) {
+                inputDef.lastPointer = &mouse;
+                input->lastInteraction = inputDef;
+                
                 input->hover.press();
 
                 if (input->hover.justPressed) {
@@ -328,6 +345,8 @@ namespace Amara {
                     input->handleMessage({ nullptr, "onPointerHover", mouse.get_lua_object(gameProps) });
                 }
                 any_hovered = true;
+                
+                gameProps->system->setCursor(input->cursor);
                 break;
             }
         }
@@ -340,11 +359,17 @@ namespace Amara {
 
         mouse.state.press();
 
-        Amara::NodeInput* input;
+        InputDef inputDef;
+        NodeInput* input;
+
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
-            input = *it;
-            if (input->shape.collidesWith(point)) {
-                input->lastPointer = &mouse;
+            inputDef = *it;
+            input = inputDef.input;
+
+            if (inputDef.shape.collidesWith(point) && Shape::collision(inputDef.viewport, point)) {
+                inputDef.lastPointer = &mouse;
+                input->lastInteraction = inputDef;
+
                 input->handleMessage({ nullptr, "onMouseDown", mouse.get_lua_object(gameProps) });
                 if (mouse.left.justPressed) {
                     input->held = true;
@@ -370,10 +395,17 @@ namespace Amara {
 
         mouse.state.release();
 
+        Amara::InputDef inputDef;
         Amara::NodeInput* input;
+
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
-            input = *it;
-            if (input->shape.collidesWith(point)) {
+            inputDef = *it;
+            input = inputDef.input;
+
+            if (inputDef.shape.collidesWith(point) && Shape::collision(inputDef.viewport, point)) {
+                inputDef.lastPointer = &mouse;
+                input->lastInteraction = inputDef;
+                
                 input->handleMessage({ nullptr, "onMouseUp", mouse.get_lua_object(gameProps) });
                 if (mouse.left.justReleased) {
                     input->handleMessage({ nullptr, "onLeftMouseUp", mouse.get_lua_object(gameProps) });
@@ -396,10 +428,16 @@ namespace Amara {
         *(gameProps->globalPointer) = *finger;
         
         Amara::NodeInput* input;
+        Amara::InputDef inputDef;
+
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
-            input = *it;
-            if (input->shape.collidesWith(pos)) {
-                input->lastPointer = finger;
+            inputDef = *it;
+            input = inputDef.input;
+
+            if (inputDef.shape.collidesWith(pos) && Shape::collision(inputDef.viewport, pos)) {
+                inputDef.lastPointer = finger;
+                input->lastInteraction = inputDef;
+
                 switch (eventType) {
                     case SDL_EVENT_FINGER_DOWN: {
                         input->hover.press();
@@ -409,7 +447,7 @@ namespace Amara {
                             input->held = true;
                             input->handleMessage({ nullptr, "onPointerHover", finger->get_lua_object(gameProps) });
                             input->handleMessage({ nullptr, "onTouchHover", finger->get_lua_object(gameProps) });
-
+                            
                             input->rec_interact_pos = input->node->pos;
                         }
                         break;

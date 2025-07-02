@@ -48,6 +48,7 @@ return Nodes:define("MainWindow", "UIWindow", {
                         },
                         input = {
                             active = true,
+                            cursor = Cursor.Pointer,
                             onPointerHover = function(self, pointer)
                                 self.color = "#333e4d"
                             end,

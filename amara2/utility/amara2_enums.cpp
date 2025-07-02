@@ -91,6 +91,11 @@ namespace Amara {
         Line = 6
     };
 
+    enum class CursorEnum {
+        Default,
+        Pointer
+    };
+
     void bind_lua_Enums(sol::state& lua) {
         lua.new_enum("Graphics",
             "None", Amara::GraphicsEnum::None,
@@ -169,6 +174,11 @@ namespace Amara {
             "Triangle", Amara::ShapeEnum::Triangle,
             "Polygon", Amara::ShapeEnum::Polygon,
             "Line", Amara::ShapeEnum::Line
+        );
+
+        lua.new_enum("Cursor",
+            "Default", Amara::CursorEnum::Default,
+            "Pointer", Amara::CursorEnum::Pointer
         );
     }
 }

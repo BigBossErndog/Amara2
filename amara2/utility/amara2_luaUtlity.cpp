@@ -265,8 +265,8 @@ namespace Amara {
         return *this;
     }
 
-    Color& Color::operator= (sol::object obj) {
-        if (obj.is<Color>()) *this = obj.as<Color>();
+    Amara::Color& Amara::Color::operator= (sol::object obj) {
+        if (obj.is<Amara::Color>()) *this = obj.as<Amara::Color>();
         else *this = lua_to_json(obj);
         return *this; 
     }
@@ -287,6 +287,9 @@ namespace Amara {
         });
         string_metatable.set_function("ends_with", [](std::string self, std::string check) -> bool {
             return String::endsWith(self, check);
+        });
+        string_metatable.set_function("contains", [](std::string self, std::string check) -> bool {
+            return String::contains(self, check);
         });
         string_metatable.set_function("concat", &Amara::lua_string_concat);
         string_metatable.set_function("sep_concat", &Amara::lua_string_sep_concat);

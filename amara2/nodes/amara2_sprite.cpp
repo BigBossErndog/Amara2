@@ -220,7 +220,7 @@ namespace Amara {
                     ),
                     passOn.rotation + rotation
                 );
-                input.queueInput(inputQuad);
+                input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nullptr);
             }
 
             if (image->texture && gameProps->renderer) {

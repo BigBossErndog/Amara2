@@ -299,18 +299,6 @@ namespace Amara {
                 )
             )) return;
 
-            if (input.active) {
-                Quad inputQuad = rotateQuad(
-                    Quad(destRect),
-                    Vector2(
-                        destRect.x + dorigin.x,
-                        destRect.y + dorigin.y
-                    ),
-                    passOn.rotation + rotation
-                );
-                input.queueInput(inputQuad);
-            }
-
             int count = 0;
 
             if (font->texture && gameProps->renderer) {
@@ -379,6 +367,24 @@ namespace Amara {
                             v.w + diag_distance*2, v.h + diag_distance*2
                         )
                     )) continue;
+
+                    if (input.active) {
+                        Quad inputQuad = rotateQuad(
+                            Quad(Rectangle( // Extrude the input zone
+                                destRect.x-2, destRect.y-2,
+                                destRect.w+4, destRect.h+4
+                            )),
+                            Vector2(
+                                destRect.x + dorigin.x,
+                                destRect.y + dorigin.y
+                            ),
+                            passOn.rotation + rotation
+                        );
+                        input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nlohmann::json::object({
+                            { "glyph", glyph.codepoint },
+                            { "index", count }
+                        }));
+                    }
 
                     if (font->texture && gameProps->renderer) {
                         SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);

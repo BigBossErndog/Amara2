@@ -1,13 +1,21 @@
 namespace Amara {
     class NodeInput;
     class World;
+
+    struct InputDef {
+        NodeInput* input = nullptr;
+        Shape shape;
+        Rectangle viewport;
+        nlohmann::json data;
+        Pointer* lastPointer = nullptr;
+    };
     
     class InputManager {
     public:
         Amara::GameProps* gameProps = nullptr;
         Amara::World* world = nullptr;
         
-        std::vector<Amara::NodeInput*> queue;
+        std::vector<Amara::InputDef> queue;
 
         Mouse mouse;
         TouchHandler touch;
@@ -26,7 +34,7 @@ namespace Amara {
             mouse.id = 0;
         }
 
-        void queueInput(Amara::NodeInput* input) {
+        void queueInput(const Amara::InputDef& input) {
             queue.push_back(input);
         }
 

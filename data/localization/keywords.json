@@ -19,6 +19,9 @@
     "toolTip_runGame": "Run Game (Ctrl + Alt + A)",
     "toolTip_buildGame": "Build Game (Ctrl + Alt + B)",
 
+    "toolTip_moreTools": "More Tools",
+    "toolTip_openDocs": "Open Documentation",
+
     "toolTip_openProjectDirectory": "Open Project Directory (Ctrl + Alt + P)",
 
     "toolTip_refreshCodeEditors": "Refresh Code Editors",

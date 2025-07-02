@@ -64,6 +64,7 @@ namespace Amara {
 
             if (hasStarted) {
                 if (io) {
+                    bool found_output = false;
                     size_t bytes_read = 0;
                     do {
                         bytes_read = SDL_ReadIO(io, buffer, sizeof(buffer) - 1);
@@ -76,10 +77,11 @@ namespace Amara {
                                 logOutput(partial_line.substr(0, newline_pos));
                                 partial_line.erase(0, newline_pos + 1);
                             }
+                            found_output = true;
                         }
                     } while (bytes_read > 0);
 
-                    if (SDL_WaitProcess(process, false, &exitCode)) {
+                    if (!found_output && SDL_WaitProcess(process, false, &exitCode)) {
                         finished = true;
                         if (!partial_line.empty()) {
                             logOutput(partial_line);
@@ -105,7 +107,7 @@ namespace Amara {
 
         void logOutput(std::string msg) {
             output.push_back(msg);
-
+            Amara::debug_log("Received: ", msg);
             if (funcs.hasFunction("onOutput")) {
                 funcs.callFunction(this, "onOutput", msg);
             }

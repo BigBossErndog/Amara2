@@ -17,6 +17,9 @@ namespace Amara {
         Color(nlohmann::json config) {
             configure(config);
         }
+        Color(sol::object config) {
+            *this = config;
+        }
 
         void toFloats(float* _r, float* _g, float* _b) {
             (*_r) = r;
@@ -28,18 +31,18 @@ namespace Amara {
             toFloats(_r, _g, _b);
         }
 
-        Color& operator= (const SDL_Color& _color) {
+        Amara::Color& operator= (const SDL_Color& _color) {
             r = _color.r;
             g = _color.g;
             b = _color.b;
             a = _color.a;
             return *this;
         }
-        Color& operator= (nlohmann::json config) {
+        Amara::Color& operator= (nlohmann::json config) {
             configure(config);
             return *this; 
         }
-        Color& operator= (sol::object config);
+        Amara::Color& operator= (sol::object config);
         
         explicit operator std::string() const {
             return "Color(" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + ", " + std::to_string(a) + ")";
@@ -74,55 +77,54 @@ namespace Amara {
                 }
             }
             else if (config.is_string()) {
-                if (String::equal(config, "white")) {
+                std::string color_str = config.get<std::string>();
+
+                if (color_str[0] == '#') {
+                    color_str = color_str.substr(1); // Remove the leading '#'
+                    
+                    // Color in hex format #FFFFFF
+                    if (color_str.length() == 6) {
+                        r = std::stoi(color_str.substr(0, 2), nullptr, 16);
+                        g = std::stoi(color_str.substr(2, 2), nullptr, 16);
+                        b = std::stoi(color_str.substr(4, 2), nullptr, 16);
+                        a = 255;
+                    }
+                    else if (color_str.length() == 8) {
+                        r = std::stoi(color_str.substr(0, 2), nullptr, 16);
+                        g = std::stoi(color_str.substr(2, 2), nullptr, 16);
+                        b = std::stoi(color_str.substr(4, 2), nullptr, 16);
+                        a = std::stoi(color_str.substr(6, 2), nullptr, 16);
+                    }
+                }
+                else if (String::equal(color_str, "white")) {
                     r = 255; g = 255; b = 255; a = 255;
                 }
-                else if (String::equal(config, "black")) {
+                else if (String::equal(color_str, "black")) {
                     r = 0; g = 0; b = 0; a = 255;
                 }
-                else if (String::equal(config, "red")) {
+                else if (String::equal(color_str, "red")) {
                     r = 255; g = 0; b = 0; a = 255;
                 }
-                else if (String::equal(config, "green")) {
+                else if (String::equal(color_str, "green")) {
                     r = 0; g = 255; b = 0; a = 255;
                 }
-                else if (String::equal(config, "blue")) {
+                else if (String::equal(color_str, "blue")) {
                     r = 0; g = 0; b = 255; a = 255;
-                } 
-                else if (String::equal(config, "yellow")) {
+                }
+                else if (String::equal(color_str, "yellow")) {
                     r = 255; g = 255; b = 0; a = 255;
                 }
-                else if (String::equal(config, "magenta")) {
+                else if (String::equal(color_str, "magenta")) {
                     r = 255; g = 0; b = 255; a = 255;
                 }
-                else if (String::equal(config, "cyan")) {
+                else if (String::equal(color_str, "cyan")) {
                     r = 0; g = 255; b = 255; a = 255;
                 }
-                else if (String::equal(config, "transparent")) {
+                else if (String::equal(color_str, "transparent")) {
                     r = 0; g = 0; b = 0; a = 0;
                 }
                 else {
-                    // Color in hex format #FFFFFF
-                    std::string hex_color = config.get<std::string>();
-                    if (hex_color[0] == '#') {
-                        hex_color = hex_color.substr(1);
-
-                        if (hex_color.length() == 6) {
-                            r = std::stoi(hex_color.substr(0, 2), nullptr, 16);
-                            g = std::stoi(hex_color.substr(2, 2), nullptr, 16);
-                            b = std::stoi(hex_color.substr(4, 2), nullptr, 16);
-                            a = 255;
-                        }
-                        else if (hex_color.length() == 8) {
-                            r = std::stoi(hex_color.substr(0, 2), nullptr, 16);
-                            g = std::stoi(hex_color.substr(2, 2), nullptr, 16);
-                            b = std::stoi(hex_color.substr(4, 2), nullptr, 16);
-                            a = std::stoi(hex_color.substr(6, 2), nullptr, 16);
-                        }
-                    }
-                    else {
-                        r = 0; g = 0; b = 0; a = 255;
-                    }
+                    r = 0; g = 0; b = 0; a = 255;
                 }
             }
             else if (config.is_object()) {

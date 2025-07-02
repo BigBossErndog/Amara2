@@ -178,9 +178,8 @@ return Nodes:define("BuildOptions", "UIWindow", {
             projectData["exe-icon"] = self.props.iconPath
             System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
 
-            self.world.props.windows:createChild("BuildNode", {
+            self.world.props.windows:createChild("WindowsBuildNode", {
                 projectPath = self.props.projectPath,
-                platform = "windows",
                 iconPath = self.props.iconPath
             })
         end)

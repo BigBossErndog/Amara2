@@ -173,5 +173,8 @@ namespace Amara {
         ControlManager* controls = nullptr;
 
         Pointer* globalPointer = nullptr;
+
+        SDL_Cursor* cursor_default = nullptr;
+        SDL_Cursor* cursor_pointer = nullptr;
     };
 }

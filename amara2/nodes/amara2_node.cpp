@@ -336,11 +336,12 @@ namespace Amara {
             input.drag = Vector2(0, 0);
             if (input.active) {
                 input.run(deltaTime);
-                
-                if (input.draggable && input.held && input.lastPointer != nullptr) {
+
+                Amara::Pointer* lastPointer = input.lastInteraction.lastPointer;
+                if (input.draggable && input.held && lastPointer != nullptr) {
                     Vector2 recPos = pos;
-                    pos.x = input.rec_interact_pos.x + input.lastPointer->x - input.lastPointer->rec_pos.x;
-                    pos.y = input.rec_interact_pos.y + input.lastPointer->y - input.lastPointer->rec_pos.y;
+                    pos.x = input.rec_interact_pos.x + lastPointer->x - lastPointer->rec_pos.x;
+                    pos.y = input.rec_interact_pos.y + lastPointer->y - lastPointer->rec_pos.y;
                     input.drag = pos - recPos;
                     if (input.isListening("onDrag")) {
                         input.handleMessage({ nullptr, "onDrag" });

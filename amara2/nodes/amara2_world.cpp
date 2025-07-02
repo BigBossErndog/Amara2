@@ -1018,7 +1018,7 @@ namespace Amara {
             #endif
 
             if (input.active) {
-                input.queueInput(Quad(v));
+                input.queueInput(Quad(v), v, nullptr);
             }
             
             Amara::Node::draw(viewport);

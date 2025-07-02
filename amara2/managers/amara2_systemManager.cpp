@@ -517,6 +517,20 @@ namespace Amara {
             return copy(input, output, true);
         }
 
+        void setCursor(CursorEnum cursor) {
+            switch (cursor) {
+                case CursorEnum::Default:
+                    SDL_SetCursor(gameProps->cursor_default);
+                    break;
+                case CursorEnum::Pointer:
+                    SDL_SetCursor(gameProps->cursor_pointer);
+                    break;
+                default:
+                    debug_log("Error: Unsupported cursor type.");
+                    break;
+            }
+        }
+
         sol::object run(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
             bool fileExists = std::filesystem::exists(filePath);
@@ -534,18 +548,33 @@ namespace Amara {
                 return sol::nil;
             }
 
+            std::string chunkFileName;
+            std::string filePathStr = filePath.string();
+            const std::string luaScriptsDir = "lua_scripts";
+            size_t pos = filePathStr.rfind(luaScriptsDir);
+
+            if (pos != std::string::npos) {
+                chunkFileName = filePathStr.substr(pos + luaScriptsDir.length());
+                if (!chunkFileName.empty() && (chunkFileName.front() == '\\' || chunkFileName.front() == '/')) {
+                    chunkFileName.erase(0, 1);
+                }
+            } 
+            else {
+                chunkFileName = getFileName(filePath.string());
+            }
+
             try {
                 sol::load_result loadResult;
                 if (String::endsWith(filePath.string(), ".luac")) {
                     loadResult = gameProps->lua.load(
                         std::string_view(scriptContent.data(), scriptContent.size()), 
-                        getFileName(filePath.string()), sol::load_mode::binary
+                        chunkFileName, sol::load_mode::binary
                     );
                 }
-                else {
+                else {                    
                     loadResult = gameProps->lua.load(
                         std::string_view(scriptContent.data(), scriptContent.size()), 
-                        getFileName(filePath.string()), sol::load_mode::text
+                        chunkFileName, sol::load_mode::text
                     );
                 }
 
@@ -562,7 +591,7 @@ namespace Amara {
 
                 if (!execResult.valid()) {
                     sol::error err = execResult;
-                    debug_log("Error: Error while executing script \"", filePath.string(), "\".\n", err.what());
+                    debug_log("Error: Error while executing script \"", chunkFileName, "\".\n", err.what());
                     gameProps->lua_exception_thrown = true;
                     gameProps->breakWorld();
                     return sol::nil;
@@ -571,7 +600,7 @@ namespace Amara {
                 return execResult;
             }
             catch (const sol::error& e) {
-                debug_log("Error: Unexpected error during script processing \"", path, "\".");
+                debug_log("Error: Unexpected error during script processing \"", chunkFileName, "\".");
                 debug_log(e.what());
                 gameProps->lua_exception_thrown = true;
                 gameProps->breakWorld();
@@ -584,12 +613,27 @@ namespace Amara {
             bool fileExists = std::filesystem::exists(filePath);
             std::string scriptContent = readFile(filePath.string());
 
+            std::string chunkFileName;
+            std::string filePathStr = filePath.string();
+            const std::string luaScriptsDir = "lua_scripts";
+            size_t pos = filePathStr.rfind(luaScriptsDir);
+            
+            if (pos != std::string::npos) {
+                chunkFileName = filePathStr.substr(pos + luaScriptsDir.length());
+                if (!chunkFileName.empty() && (chunkFileName.front() == '\\' || chunkFileName.front() == '/')) {
+                    chunkFileName.erase(0, 1);
+                }
+            } 
+            else {
+                chunkFileName = getFileName(filePath.string());
+            }
+
             if (scriptContent.empty()) {
                 if (fileExists) {
-                    debug_log("Error: Script '", path, "' is empty or could not be read/decrypted. Cannot execute.");
+                    debug_log("Error: Script '", chunkFileName, "' is empty or could not be read/decrypted. Cannot execute.");
                 }
                 else {
-                    debug_log("Error: Script '", path, "' does not exist. Cannot execute.");
+                    debug_log("Error: Script '", chunkFileName, "' does not exist. Cannot execute.");
                 }
                 gameProps->breakWorld();
             }
@@ -597,13 +641,13 @@ namespace Amara {
             if (String::endsWith(filePath.string(), ".luac")) {
                 return gameProps->lua.load(
                     std::string_view(scriptContent.data(), scriptContent.size()), 
-                    getFileName(filePath.string()), sol::load_mode::binary
+                    chunkFileName, sol::load_mode::binary
                 );
             }
             else {
                 return gameProps->lua.load(
                     std::string_view(scriptContent.data(), scriptContent.size()), 
-                    getFileName(filePath.string()), sol::load_mode::text
+                    chunkFileName, sol::load_mode::text
                 );
             }
         }
@@ -638,11 +682,11 @@ namespace Amara {
                         }
                     }
                     else {
-                        debug_log("Error: Could not compile script \"", getScriptPath(path), "\"");
+                        debug_log("Error: Could not compile script \"", filePath.string(), "\"");
                     }
                 }
                 catch (const sol::error& e) {
-                    debug_log("Error: Could not compile script \"", getScriptPath(path), "\"");
+                    debug_log("Error: Could not compile script \"", filePath.string(), "\"");
                 }
             }
             return false;
@@ -679,7 +723,7 @@ namespace Amara {
                 std::thread t(run_command, command);
                 t.detach();
                 return 0;
-            } 
+            }
         }
         int lua_execute(sol::variadic_args args) {
             std::ostringstream ss;
@@ -1049,6 +1093,7 @@ namespace Amara {
                 "setBasePath", &SystemManager::setBasePath,
                 "resetBasePath", &SystemManager::resetBasePath,
                 "getRelativePath", &SystemManager::getRelativePath,
+                "getScriptPath", &SystemManager::getScriptPath,
                 "getFileName", &SystemManager::getFileName,
                 "getDirectoryName", &SystemManager::getDirectoryName,
                 "getFileExtension", &SystemManager::getFileExtension,

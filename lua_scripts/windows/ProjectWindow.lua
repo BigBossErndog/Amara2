@@ -150,6 +150,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             onPress = function()
                 if not self.props.printLog then
                     self.props.printLog = self.parent:createChild("TerminalWindow", {
+                        projectPath = self.props.projectPath,
                         gameProcess = self.props.gameProcess,
                         onExit = function()
                             self.props.printLog = nil
@@ -201,8 +202,20 @@ return Nodes:define("ProjectWindow", "UIWindow", {
 
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.content:createChild("UIButton", {
-            id = "copyProjectButton",
-            toolTip = "toolTip_copyProject",
+            id = "openDocsButton",
+            toolTip = "toolTip_openDocs",
+            x = buttonPos.x,
+            y = buttonPos.y,
+            icon = 19,
+            onPress = function()
+                
+            end
+        })
+
+        buttonPos.x = buttonPos.x + buttonSpacing
+        self.props.content:createChild("UIButton", {
+            id = "moreToolsButton",
+            toolTip = "toolTip_moreTools",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 17,

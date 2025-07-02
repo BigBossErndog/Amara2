@@ -92,7 +92,7 @@ namespace Amara {
             )) return;
 
             if (input.active) {
-                input.queueInput(Quad(destRect));
+                input.queueInput(Quad(destRect), v, nullptr);
             }
             
             SDL_Rect new_sdl_viewport = Rectangle::makeSDLRect(Rectangle(destRect));

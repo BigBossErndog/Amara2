@@ -1,15 +1,12 @@
 namespace Amara {
     class Node;
+    class NodeInput;
 
     class NodeInput: public MessageBox {
     public:
-        Amara::Shape shape;
-
         Button hover;
         bool rec_hovered = false;
         bool hover_by_mouse = false;
-
-        Amara::Pointer* lastPointer = nullptr;
         
         bool held = false;
         double timeHeld = false;
@@ -18,6 +15,10 @@ namespace Amara {
         Vector2 drag = Vector2(0, 0);
 
         Vector2 rec_interact_pos;
+
+        CursorEnum cursor = CursorEnum::Default;
+
+        InputDef lastInteraction;
 
         void configure(nlohmann::json config) {
             if (config.is_boolean()) {
@@ -35,6 +36,9 @@ namespace Amara {
                 }
                 if (json_has(config, "draggable")) {
                     draggable = config["draggable"];
+                }
+                if (json_has(config, "cursor")) {
+                    cursor = config["cursor"];
                 }
             }
         }
@@ -55,9 +59,8 @@ namespace Amara {
             }
         }
 
-        void queueInput(const Amara::Shape::ShapeVariant& _shape) {
-            shape = _shape;
-            gameProps->inputManager->queueInput(this);
+        void queueInput(const Amara::Shape::ShapeVariant& _shape, Rectangle _viewport, nlohmann::json _data) {
+            gameProps->inputManager->queueInput({ this, _shape, _viewport, _data });
         }
         
         void run(double deltaTime) {
@@ -81,14 +84,18 @@ namespace Amara {
                 }
             }
 
+            Amara::Pointer* lastPointer = lastInteraction.lastPointer;
             if (hover.isDown) {
-                if (lastPointer == nullptr || !lastPointer->active || !shape.collidesWith(lastPointer->real_pos)) {
+                if (lastPointer == nullptr || !lastPointer->active || !lastInteraction.shape.collidesWith(lastPointer->real_pos)) {
                     hover.release();
 
                     if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", sol::nil });
                     handleMessage({ nullptr, "onPointerExit", sol::nil });
                     
                     hover_by_mouse = false;
+                }
+                else {
+                    handleMessage({ nullptr, "whilePointerHover", sol::nil });
                 }
             }
 
@@ -102,7 +109,6 @@ namespace Amara {
         virtual void deactivate() override {
             hover.release();
             hover_by_mouse = false;
-            lastPointer = nullptr;
             held = false;
             timeHeld = 0;
             MessageBox::deactivate();
@@ -113,11 +119,11 @@ namespace Amara {
                 sol::base_classes, sol::bases<Amara::MessageBox>(),
                 "mouse", sol::property([](Amara::NodeInput& n) { return n.gameProps->inputManager->mouse; }),
                 "hovered", sol::property([](Amara::NodeInput& n) { return n.hover.isDown; }),
-                "lastPointer", sol::readonly(&NodeInput::lastPointer),
                 "held", sol::readonly(&NodeInput::held),
                 "timeHeld", sol::readonly(&NodeInput::timeHeld),
                 "draggable", &NodeInput::draggable,
-                "configure", sol::resolve<void(sol::object)>(&NodeInput::configure)
+                "configure", sol::resolve<void(sol::object)>(&NodeInput::configure),
+                "cursor", &NodeInput::cursor
             );
         }
     };

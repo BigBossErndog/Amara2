@@ -63,6 +63,18 @@ namespace Amara {
         );
     }
 
+    Quad moveQuad(const Quad& quad, const Vector2& offset) {
+        return Quad(
+            quad.p1 + offset,
+            quad.p2 + offset,
+            quad.p3 + offset,
+            quad.p4 + offset
+        );
+    }
+    Quad moveQuad(const Quad& quad, float offsetX, float offsetY) {
+        return moveQuad(quad, Vector2(offsetX, offsetY));
+    }
+
     #ifdef AMARA_OPENGL
     Quad glTranslateQuad(const Rectangle& v, const Quad& q, bool insideTextureContainer) {
         if (!insideTextureContainer) {
