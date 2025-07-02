@@ -1,5 +1,5 @@
 return Nodes:define("ProjectWindow", "UIWindow", {
-    width = 110,
+    width = 108,
     height = 60,
 
     onConfigure = function(self, config)
