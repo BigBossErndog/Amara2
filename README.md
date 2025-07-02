@@ -206,4 +206,4 @@ Sorry, I'm not accepting code contributions. I made this engine so I can spend m
 ### - Why Amara'2'?
 The first Amara was a C++ game framework (built on SDL2) that I created during university. It was used to make the game [Pry In The Void](https://store.steampowered.com/app/1234990/Pry_Into_The_Void/).
 
-This new version vastly improves on it, while adding Lua scripting (So I don't have to compile the dang thing every time lol). The name itself is a reference that some people in my community may recognize from way back when.
+This new version vastly improves on it, while adding Lua scripting (so I don't have to compile the dang thing every time lol). The name itself is a reference that some people in my community may recognize from way back when.
