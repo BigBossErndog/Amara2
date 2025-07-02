@@ -300,14 +300,14 @@ return Nodes:define("TerminalWindow", "UIWindow", {
     end,
 
     pipeMessage = function(self, msg)
-        if string.starts_with(msg, "\t[") or string.contains(msg, "stack traceback") then
+        if string.starts_with(msg, "\t[") or string.starts_with(msg, "stack traceback") then
             return;
         end
 
         table.insert(self.props.messages, msg)
 
         local item = self.props.pool:grab()
-
+        
         if not item then
             item = table.remove(self.props.activePool, 1)
         end

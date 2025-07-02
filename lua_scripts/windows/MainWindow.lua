@@ -133,6 +133,7 @@ return Nodes:define("MainWindow", "UIWindow", {
             texture = "tickBox",
             input = {
                 active = true,
+                cursor = Cursor.Pointer,
                 onPointerDown = function()
                     settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
                     tickBox.frame = settings.autoOpenCodeEditor and 2 or 1
@@ -150,6 +151,7 @@ return Nodes:define("MainWindow", "UIWindow", {
             text = Localize:get("label_autoOpenCodeEditor"),
             input = {
                 active = true,
+                cursor = Cursor.Pointer,
                 onPointerDown = function()
                     settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
                     tickBox.frame = settings.autoOpenCodeEditor and 2 or 1
