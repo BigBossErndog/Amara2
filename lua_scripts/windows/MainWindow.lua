@@ -114,7 +114,7 @@ return Nodes:define("MainWindow", "UIWindow", {
             id = "refreshEditorsButton",
             toolTip = "toolTip_refreshCodeEditors",
             x = editorTitle.x + editorTitle.width + 4,
-            icon = 17,
+            icon = 18,
             onPress = function()
                 local settings = self.world.func:getSettings()
                 settings.codeEditorList = nil
@@ -128,13 +128,13 @@ return Nodes:define("MainWindow", "UIWindow", {
             origin = { 1, 0 },
             x = backer.x + backer.width,
             y = editorTitle.y + 2,
-            frame = settings.autoOpenCodeEditor and 1 or 0,
+            frame = settings.autoOpenCodeEditor and 2 or 1,
             texture = "tickBox",
             input = {
                 active = true,
                 onPointerDown = function()
                     settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
-                    tickBox.frame = settings.autoOpenCodeEditor and 1 or 0
+                    tickBox.frame = settings.autoOpenCodeEditor and 2 or 1
                     self.world.func:saveSettings()
                 end
             }
@@ -151,7 +151,7 @@ return Nodes:define("MainWindow", "UIWindow", {
                 active = true,
                 onPointerDown = function()
                     settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
-                    tickBox.frame = settings.autoOpenCodeEditor and 1 or 0
+                    tickBox.frame = settings.autoOpenCodeEditor and 2 or 1
                     self.world.func:saveSettings()
                 end
             }
@@ -165,7 +165,7 @@ return Nodes:define("MainWindow", "UIWindow", {
             toolTip = "toolTip_exit",
             x = buttonPos,
             y = 4,
-            icon = 0,
+            icon = 1,
             onPress = function()
                 self.world.props.windows.func:closeAll(function(self)
                     self.world:destroy()
@@ -180,7 +180,7 @@ return Nodes:define("MainWindow", "UIWindow", {
             toolTip = "toolTip_minimize",
             x = buttonPos,
             y = 4,
-            icon = 3,
+            icon = 4,
             onPress = function(self)
                 self.world:minimizeWindow()
             end
@@ -192,7 +192,7 @@ return Nodes:define("MainWindow", "UIWindow", {
             toolTip = "toolTip_openExistingProject",
             x = buttonPos,
             y = 4,
-            icon = 5,
+            icon = 6,
             onPress = function(button)
                 self.props.enabled = false
                 self.world:hideWindow()
@@ -233,7 +233,7 @@ return Nodes:define("MainWindow", "UIWindow", {
             toolTip = "toolTip_newProject",
             x = buttonPos,
             y = 4,
-            icon = 1,
+            icon = 2,
             onPress = function()
                 self.func:closeWindow(function()
                     self.props.enabled = false

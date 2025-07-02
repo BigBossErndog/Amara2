@@ -118,7 +118,7 @@ namespace Amara {
             Amara::Tile& tile = tiles[gy * mapWidth + gx];
             
             if (config.is_number()) {
-                tile.tileID = config.get<int>();
+                tile.tileID = config.get<int>() - 1;
             }
 
             drawOnce();

@@ -50,7 +50,7 @@ return Nodes:define("CopyProjectWindow", "UIWindow", {
             toolTip = "toolTip_browseDirectory",
             x = self.props.folderField.x + self.props.folderField.width + 4,
             y = self.props.folderField.y,
-            icon = 5,
+            icon = 6,
             onPress = function()
                 self.world:hideWindow()
 
@@ -79,7 +79,7 @@ return Nodes:define("CopyProjectWindow", "UIWindow", {
             toolTip = "toolTip_exit",
             x = buttonPos,
             y = 4,
-            icon = 0,
+            icon = 1,
             onPress = function(button)
                 self.world.props.windows.func:closeAll(function(self)
                     self.world:destroy()
@@ -94,7 +94,7 @@ return Nodes:define("CopyProjectWindow", "UIWindow", {
             toolTip = "toolTip_minimize",
             x = buttonPos,
             y = 4,
-            icon = 3,
+            icon = 4,
             onPress = function(button)
                 self.world:minimizeWindow()
                 button.props.enabled = false
@@ -107,7 +107,7 @@ return Nodes:define("CopyProjectWindow", "UIWindow", {
             toolTip = "toolTip_back",
             x = buttonPos,
             y = 4,
-            icon = 4,
+            icon = 5,
             onPress = function(button)
                 button.props.enabled = false
                 self.func:closeWindow(function()

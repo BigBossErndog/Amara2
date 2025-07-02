@@ -31,7 +31,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_runGame",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 2,
+            icon = 3,
             onPress = function()
                 if not self.props.gameProcess then
                     self.func:runGame()
@@ -54,7 +54,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_openCodeEditor",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 6
+            icon = 7
         })
 
         self:createChild("Hotkey", {
@@ -70,7 +70,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_openProjectDirectory",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 5,
+            icon = 6,
             onPress = function()
                 System:openDirectory(self.props.projectPath)
             end
@@ -89,7 +89,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_back",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 4,
+            icon = 5,
             onPress = function()
                 if self.props.gameProcess then
                     self.func:stopGame()
@@ -116,7 +116,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_exit",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 0,
+            icon = 1,
             onPress = function(button)
                 self.world.props.windows.func:closeAll(function(self)
                     self.world:destroy()
@@ -133,7 +133,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_buildGame",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 7,
+            icon = 8,
             onPress = function(button)
                 button.props.enabled = false
                 self.func:buildGame()
@@ -146,14 +146,14 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_openPrintLog",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 10,
+            icon = 11,
             onPress = function()
                 if not self.props.printLog then
                     self.props.printLog = self.parent:createChild("TerminalWindow", {
                         gameProcess = self.props.gameProcess,
                         onExit = function()
                             self.props.printLog = nil
-                            self.props.printLogButton.func:setIcon(10)
+                            self.props.printLogButton.func:setIcon(11)
                         end
                     })
                     self.props.printLog.func:openWindow()
@@ -176,7 +176,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_copyProject",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 11,
+            icon = 12,
             onPress = function()
                 if self.props.gameProcess then
                     self.func:stopGame()
@@ -196,6 +196,18 @@ return Nodes:define("ProjectWindow", "UIWindow", {
                     
                     self:destroy()
                 end)
+            end
+        })
+
+        buttonPos.x = buttonPos.x + buttonSpacing
+        self.props.content:createChild("UIButton", {
+            id = "copyProjectButton",
+            toolTip = "toolTip_copyProject",
+            x = buttonPos.x,
+            y = buttonPos.y,
+            icon = 17,
+            onPress = function()
+                
             end
         })
 
@@ -297,11 +309,11 @@ return Nodes:define("ProjectWindow", "UIWindow", {
                     self.props.printLog.func:handleMessage(errorMessage)
                 end
                 self.props.gameProcess = nil
-                self.props.playButton.func:setIcon(2)
+                self.props.playButton.func:setIcon(3)
             end
         })
 
-        self.props.playButton.func:setIcon(12)
+        self.props.playButton.func:setIcon(13)
     end,
 
     stopGame = function(self)
@@ -310,7 +322,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             self.props.gameProcess = nil
         end
 
-        self.props.playButton.func:setIcon(2)
+        self.props.playButton.func:setIcon(3)
     end,
 
     buildGame = function(self)

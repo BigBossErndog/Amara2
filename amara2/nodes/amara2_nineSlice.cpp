@@ -11,7 +11,7 @@ namespace Amara {
         int drawWidth = 128;
         int drawHeight = 128;
 
-        int frame = 0;
+        int frame = 1;
         
         int textureWidth = 0;
         int textureHeight = 0;
@@ -153,7 +153,7 @@ namespace Amara {
                     
                     int numFrames = static_cast<int>(floor(static_cast<float>(textureWidth) / logicalFrameW) * floor(static_cast<float>(textureHeight) / logicalFrameH));
                     if (numFrames == 0) numFrames = 1;
-                    int fixedFrame = frame % numFrames;
+                    int fixedFrame = (frame - 1) % numFrames;
 
                     frameAtlasX = static_cast<float>((fixedFrame % framesPerRow) * logicalFrameW);
                     frameAtlasY = static_cast<float>(floor(static_cast<float>(fixedFrame) / framesPerRow) * logicalFrameH);

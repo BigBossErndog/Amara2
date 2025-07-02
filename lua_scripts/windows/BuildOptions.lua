@@ -31,7 +31,7 @@ return Nodes:define("BuildOptions", "UIWindow", {
             toolTip = "toolTip_back",
             x = buttonPos,
             y = 4,
-            icon = 4,
+            icon = 5,
             onPress = function(button)
                 button.props.enabled = false
                 self.func:closeWindow(function(b)
@@ -82,7 +82,7 @@ return Nodes:define("BuildOptions", "UIWindow", {
             toolTip = "toolTip_browseFile",
             x = self.props.iconField.x + self.props.iconField.width + 4,
             y = self.props.iconField.y,
-            icon = 5,
+            icon = 6,
             onPress = function()
                 self.world:hideWindow()
 

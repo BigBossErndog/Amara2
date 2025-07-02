@@ -98,7 +98,7 @@ return Nodes:define("DropDownMenu", "FillRect", {
                     self.props.menu.visible = false
                     self.func:select(backer.props.opt)
 
-                    self.props.dropIcon.frame = 8
+                    self.props.dropIcon.frame = 9
                 end)
 
                 table.insert(self.props.menuOptions, txt)
@@ -115,7 +115,7 @@ return Nodes:define("DropDownMenu", "FillRect", {
                     
                     self.props.dropIcon = dropIcon
                 end
-                self.props.dropIcon.frame = 8
+                self.props.dropIcon.frame = 9
             else
                 if self.props.dropIcon then
                     self.props.dropIcon.visible = false
@@ -129,9 +129,9 @@ return Nodes:define("DropDownMenu", "FillRect", {
             self.props.menu.visible = not self.props.menu.visible
             if self.props.dropIcon then
                 if self.props.menu.visible then
-                    self.props.dropIcon.frame = 9
+                    self.props.dropIcon.frame = 10
                 else
-                    self.props.dropIcon.frame = 8
+                    self.props.dropIcon.frame = 9
                 end
             end
         end

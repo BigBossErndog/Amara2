@@ -1,5 +1,6 @@
 return Nodes:define("BuildNode", "ProcessNode", {
     id = "buildNode",
+
     onConfigure = function(self, config)
         if config.projectPath and config.platform then
             self.props.projectPath = config.projectPath
@@ -20,10 +21,16 @@ return Nodes:define("BuildNode", "ProcessNode", {
             end
         end
 
+        if config.printLog then
+            self.props.printLog = config.printLog
+        end
+
         local args = {}
 
         if self.props.platform == "windows" then
             local buildDir = System:join(self.props.projectPath, "build", "windows")
+            self.props.buildDir = buildDir
+
             local clangLLVMPath = System:getRelativePath("resources/clang-llvm")
             local sdl3Path = System:getRelativePath("resources/libs/SDL3-3.2.16")
             local nlohmannPath = System:getRelativePath("resources/libs/nlohmann/include")
@@ -56,16 +63,8 @@ return Nodes:define("BuildNode", "ProcessNode", {
 
             if config.iconPath then
                 self.props.iconPath = config.iconPath
-
                 self.props.iconDest = System:join(buildDir, "icon.ico")
-                System:WriteICO(config.iconPath, self.props.iconDest)
-                
                 self.props.resFile = System:join(buildDir, "icon.rc")
-                System:writeFile(self.props.resFile, "1 ICON \"" .. self.props.iconDest .. "\"\n")
-                
-                local command = string.format("%s \"%s\"", System:getRelativePath("resources/clang-llvm/bin/llvm-rc"), self.props.resFile)
-                System:execute(command)
-
                 self.props.resOutputFile = System:join(buildDir, "icon.res")
             end
 
@@ -148,31 +147,54 @@ return Nodes:define("BuildNode", "ProcessNode", {
     onPrepare = function(actor)
         local self = actor:getChild("buildNode")
 
-        self.props.printLog = self.world.props.windows:createChild("TerminalWindow", {
-            gameProcess = self,
-            props = {
-                projectPath = self.props.projectPath
-            },
-            allowMinimize = true,
-            disableSavePosition = true,
-            onExit = function(self)
-                local newWindow = self.world.props.windows:createChild("ProjectWindow", {
+        actor.world.forcedClickThrough = true
+
+        if not self.props.printLog then
+            self.props.printLog = self.world.props.windows:createChild("TerminalWindow", {
+                gameProcess = self,
+                props = {
                     projectPath = self.props.projectPath
-                })
-                newWindow.func:openWindow()
-                
-                if self.props.gameProcess then
-                    self.props.gameProcess:destroy()
-                    self.props.gameProcess = nil
+                },
+                allowMinimize = true,
+                disableSavePosition = true,
+                onExit = function(self)
+                    local newWindow = self.world.props.windows:createChild("ProjectWindow", {
+                        projectPath = self.props.projectPath
+                    })
+                    newWindow.func:openWindow()
                     
-                    if self.props.platform == "windows" then
-                        System:remove(System:join(self.props.projectPath, "build", "windows"))
+                    if self.props.gameProcess then
+                        self.props.gameProcess:destroy()
+                        self.props.gameProcess = nil
+                        
+                        if self.props.platform == "windows" then
+                            System:remove(System:join(self.props.projectPath, "build", "windows"))
+                        end
                     end
                 end
-            end
-        })
-        self.props.printLog.func:openWindow()
+            })
+            self.props.printLog.func:openWindow()
+        end
+
         self.props.printLog.func:handleMessage(Localize:get("label_building"))
+
+        if self.props.platform == "windows" then
+            if self.props.iconPath then
+                System:WriteICO(self.props.iconPath, self.props.iconDest)
+                System:writeFile(self.props.resFile, "1 ICON \"" .. self.props.iconDest .. "\"\n")
+                
+                local command = string.format("%s \"%s\"", System:getRelativePath("resources/clang-llvm/bin/llvm-rc"), self.props.resFile)
+                System:execute(command)
+            end
+        end
+
+        actor.world.forcedClickThrough = false
+    end,
+
+    onOutput = function(self, msg)
+        if self.props.printLog then
+            self.props.printLog.func:handleMessage(msg)
+        end
     end,
 
     onExit = function(self, exitCode)
@@ -182,6 +204,8 @@ return Nodes:define("BuildNode", "ProcessNode", {
             if exitCode ~= 0 then
                 System:remove(System:join(self.props.projectPath, "build", "windows"))
             else
+                self.world.forcedClickThrough = true
+
                 if self.props.iconDest then
                     System:remove(self.props.iconDest)
                 end
@@ -208,6 +232,8 @@ return Nodes:define("BuildNode", "ProcessNode", {
                 end
 
                 System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
+
+                self.world.forcedClickThrough = false
             end
         end
         

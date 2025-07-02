@@ -137,7 +137,7 @@ return Nodes:define("TerminalWindow", "UIWindow", {
             id = "exitButton",
             toolTip = "toolTip_exit",
             y = 4,
-            icon = 0,
+            icon = 1,
             props = {
                 buttonPosX = buttonPosX
             },
@@ -164,7 +164,7 @@ return Nodes:define("TerminalWindow", "UIWindow", {
                 id = "minimizeButton",
                 toolTip = "toolTip_minimize",
                 y = 4,
-                icon = 3,
+                icon = 4,
                 props = {
                     buttonPosX = buttonPosX
                 },
@@ -181,12 +181,12 @@ return Nodes:define("TerminalWindow", "UIWindow", {
 
         buttonPosX = buttonPosX + buttonSpacing
 
-        self.frame = terminalWindowData.darkened and 1 or 0
+        self.frame = terminalWindowData.darkened and 2 or 1
         self.props.darkenButton = self.props.content:createChild("UIButton", {
             id = "darkenButton",
             toolTip = "toolTip_toggleBGOpacity",
             y = 4,
-            icon = terminalWindowData.darkened and 14 or 13,
+            icon = terminalWindowData.darkened and 15 or 14,
             props = {
                 buttonPosX = buttonPosX
             },
@@ -197,9 +197,9 @@ return Nodes:define("TerminalWindow", "UIWindow", {
             end,
             onPress = function()
                 terminalWindowData.darkened = not terminalWindowData.darkened
-                self.props.darkenButton.func:setIcon(terminalWindowData.darkened and 14 or 13)
+                self.props.darkenButton.func:setIcon(terminalWindowData.darkened and 15 or 14)
 
-                self.frame = terminalWindowData.darkened and 1 or 0
+                self.frame = terminalWindowData.darkened and 2 or 1
 
                 self.world.func:saveSettings()
             end

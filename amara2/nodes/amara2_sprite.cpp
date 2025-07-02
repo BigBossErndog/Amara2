@@ -25,7 +25,7 @@ namespace Amara {
         int cropTop = 0;
         int cropBottom = 0;
 
-        int frame = 0;
+        int frame = 1;
 
         Animation* animation = nullptr;
 
@@ -171,7 +171,7 @@ namespace Amara {
             SDL_FRect srcRect, destRect;
 
             if (spritesheet) {
-                int fixedFrame = frame % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
+                int fixedFrame = (frame - 1) % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
                 srcRect.x = static_cast<float>((fixedFrame % (textureWidth / frameWidth)) * frameWidth + cropLeft);
                 srcRect.y = static_cast<float>(floor(fixedFrame / (textureWidth / frameWidth)) * frameHeight + cropTop);
                 srcRect.w = static_cast<float>(frameWidth - cropLeft - cropRight);

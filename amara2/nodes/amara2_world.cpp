@@ -64,6 +64,7 @@ namespace Amara {
 
         bool clickThrough = false;
         bool clickThroughState = false;
+        bool forcedClickThrough = false;
 
         bool exception_thrown = false;
         
@@ -219,6 +220,7 @@ namespace Amara {
             window_data["transparent"] = transparent;
             window_data["alwaysOnTop"] = alwaysOnTop;
             window_data["clickThrough"] = clickThrough;
+            window_data["forcedClickThrough"] = forcedClickThrough;
             window_data["screenMode"] = screenMode;
             window_data["graphics"] = graphics_to_string(graphics);
             window_data["backgroundColor"] = backgroundColor.toJSON();
@@ -346,6 +348,9 @@ namespace Amara {
             }
             if (json_has(config, "clickThrough")) {
                 setClickThrough(config["clickThrough"]);
+            }
+            if (json_has(config, "forcedClickThrough")) {
+                setForcedClickThrough(config["forcedClickThrough"]);
             }
             if (json_has(config, "backgroundColor")) {
                 backgroundColor = config["backgroundColor"];
@@ -567,25 +572,37 @@ namespace Amara {
 
         void checkClickThrough() {
             if (clickThrough) {
-                Vector2 mousePos;
-                float mx, my;
-                int wx, wy;
-                SDL_MouseButtonFlags mouseFlags = SDL_GetGlobalMouseState(&mx, &my);
-                SDL_GetWindowPosition(window, &wx, &wy);
-                mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
-                mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
-
-                if (inputManager.checkPointerHover(mousePos)) {
-                    if (clickThroughState) {
-                        setClickThroughState(false);
-                        SDL_RaiseWindow(window);
-                        
-                        update_mouse = true;
-                    }
-                }
-                else {
+                if (forcedClickThrough) {
                     setClickThroughState(true);
                 }
+                else {
+                    Vector2 mousePos;
+                    float mx, my;
+                    int wx, wy;
+                    SDL_MouseButtonFlags mouseFlags = SDL_GetGlobalMouseState(&mx, &my);
+                    SDL_GetWindowPosition(window, &wx, &wy);
+                    mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
+                    mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
+
+                    if (inputManager.checkPointerHover(mousePos)) {
+                        if (clickThroughState) {
+                            setClickThroughState(false);
+                            SDL_RaiseWindow(window);
+                            
+                            update_mouse = true;
+                        }
+                    }
+                    else {
+                        setClickThroughState(true);
+                    }
+                }
+            }
+        }
+
+        void setForcedClickThrough(bool enabled) {
+            forcedClickThrough = enabled;
+            if (clickThrough && forcedClickThrough) {
+                setClickThroughState(true);
             }
         }
 
@@ -1228,6 +1245,7 @@ namespace Amara {
                 "vsync", sol::property([](const Amara::World& world) { return world.vsync; }, &World::setVsync),
                 "alwaysOnTop", sol::property([](const Amara::World& world) { return world.alwaysOnTop; }, &World::setAlwaysOnTop),
                 "clickThrough", sol::property([](const Amara::World& world) { return world.clickThrough; }, &World::setClickThrough),
+                "forcedClickThrough", sol::property([](const Amara::World& world) { return world.forcedClickThrough; }, &World::setForcedClickThrough),
                 "windowTitle", sol::property([](const Amara::World& world) { return world.windowTitle; }, &World::setWindowTitle),
                 "backgroundColor", sol::property([](const Amara::World& world) { return world.backgroundColor; }, [](Amara::World& world, sol::object value) {
                     world.backgroundColor = value;

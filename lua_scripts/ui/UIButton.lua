@@ -7,17 +7,17 @@ return Nodes:define("UIButton", "NineSlice", {
         active = true,
         onPointerDown = function(self, pointer)
             if self.props.enabled then
-                self.frame = 1
+                self.frame = 2
             end
         end,
         onPointerUp = function(self, pointer)
-            self.frame = 0
+            self.frame = 1
             if self.props.enabled and self.func.onPress then
                 self.func:onPress()
             end
         end,
         onPointerExit = function(self, pointer)
-            self.frame = 0
+            self.frame = 1
         end
     },
 
@@ -68,7 +68,7 @@ return Nodes:define("UIButton", "NineSlice", {
     end,
 
     onUpdate = function(self, deltaTime)
-        if self.frame == 0 then
+        if self.frame == 1 then
             if self.props.icon then
                 self.props.icon.y = self.height / 2.0
             end
@@ -96,12 +96,12 @@ return Nodes:define("UIButton", "NineSlice", {
     end,
 
     forcePress = function(self)
-        self.frame = 1
+        self.frame = 2
         if self.props.enabled and self.func.onPress then
             self.func:onPress()
         end
         self:wait(0.1):next(function()
-            self.frame = 0
+            self.frame = 1
         end)
     end
 })
