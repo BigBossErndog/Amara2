@@ -34,7 +34,7 @@ This is a game engine for people who dislike game engine GUIs. If you're like me
 
 Get the benefits of an easy-to-use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
 
-All your core necessities sit in small windows on top of your desktop over the program you're currently using, so you can use whichever tools you want without having to switch out of the engine. 
+All your core necessities sit in small windows on top of your desktop over the program you're currently using, so you can use whichever tools you want without having to switch out of the engine. And the front end is build using the engine, all the lua scripts are in the repository for you to check out!
 
 Over time I want this program to tie in with all your favorite game dev tools, easy access to everything you need.
 
@@ -196,7 +196,7 @@ There are some important global objects to know when using Amara2.
 - *Keyboard* : Used for handling keyboard input.
 - *Gamepads* : Used for handling gamepad input.
 - *Controls* : Used for creating and handling your own control schemes (e.g. define multiple inputs to the same action, or handling user-defined controls).
-- 
+
 
 ## Not-Yet-Frequently Asked Questions
 ### - Can I contribute code to development?
