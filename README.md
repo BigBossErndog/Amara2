@@ -38,8 +38,10 @@ All your core necessities sit in small windows on top of your desktop over the p
 
 Over time I want this program to tie in with all your favorite game dev tools, easy access to everything you need.
 
-I'm also committed to using this to create all my games from now on (1st July 2025).
 The front end is also built using the engine, all the lua scripts are in the repository for you to check out!
+
+I'm committed to using this to create all my games from now on (1st July 2025).
+
 
 ## Supported Tools
 - Code Editors such as VS Code, Atom, Sublime.
