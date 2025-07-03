@@ -128,7 +128,7 @@ return Nodes:define("ProjectWindow", "UIWindow", {
         buttonPos.x = 6
         buttonPos.y = buttonPos.y + buttonSpacing
         
-        self.props.content:createChild("UIButton", {
+        self.props.buildButton = self.props.content:createChild("UIButton", {
             id = "buildButton",
             toolTip = "toolTip_buildGame",
             x = buttonPos.x,
@@ -137,6 +137,13 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             onPress = function(button)
                 button.props.enabled = false
                 self.func:buildGame()
+            end
+        })
+
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftAlt, Key.B },
+            onPress = function()
+                self.props.buildButton.func:forcePress()
             end
         })
 

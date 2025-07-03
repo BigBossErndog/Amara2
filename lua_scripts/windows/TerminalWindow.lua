@@ -244,7 +244,7 @@ return Nodes:define("TerminalWindow", "UIWindow", {
             item.text = string.gsub(item.text, "%[string ", "[")
             ret = true
         elseif string.starts_with(msg, "caught (...) exception") then
-            item.text = "Invalid property or argument assignment."
+            item.text = "Error: Invalid property or argument assignment."
             item.color = Colors.Red
             self.props.allowTrace = true
             ret = true
