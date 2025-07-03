@@ -235,14 +235,18 @@ return Nodes:define("TerminalWindow", "UIWindow", {
     checkForError  = function(self, msg, item)
         local ret = false
 
-        if string.starts_with(msg, "[string ") then
+        if string.contains(msg, "[string ") then
             item.color = Colors.Red
             local filename, details = string.match(msg, '%[string "([^"]+)"]:(.*)')
             if filename and details then
-                item.text = string.format('[Error: "%s"]:%s', filename, details)
-            else
-                item.text = string.gsub(msg, "%[string ", "[Error: ")
+                item.text = string.format('Error in "%s" at line %s', filename, details)
             end
+            item.text = string.gsub(item.text, "%[string ", "[")
+            ret = true
+        elseif string.starts_with(msg, "caught (...) exception") then
+            item.text = "Invalid property or argument assignment."
+            item.color = Colors.Red
+            self.props.allowTrace = true
             ret = true
         elseif string.starts_with(msg, "Error") then
             item.color = Colors.Red
@@ -300,9 +304,13 @@ return Nodes:define("TerminalWindow", "UIWindow", {
     end,
 
     pipeMessage = function(self, msg)
-        if string.starts_with(msg, "\t[") or string.starts_with(msg, "stack traceback") then
+        if string.starts_with(msg, "\t[C") or string.starts_with(msg, "stack traceback") then
             return;
         end
+        if string.starts_with(msg, "\t[string") and not self.props.allowTrace then
+            return;
+        end
+        self.props.allowTrace = false
 
         table.insert(self.props.messages, msg)
 
@@ -334,10 +342,12 @@ return Nodes:define("TerminalWindow", "UIWindow", {
 
         self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - item.y - item.height
         self.props.bottomLocked = true
+
+        return item
     end,
 
     handleMessage = function(self, msg)
-        self.func:pipeMessage(msg)
+        return self.func:pipeMessage(msg)
     end,
 
     savePosition = function(self)

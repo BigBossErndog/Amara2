@@ -1,20 +1,24 @@
+local editorTooltips = {
+    ["codeEditor_VSCode"] = "toolTip_openInVSCode",
+    ["codeEditor_VSCodeInsiders"] = "toolTip_openInVSCodeInsiders",
+    ["codeEditor_CodeOSS"] = "toolTip_openInCodeOSS",
+    ["codeEditor_Atom"] = "toolTip_openInAtom",
+    ["codeEditor_Sublime"] = "toolTip_openInSublimeText",
+    ["codeEditor_Sublime-Text"] = "toolTip_openInSublimeText",
+    ["codeEditor_Notepad"] = "toolTip_openInNotepad",
+    ["codeEditor_CLion"] = "toolTip_openInCLion",
+    ["codeEditor_Cursor"] = "toolTip_openInCursor",
+    ["codeEditor_Zed"] = "toolTip_openInZed",
+    ["codeEditor_Figma"] = "toolTip_openInFigma",
+    ["codeEditor_VSCodium"] = "toolTip_openInVSCodium"
+}
+
 return Nodes:define("CodeEditorButton", "UIButton", {
     onCreate = function(self)
         local settings = self.world.func:getSettings()
-        if settings.codeEditor == "codeEditor_VSCode" then
-            self.props.toolTip = "toolTip_openInVSCode"
-        elseif settings.codeEditor == "codeEditor_VSCodeInsiders" then
-            self.props.toolTip = "toolTip_openInVSCodeInsiders"
-        elseif settings.codeEditor == "codeEditor_CodeOSS" then
-            self.props.toolTip = "toolTip_openInCodeOSS"
-        elseif settings.codeEditor == "codeEditor_Atom" then
-            self.props.toolTip = "toolTip_openInAtom"
-        elseif settings.codeEditor == "codeEditor_Sublime" then
-            self.props.toolTip = "toolTip_openInSublimeText"
-        elseif settings.codeEditor == "codeEditor_Sublime-Text" then
-            self.props.toolTip = "toolTip_openInSublimeText"
-        elseif settings.codeEditor == "codeEditor_Notepad" then
-            self.props.toolTip = "toolTip_openInNotepad"
+        
+        if settings.codeEditor and editorTooltips[settings.codeEditor] then
+            self.props.toolTip = editorTooltips[settings.codeEditor]
         else
             self.props.toolTip = "toolTip_noCodeEditor"
         end

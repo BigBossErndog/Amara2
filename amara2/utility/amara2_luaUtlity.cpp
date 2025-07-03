@@ -2,6 +2,7 @@ namespace Amara {
     class Node;
 
     std::string node_to_string(sol::object);
+    std::string node_to_short_string(sol::object);
     
     sol::object json_to_lua(sol::state& lua, nlohmann::json json) {
         if (json.is_null()) {
@@ -54,7 +55,7 @@ namespace Amara {
         } else if (obj.is<Circle>()) {
             return obj.as<Circle>().toJSON();
         } else if (is_node(obj)) {
-            return node_to_string(obj);
+            return node_to_short_string(obj);
         } else if (obj.get_type() == sol::type::table) {
             sol::table tbl = obj.as<sol::table>();
             nlohmann::json json;
@@ -132,10 +133,10 @@ namespace Amara {
 
         if (obj.is<sol::table>()) {
             nlohmann::json j = lua_to_json(obj);
-            return j.dump(4);
+            return j.dump(2);
         }
 
-        return lua_to_json(obj).dump(4);
+        return lua_to_json(obj).dump(2);
     }
 
     sol::object string_to_lua_object(sol::state& lua, const std::string& luaString) {

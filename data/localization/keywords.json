@@ -9,7 +9,7 @@
     "title_executableIcon": "Executable Icon (optional)",
 
     "toolTip_newProject": "New Project",
-    "toolTip_exit": "Exit",
+    "toolTip_exit": "Exit (Ctrl + Alt + F4)",
     "toolTip_minimize": "Minimize",
     "toolTip_back": "Back",
     "toolTip_browseDirectory": "Browse Directory",
@@ -32,6 +32,13 @@
     "toolTip_openInAtom": "Open In Atom (Ctrl + Alt + E)",
     "toolTip_openInNotepad": "Open In Notepad (Ctrl + Alt + E)",
     "toolTip_openInCodeOSS": "Open In Code OSS (Ctrl + Alt + E)",
+    "toolTip_openInCLion": "Open In CLion (Ctrl + Alt + E)",
+    "toolTip_openInCursor": "Open In Cursor (Ctrl + Alt + E)",
+    "toolTip_openInZed": "Open In Zed (Ctrl + Alt + E)",
+    "toolTip_openInFigma": "Open In Figma (Ctrl + Alt + E)",
+    "toolTip_openInVSCodium": "Open In VS Codium (Ctrl + Alt + E)",
+    "toolTip_openInLapce": "Open In Lapce (Ctrl + Alt + E)",
+    "toolTip_openInLiteXL": "Open In Lite XL (Ctrl + Alt + E)",
     
     "toolTip_openPrintLog": "Open Print Log (Ctrl + Alt + M)",
     "toolTip_copyProject": "Copy Project To New Location",
@@ -64,5 +71,11 @@
     "codeEditor_VSCodeInsiders": "Visual Studio Code Insiders",
     "codeEditor_SublimeText": "Sublime Text",
     "codeEditor_Atom": "Atom",
-    "codeEditor_Notepad": "Notepad"
+    "codeEditor_Notepad": "Notepad",
+    "codeEditor_CLion": "CLion",
+    "codeEditor_Cursor": "Cursor",
+    "codeEditor_Zed": "Zed",
+    "codeEditor_Figma": "Figma",
+    "codeEditor_VSCodium": "VS Codium",
+    "codeEditor_LiteXL": "Lite XL"
 }

@@ -44,7 +44,7 @@ return Nodes:define("ToolTips", "NineSlice", {
         self.height = self.props.txt.height + 4
 
         self.props.txt:goTo(
-            math.floor(-self.props.txt.width/2.0),
+            math.ceil(-self.props.txt.width/2.0),
             math.floor(-self.props.txt.height/2.0)
         )
         
@@ -79,7 +79,7 @@ return Nodes:define("ToolTips", "NineSlice", {
             self.func:followMouse()
         end
         if self.props.justShown then
-            self.alpha = self.alpha + deltaTime/0.2
+            self.alpha = self.alpha + deltaTime/0.16
             if self.alpha >= 1 then
                 self.alpha = 1
             end
@@ -87,7 +87,7 @@ return Nodes:define("ToolTips", "NineSlice", {
         elseif self.visible and self.alpha > 0 then
             self.props.attempt = 0
             self.props.check = nil
-            self.alpha = self.alpha - deltaTime/0.2
+            self.alpha = self.alpha - deltaTime/0.16
             if self.alpha <= 0 then
                 self.alpha = 0
                 self.visible = false

@@ -868,7 +868,7 @@ namespace Amara {
 
                 assets.init();
 
-                debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics));
+                debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics), ".");
 
                 showWindow();
                 restoreWindow();
@@ -1017,7 +1017,7 @@ namespace Amara {
             }
             #endif
 
-            if (input.active) {
+            if (input.active && !passOn.insideTextureContainer) {
                 input.queueInput(Quad(v), v, nullptr);
             }
             

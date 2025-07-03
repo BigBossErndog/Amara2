@@ -48,8 +48,10 @@ namespace Amara {
         virtual void deactivate() {
             active = false;
             for (Amara::Message& msg: gameProps->messages->queue) {
-                msg.forceRemove = true;
-                msg.active = false;
+                if (msg.sender == this) {
+                    msg.forceRemove = true;
+                    msg.active = false;
+                }
             }
         }
 

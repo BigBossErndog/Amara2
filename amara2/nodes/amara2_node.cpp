@@ -334,7 +334,7 @@ namespace Amara {
             if (messages.active) messages.run();
 
             input.drag = Vector2(0, 0);
-            if (input.active) {
+            if (input.active && !passOn.insideTextureContainer) {
                 input.run(deltaTime);
 
                 Amara::Pointer* lastPointer = input.lastInteraction.lastPointer;
@@ -699,22 +699,26 @@ namespace Amara {
         
         explicit operator std::string() const {
             std::string id_str = "";
-            if (!id.empty()) id_str = String::concat(", id = ", id);
+            if (!id.empty()) id_str = String::concat(": \"", id, "\"");
             if (String::equal(baseNodeID, nodeID)) {
                 return String::concat(
-                    "( ", baseNodeID, id_str, " )"
+                    "(", baseNodeID, id_str, ")"
                 );
             }
             return String::concat(
-                "( ",
+                "(",
                     baseNodeID, " -> ",
                     nodeID,
                     id_str,
-                " )"
+                ")"
             );
         }
         friend std::ostream& operator<<(std::ostream& os, const Node& e) {
             return os << static_cast<std::string>(e);
+        }
+
+        std::string shortString() {
+            return String::concat("(", nodeID, ")");
         }
         
         static void clean_node_list(std::vector<Amara::Node*>& list) {
@@ -897,6 +901,9 @@ namespace Amara {
     }
     std::string node_to_string(sol::object obj) {
         return std::string(obj.as<Amara::Node>());
+    }
+    std::string node_to_short_string(sol::object obj) {
+        return std::string(obj.as<Amara::Node*>()->shortString());
     }
     
     struct sort_entities_by_depth {

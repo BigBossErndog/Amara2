@@ -6,7 +6,12 @@ function OpenCodeEditor(settings, projectPath, filePath)
         ["codeEditor_Atom"]           = { cmd = "atom",          project = true, file_flag = nil  },
         ["codeEditor_Sublime"]        = { cmd = "subl",          project = true, file_flag = nil  },
         ["codeEditor_Sublime-Text"]   = { cmd = "sublime_text",  project = true, file_flag = nil  },
-        ["codeEditor_Notepad"]        = { cmd = "notepad",       project = false, file_flag = nil }
+        ["codeEditor_Notepad"]        = { cmd = "notepad",       project = false, file_flag = nil },
+        ["codeEditor_CLion"]          = { cmd = "clion",         project = true,  file_flag = nil  },
+        ["codeEditor_Cursor"]         = { cmd = "cursor",        project = true,  file_flag = "-g" },
+        ["codeEditor_Zed"]            = { cmd = "zed",           project = true,  file_flag = nil  },
+        ["codeEditor_Figma"]          = { cmd = "figma",         project = false, file_flag = nil  },
+        ["codeEditor_VSCodium"]       = { cmd = "codium",        project = true,  file_flag = "-g" }
     }
 
     local editorKey = settings.codeEditor

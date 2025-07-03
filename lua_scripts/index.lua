@@ -202,6 +202,21 @@ return Creator:createWorld({
         if System:programInstalled("notepad") then
             table.insert(editors, "codeEditor_Notepad")
         end
+        if System:programInstalled("clion") then
+            table.insert(editors, "codeEditor_CLion")
+        end
+        if System:programInstalled("cursor") then
+            table.insert(editors, "codeEditor_Cursor")
+        end
+        if System:programInstalled("zed") then
+            table.insert(editors, "codeEditor_Zed")
+        end
+        if System:programInstalled("figma") then
+            table.insert(editors, "codeEditor_Figma")
+        end
+        if System:programInstalled("codium") then
+            table.insert(editors, "codeEditor_VSCodium")
+        end
         
         if #editors > 0 then
             if not settings.codeEditor then
