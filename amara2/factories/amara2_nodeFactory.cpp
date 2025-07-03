@@ -37,14 +37,14 @@ namespace Amara {
 
         bool load(std::string key, std::string path) {
             if (factory.find(key) != factory.end()) {
-                debug_log("Error: \"", key, "\" is a reserved node name.");
+                fatal_error("Error: \"", key, "\" is a reserved node name.");
                 return false;
             }
             
             std::string script_path = gameProps->system->getScriptPath(path);
 
             if (!gameProps->system->exists(script_path)) {
-                debug_log("Error: Failed to load Node \"", key, "\" from \"", path, "\". File not found.");
+                fatal_error("Error: Failed to load Node \"", key, "\" from \"", path, "\". File not found.");
                 return false;
             }
             
@@ -137,7 +137,7 @@ namespace Amara {
                 }
             }
             
-            debug_log("Error: Node with key \"", key, "\" was not found.");
+            fatal_error("Error: Node with key \"", key, "\" was not found.");
             gameProps->breakWorld();
             return nullptr;
         }
@@ -170,7 +170,7 @@ namespace Amara {
                 return it->second(node);
             }
             else {
-                debug_log("Error: Node type with key \"", node->baseNodeID, "\" was not registered.");
+                fatal_error("Error: Node type with key \"", node->baseNodeID, "\" was not registered.");
             }
             return sol::lua_nil;
         }

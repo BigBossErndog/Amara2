@@ -25,7 +25,7 @@ namespace Amara {
                     compiledScripts[key] = loadResult;
                 }
                 else {
-                    debug_log("Error: Invalid script file at \"", script_path, "\".");
+                    fatal_error("Error: Invalid script file at \"", script_path, "\"");
                     gameProps->lua_exception_thrown = true;
                     gameProps->breakWorld();
                     return false;

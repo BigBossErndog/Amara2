@@ -41,14 +41,14 @@ namespace Amara {
             image = nullptr;
 
             if (!gameProps->assets->has(key)) {
-                debug_log("Error: Asset \"", key, "\" was not found.");
+                fatal_error("Error: Asset \"", key, "\" was not found.");
                 return false;
             }
 
             image = gameProps->assets->get(key)->as<ImageAsset*>();
             
             if (image == nullptr) {
-                debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
+                fatal_error("Error: Asset \"", key, "\" is not a valid texture asset.");
                 return false;
             }
 
@@ -69,13 +69,13 @@ namespace Amara {
 
                 return true;
             }
-            debug_log("Error: Asset \"", key, "\" was not found.");
+            fatal_error("Error: Asset \"", key, "\" was not found.");
             return false;
         }
 
         void createObjects(sol::protected_function func) {
             if (!tmxAsset) {
-                debug_log("Error: No tilemap set.");
+                fatal_error("Error: No tilemap set.");
                 return;
             }
             if (!func.valid()) {

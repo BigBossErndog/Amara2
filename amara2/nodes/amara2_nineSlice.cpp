@@ -65,14 +65,14 @@ namespace Amara {
             if (destroyed || key.empty()) return false;
 
             if (!gameProps->assets->has(key)) {
-                debug_log("Error: Asset \"", key, "\" was not found.");
+                fatal_error("Error: Asset \"", key, "\" was not found.");
                 return false;
             }
 
             image = gameProps->assets->get(key)->as<ImageAsset*>();
             
             if (image == nullptr) {
-                debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
+                fatal_error("Error: Asset \"", key, "\" is not a valid texture asset.");
                 gameProps->breakWorld();
                 return false;
             }

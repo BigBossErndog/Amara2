@@ -360,7 +360,7 @@ namespace Amara {
             if (destroyed) return;
 
             update(deltaTime);
-            
+
             if (!destroyed && funcs.hasFunction("onUpdate")) {
                 funcs.callFunction("onUpdate", deltaTime);
             }
@@ -456,7 +456,7 @@ namespace Amara {
             
             shaderProgram = gameProps->shaders->getShaderProgram(key);
             if (shaderProgram == nullptr) {
-                debug_log("Error: Shader program \"", key, "\" not found.");
+                fatal_error("Error: Shader program \"", key, "\" not found.");
                 return false;
             }
             return true;

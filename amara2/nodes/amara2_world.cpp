@@ -782,7 +782,7 @@ namespace Amara {
                     case Amara::GraphicsEnum::OpenGL:
                         #ifdef AMARA_OPENGL
                         if (gameProps->glContext != NULL) {
-                            debug_log("Error: Multiple OpenGL worlds is currently not supported.");
+                            fatal_error("Error: Multiple OpenGL worlds is currently not supported.");
                             continue;
                         }
 
@@ -894,7 +894,6 @@ namespace Amara {
                 pos.y = (gameProps->master_viewport.h - windowH) / 2.0f;
             }
             else {
-                debug_log("Error: Failed to create window. ", SDL_GetError());
                 if (window) {
                     SDL_DestroyWindow(window);
                     window = nullptr;
@@ -913,6 +912,7 @@ namespace Amara {
                     glContext = NULL;
                 }
                 #endif
+                fatal_error("Error: Failed to create window. ", SDL_GetError());
                 gameProps->breakWorld();
                 return;
             }

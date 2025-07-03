@@ -179,7 +179,7 @@ namespace Amara {
                     shader_passes.push_back(prog);
                 }
                 else {
-                    debug_log("Error: ShaderProgram \"", shader_key, "\" not found.");
+                    fatal_error("Error: ShaderProgram \"", shader_key, "\" not found.");
                     gameProps->breakWorld();
                 }
             }

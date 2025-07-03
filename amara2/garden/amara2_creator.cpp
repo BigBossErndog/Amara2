@@ -112,7 +112,7 @@ namespace Amara {
             World* new_world = factory.create(key)->as<World*>();
 
             if (new_world == nullptr) {
-                debug_log("Error: World with \"", key, "\" has not been registered.");
+                fatal_error("Error: World with \"", key, "\" has not been registered.");
                 return nullptr;
             }
 

@@ -21,7 +21,7 @@ namespace Amara {
             path = gameProps->system->getAssetPath(_p);
             
             if (!gameProps->system->exists(path)) {
-                debug_log("Error: Image file not found \"", path, "\".");
+                fatal_error("Error: Image file not found \"", path, "\".");
                 return false;
             }
             
@@ -29,7 +29,7 @@ namespace Amara {
 
             SDL_IOStream *rw = SDL_IOFromFile(path.c_str(), "rb");
             if (!rw) {
-                debug_log("Error: Failed to open file: ", SDL_GetError());
+                fatal_error("Error: Failed to open file: ", SDL_GetError());
                 return false;
             }
 
@@ -42,7 +42,7 @@ namespace Amara {
                 #if defined(AMARA_ENCRYPTION_KEY)
                     Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY)
                 #else
-                    debug_log("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
+                    fatal_error("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
                     SDL_free(buffer);
                     gameProps->breakWorld();
                     return false;
@@ -54,14 +54,14 @@ namespace Amara {
             SDL_free(buffer);
 
             if (!imageData) {
-                debug_log("Error: Failed to load image data: ", path);
+                fatal_error("Error: Failed to load image data: ", path);
                 return false;
             }
             
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 texture = SDL_CreateTexture(gameProps->renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, width, height);
                 if (!texture) {
-                    debug_log("Error: Failed to create texture: ", SDL_GetError());
+                    fatal_error("Error: Failed to create texture: ", SDL_GetError());
                     stbi_image_free(imageData);
                     return false;
                 }
@@ -78,7 +78,7 @@ namespace Amara {
                 glGenTextures(1, &glTextureID);
                 
                 if (glTextureID == 0) {
-                    debug_log("Error: Texture generation failed. ", path);
+                    fatal_error("Error: Texture generation failed. ", path);
                     stbi_image_free(imageData);
                     return false;
                 }
@@ -238,7 +238,7 @@ namespace Amara {
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 texture = SDL_CreateTexture(gameProps->renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, width, height);
                 if (!texture) {
-                    debug_log("Error: Failed to create 1x1 texture for SinglePixelAsset: ", SDL_GetError());
+                    fatal_error("Error: Failed to create 1x1 texture for SinglePixelAsset: ", SDL_GetError());
                     return;
                 }
                 SDL_UpdateTexture(texture, NULL, pixelData, pitch);
@@ -249,7 +249,7 @@ namespace Amara {
                 glGenTextures(1, &glTextureID);
                 
                 if (glTextureID == 0) {
-                    debug_log("Error: OpenGL texture generation failed for SinglePixelAsset.");
+                    fatal_error("Error: OpenGL texture generation failed for SinglePixelAsset.");
                     return;
                 }
 

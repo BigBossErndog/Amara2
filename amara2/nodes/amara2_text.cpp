@@ -102,7 +102,7 @@ namespace Amara {
                         temp_props.color = nlohmann::json(manipulator_name);
                     }
                     else {
-                        debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
+                        fatal_error("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
                         gameProps->breakWorld();
                     }
                 }
@@ -122,7 +122,7 @@ namespace Amara {
                             temp_props.manipulator = manipulators[manipulator_name];
                         }
                         else {
-                            debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
+                            fatal_error("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
                             gameProps->breakWorld();
                         }
                     }

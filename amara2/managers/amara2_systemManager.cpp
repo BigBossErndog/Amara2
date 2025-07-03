@@ -41,7 +41,7 @@ namespace Amara {
                 #if defined(AMARA_ENCRYPTION_KEY)
                     Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY)
                 #else
-                    debug_log("Error: Attempted to load encrypted data without encryption key. \"", filePath.string(), "\".");
+                    fatal_error("Error: Attempted to load encrypted data without encryption key. \"", filePath.string(), "\".");
                     SDL_free(buffer);
                     gameProps->breakWorld();
                     return "";
@@ -749,59 +749,6 @@ namespace Amara {
             return execute(true, ss.str());
         }
 
-        bool isPathInEnvironment(const std::string& path) {
-            #if defined(_WIN32)
-                DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
-                if (size == 0) {
-                    debug_log("Error: Unable to access environment variables.");
-                    return false;
-                }
-                
-                std::vector<char> buffer(size);
-                if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
-                    debug_log("Error: Unable to access environment variables.");
-                    return false;
-                }
-            
-                std::string currentPath(buffer.data());
-                return currentPath.find(path) != std::string::npos;
-            #else
-                return false;
-            #endif
-        }
-
-        bool setEnvironmentVar(std::string path) {
-            std::filesystem::path filePath = getRelativePath(path);
-            #if defined(_WIN32)
-                if (isPathInEnvironment(filePath.string())) {
-                    debug_log("Info: Path \"", filePath.string(), "\" is already set in environment.");
-                    return true;
-                }
-                DWORD size = GetEnvironmentVariable("PATH", nullptr, 0);
-                if (size == 0) {
-                    debug_log("Error: Unable to access environment variables.");
-                    return false;
-                }
-                std::vector<char> buffer(size);
-                if (GetEnvironmentVariable("PATH", buffer.data(), size) == 0) {
-                    debug_log("Error: Unable to access environment variables.");
-                    return false;
-                }
-
-                std::string updatedPath(buffer.data());
-                updatedPath += ";" + filePath.string();
-
-                if (!SetEnvironmentVariable("PATH", updatedPath.c_str())) {
-                    debug_log("Error: Unable to add new environment variable.");
-                    return false;
-                }
-                    
-                return true;
-            #endif
-
-            return false;
-        }
-
         bool openWebsite(std::string url) {
             std::string command;
             int result = -1;
@@ -1114,7 +1061,6 @@ namespace Amara {
                 #if defined(AMARA_DESKTOP)
                 "execute", &SystemManager::lua_execute,
                 "execute_dettached", &SystemManager::lua_execute_dettached,
-                "setEnvironmentVar", &SystemManager::setEnvironmentVar,
                 "openWebsite", &SystemManager::openWebsite,
                 "openDirectory", &SystemManager::openDirectory,
                 "browseDirectory", sol::overload(

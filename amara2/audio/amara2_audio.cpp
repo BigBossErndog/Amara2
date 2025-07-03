@@ -140,13 +140,13 @@ namespace Amara {
             if (destroyed) return false;
 
             if (!gameProps->assets->has(key)) {
-                debug_log("Error: Asset \"", key, "\" not found.");
+                fatal_error("Error: Asset \"", key, "\" not found.");
                 gameProps->breakWorld();
                 return false;
             }
             audio = gameProps->assets->get(key)->as<Amara::AudioAsset*>();
             if (audio == nullptr) {
-                debug_log("Error: Asset \"", key, "\" is not an audio asset.");
+                fatal_error("Error: Asset \"", key, "\" is not an audio asset.");
                 gameProps->breakWorld();
                 return false;
             }
@@ -174,19 +174,19 @@ namespace Amara {
             spec.freq = audio->sampleRate;
 
             if (gameProps->audioData.device == 0) {
-                debug_log("Error: Audio device not set.");
+                fatal_error("Error: Audio device not set.");
                 gameProps->breakWorld();
                 return;
             }
 
             stream = SDL_CreateAudioStream(&spec, NULL);
             if (stream == nullptr) {
-                debug_log("Error: Couldn't create audio stream: ", SDL_GetError());
+                fatal_error("Error: Couldn't create audio stream: ", SDL_GetError());
                 gameProps->breakWorld();
                 return;
             } 
             else if (!SDL_BindAudioStream(gameProps->audioData.device, stream)) {
-                debug_log("Error: Couldn't bind audio stream: ", SDL_GetError());
+                fatal_error("Error: Couldn't bind audio stream: ", SDL_GetError());
                 gameProps->breakWorld();
                 return;
             }
@@ -202,7 +202,7 @@ namespace Amara {
 
         virtual void play() {
             if (audio == nullptr) {
-                debug_log("Error: Attempted to play audio node without an audio asset.");
+                fatal_error("Error: Attempted to play audio node without an audio asset.");
                 return;
             }
             if (stream == nullptr) {

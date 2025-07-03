@@ -22,7 +22,7 @@ namespace Amara {
             if (device == 0) {
                 device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
                 if (device == 0) {
-                    debug_log("Error: Failed to open audio device: ", SDL_GetError());
+                    fatal_error("Error: Failed to open audio device: ", SDL_GetError());
                     gameProps->breakWorld();
                     return;
                 }

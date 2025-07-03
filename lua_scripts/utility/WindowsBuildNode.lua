@@ -112,6 +112,7 @@ return Nodes:define("WindowsBuildNode", "ProcessNode", {
             table.insert(args, "-DAMARA_PLUGINS")
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
+        table.insert(args, "-DAMARA_DESKTOP");
 
         -- LINKER_FLAGS_WIN64
         table.insert(args, "-fuse-ld=lld")

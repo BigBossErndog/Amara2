@@ -191,7 +191,7 @@ namespace Amara {
                 glGenTextures(1, &glTextureID);
 
                 if (glTextureID == 0) {
-                    debug_log("Error: Texture generation failed. ", path);
+                    fatal_error("Error: Texture generation failed. ", path);
                     return false;
                 }
 
@@ -230,7 +230,7 @@ namespace Amara {
             }
         
             if (currentY + height >= atlasHeight) {
-                debug_log("Error: Texture atlas for font \"", key ,"\" is full!");
+                fatal_error("Error: Texture atlas for font \"", key ,"\" is full!");
                 stbtt_FreeBitmap(monobitmap, nullptr);
                 return;
             }

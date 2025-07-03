@@ -222,7 +222,7 @@ namespace Amara {
         mapProperties.clear();
         
         if (!gameProps->system->exists(path)) {
-            debug_log("Error: Tilemap file not found at \"", path, "\".");
+            fatal_error("Error: Tilemap file not found at \"", path, "\".");
             gameProps->breakWorld();
             return false;
         }
@@ -236,14 +236,14 @@ namespace Amara {
 
         SDL_IOStream* rw = SDL_IOFromFile(path.c_str(), "rb");
         if (!rw) {
-            debug_log("Error: Failed to open TMX file: ", path, " - ", SDL_GetError());
+            fatal_error("Error: Failed to open TMX file: ", path, " - ", SDL_GetError());
             return false;
         }
 
         Sint64 fileSize_s64 = SDL_GetIOSize(rw);
         if (fileSize_s64 <= 0) {
              SDL_CloseIO(rw);
-             debug_log("Error: Invalid or empty TMX file: ", path);
+             fatal_error("Error: Invalid or empty TMX file: ", path);
              return false;
         }
 
@@ -251,7 +251,7 @@ namespace Amara {
         std::unique_ptr<unsigned char[]> buffer(new (std::nothrow) unsigned char[fileSize + 1]);
         if (!buffer) {
             SDL_CloseIO(rw);
-            debug_log("Error: Failed to allocate memory for TMX file buffer: ", path);
+            fatal_error("Error: Failed to allocate memory for TMX file buffer: ", path);
             return false;
         }
 
@@ -259,7 +259,7 @@ namespace Amara {
         SDL_CloseIO(rw);
 
         if (bytesRead != fileSize) {
-            debug_log("Error: Failed to read entire TMX file: ", path);
+            fatal_error("Error: Failed to read entire TMX file: ", path);
             return false;
         }
         buffer[fileSize] = '\0';
@@ -270,7 +270,7 @@ namespace Amara {
                 Amara::Encryption::decryptBuffer(raw_buffer_ptr, fileSize, AMARA_ENCRYPTION_KEY);
                 raw_buffer_ptr[fileSize] = '\0';
             #else
-                debug_log("Error: Attempted to load encrypted TMX data without encryption key: \"", path, "\".");
+                fatal_error("Error: Attempted to load encrypted TMX data without encryption key: \"", path, "\".");
                 gameProps->breakWorld();
                 return false;
             #endif
@@ -280,13 +280,13 @@ namespace Amara {
         tinyxml2::XMLError parseResult = doc.Parse(reinterpret_cast<const char*>(raw_buffer_ptr), fileSize);
 
         if (parseResult != tinyxml2::XML_SUCCESS) {
-            debug_log("Error: Failed to parse TMX file XML: ", path, " - Error Code: ", parseResult, " - ", doc.ErrorStr());
+            fatal_error("Error: Failed to parse TMX file XML: ", path, " - Error Code: ", parseResult, " - ", doc.ErrorStr());
             return false;
         }
 
         tinyxml2::XMLElement* mapRoot = doc.RootElement();
         if (!mapRoot || !String::equal(mapRoot->Name(), "map")) {
-             debug_log("Error: Invalid TMX file format. Missing <map> root element in: ", path);
+             fatal_error("Error: Invalid TMX file format. Missing <map> root element in: ", path);
              return false;
         }
 
@@ -309,11 +309,13 @@ namespace Amara {
 
             const char* source = tsElement->Attribute("source");
             if (source) {
-                debug_log("Error: External tilesets (TSX system) are not supported.");
-                debug_log("       Please embed the tileset directly into the TMX file.");
-                debug_log("       ( In Tiled: Edit -> Preferences -> Plugins -> Tiled -> Embed tilesets, then File -> Export As... -> Select .tmx )");
                 tilesets.clear(); layers.clear(); objectGroups.clear(); imageLayers.clear(); mapProperties.clear();
                 width = height = tileWidth = tileHeight = 0;
+                fatal_error(
+                    "Error: External tilesets (TSX system) are not supported.",
+                    "\n       Please embed the tileset directly into the TMX file.",
+                    "\n       ( In Tiled: Edit -> Preferences -> Plugins -> Tiled -> Embed tilesets, then File -> Export As... -> Select .tmx )"
+                );
                 gameProps->breakWorld();
                 return false;
             }

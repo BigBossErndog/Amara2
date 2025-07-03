@@ -158,7 +158,7 @@ namespace Amara {
             
             if (hasStarted) {
                 if (sprite == nullptr || sprite->spritesheet == nullptr) {
-                    debug_log("Error: No sprite provided for animation.");
+                    fatal_error("Error: No sprite provided for animation.");
                     complete();
                 }
                 else {
