@@ -120,6 +120,7 @@ namespace Amara {
         SDL_Window* current_window = nullptr;
         Rectangle window_dim;
         SDL_DisplayID displayID = 0;
+        SDL_DisplayID targetDisplayID = 0;
 
         TextInputEnum text_input_type = TextInputEnum::None;
         std::string text_input;
@@ -174,6 +175,7 @@ namespace Amara {
 
         Pointer* globalPointer = nullptr;
 
+        CursorEnum current_cursor = CursorEnum::Default;
         SDL_Cursor* cursor_default = nullptr;
         SDL_Cursor* cursor_pointer = nullptr;
     };

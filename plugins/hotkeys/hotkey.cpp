@@ -129,6 +129,10 @@ public:
         }
     }
 
+    bool keyPressed(SDL_Keycode _k) {
+        return is_key_pressed(SDLKeyToWindowsVK(_k));
+    } 
+
     virtual void act(double deltaTime) {
         rec_pressed = pressed;
         pressed = true;
@@ -142,14 +146,19 @@ public:
         }
         else pressed = false;
 
-        if (pressed && !rec_pressed) {
-            if (funcs.hasFunction("onPress")) funcs.callFunction(actor, "onPress");
+        if (pressed) {
+            if (!rec_pressed && funcs.hasFunction("onPress")) funcs.callFunction(actor, "onPress");
+            if (funcs.hasFunction("whilePressed")) funcs.callFunction(actor, "whilePressed");
+        }
+        else if (rec_pressed) {
+            if (funcs.hasFunction("onRelease")) funcs.callFunction(actor, "onRelease");
         }
     }
-
+    
     static void bind_lua(sol::state& lua) {
         lua.new_usertype<Hotkey>("Hotkey",
-            "pressed", sol::readonly(&Hotkey::pressed)
+            "pressed", sol::readonly(&Hotkey::pressed),
+            "isDown", &Hotkey::keyPressed
         );
     }
 };

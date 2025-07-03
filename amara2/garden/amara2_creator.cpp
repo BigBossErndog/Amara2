@@ -90,6 +90,14 @@ namespace Amara {
                                 starting_scripts.push_back(path);
                             }
                         }
+                        if (String::equal(arg, "-display")) {
+                            ++it;
+                            if (it == game.arguments.end()) break;
+                            nlohmann::json& path = *it;
+                            if (path.is_number()) {
+                                gameProps.targetDisplayID = path;
+                            }
+                        }
                         #endif
                     }
                     ++it;
@@ -199,13 +207,18 @@ namespace Amara {
         }
 
         int startCreation(std::string path) {
+            if (starting_scripts.size() == 0) {
+                starting_scripts.push_back(path);
+            }
+            return startCreation();
+        }
+
+        int startCreation() {
             if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK)) {
                 debug_log("Error: SDL_Init failed: ", SDL_GetError());
             }
 
             eventHandler.init(&gameProps);
-
-            scripts.run(path);
 
             #ifndef AMARA_DISABLE_EXTERNAL_SCRIPTS
             for (auto it = starting_scripts.begin(); it != starting_scripts.end(); it++) {

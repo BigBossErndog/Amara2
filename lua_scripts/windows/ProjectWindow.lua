@@ -302,7 +302,9 @@ return Nodes:define("ProjectWindow", "UIWindow", {
             arguments = {
                 exe,
                 "-context",
-                self.props.projectPath
+                self.props.projectPath,
+                "-display",
+                self.world.displayID
             },
             onOutput = function(process, msg)
                 if self.props.printLog then

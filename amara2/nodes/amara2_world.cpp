@@ -403,9 +403,21 @@ namespace Amara {
         }
 
         void fitToDisplay(int _displayID) {
-            displayID = _displayID;
-            display = gameProps->game->getDisplayBounds(displayID);
+            Rectangle rect = gameProps->game->getDisplayBounds(_displayID);
+            if (rect.x != -1 && rect.y != -1 && rect.w != -1 && rect.h != -1) {
+                display = rect;
+                displayID = _displayID;
+            }
             fitToDisplay();
+        }
+
+        void goToDisplay(int _displayID) {
+            Rectangle rect = gameProps->game->getDisplayBounds(_displayID);
+            if (rect.x != -1 && rect.y != -1 && rect.w != -1 && rect.h != -1) {
+                display = rect;
+                displayID = _displayID;
+            }
+            centerWindow();
         }
         
         void setScreenMode(ScreenModeEnum _sm) {
@@ -870,6 +882,10 @@ namespace Amara {
 
                 debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics), ".");
 
+                if (gameProps->targetDisplayID > 0) {
+                    goToDisplay(gameProps->targetDisplayID);
+                }
+
                 showWindow();
                 restoreWindow();
             }
@@ -1237,6 +1253,7 @@ namespace Amara {
                     sol::resolve<void()>( &World::fitToDisplay ),
                     sol::resolve<void(int)>( &World::fitToDisplay )
                 ),
+                "goToDisplay", &World::goToDisplay,
                 "screenMode", sol::property([](const Amara::World& world) { return world.screenMode; }, &World::setScreenMode),
                 "transparent", sol::property([](const Amara::World& world) { return world.transparent; }, [](Amara::World& world, sol::object value) {
                     debug_log("Error: Transparency can only be set in World configuration table.");

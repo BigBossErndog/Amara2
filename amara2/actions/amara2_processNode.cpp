@@ -24,11 +24,13 @@ namespace Amara {
 
                 if (arg_config.is_array()) {
                     for (auto& arg : arg_config) {
-                        args.push_back(arg.get<std::string>());
+                        if (arg.is_string()) args.push_back(arg.get<std::string>());
+                        else args.push_back(arg.dump());
                     }
                 }
                 else {
-                    args.push_back(arg_config.get<std::string>());
+                    if (arg_config.is_string()) args.push_back(arg_config.get<std::string>());
+                    else args.push_back(arg_config.dump());
                 }
             }
             return Amara::Node::configure(config);

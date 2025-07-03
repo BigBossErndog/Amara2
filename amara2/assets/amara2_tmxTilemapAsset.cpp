@@ -310,11 +310,11 @@ namespace Amara {
             const char* source = tsElement->Attribute("source");
             if (source) {
                 debug_log("Error: External tilesets (TSX system) are not supported.");
-                debug_log("       Found reference to '", source, "' in map '", path, "'.");
                 debug_log("       Please embed the tileset directly into the TMX file.");
                 debug_log("       ( In Tiled: Edit -> Preferences -> Plugins -> Tiled -> Embed tilesets, then File -> Export As... -> Select .tmx )");
                 tilesets.clear(); layers.clear(); objectGroups.clear(); imageLayers.clear(); mapProperties.clear();
                 width = height = tileWidth = tileHeight = 0;
+                gameProps->breakWorld();
                 return false;
             }
             else {

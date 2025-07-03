@@ -51,12 +51,13 @@ namespace Amara {
                         repeats = animData->repeats;
                         frameRate = animData->frameRate;
                         yoyo = animData->yoyo;
-
+                        
                         anim_configured = true;
                     }
                     else {
                         debug_log("Error: Node ", *sprite, " does not have a valid texture for animation.");
                         gameProps->breakWorld();
+                        return;
                     }
                 }
             }

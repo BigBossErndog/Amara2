@@ -111,6 +111,7 @@ return Nodes:define("WindowsBuildNode", "ProcessNode", {
         if self.props.installPlugins then
             table.insert(args, "-DAMARA_PLUGINS")
         end
+        table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
         -- LINKER_FLAGS_WIN64
         table.insert(args, "-fuse-ld=lld")

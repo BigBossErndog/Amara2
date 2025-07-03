@@ -79,7 +79,7 @@ namespace Amara {
                     static_cast<float>(rect.h)
                 };
             }
-            return getDisplayBounds(1);
+            return Rectangle( -1, -1, -1, -1 );
         }
 
         static void bind_lua(sol::state& lua) {

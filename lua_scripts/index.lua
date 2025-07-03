@@ -84,23 +84,41 @@ return Creator:createWorld({
         })
 
         props.toolTips = world:createChild("ToolTips")
-    end,
 
-    onUpdate = function(world, deltaTime)
-        if Keyboard:isDown(Key.LeftCtrl) and Keyboard:isDown(Key.LeftAlt) then
-            if Keyboard:justPressed(Key.One) then
-                world:fitToDisplay(1)
+        local hotkey
+        hotkey = world:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftAlt },
+            onPress = function()
+                if not world.forcedClickThrough then
+                   world.clickThrough = false
+                end
+            end,
+            onRelease = function()
+                world.clickThrough = true
+            end,
+            whilePressed = function()
+                local switchDisplay = 0
+                if hotkey:isDown(Key.One) then
+                    switchDisplay = 1
+                elseif hotkey:isDown(Key.Two) then
+                    switchDisplay = 2
+                elseif hotkey:isDown(Key.Three) then
+                    switchDisplay = 3
+                elseif hotkey:isDown(Key.Four) then
+                    switchDisplay = 4
+                end
+
+                if world.input.mouse.wheel.y < 0 then
+                    switchDisplay = world.displayID - 1
+                elseif world.input.mouse.wheel.y > 0 then
+                    switchDisplay = world.displayID + 1
+                end
+
+                if world.displayID ~= switchDisplay then
+                    world:fitToDisplay(switchDisplay)
+                end
             end
-            if Keyboard:justPressed(Key.Two) then
-                world:fitToDisplay(2)
-            end
-            if Keyboard:justPressed(Key.Three) then
-                world:fitToDisplay(3)
-            end
-            if Keyboard:justPressed(Key.Four) then
-                world:fitToDisplay(4)
-            end
-        end
+        })
     end,
 
     getSettings = function(self)

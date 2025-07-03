@@ -43,10 +43,6 @@ namespace Amara {
 
             gameProps->text_input.clear();
             gameProps->text_input_type = TextInputEnum::None;
-
-            if (gameProps->cursor_pointer) {
-                SDL_SetCursor(gameProps->cursor_pointer);
-            }
             
             while (SDL_PollEvent(&e) != 0) {
                 switch (e.type) {
@@ -272,16 +268,20 @@ namespace Amara {
                 backspace_counter = 0;
                 backspace_held = false;
             }
+
+            gameProps->system->setCursor(gameProps->current_cursor);
         }
     };
 
     bool InputManager::checkPointerHover(const Vector2& pos) {
         Amara::InputDef inputDef;
+        gameProps->current_cursor = CursorEnum::Default;
+        
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             inputDef = *it;
             if (inputDef.shape.collidesWith(pos) && Shape::collision(inputDef.viewport, pos)) {
                 any_hovered = true;
-                gameProps->system->setCursor(inputDef.input->cursor);
+                gameProps->current_cursor = inputDef.input->cursor;
                 return true;
             }
         }
@@ -329,6 +329,8 @@ namespace Amara {
         NodeInput* input;
 
         any_hovered = false;
+        gameProps->current_cursor = CursorEnum::Default;
+
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             inputDef = *it;
             input = inputDef.input;
@@ -346,7 +348,7 @@ namespace Amara {
                 }
                 any_hovered = true;
                 
-                gameProps->system->setCursor(input->cursor);
+                gameProps->current_cursor = inputDef.input->cursor;
                 break;
             }
         }
