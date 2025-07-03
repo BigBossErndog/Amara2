@@ -151,6 +151,14 @@ namespace Amara {
             visible = false;
         }
 
+        virtual Shape getShape() {
+            return pos;
+        }
+
+        bool collidesWith(Amara::Node* other) {
+            return getShape().collidesWith(other->getShape());
+        }
+
         virtual Amara::Node* configure(nlohmann::json config) {
             update_properties();
             if (config.is_string()) {
@@ -817,6 +825,8 @@ namespace Amara {
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
                 },
+
+                "collidesWith", &Node::collidesWith,
 
                 "assets", sol::property([](Node& e) { return e.gameProps->assets; }),
                 "shaders", sol::property([](Node& e) { return e.gameProps->shaders; }),

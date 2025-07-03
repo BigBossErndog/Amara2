@@ -202,7 +202,7 @@
     #include "actions/amara2_waitAction.cpp"
     #include "actions/amara2_tween.cpp"
     #include "actions/amara2_stateMachine.cpp"
-    #include "actions/amara2_delayedNode.cpp"
+    #include "actions/amara2_delayNode.cpp"
     #include "actions/amara2_periodicAction.cpp"
     #include "actions/amara2_processNode.cpp"
 

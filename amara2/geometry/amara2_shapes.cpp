@@ -227,7 +227,7 @@ namespace Amara {
     public:
         using ShapeVariant = std::variant<
             Vector2, 
-            Vector3, 
+            Vector3,
             Rectangle,
             Quad,
             Circle, 
@@ -241,6 +241,13 @@ namespace Amara {
         Shape(ShapeVariant _shape) {
             shape = _shape;
         }
+        Shape(const Vector2& v) : shape(v) {}
+        Shape(const Vector3& v) : shape(v) {}
+        Shape(const Rectangle& r) : shape(r) {}
+        Shape(const Quad& q) : shape(q) {}
+        Shape(const Circle& c) : shape(c) {}
+        Shape(const Triangle& t) : shape(t) {}
+        Shape(const Line& l) : shape(l) {}
 
         template <typename T>
         operator T() const {
@@ -271,11 +278,6 @@ namespace Amara {
             return std::visit([](const auto& s1, const auto& s2) {
                 return collision(s1, s2);
             }, shape, other.shape);
-        }
-        bool collidesWith(const ShapeVariant& other) const {
-            return std::visit([](const auto& s1, const auto& s2) {
-                return collision(s1, s2);
-            }, shape, other);
         }
 
         // static bool collision(const Rectangle& r1, const Rectangle& r2) {

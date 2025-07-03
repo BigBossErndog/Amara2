@@ -199,20 +199,21 @@ namespace Amara {
 
         void completeProperties() {
             if (lua_actor_table.valid()) {
-                for (auto it = target_data.begin(); it != target_data.end(); ++it) {
+                nlohmann::json end_data = (yoyo) ? start_data : target_data;
+                for (auto it = end_data.begin(); it != end_data.end(); ++it) {
                     if (it.value().is_number()) {
-                        lua_actor_table.set(it.key(), (double)target_data[it.key()]);
+                        lua_actor_table.set(it.key(), (double)end_data[it.key()]);
                     }
                     else if (String::equal(it.key(), "rect")) {
-                        Amara::Rectangle target_rect = target_data[it.key()];
+                        Amara::Rectangle target_rect = end_data[it.key()];
                         lua_actor_table.set(it.key(), target_rect);
                     }
                     else if (String::equal(it.key(), "color") || String::equal(it.key(), "tint") || String::equal(it.key(), "fill") || String::equal(it.key(), "backgroundColor")) {
-                        Amara::Color target_color = target_data[it.key()];
+                        Amara::Color target_color = end_data[it.key()];
                         lua_actor_table.set(it.key(), target_color);
                     }
                     else if (it.value().is_boolean()) {
-                        lua_actor_table.set(it.key(), (bool)target_data[it.key()]);
+                        lua_actor_table.set(it.key(), (bool)end_data[it.key()]);
                     }
                 }
             }
@@ -251,41 +252,37 @@ namespace Amara {
             
             if (hasStarted) {
                 progress += deltaTime/tween_duration;
+                
                 if (progress >= 1) {
-                    progress = 1;
-                }
-
-                if (lua_actor_table.valid()) {
-                    for (auto it = target_data.begin(); it != target_data.end(); ++it) {
-                        tweenValue(lua_actor_table, it.key(), start_data[it.key()], target_data[it.key()], progress);
-                    }
-                }
-
-                if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", progress, deltaTime);
-
-                if (progress == 1) {
                     if (waitingYoyo) {
-                        progress = 0;
+                        progress -= 1;
                         waitingYoyo = false;
-
-                        nlohmann::json rec_target = target_data;
-                        target_data = start_data;
-                        start_data = rec_target;
                     }
                     else if (repeats != 0) {
                         repeats -= 1;
-                        progress = 0;
-                        if (yoyo) {
-                            nlohmann::json rec_target = target_data;
-                            target_data = start_data;
-                            start_data = rec_target;
-                        }
+                        progress -= 1;
                         waitingYoyo = yoyo;
                     }
                     else {
                         completeProperties();
+                        
+                        if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", progress, deltaTime);
+                        
                         complete();
                     }
+                }
+
+                if (!completed) {
+                    if (lua_actor_table.valid()) {
+                        double real_progress = (yoyo && !waitingYoyo) ? 1 - progress : progress;
+                        real_progress = std::clamp(real_progress, 0.0, 1.0);
+                        
+                        for (auto it = target_data.begin(); it != target_data.end(); ++it) {
+                            tweenValue(lua_actor_table, it.key(), start_data[it.key()], target_data[it.key()], real_progress);
+                        }
+                    }
+
+                    if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", progress, deltaTime);
                 }
             }
         }

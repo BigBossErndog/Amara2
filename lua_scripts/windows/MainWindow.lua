@@ -27,7 +27,8 @@ return Nodes:define("MainWindow", "UIWindow", {
         local spacing = 15
 
         local failedProjects = 0
-        if settings.projects then
+
+        if settings.projects and #settings.projects > 0 then
             for i = 1, #settings.projects do
                 local projectPath = settings.projects[i]
                 if System:exists(projectPath) and System:exists(System:join(projectPath, "project.json")) then
@@ -110,7 +111,7 @@ return Nodes:define("MainWindow", "UIWindow", {
         })
         self.props.editorMenu = editorMenu
         self.func:loadCodeEditors()
-
+        
         local refreshButton = self.props.content:createChild("UIButton", {
             id = "refreshEditorsButton",
             toolTip = "toolTip_refreshCodeEditors",
@@ -190,6 +191,18 @@ return Nodes:define("MainWindow", "UIWindow", {
         })
 
         buttonPos = buttonPos - buttonSpacing
+        local examplesButton = self.props.content:createChild("UIButton", {
+            id = "openExamplesButton",
+            toolTip = "toolTip_openExamples",
+            x = buttonPos,
+            y = 4,
+            icon = 20,
+            onPress = function(button)
+                
+            end
+        })
+
+        buttonPos = buttonPos - buttonSpacing
         self.props.content:createChild("UIButton", {
             id = "openDirectoryButton",
             toolTip = "toolTip_openExistingProject",
@@ -250,6 +263,30 @@ return Nodes:define("MainWindow", "UIWindow", {
                 end)
             end
         })
+
+        if not settings.projects or failedProjects >= #settings.projects then
+            self.props.content:createChild("Text", {
+                text = Localize:get("label_noProjectsFound"),
+                font = "defaultFont",
+                color = "#a8bee0",
+                origin = 0,
+                x = backer.x + 6 + 4,
+                y = backer.y + 6
+            })
+
+            examplesButton:createChild("PeriodicAction", {
+                period = 0.8,
+                startWithAct = true,
+                onAct = function()
+                    examplesButton.tween:to({
+                        y = examplesButton.y - 2,
+                        duration = 0.2,
+                        ease = Ease.SineOut,
+                        yoyo = true
+                    })
+                end
+            })
+        end
     end,
 
     loadCodeEditors = function(self)

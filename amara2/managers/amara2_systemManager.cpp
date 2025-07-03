@@ -21,7 +21,6 @@ namespace Amara {
 
             if (!exists(filePath.string())) {
                 debug_log("Error: File does not exist \"", filePath.string(), "\"");
-                gameProps->breakWorld();
                 return "";
             }
             
@@ -901,7 +900,7 @@ namespace Amara {
             if (!pipe) {
                 return false;
             }
-
+            
             while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
                 result += buffer.data();
             }

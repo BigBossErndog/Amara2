@@ -52,7 +52,7 @@ namespace Amara {
                     next_node->activate();
                 }
                 else {
-                    Amara::DelayedNode* interimNode = parent->parent->createChild("DelayedNode")->as<Amara::DelayedNode*>();
+                    Amara::DelayNode* interimNode = parent->parent->createChild("DelayNode")->as<Amara::DelayNode*>();
                     interimNode->interim = interim;
                     interimNode->setNode(next_node);
                 }

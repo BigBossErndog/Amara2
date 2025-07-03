@@ -9,6 +9,7 @@ Nodes:load("TextField", "ui/TextField")
 Nodes:load("CodeEditorButton", "ui/CodeEditorButton")
 Nodes:load("DropDownMenu", "ui/DropDownMenu")
 
+Nodes:load("InitialSetupWindow", "windows/InitialSetupWindow")
 Nodes:load("MainWindow", "windows/MainWindow")
 Nodes:load("NewProjectWindow", "windows/NewProjectWindow")
 Nodes:load("ProjectWindow", "windows/ProjectWindow")
@@ -52,8 +53,6 @@ return Creator:createWorld({
     onCreate = function(world)
         local props = world.props;
 
-        world.func:fixSettings()
-
         props.windowShadows = world:createChild("TextureContainer", {
             alpha = 0.5,
             tint = Colors.Black,
@@ -75,8 +74,15 @@ return Creator:createWorld({
             end
         })
 
-        props.mainwin = props.windows:createChild("MainWindow")
-        props.mainwin.func:openWindow()
+         if System:exists("data/settings.json") then
+            world.func:fixSettings()
+
+            local win = props.windows:createChild("MainWindow")
+            win.func:openWindow()
+         else
+            local win = props.windows:createChild("InitialSetupWindow")
+            win.func:openWindow()
+         end
 
         props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
             target = props.windows,
@@ -121,8 +127,8 @@ return Creator:createWorld({
         })
     end,
 
-    getSettings = function(self)
-        if not self.props.settings then
+    getSettings = function(self, forceLoad)
+        if forceLoad or not self.props.settings then
             if System:exists("data/settings.json") then
                 self.props.settings = System:readJSON("data/settings.json")
             else
@@ -168,7 +174,7 @@ return Creator:createWorld({
 
     registerProject = function(self, path)
         local settings = self.func:getSettings()
-
+        
         if not settings.projects then
             settings.projects = {}
         end
@@ -196,7 +202,7 @@ return Creator:createWorld({
 
     loadCodeEditors = function(self)
         local settings = self.func:getSettings()
-
+        
         local editors = {}
 
         if System:programInstalled("code") then
@@ -245,7 +251,7 @@ return Creator:createWorld({
         if #editors > 0 then
             settings.codeEditorList = editors
         else
-            settings.codeEditorList = nil
+            settings.codeEditorList = {}
         end
 
         self.func:saveSettings()

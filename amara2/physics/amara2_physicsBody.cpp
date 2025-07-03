@@ -244,7 +244,7 @@ namespace Amara {
             Amara::Node::destroy();
         }
 
-        sol::object getShape() {
+        sol::object getPhysicsShape() {
             if (shape.is<Rectangle>()) {
                 return sol::make_object(gameProps->lua, shape.as<Rectangle>());
             }

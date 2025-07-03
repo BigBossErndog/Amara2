@@ -1,13 +1,13 @@
 namespace Amara {
-    class DelayedNode: public Amara::Action {
+    class DelayNode: public Amara::Action {
     public:
         double interim = 0;
         double progress = 0;
 
         Amara::Node* next_node = nullptr;
 
-        DelayedNode(): Amara::Action() {
-            set_base_node_id("DelayedNode");
+        DelayNode(): Amara::Action() {
+            set_base_node_id("DelayNode");
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
@@ -46,10 +46,10 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
-            lua.new_usertype<Amara::DelayedNode>("DelayedNode",
+            lua.new_usertype<Amara::DelayNode>("DelayNode",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
-                "interim", &Amara::DelayedNode::interim,
-                "node", sol::property([](Amara::DelayedNode& node) -> Amara::Node* { return node.next_node; }, [](Amara::DelayedNode& node, Amara::Node* n) { node.setNode(n); })
+                "interim", &Amara::DelayNode::interim,
+                "node", sol::property([](Amara::DelayNode& node) -> Amara::Node* { return node.next_node; }, [](Amara::DelayNode& node, Amara::Node* n) { node.setNode(n); })
             );
         }
     };

@@ -15,6 +15,7 @@
     "toolTip_browseDirectory": "Browse Directory",
     "toolTip_browseFile": "Browse File",
     "toolTip_openExistingProject": "Open Existing Project",
+    "toolTip_openExamples": "Open Examples", 
 
     "toolTip_runGame": "Run Game (Ctrl + Alt + A)",
     "toolTip_buildGame": "Build Game (Ctrl + Alt + B)",
@@ -57,6 +58,8 @@
     "label_buildSuccess": "Build successfully completed.",
     "label_buildFailed": "Build failed to complete.",
     "label_selectIcon": "Select Icon",
+    "label_performingInitialSetup": "Performing Initial Setup.",
+    "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",
