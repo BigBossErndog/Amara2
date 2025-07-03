@@ -360,7 +360,7 @@ namespace Amara {
             if (destroyed) return;
 
             update(deltaTime);
-
+            
             if (!destroyed && funcs.hasFunction("onUpdate")) {
                 funcs.callFunction("onUpdate", deltaTime);
             }

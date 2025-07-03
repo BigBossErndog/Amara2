@@ -58,7 +58,7 @@
     "label_buildSuccess": "Build successfully completed.",
     "label_buildFailed": "Build failed to complete.",
     "label_selectIcon": "Select Icon",
-    "label_performingInitialSetup": "Performing Initial Setup.",
+    "label_performingInitialSetup": "Performing Initial Setup...",
     "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",

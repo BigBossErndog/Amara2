@@ -106,7 +106,7 @@ namespace Amara {
                     shaderProgram = gameProps->defaultShaderProgram;
                     if (shaderProgram) shaderProgram->applyShader();
                     else {
-                         debug_log("Error: No valid shader program available in RenderBatch::pushQuad.");
+                         fatal_error("Error: No valid shader program available in RenderBatch::pushQuad.");
                          gameProps->breakWorld();
                          return;
                     }
@@ -249,7 +249,7 @@ namespace Amara {
                          break;
                     case BlendMode::Mask:
                         if (!insideTextureContainer) {
-                            debug_log("Error: Mask and Erase blend modes can only be used inside a TextureContainer.");
+                            fatal_error("Error: Mask and Erase blend modes can only be used inside a TextureContainer.");
                             gameProps->breakWorld();
                         }
                         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -259,7 +259,7 @@ namespace Amara {
                         break;
                     case BlendMode::Erase:
                         if (!insideTextureContainer) {
-                            debug_log("Error: Mask and Erase blend modes can only be used inside a TextureContainer.");
+                            fatal_error("Error: Mask and Erase blend modes can only be used inside a TextureContainer.");
                             gameProps->breakWorld();
                         }
                         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

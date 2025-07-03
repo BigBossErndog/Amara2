@@ -201,10 +201,10 @@ namespace Amara {
         bool setFont(std::string key) {
             font = nullptr;
 
-            if (destroyed) return false;
+            if (destroyed || key.empty()) return false;
             
             if (!gameProps->assets->has(key)) {
-                debug_log("Error: Asset \"", key, "\" was not found.");
+                fatal_error("Error: Asset \"", key, "\" was not found.");
                 return false;
             }
 
@@ -212,7 +212,7 @@ namespace Amara {
             if (asset) font = asset->as<Amara::FontAsset*>();
 
             if (font == nullptr) {
-                debug_log("Error: Asset \"", key, "\" is not a valid font asset.");
+                fatal_error("Error: Asset \"", key, "\" is not a valid font asset.");
                 return false;
             }
 
@@ -532,7 +532,7 @@ namespace Amara {
                 currentManipulator = manipulators[manipulator_name];
             }
             else {
-                debug_log("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
+                fatal_error("Error: Text Manipulator \"", manipulator_name, "\" was not found.");
                 gameProps->breakWorld();
             }
             return get_lua_object();

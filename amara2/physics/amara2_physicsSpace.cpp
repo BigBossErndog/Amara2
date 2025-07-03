@@ -39,7 +39,7 @@ namespace Amara {
             }
             space = cpSpaceNew();
             if (!space) {
-                debug_log("Error: Failed to initiate PhysicsSpace.");
+                fatal_error("Error: Failed to initiate PhysicsSpace.");
                 return;
             }
             else {
@@ -73,7 +73,7 @@ namespace Amara {
                 cpSpaceAddBody(space, body);
             }
             else {
-                debug_log("Error: Physics space or body is not initialized.");
+                fatal_error("Error: Physics space or body is not initialized.");
             }
         }
 

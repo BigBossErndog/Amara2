@@ -147,7 +147,7 @@ namespace Amara {
             fontSize = _size;
             
             if (!gameProps->system->exists(path)) {
-                debug_log("Error: Font file not found at \"", path, "\".");
+                fatal_error("Error: Font file not found at \"", path, "\".");
                 return false;
             }
 
@@ -166,7 +166,7 @@ namespace Amara {
                 #if defined(AMARA_ENCRYPTION_KEY)
                     Amara::Encryption::decryptBuffer(fontBuffer, fileSize, AMARA_ENCRYPTION_KEY)
                 #else
-                    debug_log("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
+                    fatal_error("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
                     SDL_free(fontBuffer);
                     gameProps->breakWorld();
                     return false;

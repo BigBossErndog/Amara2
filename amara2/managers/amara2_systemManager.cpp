@@ -20,13 +20,14 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!exists(filePath.string())) {
-                debug_log("Error: File does not exist \"", filePath.string(), "\"");
+                fatal_error("Error: File does not exist \"", filePath.string(), "\"");
+                gameProps->breakWorld();
                 return "";
             }
             
             SDL_IOStream *rw = SDL_IOFromFile(filePath.string().c_str(), "rb");
             if (!rw) {
-                debug_log("Error: Failed to open file ", SDL_GetError());
+                fatal_error("Error: Failed to open file ", SDL_GetError());
                 gameProps->breakWorld();
                 return "";
             }
@@ -533,16 +534,16 @@ namespace Amara {
         sol::object run(std::string path) {
             std::filesystem::path filePath = getScriptPath(path);
             bool fileExists = std::filesystem::exists(filePath);
+            if (!fileExists) {
+                fatal_error("Error: Script does not exist \"", filePath.string(), "\"");
+                gameProps->breakWorld();
+                return sol::nil;
+            }
 
             std::string scriptContent = readFile(filePath.string());
 
             if (scriptContent.empty()) {
-                if (fileExists) {
-                    debug_log("Error: Script '", path, "' is empty or could not be read/decrypted. Cannot execute.");
-                }
-                else {
-                    debug_log("Error: Script '", path, "' does not exist. Cannot execute.");
-                }
+                fatal_error("Error: Script is empty or could not be read/decrypted \"", filePath.string(), "\"");
                 gameProps->breakWorld();
                 return sol::nil;
             }
@@ -900,7 +901,7 @@ namespace Amara {
             if (!pipe) {
                 return false;
             }
-            
+
             while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
                 result += buffer.data();
             }

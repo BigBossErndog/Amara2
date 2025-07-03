@@ -10,6 +10,13 @@ namespace Amara {
         #endif
     }
 
+    template<typename... Args>
+    void fatal_error(Args... args) {
+        std::ostringstream ss;
+        (ss << ... << args);
+        throw std::runtime_error(ss.str());
+    }
+
     template <class T> bool vector_contains(std::vector<T> list, T f) {
         for (T obj: list) 
             if (obj == f) return true;

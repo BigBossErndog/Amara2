@@ -1,6 +1,6 @@
 return Nodes:define("InitialSetupWindow", "UIWindow", {
-    width = 160,
-    height = 48,
+    width = 180,
+    height = 42,
     
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()

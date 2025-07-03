@@ -41,9 +41,7 @@ namespace Amara {
                         AnimationData* animData = gameProps->animations->get(sprite->spritesheet->key, animKey);
                                 
                         if (animData == nullptr) {
-                            debug_log("Error: Node ", *sprite, " could not be animated.");
-                            debug_log("Error: Animation with key \"", animKey, "\" was not found on texture \"", sprite->spritesheet->key, "\".");
-                            gameProps->breakWorld();
+                            fatal_error("Error: Node ", *sprite, " could not be animated.\n", "Animation with key \"", animKey, "\" was not found on texture \"", sprite->spritesheet->key, "\".");
                             return;
                         }
 
@@ -55,7 +53,7 @@ namespace Amara {
                         anim_configured = true;
                     }
                     else {
-                        debug_log("Error: Node ", *sprite, " does not have a valid texture for animation.");
+                        fatal_error("Error: Node ", *sprite, " does not have a valid texture for animation.");
                         gameProps->breakWorld();
                         return;
                     }
@@ -74,7 +72,7 @@ namespace Amara {
                         anim.numFrames = frames.size();
                     }
                     else {
-                        debug_log("Error: Animation couldn't be created from ", config.dump());
+                        fatal_error("Error: Animation couldn't be created from ", config.dump());
                         gameProps->breakWorld();
                         return;
                     }
@@ -97,15 +95,13 @@ namespace Amara {
                         anim.numFrames = numFrames;
                     }
                     else {
-                        debug_log("Error: Animation couldn't be created from ", config.dump());
-                        debug_log("Note: endFrame or numFrame must be defined.");
+                        fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: endFrame or numFrame must be defined.");
                         gameProps->breakWorld();
                         return;
                     }
                 }
                 else {
-                    debug_log("Error: Animation couldn't be created from ", config.dump());
-                    debug_log("Note: Animation frames must be defined.");
+                    fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: Animation frames must be defined.");
                     gameProps->breakWorld();
                     return;
                 }
@@ -113,8 +109,7 @@ namespace Amara {
                 if (json_has(config, "frameRate")) {
                     anim.frameRate = config["frameRate"];
                     if (anim.frameRate <= 0) {
-                        debug_log("Error: Animation couldn't be created from ", config.dump());
-                        debug_log("Note: frameRate must be more than 0.");
+                        fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: frameRate must be more than 0.");
                         gameProps->breakWorld();
                         return;
                     }
@@ -147,7 +142,7 @@ namespace Amara {
                 if (!animKey.empty()) setAnimation(animKey);
             }
             else {
-                debug_log("Error: Node ", *actor, " cannot be animated.");
+                fatal_error("Error: Node ", *actor, " cannot be animated.");
                 gameProps->breakWorld();
                 return;
             }

@@ -61,14 +61,14 @@ namespace Amara {
                 break;
             case BlendMode::Mask:
                 if (!gameProps->passOn.insideTextureContainer) {
-                    debug_log("Error: Mask and Erase blend modes can only be used inside a TextureContainer or TextureCamera.");
+                    fatal_error("Error: Mask and Erase blend modes can only be used inside a TextureContainer or TextureCamera.");
                     gameProps->breakWorld();
                 }
                 SDL_SetTextureBlendMode(texture, AMARA_BLENDMODE_MASK);
                 break;
             case BlendMode::Erase:
                 if (!gameProps->passOn.insideTextureContainer) {
-                    debug_log("Error: Mask and Erase blend modes can only be used inside a TextureContainer or TextureCamera.");
+                    fatal_error("Error: Mask and Erase blend modes can only be used inside a TextureContainer or TextureCamera.");
                     gameProps->breakWorld();
                 }
                 SDL_SetTextureBlendMode(texture, AMARA_BLENDMODE_ERASER);

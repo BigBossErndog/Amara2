@@ -198,7 +198,14 @@ return Nodes:define("MainWindow", "UIWindow", {
             y = 4,
             icon = 20,
             onPress = function(button)
-                
+                if button.props.jumpTween then
+                    button.props.jumpTween:finishTween()
+                    button.props.jumpTween = nil
+                end
+                if button.props.jumpAction then
+                    button.props.jumpAction:destroy()
+                    button.props.jumpAction = nil
+                end
             end
         })
 
@@ -274,15 +281,19 @@ return Nodes:define("MainWindow", "UIWindow", {
                 y = backer.y + 6
             })
 
-            examplesButton:createChild("PeriodicAction", {
-                period = 0.8,
-                startWithAct = true,
+            examplesButton.props.jumpAction = examplesButton:createChild("PeriodicAction", {
+                id = "jumping",
+                period = 0.7,
+                startWithAct = false,
                 onAct = function()
-                    examplesButton.tween:to({
+                    examplesButton.props.jumpTween = examplesButton.tween:to({
                         y = examplesButton.y - 2,
                         duration = 0.2,
                         ease = Ease.SineOut,
-                        yoyo = true
+                        yoyo = true,
+                        onComplete = function()
+                            examplesButton.props.jumpTween = nil
+                        end
                     })
                 end
             })

@@ -26,7 +26,7 @@ namespace Amara {
             path = gameProps->system->getAssetPath(_p);
 
             if (!gameProps->system->exists(path)) {
-                debug_log("Error: Audio file not found \"", path, "\".");
+                fatal_error("Error: Audio file not found \"", path, "\".");
                 gameProps->breakWorld();
                 return false;
             }
@@ -113,7 +113,7 @@ namespace Amara {
                 int error;
                 SDL_IOStream* io = SDL_IOFromFile(path.c_str(), "rb");
                 if (!io) {
-                    debug_log("Error: Failed to open file: ", SDL_GetError());
+                    fatal_error("Error: Failed to open file: ", SDL_GetError());
                     gameProps->breakWorld();
                     return false;
                 }
@@ -125,7 +125,7 @@ namespace Amara {
 
                 stb_vorbis* v = stb_vorbis_open_memory(buffer.data(), buffer.size(), &error, nullptr);
                 if (!v) {
-                    debug_log("Error: Failed to read .ogg file: \"", path, "\".");
+                    fatal_error("Error: Failed to read .ogg file: \"", path, "\".");
                     gameProps->breakWorld();
                     return false;
                 }
@@ -173,7 +173,7 @@ namespace Amara {
                 return true;
             }
 
-            debug_log("Error: Audio file is not supported \"", _p, "\"");
+            fatal_error("Error: Audio file is not supported \"", _p, "\"");
             gameProps->breakWorld();
             return false;
         }

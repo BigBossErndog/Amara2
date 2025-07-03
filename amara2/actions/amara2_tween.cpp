@@ -247,6 +247,11 @@ namespace Amara {
             }
         }
 
+        void finishTween() {
+            completeProperties();
+            complete();
+        }
+
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
             
@@ -286,7 +291,7 @@ namespace Amara {
                 }
             }
         }
-
+        
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::Tween>("Tween",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
@@ -294,7 +299,8 @@ namespace Amara {
                 "duration", sol::readonly(&Tween::tween_duration),
                 "from", &Tween::from,
                 "to", &Tween::to,
-                "set", &Tween::from
+                "set", &Tween::from,
+                "finishTween", &Tween::finishTween
             );
 
             sol::usertype<Amara::Node> node_type = lua["Node"];

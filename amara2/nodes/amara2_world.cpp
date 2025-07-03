@@ -302,7 +302,7 @@ namespace Amara {
                     graphics_priority = { config["graphics"] };
                 }
                 else {
-                    debug_log("Error: Invalid graphics setting.");
+                    fatal_error("Error: Invalid graphics setting.");
                     gameProps->breakWorld();
                 }
             }
@@ -330,7 +330,7 @@ namespace Amara {
                     debug_log("Control will be handed over in target builds.");
                 }
                 else if (config["screenMode"].is_null()) {
-                    debug_log("Error: Invalid screen mode setting.");
+                    fatal_error("Error: Invalid screen mode setting.");
                     gameProps->breakWorld();
                 }
                 else {
@@ -448,7 +448,7 @@ namespace Amara {
                         break;
                     }
                     default:
-                        debug_log("Error: Invalid graphics renderer setting given.");
+                        fatal_error("Error: Invalid graphics renderer setting given.");
                         gameProps->breakWorld();
                         break;
                 }
@@ -683,7 +683,7 @@ namespace Amara {
                 setup_new_window();
                 return true;
             }
-            debug_log("Error: Failed to create window. ", SDL_GetError());
+            fatal_error("Error: Failed to create window. ", SDL_GetError());
             return false;
         }
 
@@ -1082,11 +1082,11 @@ namespace Amara {
 
                 gpuHandler.commandBuffer = SDL_AcquireGPUCommandBuffer(gameProps->gpuDevice);
                 if (gpuHandler.commandBuffer == NULL) {
-                    debug_log("Error: AcquireGPUCommandBuffer failed: ", SDL_GetError());
+                    fatal_error("Error: AcquireGPUCommandBuffer failed: ", SDL_GetError());
                     gameProps->breakWorld();
                 }
                 if (!SDL_WaitAndAcquireGPUSwapchainTexture(gpuHandler.commandBuffer, gameProps->current_window, &gpuHandler.swapChainTexture, NULL, NULL)) {
-                    debug_log("Error: WaitAndAcquireGPUSwapchainTexture failed: ", SDL_GetError());
+                    fatal_error("Error: WaitAndAcquireGPUSwapchainTexture failed: ", SDL_GetError());
                     gameProps->breakWorld();
                 }
             }
@@ -1256,7 +1256,7 @@ namespace Amara {
                 "goToDisplay", &World::goToDisplay,
                 "screenMode", sol::property([](const Amara::World& world) { return world.screenMode; }, &World::setScreenMode),
                 "transparent", sol::property([](const Amara::World& world) { return world.transparent; }, [](Amara::World& world, sol::object value) {
-                    debug_log("Error: Transparency can only be set in World configuration table.");
+                    fatal_error("Error: Transparency can only be set in World configuration table.");
                     world.gameProps->breakWorld();
                 }),
                 "vsync", sol::property([](const Amara::World& world) { return world.vsync; }, &World::setVsync),

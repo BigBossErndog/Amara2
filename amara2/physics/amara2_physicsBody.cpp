@@ -145,7 +145,7 @@ namespace Amara {
                 body_shape = cpCircleShapeNew(body, circle.radius, cpv(0, 0));
             }
             else {
-                debug_log("Error: Unsupported shape type for PhysicsBody.");
+                fatal_error("Error: Unsupported shape type for PhysicsBody.");
             }
 
             if (body_shape) {
@@ -174,7 +174,7 @@ namespace Amara {
             
             body = cpBodyNew(1.0, 1.0);
             if (!body) {
-                debug_log("Error: Failed to instantiate PhysicsBody.");
+                fatal_error("Error: Failed to instantiate PhysicsBody.");
                 gameProps->breakWorld();
                 return;
             }
@@ -267,7 +267,7 @@ namespace Amara {
                 }
             }
             else {
-                debug_log("Error: Expected a PhysicsSpace object.");
+                fatal_error("Error: Expected a PhysicsSpace object.");
             }
         }
 
@@ -293,7 +293,7 @@ namespace Amara {
                 bodyNode->spaceNode = this;
             }
             else {
-                debug_log("Error: Physics space or body is not initialized.");
+                fatal_error("Error: Physics space or body is not initialized.");
             }
         }
         else if (body_obj.is<Amara::Node>()) {

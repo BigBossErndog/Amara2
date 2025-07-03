@@ -248,8 +248,9 @@ return Nodes:define("TerminalWindow", "UIWindow", {
             item.color = Colors.Red
             self.props.allowTrace = true
             ret = true
-        elseif string.starts_with(msg, "Error") then
+        elseif string.starts_with(msg, "Error: ") then
             item.color = Colors.Red
+            self.props.allowTrace = true
             ret = true
         else
             item.color = Colors.White

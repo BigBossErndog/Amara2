@@ -48,7 +48,7 @@ namespace Amara {
                 nlohmann::json tileData = json_extract(config, "tiles");
                 if (tileData.is_array()) {
                     if (tileData.size() != mapWidth * mapHeight) {
-                        debug_log("Error: Given tile data does not match given TilemapLayer width and height.");
+                        fatal_error("Error: Given tile data does not match given TilemapLayer width and height.");
                     }
                     else {
                         for (int i = 0; i < tileData.size(); ++i) {
@@ -77,16 +77,21 @@ namespace Amara {
 
         bool setTexture(std::string key) {
             image = nullptr;
+            
+            textureWidth = 0;
+            textureHeight = 0;
+
+            if (destroyed || key.empty()) return false;
 
             if (!gameProps->assets->has(key)) {
-                debug_log("Error: Asset \"", key, "\" was not found.");
+                fatal_error("Error: Asset \"", key, "\" was not found.");
                 return false;
             }
 
             image = gameProps->assets->get(key)->as<ImageAsset*>();
             
             if (image == nullptr) {
-                debug_log("Error: Asset \"", key, "\" is not a valid texture asset.");
+                fatal_error("Error: Asset \"", key, "\" is not a valid texture asset.");
                 return false;
             }
             textureWidth = image->width;

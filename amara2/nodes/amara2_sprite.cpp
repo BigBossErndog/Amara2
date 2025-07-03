@@ -41,7 +41,7 @@ namespace Amara {
         Sprite(): Amara::Node() {
             set_base_node_id("Sprite");
         }
-
+        
         virtual bool setTexture(std::string key) {
             image = nullptr;
             spritesheet = nullptr;
@@ -52,8 +52,8 @@ namespace Amara {
             frameWidth = 0;
             frameHeight = 0;
 
-            if (destroyed) return false;
-
+            if (destroyed || key.empty()) return false;
+            
             if (!gameProps->assets->has(key)) {
                 debug_log("Error: Asset \"", key, "\" was not found.");
                 return false;
