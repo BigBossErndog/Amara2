@@ -392,34 +392,36 @@ namespace Amara {
             )
         );
 
-        lua["collision"] = sol::overload(
-            [](const Rectangle& r1, const Rectangle& r2) {
-                return Shape::collision(r1, r2);
-            },
-            [](const Quad& q1, const Quad& q2) {
-                return Shape::collision(q1, q2);
-            },
-            [](const Circle& c1, const Circle& c2) {
-                return Shape::collision(c1, c2);
-            },
-            [](const Vector2& p, const Quad& q) {
-                return Shape::collision(p, q);
-            },
-            [](const Quad& q, const Vector2& p) {
-                return Shape::collision(p, q);
-            },
-            [](const Vector2& p, const Rectangle& r) {
-                return Shape::collision(p, r);
-            },
-            [](const Rectangle& r, const Vector2& p) {
-                return Shape::collision(p, r);
-            },
-            [](const Rectangle& rect, const Quad& quad) {
-                return Shape::collision(rect, quad);
-            },
-            [](const Quad& q, const Rectangle& r) {
-                return Shape::collision(r, q);
-            }
+        lua.new_usertype<Shape>("Shape",
+            "collision",  sol::overload(
+                [](const Rectangle& r1, const Rectangle& r2) {
+                    return Shape::collision(r1, r2);
+                },
+                [](const Quad& q1, const Quad& q2) {
+                    return Shape::collision(q1, q2);
+                },
+                [](const Circle& c1, const Circle& c2) {
+                    return Shape::collision(c1, c2);
+                },
+                [](const Vector2& p, const Quad& q) {
+                    return Shape::collision(p, q);
+                },
+                [](const Quad& q, const Vector2& p) {
+                    return Shape::collision(p, q);
+                },
+                [](const Vector2& p, const Rectangle& r) {
+                    return Shape::collision(p, r);
+                },
+                [](const Rectangle& r, const Vector2& p) {
+                    return Shape::collision(p, r);
+                },
+                [](const Rectangle& rect, const Quad& quad) {
+                    return Shape::collision(rect, quad);
+                },
+                [](const Quad& q, const Rectangle& r) {
+                    return Shape::collision(r, q);
+                }
+            )
         );
     }
 }
