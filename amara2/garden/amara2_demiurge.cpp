@@ -23,7 +23,7 @@ namespace Amara {
 
         Demiurge() {}
 
-        void override_existence() {
+        virtual void override_existence() {
             gameProps->lua["Creator"] = this;
             gameProps->lua["Game"] = &game;
             gameProps->lua["System"] = &system;
@@ -97,7 +97,7 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
-            lua.new_usertype<Demiurge>("Demiurge",
+            lua.new_usertype<Demiurge>("DemiurgeClass",
                 "game", &Demiurge::game,
                 "system", &Demiurge::system,
                 "factory", &Demiurge::factory,

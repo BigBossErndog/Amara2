@@ -303,15 +303,16 @@ return Nodes:define("ProjectWindow", "UIWindow", {
     runGame = function(self)
         self.func:stopGame()
 
+        self.world:restoreWindow()
+
         local exe = Game.executable
 
         self.props.gameProcess = self:createChild("ProcessNode", {
             arguments = {
                 exe,
-                "-context",
-                self.props.projectPath,
-                "-display",
-                self.world.displayID
+                "-context", self.props.projectPath,
+                "-script", "index.lua",
+                "-script", System:getScriptPath("utility/BringGameToFront.lua")
             },
             onOutput = function(process, msg)
                 if self.props.printLog then

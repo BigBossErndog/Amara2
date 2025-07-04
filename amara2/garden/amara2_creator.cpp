@@ -151,6 +151,25 @@ namespace Amara {
             }
         }
 
+        virtual void override_existence() override {
+            gameProps.lua["Creator"] = this;
+            gameProps.lua["Game"] = &game;
+            gameProps.lua["System"] = &system;
+            gameProps.lua["Nodes"] = &factory;
+            gameProps.lua["Scripts"] = &scripts;
+            gameProps.lua["Controls"] = &controls;
+            
+            gameProps.system = &system;
+            gameProps.factory = &factory;
+            gameProps.scripts = &scripts;
+            gameProps.controls = &controls;
+
+            if (!base_dir_path.empty()) {
+                gameProps.system->setBasePath(base_dir_path);
+            }
+        }
+
+
         Amara::Demiurge* createDemiurge() {
             Amara::Demiurge* new_demiurge = new Demiurge();
             new_demiurge->setup(&gameProps);
@@ -337,10 +356,10 @@ namespace Amara {
             
             Demiurge::bind_lua(lua);
 
-            lua.new_usertype<Creator>("Creator",
+            lua.new_usertype<Creator>("CreatorClass",
                 sol::base_classes, sol::bases<Demiurge>(),
-                "worlds", sol::readonly(&Creator::worlds),
-                "new_worlds", sol::readonly(&Creator::new_worlds),
+                "worlds", sol::property([](Creator& self) { return sol::as_table(self.worlds); }),
+                "new_worlds", sol::property([](Creator& self) { return sol::as_table(self.new_worlds); }),
                 "startDemiurgicUniverse", sol::overload(
                     sol::resolve<void(std::string)>( &Creator::startDemiurgicUniverse ),
                     sol::resolve<void()>( &Creator::startDemiurgicUniverse )
