@@ -91,10 +91,10 @@ namespace Amara {
             size_t size_to_write = 0;
             std::vector<unsigned char> encrypted_buffer_vec;
 
-            #if (defined(AMARA_ENCRYPT_RW) && defined(AMARA_ENCRYPTION_KEY))
+            #if (defined(AMARA_ENCRYPT_OUTPUT) && defined(AMARA_ENCRYPTION_KEY))
             if (encryptionKey.empty()) encryptionKey = AMARA_ENCRYPTION_KEY;
             #endif
-
+            
             if (!encryptionKey.empty()) {
                 std::vector<unsigned char> data_to_encrypt(output_str.begin(), output_str.end());
                 size_t original_size = data_to_encrypt.size();

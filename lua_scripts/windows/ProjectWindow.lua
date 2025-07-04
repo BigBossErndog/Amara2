@@ -325,12 +325,17 @@ return Nodes:define("ProjectWindow", "UIWindow", {
                 elseif exitCode ~= 0 then
                     self.props.printLogButton.func:forcePress()
                 end
+
                 if exitCode == -1 then
                     self.props.printLog.func:handleMessage(Localize:get("error_failedToRunGame"))
                 end
                 if errorMessage then
                     self.props.printLog.func:handleMessage(errorMessage)
                 end
+                if exitCode ~= 0 then
+                    self.props.printLog.func:handleMessage("Program aborted unexpectedly.")
+                end
+
                 self.props.gameProcess = nil
                 self.props.playButton.func:setIcon(3)
             end

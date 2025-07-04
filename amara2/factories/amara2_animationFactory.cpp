@@ -95,15 +95,13 @@ namespace Amara {
                     anim.numFrames = numFrames;
                 }
                 else {
-                    debug_log("Error: Animation couldn't be created from ", config.dump());
-                    debug_log("Note: endFrame or numFrame must be defined.");
+                    fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: endFrame or numFrame must be defined.");
                     gameProps->breakWorld();
                     return false;
                 }
             }
             else {
-                debug_log("Error: Animation couldn't be created from ", config.dump());
-                debug_log("Note: Animation frames must be defined.");
+                fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: Animation frames must be defined.");
                 gameProps->breakWorld();
                 return false;
             }
@@ -111,8 +109,7 @@ namespace Amara {
             if (json_has(config, "frameRate")) {
                 anim.frameRate = config["frameRate"];
                 if (anim.frameRate <= 0) {
-                    debug_log("Error: Animation couldn't be created from ", config.dump());
-                    debug_log("Note: frameRate must be more than 0.");
+                    fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: frameRate must be more than 0.");
                     gameProps->breakWorld();
                     return false;
                 }

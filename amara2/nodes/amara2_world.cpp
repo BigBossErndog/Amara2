@@ -880,7 +880,7 @@ namespace Amara {
 
                 assets.init();
 
-                debug_log("Info: ", *this, " rendering to window using ", graphics_to_string(graphics), ".");
+                debug_log("Note: ", *this, " rendering to window using ", graphics_to_string(graphics), ".");
 
                 if (gameProps->targetDisplayID > 0) {
                     goToDisplay(gameProps->targetDisplayID);

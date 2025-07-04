@@ -232,7 +232,8 @@ namespace Amara {
             Quad,
             Circle, 
             Triangle, 
-            Line
+            Line,
+            std::vector<Shape>
         >;
 
         ShapeVariant shape;
@@ -275,6 +276,12 @@ namespace Amara {
         }
         
         bool collidesWith(const Shape& other) const {
+            if (is<std::vector<Shape>>()) {
+                return collision(as<std::vector<Shape>>(), other);
+            }
+            if (other.is<std::vector<Shape>>()) {
+                return collision(other.as<std::vector<Shape>>(), *this);
+            }
             return std::visit([](const auto& s1, const auto& s2) {
                 return collision(s1, s2);
             }, shape, other.shape);
@@ -308,6 +315,15 @@ namespace Amara {
         static bool collision(const Vector2& p, const Quad& q);
         static bool collision(const Vector2& p, const Rectangle& r);
         static bool collision(const Rectangle& rect, const Quad& quad);
+
+        static bool collision(const Shape& s1, const std::vector<Shape>& list) {
+            for (const auto& s2 : list) {
+                if (s1.collidesWith(s2)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         
         template <typename T1, typename T2>
         static std::enable_if_t<!std::is_same_v<T1, T2>, bool> collision(const T1& a, const T2& b) {
@@ -359,11 +375,11 @@ namespace Amara {
         );
 
         lua.new_usertype<Circle>("Circle",
-            sol::constructors<Circle(), Circle(float, float, float)>(),
+            sol::constructors<Circle(), Circle(float, float, float), Circle(Vector2)>(),
             sol::base_classes, sol::bases<Vector2>(),
             "radius", &Circle::radius
         );
-
+        
         lua.new_usertype<Triangle>("Triangle",
             sol::constructors<Triangle(), Triangle(Vector2, Vector2, Vector2)>(),
             "p1", sol::property(

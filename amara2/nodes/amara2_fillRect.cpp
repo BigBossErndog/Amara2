@@ -5,7 +5,7 @@ namespace Amara {
 
         float rectWidth = 1;
         float rectHeight = 1;
-
+        
         FillRect(): Amara::Sprite() {
             set_base_node_id("FillRect");
         }
@@ -62,7 +62,7 @@ namespace Amara {
             }
             return success;
         }
-
+        
         float setWidth(float _w) {
             rectWidth = _w;
             return Amara::Sprite::setWidth(_w);

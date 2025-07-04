@@ -308,6 +308,27 @@ namespace Amara {
             );
         }
 
+        virtual Shape getShape() override {
+            return Quad(rotateQuad(
+                Quad(Rectangle(
+                    -getWidth()*origin.x,
+                    -getHeight()*origin.y,
+                    getWidth(),
+                    getHeight()
+                )),
+                Vector2(0, 0),
+                rotation
+            ));
+        }
+
+        virtual Shape getCollisionShape() override {
+            return Quad(rotateQuad(
+                Quad(getRectangle()),
+                Vector2(pos.x, pos.y),
+                rotation
+            ));
+        }
+
         Rectangle stretchTo(const Rectangle& rect) {
             pos.x = rect.x + rect.w*origin.x;
             pos.y = rect.y + rect.h*origin.y;

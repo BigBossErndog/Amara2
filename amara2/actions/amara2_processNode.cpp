@@ -55,7 +55,7 @@ namespace Amara {
                 Amara::debug_log("Arguments: ", nlohmann::json(args));
                 destroy();
                 if (funcs.hasFunction("onExit")) {
-                    std::string msg = SDL_GetError();
+                    std::string msg = String::concat("Error: ", SDL_GetError());
                     funcs.callFunction(this, "onExit", -1, msg);
                 }
             }

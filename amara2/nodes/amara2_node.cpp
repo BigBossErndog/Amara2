@@ -152,11 +152,14 @@ namespace Amara {
         }
 
         virtual Shape getShape() {
+            return Vector2(0, 0);
+        }
+        virtual Shape getCollisionShape() {
             return pos;
         }
 
         bool collidesWith(Amara::Node* other) {
-            return getShape().collidesWith(other->getShape());
+            return getCollisionShape().collidesWith(other->getCollisionShape());
         }
 
         virtual Amara::Node* configure(nlohmann::json config) {
@@ -367,7 +370,7 @@ namespace Amara {
 
             if (yDepthLocked) depth = pos.y;
             else if (zDepthLocked) depth = pos.z;
-            
+
             if (!destroyed) runChildren(deltaTime);
             clean_node_list(children);
 
@@ -825,7 +828,7 @@ namespace Amara {
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
                 },
-
+                
                 "collidesWith", &Node::collidesWith,
 
                 "assets", sol::property([](Node& e) { return e.gameProps->assets; }),

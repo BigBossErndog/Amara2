@@ -89,8 +89,6 @@
         #include <portable-file-dialogs.h>
     #endif
 
-    #include <chipmunk/chipmunk.h>
-
     #define LUA_IMPLEMENTATION
     #define SOL_ALL_SAFETIES_ON 1
     
@@ -228,9 +226,6 @@
     #include "nodes/amara2_nineSlice.cpp"
 
     #include "nodes/amara2_pathFinder.cpp"
-
-    #include "physics/amara2_physicsSpace.cpp"
-    #include "physics/amara2_physicsBody.cpp"
 
     #include "audio/amara2_audio.cpp"
     #include "audio/amara2_audiogroup.cpp"

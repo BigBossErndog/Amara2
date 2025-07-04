@@ -40,7 +40,6 @@ return Nodes:define("WindowsBuildNode", "ProcessNode", {
         local minimp3Path = System:getRelativePath("resources/libs/minimp3")
         local pfdPath = System:getRelativePath("resources/libs/portable-file-dialogs")
         local tinyxml2Path = System:getRelativePath("resources/libs/tinyxml2")
-        local chipmunkPath = System:getRelativePath("resources/libs/Chipmunk2D_build")
         
         -- Clean and create build directory as per Makefile
         if System:exists(buildDir) then
@@ -79,9 +78,6 @@ return Nodes:define("WindowsBuildNode", "ProcessNode", {
             table.insert(args, "-I", System:join(self.props.projectPath, "plugins"))
         end
 
-        -- OTHER_LIB_LINKS
-        table.insert(args, System:join(chipmunkPath, "win/chipmunk.lib"))
-
         -- OTHER_LIB_PATHS
         table.insert(args, "-Isrc")
         table.insert(args, "-I" .. nlohmannPath)
@@ -94,7 +90,6 @@ return Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-I" .. minimp3Path)
         table.insert(args, "-I" .. pfdPath)
         table.insert(args, "-I" .. tinyxml2Path)
-        table.insert(args, "-I" .. System:join(chipmunkPath, "include"))
 
         -- SDL_PATHS_WIN64
         table.insert(args, "-I" .. System:join(sdl3Path, "include"))

@@ -234,7 +234,7 @@ return Nodes:define("TerminalWindow", "UIWindow", {
 
     checkForError  = function(self, msg, item)
         local ret = false
-
+        
         if string.contains(msg, "[string ") then
             item.color = Colors.Red
             local filename, details = string.match(msg, '%[string "([^"]+)"]:(.*)')
@@ -252,8 +252,23 @@ return Nodes:define("TerminalWindow", "UIWindow", {
             item.color = Colors.Red
             self.props.allowTrace = true
             ret = true
+        elseif string.starts_with(msg, "[json.exception.type_error.302]") then
+            local details = string.match(msg, '%[json.exception.type_error.302] type(.*)')
+            details = string.gsub(details, "null", "object")
+            item.text = "Error: Type" .. details
+            item.color = Colors.Red
+            self.props.allowTrace = true
+            ret = true
         else
-            item.color = Colors.White
+            if msg == "Program aborted unexpectedly." then
+                item.color = "#5d00ff"
+            elseif string.contains(msg, "rendering to window using") then
+                item.color = Colors.Cyan
+            elseif string.starts_with(msg, "Note:") then
+                item.color = Colors.Yellow
+            else
+                item.color = Colors.White
+            end
             ret = false
         end
         item.props.defColor = item.color
