@@ -56,6 +56,8 @@ namespace Amara {
         };
         #endif
 
+        bool renderPixelPerfect = false;
+
         Text(): Amara::Node() {
             set_base_node_id("Text");
         }
@@ -161,6 +163,8 @@ namespace Amara {
             if (json_has(config, "originY")) origin.y = config["originY"];
             if (json_has(config, "origin")) origin = config["origin"];
 
+            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
+
             return this;
         }
 
@@ -260,13 +264,15 @@ namespace Amara {
             if (progress > converted_text.size()) {
                 progress = converted_text.size();
             }
+
+            Vector2 render_pos = (renderPixelPerfect) ? pos.round() : pos;
             
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(
                     passOn.anchor,
                     Vector2( 
-                        (passOn.anchor.x + pos.x*passOn.scale.x), 
-                        (passOn.anchor.y + pos.y*passOn.scale.y)
+                        (passOn.anchor.x + render_pos.x*passOn.scale.x), 
+                        (passOn.anchor.y + render_pos.y*passOn.scale.y)
                     ),
                     passOn.rotation
                 ),
@@ -633,7 +639,8 @@ namespace Amara {
                     sol::resolve<sol::object(double)>(&Text::autoProgress),
                     sol::resolve<sol::object(sol::table)>(&Text::autoProgress)
                 ),
-                "skipProgress", &Text::skipProgress
+                "skipProgress", &Text::skipProgress,
+                "renderPixelPerfect", &Text::renderPixelPerfect
             );
         }
     };

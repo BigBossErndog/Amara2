@@ -27,7 +27,8 @@ namespace Amara {
         Rectangle bounds;
 
         Amara::Node* followTarget = nullptr;
-        Vector2 lerp = { 0, 0 };
+        Vector2 lerp = { 1, 1 };
+        static constexpr float lerpPower = 3.0f;
 
         Camera(): Node() {
             set_base_node_id("Camera");
@@ -97,12 +98,12 @@ namespace Amara {
 
             if (followTarget) {
                 float tx = followTarget->pos.x + followTarget->cameraFollowOffset.x;
-                if (lerp.x > 0) scroll.x = scroll.x + (tx - scroll.x)*(1.0f - std::exp(-lerp.x*deltaTime));
-                else scroll.x = tx;
+                float mappedLerpX = 1.0f - std::pow(1.0f - lerp.x, lerpPower * deltaTime);
+                scroll.x += (tx - scroll.x) * mappedLerpX;
 
                 float ty = followTarget->pos.y + followTarget->cameraFollowOffset.y;
-                if (lerp.y) scroll.y = scroll.y + (ty - scroll.y)*(1.0f - std::exp(-lerp.y*deltaTime));
-                else scroll.y = ty;
+                float mappedLerpY = 1.0f - std::pow(1.0f - lerp.y, lerpPower * deltaTime);
+                scroll.y += (ty - scroll.y) * mappedLerpY;
             }
 
             update_bounds();

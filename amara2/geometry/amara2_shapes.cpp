@@ -138,6 +138,15 @@ namespace Amara {
         friend std::ostream& operator<<(std::ostream& os, const Quad& v) {
             return os << static_cast<std::string>(v);
         }
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"p1", p1.toJSON()},
+                {"p2", p2.toJSON()},
+                {"p3", p3.toJSON()},
+                {"p4", p4.toJSON()}
+            });
+        }
     };
 
     struct Circle: public Vector2 {
@@ -454,6 +463,31 @@ namespace Amara {
             
             return *this;
         }
+
+        sol::object get_lua_object(sol::state& lua) {
+            if (is<Rectangle>()) {
+                return sol::make_object(lua, as<Rectangle>());
+            }
+            else if (is<Quad>()) {
+                return sol::make_object(lua, as<Quad>());
+            }
+            else if (is<Circle>()) {
+                return sol::make_object(lua, as<Circle>());
+            }
+            else if (is<Triangle>()) {
+                return sol::make_object(lua, as<Triangle>());
+            }
+            else if (is<Line>()) {
+                return sol::make_object(lua, as<Line>());
+            }
+            else if (is<Vector2>()) {
+                return sol::make_object(lua, as<Vector2>());
+            }
+            else if (is<Vector3>()) {
+                return sol::make_object(lua, as<Vector3>());
+            }
+            return sol::nil;
+        }
     };
 
     void bind_lua_Shapes(sol::state& lua) {
@@ -527,7 +561,7 @@ namespace Amara {
             )
         );
 
-        lua.new_usertype<Shape>("Shape",
+        lua.new_usertype<Shape>("shape",
             "collision",  sol::overload(
                 [](const Rectangle& r1, const Rectangle& r2) {
                     return Shape::collision(r1, r2);

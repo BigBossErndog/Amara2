@@ -5,7 +5,6 @@ return Nodes:define("WindowsBuildNode", "ProcessNode", {
         if config.projectPath then
             self.props.projectPath = config.projectPath
         else
-            self:super_configure(config)
             return
         end
 
@@ -132,7 +131,7 @@ return Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, System:join(buildDir, self.props.executableName .. ".exe"))
 
         if #args > 0 then
-            self:super_configure({
+            self:configure({
                 arguments = args
             })
         end

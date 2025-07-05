@@ -18,7 +18,7 @@ namespace Amara {
 
         std::vector<Amara::Node*> children;
         std::vector<Amara::Node*> children_copy_list;
-
+        
         std::unordered_map<std::string, std::function<void(nlohmann::json)>> configurables;
         
         sol::table props;
@@ -166,6 +166,7 @@ namespace Amara {
 
         virtual Amara::Node* configure(nlohmann::json config) {
             update_properties();
+            
             if (config.is_string()) {
                 std::string path = config.get<std::string>();
                 if (String::endsWith(path, ".json")) {
@@ -219,8 +220,10 @@ namespace Amara {
             nlohmann::json config = nlohmann::json::object();   
             return configure(config);
         }
-        
-        sol::object super_configure(sol::object config) {
+
+        virtual sol::object luaConfigure(sol::object config) {
+            update_properties();
+
             if (config.is<sol::table>()) {
                 sol::table tbl = config.as<sol::table>();
                 for (const auto& it: tbl) {
@@ -244,6 +247,9 @@ namespace Amara {
                         }
                         else if (String::equal(key, "input")) {
                             input.configure(val);
+                        }
+                        else if (String::equal("collider", key)) {
+                            collider = luaCreateChild("Collider", val).as<Amara::Node*>();
                         }
                     }
                 }
@@ -275,22 +281,25 @@ namespace Amara {
             }
 
             configure(lua_to_json(config));
-            return get_lua_object();
-        }
 
-        sol::object luaConfigure(sol::object config) {
-            update_properties();
-
-            super_configure(config);
             if (funcs.hasFunction("onConfigure")) funcs.callFunction("onConfigure", config);
-
+            
             return get_lua_object();
         }
+
         virtual sol::object luaConfigure(std::string key, sol::object val) {
             nlohmann::json config = nlohmann::json::object();
             config[key] = lua_to_json(val);
             configure(config);
             return get_lua_object();
+        }
+
+        sol::object configure_wrapper(sol::object config) {
+            return luaConfigure(config);
+        }
+
+        sol::object configure_wrapper(std::string key, sol::object val) {
+            return luaConfigure(key, val);
         }
 
         virtual void preload() {
@@ -349,7 +358,7 @@ namespace Amara {
             input.drag = Vector2(0, 0);
             if (input.active && !passOn.insideTextureContainer) {
                 input.run(deltaTime);
-
+                
                 Amara::Pointer* lastPointer = input.lastInteraction.lastPointer;
                 if (input.draggable && input.held && lastPointer != nullptr) {
                     Vector2 recPos = pos;
@@ -772,7 +781,7 @@ namespace Amara {
                 }),
                 "getClass", &Node::getClassFunctions,
                 "classes", &Node::funcs,
-                "pos", sol::property([](Node& e, sol::object val) { e.pos = val; }, [](Node& e) { return e.pos; }),
+                "pos", sol::property([](Node& e, sol::object val) { e.pos = val; }, [](Node& e) -> Vector2& { return e.pos; }),
                 "x", sol::property([](Node& e, float val) { e.pos.x = val; }, [](Node& e) { return e.pos.x; }),
                 "y", sol::property([](Node& e, float val) { e.pos.y = val; }, [](Node& e) { return e.pos.y; }),
                 "z", sol::property([](Node& e, float val) { e.pos.z = val; }, [](Node& e) { return e.pos.z; }),
@@ -797,10 +806,9 @@ namespace Amara {
                 "cameraFollowOffsetX", sol::property([](Node& e, float val) { e.cameraFollowOffset.x = val; }, [](Node& e) { return e.cameraFollowOffset.x; }),
                 "cameraFollowOffsetY", sol::property([](Node& e, float val) { e.cameraFollowOffset.y = val; }, [](Node& e) { return e.cameraFollowOffset.y; }),
                 "configure", sol::overload(
-                    sol::resolve<sol::object(sol::object)>(&Node::luaConfigure),
-                    sol::resolve<sol::object(std::string, sol::object)>(&Node::luaConfigure)
+                    sol::resolve<sol::object(sol::object)>(&Node::configure_wrapper),
+                    sol::resolve<sol::object(std::string, sol::object)>(&Node::configure_wrapper)
                 ),
-                "super_configure", &Node::super_configure,
                 "toData", &Node::toData,
                 "alpha", &Node::alpha,
                 "depth", &Node::depth,
@@ -836,6 +844,9 @@ namespace Amara {
                 },
 
                 "collidesWith", &Node::collidesWith,
+                "collider", sol::property([](Node& e) -> sol::object { 
+                    return (e.collider) ? e.collider->get_lua_object() : sol::nil;
+                }),
 
                 "assets", sol::property([](Node& e) { return e.gameProps->assets; }),
                 "shaders", sol::property([](Node& e) { return e.gameProps->shaders; }),

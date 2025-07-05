@@ -54,6 +54,8 @@ namespace Amara {
             return obj.as<Rectangle>().toJSON();
         } else if (obj.is<Circle>()) {
             return obj.as<Circle>().toJSON();
+        } else if (obj.is<Quad>()) {
+            return obj.as<Quad>().toJSON();
         } else if (is_node(obj)) {
             return node_to_short_string(obj);
         } else if (obj.get_type() == sol::type::table) {

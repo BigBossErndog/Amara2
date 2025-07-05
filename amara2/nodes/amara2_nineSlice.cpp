@@ -24,8 +24,6 @@ namespace Amara {
         float marginTop = -1;
         float marginBottom = -1;
 
-        int extrusion = 1;
-
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "width")) drawWidth = json_extract(config, "width");
             if (json_has(config, "height")) drawHeight = json_extract(config, "height");
@@ -46,7 +44,7 @@ namespace Amara {
             if (json_has(config, "marginRight")) marginRight = json_extract(config, "marginRight");
             if (json_has(config, "marginTop")) marginTop = json_extract(config, "marginTop");
             if (json_has(config, "marginBottom")) marginBottom = json_extract(config, "marginBottom");
-
+            
             update_size();
             
             return Amara::TextureContainer::configure(config);
@@ -379,12 +377,14 @@ namespace Amara {
             Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
             Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
 
+            Vector2 render_pos = (renderPixelPerfect) ? pos.round() : pos;
+
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(
                     passOn.anchor, 
                     Vector2( 
-                        (passOn.anchor.x + pos.x*passOn.scale.x), 
-                        (passOn.anchor.y + pos.y*passOn.scale.y)
+                        (passOn.anchor.x + render_pos.x*passOn.scale.x), 
+                        (passOn.anchor.y + render_pos.y*passOn.scale.y)
                     ),
                     passOn.rotation
                 ),

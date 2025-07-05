@@ -27,6 +27,8 @@ namespace Amara {
 
         int frame = 1;
 
+        bool renderPixelPerfect = false;
+
         Animation* animation = nullptr;
 
         #ifdef AMARA_OPENGL
@@ -101,6 +103,8 @@ namespace Amara {
             data["cropTop"] = cropTop;
             data["cropBottom"] = cropBottom;
 
+            data["renderPixelPerfect"] = renderPixelPerfect;
+
             return data;
         }
 
@@ -123,6 +127,8 @@ namespace Amara {
 
             if (json_has(config, "width")) setWidth(config["width"]);
             if (json_has(config, "height")) setHeight(config["height"]);
+
+            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
 
             return Amara::Node::configure(config);
         }
@@ -156,12 +162,14 @@ namespace Amara {
             float imgw = (spritesheet ? frameWidth : textureWidth);
             float imgh = (spritesheet ? frameHeight : textureHeight);
 
+            Vector2 render_pos = (renderPixelPerfect) ? pos.round() : pos;
+
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(
                     passOn.anchor, 
                     Vector2( 
-                        (passOn.anchor.x + pos.x*passOn.scale.x), 
-                        (passOn.anchor.y + pos.y*passOn.scale.y)
+                        (passOn.anchor.x + render_pos.x*passOn.scale.x), 
+                        (passOn.anchor.y + render_pos.y*passOn.scale.y)
                     ),
                     passOn.rotation
                 ),
@@ -407,7 +415,8 @@ namespace Amara {
                     Rectangle r = v;
                     t.fitWithin(r);
                 },
-                "center", sol::property(&Sprite::getCenter)
+                "center", sol::property(&Sprite::getCenter),
+                "renderPixelPerfect", &Sprite::renderPixelPerfect
             );
         }
     };

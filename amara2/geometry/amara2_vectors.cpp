@@ -95,6 +95,16 @@ namespace Amara {
 
         Vector2& operator= (nlohmann::json config);
         Vector2& operator= (sol::object obj);
+
+        Vector2 round() {
+            return Vector2(std::round(x), std::round(y));
+        }
+        Vector2 floor() {
+            return Vector2(std::floor(x), std::floor(y));
+        }
+        Vector2 ceil() {
+            return Vector2(std::ceil(x), std::ceil(y));
+        }
         
         static Vector2 Left;
         static Vector2 Right;

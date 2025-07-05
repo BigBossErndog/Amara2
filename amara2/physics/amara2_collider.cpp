@@ -3,12 +3,21 @@ namespace Amara {
     public:
         Vector2 velocity = Vector2(0, 0);
         Vector2 acceleration = Vector2(0, 0);
-        Vector2 friction = Vector2(0, 0);
+        Vector2 damping = Vector2(0, 0);
 
         std::vector<Amara::Node*> collisionTargets;
 
         Shape shape;
         bool set_shape = false;
+
+        double targetAccuracy = 0.02;
+
+        int maxChecks = 64;
+        int correctionChecks = 16;
+
+        int collisionDirections = 0;
+
+        static constexpr float dampingPower = 3.0f;
 
         Collider(): Amara::Action() {
             set_base_node_id("Collider");
@@ -27,9 +36,39 @@ namespace Amara {
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "velocity")) velocity = config["velocity"];
             if (json_has(config, "acceleration")) acceleration = config["acceleration"];
-            if (json_has(config, "friction")) friction = config["friction"];
+            if (json_has(config, "damping")) damping = config["damping"];
+
+            if (json_has(config, "maxChecks")) maxChecks = config["maxChecks"];
+            if (json_has(config, "targetAccuracy")) targetAccuracy = config["targetAccuracy"];
+            if (json_has(config, "correctionChecks")) correctionChecks = config["correctionChecks"];
+
+            if (json_has(config, "shape")) shape = config["shape"];
 
             return Amara::Action::configure(config);
+        }
+
+        virtual sol::object luaConfigure(sol::object config) {
+            if (config.is<sol::table>()) {
+                sol::table t = config.as<sol::table>();
+
+                if (t["targets"].valid()) {
+                    sol::table targets = t["targets"];
+                    for (auto& pair: targets) {
+                        sol::object obj = pair.second;
+                        if (obj.is<Amara::Node>()) {
+                            addCollisionTarget(obj.as<Amara::Node*>());
+                        }
+                    }
+                }
+                if (t["target"].valid()) {
+                    sol::object obj = t["target"];
+                    if (obj.is<Amara::Node>()) {
+                        addCollisionTarget(obj.as<Amara::Node*>());
+                    }
+                }
+            }
+
+            return Amara::Action::luaConfigure(config);
         }
 
         void addCollisionTarget(Amara::Node* other) {
@@ -42,32 +81,126 @@ namespace Amara {
             }
         }
 
-        virtual void act(double deltaTime) override {
-            Amara::Action::act(deltaTime);
-
-            if (has_started) {
-                Shape check_shape = getCollisionShape();
+        bool hasCollided() {
+            for (Amara::Node* target: collisionTargets) {
+                if (target->destroyed || target->paused) continue;
+                if (target->collidesWith(this)) return true;
             }
+            return false;
         }
 
         virtual Shape getCollisionShape() override {
             if (set_shape) return shape.move(actor->pos);
             return actor->getCollisionShape();
         }
+
+        bool moveActor(Vector2 v, double deltaTime) {
+            Vector2 start_pos = parent->pos;
+            Vector2 change = v * deltaTime;
+
+            Vector2 last_pos = parent->pos;
+            Vector2 fix_pos = parent->pos + (change/2);
+            Vector2 rec_pos;
+
+            parent->pos = fix_pos;
+
+            if (hasCollided()) { // Check halfway first, helps prevent tunneling.
+                fix_pos = start_pos + change;
+            }
+
+            parent->pos = fix_pos;
+
+            bool is_stuck = false;
+
+            if (hasCollided()) {
+                int checks = 0;
+
+                is_stuck = true;
+                rec_pos = last_pos;
+
+                while (true) {
+                    fix_pos = (fix_pos + last_pos) / 2.0;
+                    last_pos = rec_pos;
+
+                    parent->pos = fix_pos;
+
+                    if (hasCollided()) {
+                        is_stuck = true;
+                        rec_pos = last_pos;
+                    }
+                    else {
+                        is_stuck = false;
+                        rec_pos = fix_pos;
+
+                        if (distanceBetween(last_pos, fix_pos) < targetAccuracy) {
+                            break;
+                        }
+                    }
+
+                    parent->pos = rec_pos;
+
+                    checks += 1;
+                    if (checks > maxChecks) {
+                        break;
+                    }
+                }
+
+                if (hasCollided()) {
+                    parent->pos = start_pos;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
         
         virtual void act(double deltaTime) override {
-            Amara::Action::act(delaTime);
+            Amara::Action::act(deltaTime);
 
             if (has_started) {
+                collisionDirections = 0;
+
                 velocity.x += acceleration.x * deltaTime;
                 velocity.y += acceleration.y * deltaTime;
 
-                parent->pos.x += velocity.x * deltaTime;
-                parent->pos.y += velocity.y * deltaTime;
-
-                velocity.x *= (1 - friction.x);
-                velocity.y *= (1 - friction.y);
+                if (moveActor(velocity * Vector2(1, 0), deltaTime)) {
+                    if (velocity.x < 0) collisionDirections |= (int)Direction::Left;
+                    else if (velocity.x > 0) collisionDirections |= (int)Direction::Right;
+                    velocity.x = 0;
+                }
+                if (moveActor(velocity * Vector2(0, 1), deltaTime)) {
+                    if (velocity.y < 0) collisionDirections |= (int)Direction::Up;
+                    else if (velocity.y > 0) collisionDirections |= (int)Direction::Down;
+                    velocity.y = 0;
+                }
+                
+                float mappeddampingX = 1.0f - std::pow(1.0f - damping.x, dampingPower);
+                float mappeddampingY = 1.0f - std::pow(1.0f - damping.y, dampingPower);
+                velocity.x *= std::pow(1.0f - mappeddampingX, deltaTime);
+                velocity.y *= std::pow(1.0f - mappeddampingY, deltaTime);
             }
+        }
+
+        void selfCorrect() {
+            int change = 0;
+            float angle;
+            Vector2 start_pos = parent->pos;
+            while(hasCollided() && change < maxChecks) {
+                for (int i = 0; i < correctionChecks; i++) {
+                    angle = 2*M_PI * (float)i / (float)correctionChecks;
+                    
+                    parent->pos = start_pos + Vector2(
+                        sin(angle)*change,
+                        cos(angle)*change
+                    )*0.1;
+
+                    if (!hasCollided()) return;
+                }
+
+                change += 1;
+            }
+            if (hasCollided()) parent->pos = start_pos;
         }
 
         virtual void destroy() override {
@@ -76,20 +209,34 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
-            lua.new_usertype<SimpleCollider>("SimpleCollider",
+            lua.new_usertype<Collider>("Collider",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "velocity", sol::property(
-                    [](SimpleCollider& t) -> Vector2 { return t.velocity; },
-                    [](SimpleCollider& t, Vector2 v) { t.velocity = v; }
+                    [](Collider& t) -> Vector2& { return t.velocity; },
+                    [](Collider& t, sol::object v) { t.velocity = v; }
                 ),
+                "velocityX", sol::property([](Collider& t) { return t.velocity.x; }, [](Collider& t, float val) { t.velocity.x = val; }),
+                "velocityY", sol::property([](Collider& t) { return t.velocity.y; }, [](Collider& t, float val) { t.velocity.y = val; }),
                 "acceleration", sol::property(
-                    [](SimpleCollider& t) -> Vector2 { return t.acceleration; },
-                    [](SimpleCollider& t, Vector2 v) { t.acceleration = v; }
+                    [](Collider& t) -> Vector2& { return t.acceleration; },
+                    [](Collider& t, sol::object v) { t.acceleration = v; }
                 ),
-                "friction", sol::property(
-                    [](SimpleCollider& t) -> Vector2 { return t.friction; },
-                    [](SimpleCollider& t, Vector2 v) { t.friction = v; }
-                )
+                "accelerationX", sol::property([](Collider& t) { return t.acceleration.x; }, [](Collider& t, float val) { t.acceleration.x = val; }),
+                "accelerationY", sol::property([](Collider& t) { return t.acceleration.y; }, [](Collider& t, float val) { t.acceleration.y = val; }),
+                "damping", sol::property(
+                    [](Collider& t) -> Vector2& { return t.damping; },
+                    [](Collider& t, sol::object v) { t.damping = v; }
+                ),
+                "dampingX", sol::property([](Collider& t) { return t.damping.x; }, [](Collider& t, float val) { t.damping.x = val; }),
+                "dampingY", sol::property([](Collider& t) { return t.damping.y; }, [](Collider& t, float val) { t.damping.y = val; }),
+                "shape", sol::property(
+                    [](Collider& t) -> sol::object { return t.shape.get_lua_object(t.gameProps->lua); },
+                    [](Collider& t, sol::object v) { t.shape = v; t.set_shape = true; }
+                ),
+                "maxChecks", &Collider::maxChecks,
+                "targetAccuracy", &Collider::targetAccuracy,
+                "correctionChecks", &Collider::correctionChecks,
+                "collisionDirections", sol::readonly(&Collider::collisionDirections)
             );
         }
     };

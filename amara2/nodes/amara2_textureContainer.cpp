@@ -46,6 +46,8 @@ namespace Amara {
 
         Rectangle container_viewport;
 
+        bool renderPixelPerfect = false;
+
         TextureContainer(): Amara::Node() {
             set_base_node_id("TextureContainer");
         }
@@ -95,6 +97,8 @@ namespace Amara {
 
             if (json_has(config, "clearOnDraw")) clearOnDraw = config["clearOnDraw"];
             
+            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
+
             update_size();
             
             return Amara::Node::configure(config);
@@ -294,12 +298,14 @@ namespace Amara {
             Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
             Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
 
+            Vector2 render_pos = (renderPixelPerfect) ? pos.round() : pos;
+
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(
                     passOn.anchor, 
                     Vector2( 
-                        (passOn.anchor.x + pos.x*passOn.scale.x), 
-                        (passOn.anchor.y + pos.y*passOn.scale.y)
+                        (passOn.anchor.x + render_pos.x*passOn.scale.x), 
+                        (passOn.anchor.y + render_pos.y*passOn.scale.y)
                     ),
                     passOn.rotation
                 ),
@@ -587,7 +593,8 @@ namespace Amara {
                 "originY", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.y; }, [](Amara::TextureContainer& t, float v) { t.origin.y = v; }),
                 "canvasLocked", &TextureContainer::canvasLocked,
                 "drawOnce", &TextureContainer::drawOnce,
-                "clearOnDraw", &TextureContainer::clearOnDraw
+                "clearOnDraw", &TextureContainer::clearOnDraw,
+                "renderPixelPerfect", &TextureContainer::renderPixelPerfect
             );
         }
     };
