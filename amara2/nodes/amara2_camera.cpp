@@ -255,6 +255,8 @@ namespace Amara {
         }
         
         virtual void drawChildren(const Rectangle& v) override {
+            if (parent->children.size() == 0) return;
+            
             children_copy_list = parent->children;
             SDL_Rect setv = Rectangle::makeSDLRect(v);
             SDL_SetRenderViewport(gameProps->renderer, &setv);

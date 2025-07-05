@@ -70,6 +70,8 @@ namespace Amara {
         bool is_audio_group = false;
 
         bool is_world = false;
+
+        Amara::Node* collider = nullptr;
         
         std::deque<std::string> inheritanceChain;
 
@@ -381,6 +383,8 @@ namespace Amara {
         bool finishedLoading();
 
         void runChildren(double deltaTime) {
+            if (children.size() == 0) return;
+
             children_copy_list = children;
 
             Amara::Node* child;
@@ -431,6 +435,8 @@ namespace Amara {
         }
         virtual void drawSelf(const Rectangle& v) {}
         virtual void drawChildren(const Rectangle& v) {
+            if (children.size() == 0) return;
+
             children_copy_list = children;
             
             pass_on_properties();
@@ -828,7 +834,7 @@ namespace Amara {
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
                 },
-                
+
                 "collidesWith", &Node::collidesWith,
 
                 "assets", sol::property([](Node& e) { return e.gameProps->assets; }),

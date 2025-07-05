@@ -64,7 +64,7 @@ namespace Amara {
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
 
-            if (hasStarted) {
+            if (has_started) {
                 if (io) {
                     bool found_output = false;
                     size_t bytes_read = 0;

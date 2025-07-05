@@ -25,10 +25,10 @@ namespace Amara {
         }
 
         virtual void act(double deltaTime) override {
-            if (!hasStarted) {
+            if (!has_started) {
                 prepare();
             }
-            if (hasStarted && !completed) {
+            if (has_started && !completed) {
                 counter += deltaTime;
                 if (counter >= period) {
                     counter -= period;

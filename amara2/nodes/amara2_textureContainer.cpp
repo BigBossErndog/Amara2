@@ -404,6 +404,8 @@ namespace Amara {
         }
 
         virtual void drawChildren(const Rectangle& v) {
+            if (children.size() == 0) return;
+            
             children_copy_list = children;
 
             PassOnProps rec_props = gameProps->passOn;

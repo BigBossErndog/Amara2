@@ -34,7 +34,7 @@ namespace Amara {
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
 
-            if (hasStarted) {
+            if (has_started) {
                 timer += deltaTime * speed;
                 while (timer > 1.0) {
                     timer -= 1.0;

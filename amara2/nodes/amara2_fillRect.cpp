@@ -19,6 +19,8 @@ namespace Amara {
         }
 
         virtual void drawChildren(const Rectangle& v) override {
+            if (children.size() == 0) return;
+            
             children_copy_list = children;
             
             Vector2 rec_scale = gameProps->passOn.scale;

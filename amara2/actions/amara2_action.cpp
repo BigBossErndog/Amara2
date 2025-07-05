@@ -4,7 +4,7 @@ namespace Amara {
         Amara::Node* actor = nullptr;
 
         bool completed = false;
-        bool hasStarted = false;
+        bool has_started = false;
         bool waitingForChildren = false;
 
         bool autoDestroy = false;
@@ -27,16 +27,16 @@ namespace Amara {
         }
 
         virtual void prepare() {
-            hasStarted = true;
+            has_started = true;
 
             if (funcs.hasFunction("onPrepare")) funcs.callFunction(actor, "onPrepare");
         }
 
         virtual void act(double deltaTime) {
-            if (!hasStarted) {
+            if (!has_started) {
                 prepare();
             }
-            if (hasStarted && !completed) {
+            if (has_started && !completed) {
                 if (funcs.hasFunction("onAct")) funcs.callFunction(actor, "onAct", deltaTime);
             }
         }
@@ -179,7 +179,7 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::Action>("Action",
                 sol::base_classes, sol::bases<Amara::Node>(),
-                "hasStarted", sol::readonly(&Action::hasStarted),
+                "has_started", sol::readonly(&Action::has_started),
                 "completed", sol::readonly(&Action::completed),
                 "complete", &Action::complete,
                 "addChild", &Action::addChild,

@@ -255,7 +255,7 @@ namespace Amara {
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
             
-            if (hasStarted) {
+            if (has_started) {
                 progress += deltaTime/tween_duration;
                 
                 if (progress >= 1) {

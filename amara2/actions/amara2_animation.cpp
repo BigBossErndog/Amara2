@@ -156,7 +156,7 @@ namespace Amara {
         virtual void act(double deltaTime) {
             Amara::Action::act(deltaTime);
             
-            if (hasStarted) {
+            if (has_started) {
                 if (sprite == nullptr || sprite->spritesheet == nullptr) {
                     fatal_error("Error: No sprite provided for animation.");
                     complete();

@@ -22,7 +22,7 @@ namespace Amara {
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
 
-            if (hasStarted && recording) {
+            if (has_started && recording) {
                 switch (gameProps->text_input_type) {
                     case TextInputEnum::Text: {
                         text.insert(selectIndex, gameProps->text_input);

@@ -60,6 +60,10 @@
 
     #include <tinyxml2.cpp>
 
+    #ifdef AMARA_INCLUDE_BOX2D
+    #include <box2d/box2d.h>
+    #endif
+
     #if defined(_WIN32)
         #define AMARA_DESKTOP
         #include <windows.h>

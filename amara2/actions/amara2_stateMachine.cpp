@@ -35,7 +35,7 @@ namespace Amara {
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
 
-            if (hasStarted) {
+            if (has_started) {
                 if (state_map.find(currentState) != state_map.end()) {
                     sol::protected_function func = state_map[currentState];
                     eventLooker = 0;

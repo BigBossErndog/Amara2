@@ -198,12 +198,12 @@ namespace Amara {
         }
         
         virtual void act(double deltaTime) override {
-            if (!hasStarted) {
+            if (!has_started) {
                 totalTasks = tasks.size();
             }
             Amara::Action::act(deltaTime);
 
-            if (hasStarted) {
+            if (has_started) {
                 int processedTasks = 0;
 
                 for (auto it = tasks.begin(); it != tasks.end();) {

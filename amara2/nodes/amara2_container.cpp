@@ -48,6 +48,8 @@ namespace Amara {
         }
 
         virtual void drawChildren(const Rectangle& v) override {
+            if (children.size() == 0) return;
+            
             SDL_Rect old_sdl_viewport;
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 SDL_GetRenderViewport(gameProps->renderer, &old_sdl_viewport);

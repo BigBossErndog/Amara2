@@ -1,4 +1,6 @@
 namespace Amara {
+    nlohmann::json lua_to_json(sol::object obj);
+    
     struct Rectangle: public Vector2 {
         Rectangle() = default;
         Rectangle(float x_, float y_, float w_, float h_) : Vector2(x_, y_), w(w_), h(h_) {}
@@ -249,6 +251,9 @@ namespace Amara {
         Shape(const Circle& c) : shape(c) {}
         Shape(const Triangle& t) : shape(t) {}
         Shape(const Line& l) : shape(l) {}
+        Shape(const nlohmann::json& config) {
+            *this = config;
+        }
 
         template <typename T>
         operator T() const {
@@ -324,6 +329,55 @@ namespace Amara {
             }
             return false;
         }
+
+        Shape move(const Vector2 v) {
+            if (is<Rectangle>()) {
+                Rectangle r = as<Rectangle>();
+                r.x += v.x;
+                r.y += v.y;
+                return r;
+            }
+            else if (is<Quad>()) {
+                Quad q = as<Quad>();
+                q.p1.x += v.x;
+                q.p1.y += v.y;
+                q.p2.x += v.x;
+                q.p2.y += v.y;
+                q.p3.x += v.x;
+                q.p3.y += v.y;
+                q.p4.x += v.x;
+                q.p4.y += v.y;
+
+                return q;
+            }
+            else if (is<Circle>()) {
+                Circle c = as<Circle>();
+                c.x += v.x;
+                c.y += v.y;
+
+                return c;
+            }
+            else if (is<Triangle>()) {
+                Triangle t = as<Triangle>();
+                t.p1.x += v.x;
+                t.p1.y += v.y;
+                t.p2.x += v.x;
+                t.p2.y += v.y;
+                t.p3.x += v.x;
+                t.p3.y += v.y;
+
+                return t;
+            }
+            else if (is<Line>()) {
+                Line l = as<Line>();
+                l.start.x += v.x;
+                l.start.y += v.y;
+                l.end.x += v.x;
+                l.end.y += v.y;
+
+                return l;
+            }
+        }
         
         template <typename T1, typename T2>
         static std::enable_if_t<!std::is_same_v<T1, T2>, bool> collision(const T1& a, const T2& b) {
@@ -334,6 +388,71 @@ namespace Amara {
         template <typename T1, typename T2>
         static std::enable_if_t<std::is_same_v<T1, T2>, bool> collision(const T1&, const T2&) {
             return false;
+        }
+
+        Shape& operator= (const nlohmann::json& config) {
+            if (config.is_array()) {
+                if (config.size() == 2) {
+                    shape = Vector2(config[0], config[1]);
+                }
+                else if (config.size() == 3) {
+                    shape = Vector3(config[0], config[1], config[2]);
+                }
+                else if (config.size() == 4) {
+                    shape = Rectangle(config);
+                }
+            }
+            else if (config.is_object()) {
+                if (json_has(config, "x", "y")) {
+                    shape = Vector2(config["x"], config["y"]);
+                }
+                else if (json_has(config, "x", "y", "z")) {
+                    shape = Vector3(config["x"], config["y"], config["z"]);
+                }
+                else if (json_has(config, "x", "y", "w", "h")) {
+                    shape = Rectangle(config);
+                }
+                else if (json_has(config, "p1", "p2", "p3", "p4")) {
+                    shape = Quad(config);
+                }
+                else if (json_has(config, "x", "y", "r")) {
+                    shape = Circle(config);
+                }
+            }
+            return *this;
+        }
+
+        Shape& operator= (sol::object obj) {
+            if (obj.is<Rectangle>()) {
+                shape = obj.as<Rectangle>();
+            }
+            else if (obj.is<Quad>()) {
+                shape = obj.as<Quad>();
+            }
+            else if (obj.is<Circle>()) {
+                shape = obj.as<Circle>();
+            }
+            else if (obj.is<Triangle>()) {
+                shape = obj.as<Triangle>();
+            }
+            else if (obj.is<Line>()) {
+                shape = obj.as<Line>();
+            }
+            else if (obj.is<Vector2>()) {
+                shape = obj.as<Vector2>();
+            }
+            else if (obj.is<Vector3>()) {
+                shape = obj.as<Vector3>();
+            }
+            else if (obj.is<std::vector<Shape>>()) {
+                shape = obj.as<std::vector<Shape>>();
+            }
+            else if (obj.is<sol::table>()) {
+                sol::table t = obj.as<sol::table>();
+                *this = lua_to_json(obj);
+            }
+            
+            return *this;
         }
     };
 
