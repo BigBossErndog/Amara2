@@ -10,7 +10,7 @@ namespace Amara {
         Shape shape;
         bool set_shape = false;
 
-        double targetAccuracy = 0.02;
+        double targetAccuracy = 0.001;
 
         int maxChecks = 64;
         int correctionChecks = 16;
