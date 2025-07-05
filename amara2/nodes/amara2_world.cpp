@@ -1259,7 +1259,23 @@ namespace Amara {
                     fatal_error("Error: Transparency can only be set in World configuration table.");
                     world.gameProps->breakWorld();
                 }),
-                "vsync", sol::property([](const Amara::World& world) { return world.vsync; }, &World::setVsync),
+                "vsync", sol::property(
+                    [](const Amara::World& world) { return world.vsync; },
+                    [](Amara::World& world, sol::object val) {
+                        if (val.is<bool>()) {
+                            world.vsync = val.as<bool>() ? 1 : 0;
+                        }
+                        else if (val.is<int>()) {
+                            world.vsync = val.as<int>();
+                        }
+                        else if (val.is<std::string>()) {
+                            if (String::equal(val.as<std::string>(), "adaptive")) {
+                                world.vsync = -1;
+                            }
+                        }
+                        world.setVsync(world.vsync);
+                    }
+                ),
                 "alwaysOnTop", sol::property([](const Amara::World& world) { return world.alwaysOnTop; }, &World::setAlwaysOnTop),
                 "clickThrough", sol::property([](const Amara::World& world) { return world.clickThrough; }, &World::setClickThrough),
                 "forcedClickThrough", sol::property([](const Amara::World& world) { return world.forcedClickThrough; }, &World::setForcedClickThrough),
