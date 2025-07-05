@@ -4,6 +4,7 @@ namespace Amara {
         Vector2 velocity = Vector2(0, 0);
         Vector2 acceleration = Vector2(0, 0);
         Vector2 damping = Vector2(0, 0);
+        Vector2 bounciness = Vector2(0, 0);
 
         std::vector<Amara::Node*> collisionTargets;
 
@@ -18,7 +19,7 @@ namespace Amara {
         int collisionDirections = 0;
 
         static constexpr float dampingPower = 3.0f;
-
+        
         Collider(): Amara::Action() {
             set_base_node_id("Collider");
         }
@@ -37,6 +38,7 @@ namespace Amara {
             if (json_has(config, "velocity")) velocity = config["velocity"];
             if (json_has(config, "acceleration")) acceleration = config["acceleration"];
             if (json_has(config, "damping")) damping = config["damping"];
+            if (json_has(config, "bounciness")) bounciness = config["bounciness"];
 
             if (json_has(config, "maxChecks")) maxChecks = config["maxChecks"];
             if (json_has(config, "targetAccuracy")) targetAccuracy = config["targetAccuracy"];
@@ -167,12 +169,12 @@ namespace Amara {
                 if (moveActor(velocity * Vector2(1, 0), deltaTime)) {
                     if (velocity.x < 0) collisionDirections |= (int)Direction::Left;
                     else if (velocity.x > 0) collisionDirections |= (int)Direction::Right;
-                    velocity.x = 0;
+                    velocity.x = -velocity.x * bounciness.x;
                 }
                 if (moveActor(velocity * Vector2(0, 1), deltaTime)) {
                     if (velocity.y < 0) collisionDirections |= (int)Direction::Up;
                     else if (velocity.y > 0) collisionDirections |= (int)Direction::Down;
-                    velocity.y = 0;
+                    velocity.y = -velocity.y * bounciness.y;
                 }
                 
                 float mappeddampingX = 1.0f - std::pow(1.0f - damping.x, dampingPower);
@@ -229,6 +231,10 @@ namespace Amara {
                 ),
                 "dampingX", sol::property([](Collider& t) { return t.damping.x; }, [](Collider& t, float val) { t.damping.x = val; }),
                 "dampingY", sol::property([](Collider& t) { return t.damping.y; }, [](Collider& t, float val) { t.damping.y = val; }),
+                "bounciness", sol::property(
+                    [](Collider& t) -> Vector2& { return t.bounciness; },
+                    [](Collider& t, sol::object v) { t.bounciness = v; }
+                ),
                 "shape", sol::property(
                     [](Collider& t) -> sol::object { return t.shape.get_lua_object(t.gameProps->lua); },
                     [](Collider& t, sol::object v) { t.shape = v; t.set_shape = true; }

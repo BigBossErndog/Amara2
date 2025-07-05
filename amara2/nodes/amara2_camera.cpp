@@ -301,7 +301,10 @@ namespace Amara {
                 "h", &Camera::height,
                 "width", &Camera::width,
                 "height", &Camera::height,
-                "scroll", &Camera::scroll,
+                "scroll", sol::property(
+                    [] (Camera& cam) -> Vector2& { return cam.scroll; },
+                    [] (Camera& cam, sol::object _s) { cam.scroll = _s; }
+                ),
                 "scrollX", sol::property([](Camera& cam) { return cam.scroll.x; }, [](Camera& cam, float val) { cam.scroll.x = val; }),
                 "scrollY", sol::property([](Camera& cam) { return cam.scroll.x; }, [](Camera& cam, float val) { cam.scroll.y = val; }),
                 "changeScroll", sol::overload(
@@ -309,7 +312,7 @@ namespace Amara {
                     sol::resolve<sol::object(float)>(&Camera::changeScroll)
                 ),
                 "zoom", sol::property(
-                    [] (Camera& cam) -> Vector2 { return cam.zoom; },
+                    [] (Camera& cam) -> Vector2& { return cam.zoom; },
                     [] (Camera& cam, sol::object _z) { cam.zoom = _z; }
                 ),
                 "zoomX", sol::property([](Camera& cam) { return cam.zoom.x; }, [](Camera& cam, float val) { cam.zoom.x = val; }),
