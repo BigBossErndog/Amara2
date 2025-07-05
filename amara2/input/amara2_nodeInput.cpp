@@ -123,7 +123,8 @@ namespace Amara {
                 "timeHeld", sol::readonly(&NodeInput::timeHeld),
                 "draggable", &NodeInput::draggable,
                 "configure", sol::resolve<void(sol::object)>(&NodeInput::configure),
-                "cursor", &NodeInput::cursor
+                "cursor", &NodeInput::cursor,
+                "drag", sol::readonly(&NodeInput::drag)
             );
         }
     };
