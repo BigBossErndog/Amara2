@@ -2,6 +2,8 @@ namespace Amara {
     class Creator: public Demiurge {
     public:
         GameProps gameProps;
+        
+        static Creator* true_creator;
 
         std::vector<World*> copy_worlds_list;
 
@@ -139,7 +141,7 @@ namespace Amara {
         virtual World* createWorld() override {
             return createWorld(sol::make_object(gameProps.lua, std::string("World")));
         }
-
+        
         void update_properties() {
             if (currentWorld && currentWorld->demiurge) {
                 currentWorld->demiurge->override_existence();
@@ -152,6 +154,8 @@ namespace Amara {
         }
 
         virtual void override_existence() override {
+            true_creator = this;
+            
             gameProps.lua["Creator"] = this;
             gameProps.lua["Game"] = &game;
             gameProps.lua["System"] = &system;
@@ -256,65 +260,12 @@ namespace Amara {
             Uint64 freq = SDL_GetPerformanceFrequency();
             double frameTarget = 0;
             double elapsedTime = 0;
-
+    
+            #ifdef __EMSCRIPTEN__
+                emscripten_set_main_loop(emscripten_main_loop, 0, 1);
+            #else
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
-                messages.update();
-                eventHandler.handleEvents(worlds, game);
-
-                if (game.hasQuit) {
-                    break;
-                }
-                vsync = false;
-
-                if (!eventHandler.logicBlocking) {
-                    copy_worlds_list = worlds;
-                    for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
-                        currentWorld = *it;
-                        update_properties();
-
-                        gameProps.lua_exception_thrown = false;
-
-                        currentWorld->run(game.deltaTime);
-
-                        if (currentWorld->exception_thrown) {
-                            currentWorld->destroy();
-                        }
-                    }
-
-                    cleanDestroyedWorlds();
-                    std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
-
-                    for (auto it = worlds.begin(); it != worlds.end(); it++) {
-                        currentWorld = *it;
-                        if (currentWorld->headless) continue;
-                        update_properties();
-
-                        currentWorld->prepareRenderer();
-                        currentWorld->draw(gameProps.master_viewport);
-                        if (currentWorld->vsync != 0) vsync = true;
-                    }
-                    for (Amara::World* world: worlds) {
-                        world->presentRenderer();
-                    }
-
-                    currentWorld = nullptr;
-                    if (game.targetFPS != 0 && !vsync) {
-                        frameTarget = 1.0 / (double)game.targetFPS;
-                        elapsedTime = (double)(SDL_GetPerformanceCounter() - rec_tick) / (double)freq;
-                        if (elapsedTime < frameTarget) {
-                            SDL_Delay((frameTarget - elapsedTime)*1000);
-                        }
-                    }
-                    current_tick = SDL_GetPerformanceCounter();
-                    gameProps.deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
-                    game.fps = 1 / game.deltaTime;
-                    rec_tick = current_tick;
-                    
-                    game.lifeTime += game.deltaTime;
-                    if (currentDemiurge) {
-                        currentDemiurge->game.lifeTime += game.lifeTime;
-                    }
-                }
+                main_loop();
             }
 
             destroy();
@@ -326,6 +277,71 @@ namespace Amara {
 
             if (gameProps.lua_exception_thrown) return 1;
             return gameProps.error_code;
+            #endif
+        }
+        
+        void main_loop() {
+            messages.update();
+            eventHandler.handleEvents(worlds, game);
+
+            if (game.hasQuit) {
+                return;
+            }
+            vsync = false;
+
+            if (!eventHandler.logicBlocking) {
+                copy_worlds_list = worlds;
+                for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
+                    currentWorld = *it;
+                    update_properties();
+
+                    gameProps.lua_exception_thrown = false;
+
+                    currentWorld->run(game.deltaTime);
+
+                    if (currentWorld->exception_thrown) {
+                        currentWorld->destroy();
+                    }
+                }
+
+                cleanDestroyedWorlds();
+                std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
+
+                for (auto it = worlds.begin(); it != worlds.end(); it++) {
+                    currentWorld = *it;
+                    if (currentWorld->headless) continue;
+                    update_properties();
+
+                    currentWorld->prepareRenderer();
+                    currentWorld->draw(gameProps.master_viewport);
+                    if (currentWorld->vsync != 0) vsync = true;
+                }
+                for (Amara::World* world: worlds) {
+                    world->presentRenderer();
+                }
+
+                currentWorld = nullptr;
+                if (game.targetFPS != 0 && !vsync) {
+                    frameTarget = 1.0 / (double)game.targetFPS;
+                    elapsedTime = (double)(SDL_GetPerformanceCounter() - rec_tick) / (double)freq;
+                    if (elapsedTime < frameTarget) {
+                        SDL_Delay((frameTarget - elapsedTime)*1000);
+                    }
+                }
+                current_tick = SDL_GetPerformanceCounter();
+                gameProps.deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
+                game.fps = 1 / game.deltaTime;
+                rec_tick = current_tick;
+                
+                game.lifeTime += game.deltaTime;
+                if (currentDemiurge) {
+                    currentDemiurge->game.lifeTime += game.lifeTime;
+                }
+            }
+        }
+        
+        static void emscripten_main_loop() {
+            if (Creator::true_creator) Creator->true_creator->main_loop();
         }
 
         void bind_lua() {
@@ -382,3 +398,5 @@ namespace Amara {
         return nullptr;
     };
 }
+
+Creator* Creator::true_creator = nullptr;
