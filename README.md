@@ -141,7 +141,7 @@ Run "*Amara2.exe*".
 
 
 #### - *Building your project*
-Amara2 requires VS Build Tools from Microsoft to build your final game.
+Amara2 requires VS Build Tools from Microsoft to make a final build of your game.
 You don't have to install it until you need to build your game.
 
 Download the installer from:
@@ -150,12 +150,12 @@ https://visualstudio.microsoft.com/visual-cpp-build-tools/
 
 When you run the installer, select "*Desktop development with C++*".
 
-Once installation is completed, you are ready to use Amara2.
+Once installation is completed, you are ready to build your game.
 
 ## List Of Nodes
 Here is a compehensive list of what nodes are available:
 - *Node* : The base node object.
-- *Group* : Used to grouping Nodes as one entity (by creating them as children of the Group).
+- *Group* : Used to group Nodes as one entity (by creating them as children of the Group).
 - *CopyNode* : Used to re-render a node in another location.
 - *NodePool* : Used to pool nodes for reuse.
 - *Text* : Used to render text from a ttf.
