@@ -128,6 +128,9 @@ Nodes:load("MyScene", "MyScene.lua") -- searches for MyScene.lua in the folder "
 Nodes:load("MyScene", "MyScene") -- searches for MyScene.lua or MyScene.luac
 ```
 
+You can now use this loaded Node from anywhere in your project.
+
+
 ## Documentation
 *TODO*
 
