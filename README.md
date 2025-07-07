@@ -137,7 +137,7 @@ Download the windows zip file from the latest release:
 
 https://github.com/BigBossErndog/Amara2/releases
 
-Run "*Amara2.exe*".
+Run ```Amara2.exe```.
 
 
 #### - *Building your project*
@@ -148,7 +148,7 @@ Download the installer from:
 
 https://visualstudio.microsoft.com/visual-cpp-build-tools/
 
-When you run the installer, select "*Desktop development with C++*".
+When you run the installer, select ```Desktop development with C++```.
 
 Once installation is completed, you are ready to build your game.
 
