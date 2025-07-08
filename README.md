@@ -17,6 +17,10 @@ Built in C++ using SDL3.
 
 ![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
 
+## What I'm Currently Working On
+- Automated web export via emscripten
+- Android export via Android
+
 ## Community
 Join the Discord community where you can ask questions, promote your work and interact with fellow users of Amara2!
 
