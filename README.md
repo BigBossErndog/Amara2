@@ -4,9 +4,9 @@ Built in C++ using SDL3.
 
 *Note: Amara2 is currently available for Windows only.*
 
-Get the latest version from:
+[Click here for the latest release.](https://github.com/BigBossErndog/Amara2/releases)
 
-https://github.com/BigBossErndog/Amara2/releases
+[Click here for tutorials and documentation.](https://github.com/BigBossErndog/Amara2/wiki)
 
 ## Features
 - Setting up a new project and running a test is easy as heck.
@@ -16,6 +16,10 @@ https://github.com/BigBossErndog/Amara2/releases
 - Built using SDL3, so porting to other platforms shouldn't be too great a task for porting companies.
 
 ![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
+
+## What I'm Currently Working On
+- Automated web export via emscripten
+- Android export via Android
 
 ## Community
 Join the Discord community where you can ask questions, promote your work and interact with fellow users of Amara2!
@@ -128,8 +132,12 @@ Nodes:load("MyScene", "MyScene.lua") -- searches for MyScene.lua in the folder "
 Nodes:load("MyScene", "MyScene") -- searches for MyScene.lua or MyScene.luac
 ```
 
+You can now use this loaded Node from anywhere in your project.
+
+
 ## Documentation
-*TODO*
+
+[Click here for Tutorials and Documentation.](https://github.com/BigBossErndog/Amara2/wiki)
 
 ## Setup
 ### Windows
@@ -137,68 +145,20 @@ Download the windows zip file from the latest release:
 
 https://github.com/BigBossErndog/Amara2/releases
 
-Run "*Amara2.exe*".
+Run ```Amara2.exe```.
 
 
 #### - *Building your project*
-Amara2 requires VS Build Tools from Microsoft to build your final game.
+Amara2 requires VS Build Tools from Microsoft to make a final build of your game.
 You don't have to install it until you need to build your game.
 
 Download the installer from:
 
 https://visualstudio.microsoft.com/visual-cpp-build-tools/
 
-When you run the installer, select "*Desktop development with C++*".
+When you run the installer, select ```Desktop development with C++```.
 
-Once installation is completed, you are ready to use Amara2.
-
-## List Of Nodes
-Here is a compehensive list of what nodes are available:
-- *Node* : The base node object.
-- *Group* : Used to grouping Nodes as one entity (by creating them as children of the Group).
-- *CopyNode* : Used to re-render a node in another location.
-- *NodePool* : Used to pool nodes for reuse.
-- *Text* : Used to render text from a ttf.
-- *Camera* : Used by a Scene to render elements. View can be controlled with scroll and zoom.
-- *Scene* : Used to organize your game's various states.
-- *Action* : The base action, used to reuse behaviors across various types of nodes.
-- *WaitAction* : Used to pause an amount of time before performing a function or another action (typically accessed via node.wait).
-- *Tween* : An action used to tween the values of a node (typically accessed via node.tween).
-- *StateMachine* : Used to manage various states of a node.
-- *DelayedNode* : Used to delay the creation of a node.
-- *PeriodicAction* : Used to perform a repeated action with a specified time between each call.
-- *ProcessNode* : Used to execute a System program as a sub-process and manage output.
-- *TextInput* : Used to track user keyboard input.
-- *Loader* : Used to load assets into the game (typically access via node.load).
-- *AutoProgress* : Used to progress a Text node (i.e. text appearing character by character).
-- *Sprite* : Used to display an image and animate from a spritesheet.
-- *Animation* : Action to make a Sprite play an animation from a spritesheet (typically access via sprite:play)
-- *FillRect* : Used to display a colored rectangle.
-- *Container* : Used to crop view of child nodes within a rectangle.
-- *TextureContainer* : Used to crop view of child nodes in a textured container that can be further manipulated with rotation and tints.
-- *ShaderContainer* : (OpenGL graphics only) A TextureContainer used to perform multiple render passes.
-- *TilemapLayer* : Used to display a layer from a tilemap.
-- *Tilemap* : Used to manage the various elements of a tilemap (e.g. layers and objects from a Tiled .tmx file)
-- *NineSlice* : Used to display a textured box, typically for GUI. https://en.wikipedia.org/wiki/9-slice_scaling
-- *Audio* : A node used to manage the playing of an audio.
-- *AudioPool* : If a sound is supposed to be layered, or a different sound to be played each time then use an AudioPool.
-- *AudioGroup* : Used to group audio. Also used to manage the volume of a collection of audio.
-- *AudioMaster* : The root audio node used by the World class. Add your audio nodes as a child to node.audio (accessible from any node).
-- *Transition* : Base node used to create your own transition between scenes.
-- *FillTransition* : Used to fade in and out between scenes.
-- *World* : The big node used to contain the game and manage the window.
-
-## Global Objects
-There are some important global objects to know when using Amara2.
-- *Creator* : Used to create new worlds.
-- *Game* : Manage various aspects of the game such as FPS.
-- *System* : For interacting with the system (e.g. reading and writing files).
-- *Nodes* : Used to load and define custom nodes.
-- *Scripts* : Used for loading and running lua scripts.
-- *Keyboard* : Used for handling keyboard input.
-- *Gamepads* : Used for handling gamepad input.
-- *Controls* : Used for creating and handling your own control schemes (e.g. define multiple inputs to the same action, or handling user-defined controls).
-
+Once installation is completed, you are ready to build your game.
 
 ## Not-Yet-Frequently Asked Questions
 ### - Can I contribute code to development?
