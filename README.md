@@ -4,9 +4,9 @@ Built in C++ using SDL3.
 
 *Note: Amara2 is currently available for Windows only.*
 
-Get the latest version from:
+[Click here for the latest release.](https://github.com/BigBossErndog/Amara2/releases)
 
-https://github.com/BigBossErndog/Amara2/releases
+[Click here for Tutorials and Documentation.](https://github.com/BigBossErndog/Amara2/wiki)
 
 ## Features
 - Setting up a new project and running a test is easy as heck.
@@ -132,7 +132,8 @@ You can now use this loaded Node from anywhere in your project.
 
 
 ## Documentation
-*TODO*
+
+[Click here for Tutorials and Documentation.](https://github.com/BigBossErndog/Amara2/wiki)
 
 ## Setup
 ### Windows
