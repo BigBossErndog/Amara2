@@ -1,4 +1,4 @@
-return Nodes:define("ProjectWindow", "UIWindow", {
+Nodes:define("ProjectWindow", "UIWindow", {
     width = 108,
     height = 60,
 

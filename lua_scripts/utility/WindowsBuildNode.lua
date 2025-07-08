@@ -1,4 +1,4 @@
-return Nodes:define("WindowsBuildNode", "ProcessNode", {
+Nodes:define("WindowsBuildNode", "ProcessNode", {
     id = "buildNode",
 
     onConfigure = function(self, config)

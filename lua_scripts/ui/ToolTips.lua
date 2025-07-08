@@ -1,4 +1,4 @@
-return Nodes:define("ToolTips", "NineSlice", {
+Nodes:define("ToolTips", "NineSlice", {
     id = "toolTip",
     texture = "toolTipBox",
 

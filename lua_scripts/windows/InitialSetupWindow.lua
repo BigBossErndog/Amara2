@@ -1,4 +1,4 @@
-return Nodes:define("InitialSetupWindow", "UIWindow", {
+Nodes:define("InitialSetupWindow", "UIWindow", {
     width = 180,
     height = 42,
     

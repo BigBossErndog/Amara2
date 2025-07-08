@@ -1,4 +1,4 @@
-return Nodes:define("UIButton", "NineSlice", {
+Nodes:define("UIButton", "NineSlice", {
     texture = "uiButton",
     width = 16, height = 18,
     origin = 0,

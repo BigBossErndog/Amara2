@@ -5,7 +5,9 @@ namespace Amara {
     
     class NodeDescriptor {
     public:
-        nlohmann::json data;
+        nlohmann::json data = nullptr;
+        sol::object defition = sol::nil;
+
         std::string nodeID;
         std::string baseNodeID;
     };
@@ -109,7 +111,10 @@ namespace Amara {
 
                 Amara::Node* node = create(desc.baseNodeID);
                 node->gameProps = gameProps;
-                if (node) node->configure(desc.data);
+                if (node) {
+                    if (!desc.data.is_null()) node->configure(desc.data);
+                    if (desc.definition.valid()) node->luaConfigure(desc.definition);
+                }
 
                 return prepNode(node, key);
             }
@@ -153,15 +158,13 @@ namespace Amara {
             return node->get_lua_object();
         }
 
-        sol::object defineNode(std::string nodeName, std::string baseName, sol::object config) {
-            Amara::Node* node = create(baseName);
-            if (!node) return sol::nil;
-
-            if (!config.is<sol::nil_t>()) {
-                node->luaConfigure(config);
-            }
+        void defineNode(std::string nodeName, std::string baseName, sol::object config) {
+            NodeDescriptor desc;
+            desc.nodeID = nodeName;
+            desc.baseNodeID = baseName;
+            desc.definition = config;
             
-            return prepNode(node, nodeName)->get_lua_object();
+            descriptors[nodeName] = desc;
         }
 
         sol::object castLuaNode(Amara::Node* node, std::string key) {

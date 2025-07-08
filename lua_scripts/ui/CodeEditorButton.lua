@@ -13,7 +13,7 @@ local editorTooltips = {
     ["codeEditor_VSCodium"] = "toolTip_openInVSCodium"
 }
 
-return Nodes:define("CodeEditorButton", "UIButton", {
+Nodes:define("CodeEditorButton", "UIButton", {
     onCreate = function(self)
         local settings = self.world.func:getSettings()
         

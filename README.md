@@ -58,7 +58,7 @@ Example file: "*lua_scripts/MyScene.lua*"
 ```lua
 local mySprite
 
-return Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node Scene
+Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node Scene
     -- Three main functions of a node: onPreload, onCreate and onUpdate
     
     onPreload = function(self)
