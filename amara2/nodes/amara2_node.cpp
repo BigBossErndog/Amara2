@@ -347,9 +347,10 @@ namespace Amara {
         virtual void run(double deltaTime) {
             update_properties();
             if (!actuated) {
-                preload();
-                if (!destroyed) create();
-                actuated = true;
+                if (!destroyed && !loader) {
+                    create();
+                    actuated = true;
+                }
             }
             if (destroyed) return;
             
@@ -496,8 +497,10 @@ namespace Amara {
 
             if (!node->actuated) {
                 node->preload();
-                if (!node->destroyed) node->create();
-                node->actuated = true;
+                if (!node->destroyed && !node->loader) {
+                    node->create();
+                    node->actuated = true;
+                }
             }
 
             return node;

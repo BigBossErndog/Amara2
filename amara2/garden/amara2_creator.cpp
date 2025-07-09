@@ -15,7 +15,9 @@ namespace Amara {
 
         Uint64 rec_tick = 0;
         Uint64 current_tick = 0;
+        Uint64 freq = SDL_GetPerformanceFrequency();
         double frameTarget = 0;
+        double elapsedTime = 0;
 
         World* currentWorld = nullptr;
         Demiurge* currentDemiurge = nullptr;
@@ -92,6 +94,7 @@ namespace Amara {
                                 starting_scripts.push_back(path);
                             }
                         }
+                        #endif
                         if (String::equal(arg, "-display")) {
                             ++it;
                             if (it == game.arguments.end()) break;
@@ -100,7 +103,6 @@ namespace Amara {
                                 gameProps.targetDisplayID = path;
                             }
                         }
-                        #endif
                     }
                     ++it;
                 }
@@ -133,8 +135,10 @@ namespace Amara {
             }
 
             new_world->preload();
-            if (!new_world->destroyed) new_world->create();
-            new_world->actuated = true;
+            if (!new_world->destroyed && (!new_world->loader)) {
+                new_world->create();
+                new_world->actuated = true;
+            }
 
             return new_world;
         }
@@ -243,23 +247,19 @@ namespace Amara {
 
             eventHandler.init(&gameProps);
 
-            #ifndef AMARA_DISABLE_EXTERNAL_SCRIPTS
             for (auto it = starting_scripts.begin(); it != starting_scripts.end(); it++) {
                 scripts.run(*it);
             }
-            #endif
 
             game.hasQuit = gameProps.lua_exception_thrown || gameProps.error_code != 0;
 
             cleanDestroyedWorlds();
             std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
-            
-            bool vsync = false;
 
             rec_tick = SDL_GetPerformanceCounter();
-            Uint64 freq = SDL_GetPerformanceFrequency();
-            double frameTarget = 0;
-            double elapsedTime = 0;
+            freq = SDL_GetPerformanceFrequency();
+            frameTarget = 0;
+            elapsedTime = 0;
     
             #ifdef __EMSCRIPTEN__
                 emscripten_set_main_loop(emscripten_main_loop, 0, 1);
@@ -287,7 +287,7 @@ namespace Amara {
             if (game.hasQuit) {
                 return;
             }
-            vsync = false;
+            bool vsync = false;
 
             if (!eventHandler.logicBlocking) {
                 copy_worlds_list = worlds;
@@ -341,7 +341,7 @@ namespace Amara {
         }
         
         static void emscripten_main_loop() {
-            if (Creator::true_creator) Creator->true_creator->main_loop();
+            if (Creator::true_creator) Creator::true_creator->main_loop();
         }
 
         void bind_lua() {
@@ -388,6 +388,7 @@ namespace Amara {
             );
         }
     };
+    Creator* Creator::true_creator = nullptr;
 
     World* Demiurge::createWorld(sol::object config) {
         if (true_creator) return true_creator->createWorld(config);
@@ -398,5 +399,3 @@ namespace Amara {
         return nullptr;
     };
 }
-
-Creator* Creator::true_creator = nullptr;

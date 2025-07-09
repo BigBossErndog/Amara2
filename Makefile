@@ -32,16 +32,14 @@ LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthre
 
 LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl2-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
 
-OTHER_LIB_LINKS = resources/libs/box2d/win/box2d.lib
-OTHER_LIB_PATHS = -Isrc -Iresources/libs/box2d/include -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/tinyxml2/include -Iresources/libs/minimp3 -Iresources/libs/portable-file-dialogs -Iresources/libs/tinyxml2 -Iresources/libs/utf8cpp -Iresources/libs/utf8cpp/include -Iresources/libs/utf8cpp/src
+OTHER_LIB_LINKS = 
+OTHER_LIB_PATHS = -Isrc -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/minimp3 -Iresources/libs/portable-file-dialogs -Iresources/libs/tinyxml2
 
 OTHER_LIB = $(OTHER_LIB_PATHS)
 
 AMARA_PATH = -Iamara2 -Iplugins
 
-# INCLUDE_DEPTH = 1000
-# EXTRA_OPTIONS = -fmax-include-depth=$(INCLUDE_DEPTH)
-EXTRA_OPTIONS = -DAMARA_TESTING -DAMARA_PLUGINS -DAMARA_ENGINE_TOOLS -DAMARA_DESKTOP
+EXTRA_OPTIONS = -DAMARA_TESTING -DAMARA_PLUGINS -DAMARA_ENGINE_TOOLS
 
 playwin:
 	$(BUILD_EXECUTABLE_WIN) $(EXE_OPTIONS)

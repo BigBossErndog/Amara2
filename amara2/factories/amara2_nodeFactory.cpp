@@ -6,7 +6,7 @@ namespace Amara {
     class NodeDescriptor {
     public:
         nlohmann::json data = nullptr;
-        sol::object defition = sol::nil;
+        sol::object definition = sol::nil;
 
         std::string nodeID;
         std::string baseNodeID;
@@ -69,6 +69,30 @@ namespace Amara {
 
             return true;
         }
+        bool load(std::string path) {
+            std::string script_path = gameProps->system->getScriptPath(path);
+
+            if (!gameProps->system->exists(script_path)) {
+                fatal_error("Error: Failed to load Node from \"", path, "\". File not found.");
+                return false;
+            }
+            
+            if (String::endsWith(script_path, ".lua") || String::endsWith(script_path, ".luac")) {
+                gameProps->system->run(script_path);
+            }
+            else if (String::endsWith(script_path, ".amara")) {
+                NodeDescriptor desc;
+                nlohmann::json data = gameProps->system->readJSON(script_path);
+                desc.data = data;
+                
+                desc.nodeID = data["nodeID"];
+                desc.baseNodeID = data["baseNodeID"];
+                
+                descriptors[desc.nodeID] = desc;
+            }
+
+            return true;
+        }
         
         Amara::Node* prepNode(Amara::Node* node, std::string key) {
             node->nodeID = key;
@@ -111,6 +135,7 @@ namespace Amara {
 
                 Amara::Node* node = create(desc.baseNodeID);
                 node->gameProps = gameProps;
+                
                 if (node) {
                     if (!desc.data.is_null()) node->configure(desc.data);
                     if (desc.definition.valid()) node->luaConfigure(desc.definition);
@@ -123,7 +148,9 @@ namespace Amara {
             if (gameProps->system->exists(script_path)) {
                 if (String::endsWith(script_path, ".lua") || String::endsWith(script_path, ".luac")) {
                     sol::object result = gameProps->system->run(script_path);
+                    
                     Amara::Node* node = result.as<Amara::Node*>();
+
                     return prepNode(node, node->baseNodeID);
                 }
                 else if (String::endsWith(script_path, ".amara")) {
@@ -163,7 +190,7 @@ namespace Amara {
             desc.nodeID = nodeName;
             desc.baseNodeID = baseName;
             desc.definition = config;
-            
+
             descriptors[nodeName] = desc;
         }
 
@@ -318,7 +345,10 @@ namespace Amara {
             #endif
 
             lua.new_usertype<NodeFactory>("NodeFactory",
-                "load", &NodeFactory::load,
+                "load", sol::overload(
+                    sol::resolve<bool(std::string, std::string)>(&NodeFactory::load),
+                    sol::resolve<bool(std::string)>(&NodeFactory::load)
+                ),
                 "add", &NodeFactory::add,
                 "create", &NodeFactory::luaCreate,
                 "define", &NodeFactory::defineNode

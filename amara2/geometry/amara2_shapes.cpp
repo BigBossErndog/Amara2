@@ -329,6 +329,7 @@ namespace Amara {
         static bool collision(const Vector2& p, const Quad& q);
         static bool collision(const Vector2& p, const Rectangle& r);
         static bool collision(const Rectangle& rect, const Quad& quad);
+        static bool collision(const Quad& q, const Circle& r);
 
         static bool collision(const Shape& s1, const std::vector<Shape>& list) {
             for (const auto& s2 : list) {
@@ -386,6 +387,22 @@ namespace Amara {
 
                 return l;
             }
+            else if (is<Vector3>()) {
+                Vector3 v = as<Vector3>();
+                v.x += v.x;
+                v.y += v.y;
+                v.z += v.z;
+
+                return v;
+            }
+            else if (is<Vector2>()) {
+                Vector2 v = as<Vector2>();
+                v.x += v.x;
+                v.y += v.y;
+
+                return v;
+            }
+            return *this;
         }
         
         template <typename T1, typename T2>
@@ -412,14 +429,14 @@ namespace Amara {
                 }
             }
             else if (config.is_object()) {
-                if (json_has(config, "x", "y")) {
-                    shape = Vector2(config["x"], config["y"]);
+                if (json_has(config, "x", "y", "w", "h")) {
+                    shape = Rectangle(config);
                 }
                 else if (json_has(config, "x", "y", "z")) {
                     shape = Vector3(config["x"], config["y"], config["z"]);
                 }
-                else if (json_has(config, "x", "y", "w", "h")) {
-                    shape = Rectangle(config);
+                else if (json_has(config, "x", "y")) {
+                    shape = Vector2(config["x"], config["y"]);
                 }
                 else if (json_has(config, "p1", "p2", "p3", "p4")) {
                     shape = Quad(config);

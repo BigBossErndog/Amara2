@@ -44,18 +44,18 @@ namespace Amara {
             return obj.as<std::string>();
         } else if (obj.is<Amara::Color>()) {
             return obj.as<Amara::Color>().toJSON();
-        } else if (obj.is<Vector2>()) {
-            return obj.as<Vector2>().toJSON();
-        } else if (obj.is<Vector3>()) {
-            return obj.as<Vector3>().toJSON();
-        } else if (obj.is<Vector4>()) {
-            return obj.as<Vector4>().toJSON();
         } else if (obj.is<Rectangle>()) {
             return obj.as<Rectangle>().toJSON();
         } else if (obj.is<Circle>()) {
             return obj.as<Circle>().toJSON();
         } else if (obj.is<Quad>()) {
             return obj.as<Quad>().toJSON();
+        } else if (obj.is<Vector4>()) {
+            return obj.as<Vector4>().toJSON();
+        } else if (obj.is<Vector3>()) {
+            return obj.as<Vector3>().toJSON();
+        } else if (obj.is<Vector2>()) {
+            return obj.as<Vector2>().toJSON();
         } else if (is_node(obj)) {
             return node_to_short_string(obj);
         } else if (obj.get_type() == sol::type::table) {

@@ -23,7 +23,7 @@ namespace Amara {
         Collider(): Amara::Action() {
             set_base_node_id("Collider");
         }
-
+        
         virtual void prepare() override {
             Amara::Action::prepare();
             if (actor) {
@@ -44,7 +44,10 @@ namespace Amara {
             if (json_has(config, "targetAccuracy")) targetAccuracy = config["targetAccuracy"];
             if (json_has(config, "correctionChecks")) correctionChecks = config["correctionChecks"];
 
-            if (json_has(config, "shape")) shape = config["shape"];
+            if (json_has(config, "shape")) {
+                shape = config["shape"];
+                set_shape = true;
+            }
 
             return Amara::Action::configure(config);
         }
@@ -92,7 +95,9 @@ namespace Amara {
         }
 
         virtual Shape getCollisionShape() override {
-            if (set_shape) return shape.move(actor->pos);
+            if (set_shape) {
+                return shape.move(actor->pos);
+            }
             return actor->getCollisionShape();
         }
 

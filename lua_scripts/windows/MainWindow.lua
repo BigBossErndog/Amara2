@@ -1,13 +1,23 @@
 Nodes:define("MainWindow", "UIWindow", {
     width = 256,
-    height = 140,
+    height = 156,
+
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
         local settings = self.world.func:getSettings()
 
         local title = self.props.content:createChild("Text", {
-            x = 10, y = 8,
+            x = 10, y = 6,
+            font = "defaultFont",
+            text = Localize:get("title_windowTitle") .. " v" .. version_string,
+            color = "#a8bee0",
+            origin = 0,
+            input = true
+        })
+
+        local recentProjectsTitle = self.props.content:createChild("Text", {
+            x = 10, y = 22,
             font = "defaultFont",
             text = Localize:get("title_recentProjects"),
             color = "#f0f6ff",
@@ -15,7 +25,7 @@ Nodes:define("MainWindow", "UIWindow", {
         })
 
        local backer = self.props.content:createChild("FillRect", {
-            x = 6, y = 24,
+            x = 6, y = recentProjectsTitle.y + 16,
             width = self.props.targetWidth - 12,
             height = 72,
             color = "#111d27",
@@ -91,7 +101,7 @@ Nodes:define("MainWindow", "UIWindow", {
         end
 
         local editorTitle = self.props.content:createChild("Text", {
-            x = title.x,
+            x = recentProjectsTitle.x,
             y = backer.y + backer.height + 6,
             origin = 0,
             font = "defaultFont",
@@ -198,14 +208,7 @@ Nodes:define("MainWindow", "UIWindow", {
             y = 4,
             icon = 20,
             onPress = function(button)
-                if button.props.jumpTween then
-                    button.props.jumpTween:finishTween()
-                    button.props.jumpTween = nil
-                end
-                if button.props.jumpAction then
-                    button.props.jumpAction:destroy()
-                    button.props.jumpAction = nil
-                end
+                
             end
         })
 
@@ -279,23 +282,6 @@ Nodes:define("MainWindow", "UIWindow", {
                 origin = 0,
                 x = backer.x + 6 + 4,
                 y = backer.y + 6
-            })
-
-            examplesButton.props.jumpAction = examplesButton:createChild("PeriodicAction", {
-                id = "jumping",
-                period = 0.7,
-                startWithAct = false,
-                onAct = function()
-                    examplesButton.props.jumpTween = examplesButton.tween:to({
-                        y = examplesButton.y - 2,
-                        duration = 0.2,
-                        ease = Ease.SineOut,
-                        yoyo = true,
-                        onComplete = function()
-                            examplesButton.props.jumpTween = nil
-                        end
-                    })
-                end
             })
         end
     end,

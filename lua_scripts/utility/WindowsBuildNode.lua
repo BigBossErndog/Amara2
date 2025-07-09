@@ -30,6 +30,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         local clangLLVMPath = System:getRelativePath("resources/clang-llvm")
         local sdl3Path = System:getRelativePath("resources/libs/SDL3-3.2.16")
+
         local nlohmannPath = System:getRelativePath("resources/libs/nlohmann/include")
         local murmurhash3Path = System:getRelativePath("resources/libs/murmurhash3")
         local luaPath = System:getRelativePath("resources/libs/lua")
@@ -85,7 +86,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-I" .. sol2Path)
         table.insert(args, "-I" .. stbPath)
         table.insert(args, "-I" .. glmPath)
-        table.insert(args, "-I" .. System:join(tinyxml2Path, "include"))
+        table.insert(args, "-I" .. tinyxml2Path)
         table.insert(args, "-I" .. minimp3Path)
         table.insert(args, "-I" .. pfdPath)
         table.insert(args, "-I" .. tinyxml2Path)
@@ -101,12 +102,17 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-Wl,/NOIMPLIB")
         table.insert(args, "-std=c++17")
 
+        -- table.insert(args, "-w")
+        -- table.insert(args, "-Wall")
+        -- table.insert(args, "-std=c++17")
+        -- table.insert(args, "-Wl,/NOIMPLIB")
+        -- table.insert(args, "-DAMARA_DEBUG_BUILD")
+
         -- EXTRA_OPTIONS
         if self.props.installPlugins then
             table.insert(args, "-DAMARA_PLUGINS")
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
-        table.insert(args, "-DAMARA_DESKTOP");
 
         -- LINKER_FLAGS_WIN64
         table.insert(args, "-fuse-ld=lld")
@@ -131,6 +137,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, System:join(buildDir, self.props.executableName .. ".exe"))
 
         if #args > 0 then
+            print(args)
             self:configure({
                 arguments = args
             })

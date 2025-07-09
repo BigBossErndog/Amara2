@@ -1,6 +1,6 @@
 -- Welcome to your new world
 
-return Creator:createWorld({
+Creator:createWorld({
     window = {
         width = 640,
         height = 360,

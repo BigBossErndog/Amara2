@@ -60,7 +60,7 @@
 
     #include <tinyxml2.cpp>
 
-    #ifdef AMARA_INCLUDE_BOX2D
+    #if defined(AMARA_INCLUDE_BOX2D)
     #include <box2d/box2d.h>
     #endif
 
