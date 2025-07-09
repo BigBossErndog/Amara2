@@ -60,8 +60,6 @@ Here is an example of how you would write a scene in Amara2.
 
 Example file: "*lua_scripts/MyScene.lua*"
 ```lua
-local mySprite
-
 Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node Scene
     -- Three main functions of a node: onPreload, onCreate and onUpdate
     
@@ -91,7 +89,7 @@ Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node 
             color = Color.Green
         })
         
-        mySprite = self:createChild("Sprite", {
+        self.props.mySprite = self:createChild("Sprite", {
             x = 0, y = 0, -- (0, 0) is the center of the screen / view.
             texture = "mySpritesheet",
             frame = 4, -- set starting frame, first frame (top-left) is 1
@@ -118,7 +116,7 @@ Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node 
     onUpdate = function(self, deltaTime)
         -- Keyboard global object handles key input
         if Keyboard:justPressed(Key.Space) then
-            mySprite:animate("waveHello")
+            self.props.mySprite:animate("waveHello")
         end
     end
 })
