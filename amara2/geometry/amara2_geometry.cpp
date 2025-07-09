@@ -162,6 +162,35 @@ namespace Amara {
         return Shape::collision(quad, Quad(rect));
     }
 
+    bool Shape::collision(const Quad& quad, const Circle& circle) {
+        auto closestPointOnSegment = [](const Vector2& A, const Vector2& B, const Vector2& P) -> Vector2 {
+            Vector2 AB = B - A;
+            float ab2 = AB.x * AB.x + AB.y * AB.y;
+            if (ab2 == 0) return A;
+            Vector2 AP = P - A;
+            float t = (AP.x * AB.x + AP.y * AB.y) / ab2;
+            t = fmax(0.0f, fmin(1.0f, t));
+            return A + AB * t;
+        };
+
+        Vector2 center(circle.x, circle.y);
+        float minDist2 = (std::numeric_limits<float>::max)();
+        Vector2 verts[4] = {quad.p1, quad.p2, quad.p3, quad.p4};
+        for (int i = 0; i < 4; ++i) {
+            Vector2 a = verts[i];
+            Vector2 b = verts[(i+1)%4];
+            Vector2 closest = closestPointOnSegment(a, b, center);
+            float dx = closest.x - center.x;
+            float dy = closest.y - center.y;
+            float dist2 = dx*dx + dy*dy;
+            if (dist2 < minDist2) minDist2 = dist2;
+        }
+        if (minDist2 <= circle.radius * circle.radius) return true;
+        
+        if (isPointInside(quad, center)) return true;
+        return false;
+    }
+
     Vector2 stringToPosition(std::string str) {
         if (String::equal(str, "top")) return { 0.5, 0 };
         if (String::equal(str, "bottom")) return { 0.5, 1 };
