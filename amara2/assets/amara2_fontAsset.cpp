@@ -212,7 +212,7 @@ namespace Amara {
                 return true;
             }
             #endif
-
+            fatal_error("Error: Failed to load image, no graphics available. \"", path, "\"");
             return false;
         }
 

@@ -36,10 +36,10 @@ namespace Amara {
         SDL_Renderer* renderer = nullptr;
         SDL_GPUDevice* gpuDevice = nullptr;
 
-        GraphicsEnum graphics;
+        GraphicsEnum graphics = GraphicsEnum::None;
         
         Amara::Color backgroundColor = Amara::Color::Black;
-
+        
         Rectangle display;
         Uint32 displayID = 0;
         Uint32 rec_displayID = 0;
@@ -938,6 +938,9 @@ namespace Amara {
             else if (demiurge) {
                 debug_log("Note: Demiurgic presence. Rendering Mode Overridden: ", graphics_to_string(gameProps->graphics));
                 debug_log("Control will be handed over in target builds.");
+            }
+            else {
+                debug_log("Note: Created headless world ", *this, ". Rendering is disabled.");
             }
             
             update_properties();

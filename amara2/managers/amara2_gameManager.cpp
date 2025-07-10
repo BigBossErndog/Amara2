@@ -12,6 +12,7 @@ namespace Amara {
         std::string platform;
 
         std::vector<nlohmann::json> arguments;
+        nlohmann::json argmap = nlohmann::json::object();
 
         bool hasQuit = false;
 
@@ -95,6 +96,9 @@ namespace Amara {
                 "arguments", sol::property([](const GameManager& g) -> sol::object {
                     if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.gameProps->lua, g.arguments);
+                }),
+                "argtable", sol::property([](GameManager& g) -> sol::table {
+                    return json_to_lua(g.gameProps->lua, g.argmap);
                 }),
                 "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint,
                 "getDisplayBounds", &GameManager::getDisplayBounds,

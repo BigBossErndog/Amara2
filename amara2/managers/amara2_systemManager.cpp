@@ -1018,6 +1018,14 @@ namespace Amara {
             #endif
         }
 
+        void throwError(std::string error) {
+            fatal_error(error);
+        }
+        void throwError(std::string error, int error_code) {
+            gameProps->error_code = error_code;
+            fatal_error(error);
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<SystemManager>("SystemManager",
                 "exists", &SystemManager::exists,
@@ -1076,7 +1084,11 @@ namespace Amara {
                 "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled,
                 "WriteICO", &SystemManager::WriteICO,
                 #endif
-                "programInstalled", &SystemManager::programInstalled
+                "programInstalled", &SystemManager::programInstalled,
+                "throwError", sol::overload(
+                    sol::resolve<void(std::string)>(&SystemManager::throwError),
+                    sol::resolve<void(std::string, int)>(&SystemManager::throwError)
+                )
             );
         }
     };

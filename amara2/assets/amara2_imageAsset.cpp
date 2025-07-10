@@ -177,6 +177,7 @@ namespace Amara {
                 stbi_image_free(imageData);
                 return true;
             }
+            fatal_error("Error: Failed to load image, no graphics available. \"", path, "\"");
             return false;
         }
 

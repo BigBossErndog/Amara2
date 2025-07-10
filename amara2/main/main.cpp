@@ -37,8 +37,11 @@ int main(int argc, char** argv) {
     #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
     EnsureStandardHandles();
     #endif
-    
+
     Amara::Creator creator(argc, argv);
+    if (creator.starting_scripts.size() > 0) {
+        return creator.startCreation();
+    }
     
     std::string indexPath = creator.system.getScriptPath("index");
     if (creator.system.exists(indexPath)) {

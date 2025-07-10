@@ -136,13 +136,12 @@ Nodes:define("TerminalWindow", "UIWindow", {
             end,
             onPress = function()
                 self.func:closeWindow(function(self)
+                    if self.func.onExit then
+                        self.func:onExit()
+                    end
                     self:destroy()
                 end)
                 self.props.enabled = false
-
-                if self.func.onExit then
-                    self.func:onExit()
-                end
             end
         })
 

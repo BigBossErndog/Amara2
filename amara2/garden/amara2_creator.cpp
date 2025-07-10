@@ -86,7 +86,7 @@ namespace Amara {
                             }
                         }
                         #ifndef AMARA_DISABLE_EXTERNAL_SCRIPTS
-                        if (String::equal(arg, "-script")) {
+                        else if (String::equal(arg, "-script")) {
                             ++it;
                             if (it == game.arguments.end()) break;
                             nlohmann::json& path = *it;
@@ -95,13 +95,19 @@ namespace Amara {
                             }
                         }
                         #endif
-                        if (String::equal(arg, "-display")) {
+                        else if (String::equal(arg, "-display")) {
                             ++it;
                             if (it == game.arguments.end()) break;
                             nlohmann::json& path = *it;
                             if (path.is_number()) {
                                 gameProps.targetDisplayID = path;
                             }
+                        }
+                        else if (String::startsWith(arg, "-")) {
+                            std::string lbl = arg.get<std::string>();
+                            it++;
+                            if (it == game.arguments.end()) break;
+                            game.argmap[lbl] = *it;
                         }
                     }
                     ++it;
@@ -246,11 +252,10 @@ namespace Amara {
             }
 
             eventHandler.init(&gameProps);
-
             for (auto it = starting_scripts.begin(); it != starting_scripts.end(); it++) {
                 scripts.run(*it);
             }
-
+            
             game.hasQuit = gameProps.lua_exception_thrown || gameProps.error_code != 0;
 
             cleanDestroyedWorlds();
