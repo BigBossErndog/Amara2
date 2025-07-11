@@ -59,7 +59,7 @@ ICON_SRC = assets/icons/icon.ico
 ICON_RC = assets/icons/icon.rc
 ICON_RES = assets/icons/icon.res
 build-icon:
-	@echo '1 ICON "$(ICON_SRC)"' > $(ICON_RC)
+	@echo 1 ICON "$(ICON_SRC)" > $(ICON_RC)
 	$(RC_COMPILER) $(ICON_RC)
 
 cpAssets:
@@ -90,7 +90,7 @@ cpdirs-alt:
 	xcopy /s /e /i /y "assets\*.*" "$(BUILD_PATH)\assets"
 	xcopy /s /e /i /y "data\*.*" "$(BUILD_PATH)\data"
 	xcopy /s /e /i /y "lua_scripts\*.*" "$(BUILD_PATH)\lua_scripts"
-	if exist "$(BUILD_PATH)/data/settings.json: del "$(BUILD_PATH)/data/settings.json"
+	if exist "$(BUILD_PATH)\data\settings.json" del "$(BUILD_PATH)\data\settings.json"
 
 # Using clang from $(CLANG_LLVM_PATH)
 win: $(ENTRY_FILES)
@@ -108,7 +108,8 @@ win-release:
 
 # Using clang from $(CLANG_LLVM_PATH)
 win-alt: $(ENTRY_FILES)
-	mkdir -p ./$(BUILD_PATH)
+	if exist $(BUILD_PATH) ( rmdir /s /q $(BUILD_PATH) )
+	if not exist $(BUILD_PATH) md $(BUILD_PATH)
 	make build-icon
 	$(COMPILER) $(ENTRY_FILES) $(ICON_RES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpdll-alt
