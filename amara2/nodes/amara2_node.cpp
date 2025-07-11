@@ -840,12 +840,12 @@ namespace Amara {
                 "active", sol::property([](Node& e) { return e.isActive(); }, [](Node& e, bool val) { if (val) e.activate(); else e.deactivate(); }),
                 "activate", &Node::activate,
                 "deactivate", &Node::deactivate,
+                "actuated", sol::readonly(&Node::actuated),
                 "paused", &Node::paused,
                 "visible", &Node::visible,
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
                 },
-
                 "collidesWith", &Node::collidesWith,
                 "collider", sol::property([](Node& e) -> sol::object { 
                     return (e.collider) ? e.collider->get_lua_object() : sol::nil;
