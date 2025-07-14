@@ -120,22 +120,23 @@ namespace Amara {
 
             parent->pos = fix_pos;
 
-            std::vector<Vector2> points = Line(start_pos, start_pos + change).split(splitChecks);
-            for (Vector2 p: points) {
-                fix_pos = p;
+            bool collided = false;
+            Line line = Line(start_pos, start_pos + change);
+            for (int i = 0; i < splitChecks; i++) {
+                fix_pos = line.getPoint((float)i / ((float)splitChecks - 1.0f));
+
                 parent->pos = fix_pos;
+
                 if (hasCollided()) {
+                    collided = true;
                     break;
                 }
+                
                 last_pos = fix_pos;
             }
 
-            bool is_stuck = false;
-
-            if (hasCollided()) {
+            if (collided) {
                 int checks = 0;
-
-                is_stuck = true;
                 rec_pos = last_pos;
 
                 while (true) {
@@ -145,11 +146,9 @@ namespace Amara {
                     parent->pos = fix_pos;
 
                     if (hasCollided()) {
-                        is_stuck = true;
                         rec_pos = last_pos;
                     }
                     else {
-                        is_stuck = false;
                         rec_pos = fix_pos;
 
                         if (distanceBetween(last_pos, fix_pos) < targetAccuracy) {

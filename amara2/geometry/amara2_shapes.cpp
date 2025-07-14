@@ -236,12 +236,16 @@ namespace Amara {
         std::vector<Vector2> split(int num) {
             std::vector<Vector2> points;
             for (int i = 0; i <= (num-1); i++) {
-                points.push_back(Vector2(
-                    start.x + (end.x - start.x) * i / (num-1),
-                    start.y + (end.y - start.y) * i / (num-1)
-                ));
+                points.push_back(Vector2(getPoint(i / (num-1))));
             }
             return points;
+        }
+
+        Vector2 getPoint(float t) {
+            return Vector2(
+                start.x + (end.x - start.x) * t,
+                start.y + (end.y - start.y) * t
+            );
         }
     };
 
