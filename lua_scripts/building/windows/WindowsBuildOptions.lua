@@ -1,4 +1,4 @@
-Nodes:define("BuildOptions", "UIWindow", {
+Nodes:define("WindowsBuildOptions", "UIWindow", {
     width = 256,
     height = 106,
 
@@ -173,7 +173,7 @@ Nodes:define("BuildOptions", "UIWindow", {
     end,
 
     startBuilding = function(self)
-        self.func:closeWindow(function()
+        self.func:closeWindow(function(win)
             local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
             projectData["exe-icon"] = self.props.iconPath
             System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
@@ -182,6 +182,8 @@ Nodes:define("BuildOptions", "UIWindow", {
                 projectPath = self.props.projectPath,
                 iconPath = self.props.iconPath
             })
+
+            win:destroy()
         end)
     end,
 

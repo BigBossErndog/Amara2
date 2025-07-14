@@ -306,9 +306,6 @@ Nodes:define("ProjectWindow", "UIWindow", {
     runGame = function(self)
         self.func:stopGame()
 
-        self.world:restoreWindow()
-        self.world.forcedClickThrough = true
-
         local exe = Game.executable
 
         self.props.gameProcess = self:createChild("ProcessNode", {
@@ -346,7 +343,6 @@ Nodes:define("ProjectWindow", "UIWindow", {
         })
 
         self.props.playButton.func:setIcon(13)
-        self.world.forcedClickThrough = false
     end,
 
     stopGame = function(self)
@@ -365,7 +361,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
             window:destroy()
         end)
 
-        local newWindow = self.world.props.windows:createChild("BuildOptions", {
+        local newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
             projectPath = self.props.projectPath
         })
         newWindow.func:openWindow()

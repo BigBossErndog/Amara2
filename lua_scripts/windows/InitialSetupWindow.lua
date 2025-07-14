@@ -31,6 +31,9 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
             },
             onExit = function(process, exitCode, errorMessage)
                 if exitCode ~= 0 then
+                    self.func:closeWindow(function()
+                        self.world:destroy()
+                    end)
                     return
                 end
                 self.func:closeWindow(function()
@@ -45,6 +48,8 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
                         local win = self.parent:createChild("MainWindow")
                         win.func:openWindow()
                     end
+
+                    self:destroy()
                 end)
             end
         })

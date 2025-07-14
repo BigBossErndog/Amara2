@@ -358,6 +358,9 @@ namespace Amara {
         void clear() {
             readScripts.clear();
             compiledScripts.clear();
+            descriptors.clear();
+            factory.clear();
+            nodeRegistry.clear();
         }
 
         ~NodeFactory() {

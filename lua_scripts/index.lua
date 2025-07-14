@@ -16,9 +16,9 @@ Nodes:load("windows/NewProjectWindow")
 Nodes:load("windows/ProjectWindow")
 Nodes:load("windows/TerminalWindow")
 Nodes:load("windows/CopyProjectWindow")
-Nodes:load("windows/BuildOptions")
 
-Nodes:load("utility/WindowsBuildNode")
+Nodes:load("building/windows/WindowsBuildOptions")
+Nodes:load("building/windows/WindowsBuildNode")
 
 return Creator:createWorld({
     window = {
@@ -26,7 +26,6 @@ return Creator:createWorld({
         height = 720,
         virtualWidth = 640,
         virtualHeight = 360,
-        screenMode = ScreenMode.BorderlessFullscreen,
         transparent = true,
         clickThrough = true,
         alwaysOnTop = true,
@@ -34,7 +33,7 @@ return Creator:createWorld({
         graphics = Graphics.Render2D
     },
     
-    onPreload = function(world) 
+    onPreload = function(world)
         world:fitToDisplay()
         world:restoreWindow()
         
