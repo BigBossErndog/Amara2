@@ -245,8 +245,8 @@ Nodes:define("MainWindow", "UIWindow", {
                     local newWindow = self.parent:createChild("ProjectWindow", {
                         projectPath = path
                     })
-                    newWindow.func:openWindow()
                     newWindow.func:openDefault()
+                    newWindow.func:openWindow()
                     
                     self:destroy()
                 end)

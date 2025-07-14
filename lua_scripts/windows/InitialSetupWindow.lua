@@ -15,6 +15,10 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
         txt.y = math.floor(self.props.targetHeight/2.0 - txt.height/2.0)
 
         local exe = Game.executable
+
+        self.world:hideWindow()
+        self.world.forcedClickThrough = true
+
         self:createChild("ProcessNode", {
             arguments = {
                 exe,
@@ -44,5 +48,8 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
                 end)
             end
         })
+
+        self.world.forcedClickThrough = false
+        self.world:showWindow()
     end
 })

@@ -556,6 +556,14 @@ namespace Amara {
             return get_lua_object();
         }
 
+        virtual Shape getCollisionShape() override {
+            return Quad(rotateQuad(
+                Quad(getRectangle()),
+                Vector2(pos.x, pos.y),
+                rotation
+            ));
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Text>("Text",
                 sol::base_classes, sol::bases<Node>(),

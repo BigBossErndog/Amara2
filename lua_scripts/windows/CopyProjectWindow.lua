@@ -204,8 +204,8 @@ Nodes:define("CopyProjectWindow", "UIWindow", {
                 local newWindow = self.parent:createChild("ProjectWindow", {
                     projectPath = self.props.projectPath
                 })
-                newWindow.func:openWindow()
                 newWindow.func:openDefault()
+                newWindow.func:openWindow()
                 
                 self:destroy()
             end)

@@ -157,7 +157,7 @@ namespace Amara {
             return Vector2(0, 0);
         }
         virtual Shape getCollisionShape() {
-            return pos;
+            return Vector2(pos.x, pos.y);
         }
 
         bool collidesWith(Amara::Node* other) {

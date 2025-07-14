@@ -137,7 +137,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, System:join(buildDir, self.props.executableName .. ".exe"))
 
         if #args > 0 then
-            print(args)
             self:configure({
                 arguments = args
             })
@@ -147,7 +146,15 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
     onPrepare = function(actor)
         local self = actor:getChild("buildNode")
 
-        actor.world.forcedClickThrough = true
+        self.world:hideWindow()
+
+        if self.props.iconPath then
+            System:WriteICO(self.props.iconPath, self.props.iconDest)
+            System:writeFile(self.props.resFile, "1 ICON \"" .. self.props.iconDest .. "\"\n")
+            
+            local command = string.format("%s \"%s\"", System:getRelativePath("resources/clang-llvm/bin/llvm-rc"), self.props.resFile)
+            System:execute(command)
+        end
 
         if not self.props.printLog then
             self.props.printLog = self.world.props.windows:createChild("TerminalWindow", {
@@ -172,19 +179,11 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 end
             })
             self.props.printLog.func:openWindow()
+
+            self.world:showWindow()
         end
 
         self.props.printLog.func:handleMessage(Localize:get("label_building"))
-
-        if self.props.iconPath then
-            System:WriteICO(self.props.iconPath, self.props.iconDest)
-            System:writeFile(self.props.resFile, "1 ICON \"" .. self.props.iconDest .. "\"\n")
-            
-            local command = string.format("%s \"%s\"", System:getRelativePath("resources/clang-llvm/bin/llvm-rc"), self.props.resFile)
-            System:execute(command)
-        end
-
-        actor.world.forcedClickThrough = false
     end,
 
     onOutput = function(self, msg)
@@ -199,7 +198,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         self.world.forcedClickThrough = true
-        
+        self.world:hideWindow()
+
         if exitCode == 0 then
             if self.props.iconDest then
                 System:remove(self.props.iconDest)
@@ -232,7 +232,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
         else
             System:remove(System:join(self.props.projectPath, "build", "windows"))
-
+            
             self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
             if not System:VSBuildToolsInstalled() then
                 self.props.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
@@ -240,5 +240,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         self.world.forcedClickThrough = false
+        self.world:showWindow()
     end
 })

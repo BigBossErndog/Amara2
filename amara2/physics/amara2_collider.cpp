@@ -94,6 +94,15 @@ namespace Amara {
             return false;
         }
 
+        bool hasCollided(Amara::Node* other) {
+            if (other == nullptr || other->destroyed || other == this || other == actor) return false;
+            return other->collidesWith(this);
+        }
+
+        bool hasCollided(Amara::Direction _dir) {
+            return  (collisionDirections & (int)_dir) != 0;
+        }
+
         virtual Shape getCollisionShape() override {
             if (set_shape) {
                 return shape.move(actor->pos);
@@ -187,6 +196,18 @@ namespace Amara {
                 velocity.x *= std::pow(1.0f - mappeddampingX, deltaTime);
                 velocity.y *= std::pow(1.0f - mappeddampingY, deltaTime);
             }
+            cleanCollisionTargets();
+        }
+
+        void cleanCollisionTargets() {
+            for (auto it = collisionTargets.begin(); it != collisionTargets.end();) {
+                if ((*it)->destroyed) {
+                    it = collisionTargets.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
         }
 
         void selfCorrect() {
@@ -247,7 +268,12 @@ namespace Amara {
                 "maxChecks", &Collider::maxChecks,
                 "targetAccuracy", &Collider::targetAccuracy,
                 "correctionChecks", &Collider::correctionChecks,
-                "collisionDirections", sol::readonly(&Collider::collisionDirections)
+                "collisionDirections", sol::readonly(&Collider::collisionDirections),
+                "hasCollided", sol::overload(
+                    sol::resolve<bool()>(&Collider::hasCollided),
+                    sol::resolve<bool(Amara::Node*)>(&Collider::hasCollided),
+                    sol::resolve<bool(Amara::Direction)>(&Collider::hasCollided)
+                )
             );
         }
     };

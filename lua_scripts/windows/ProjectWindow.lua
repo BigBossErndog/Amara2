@@ -290,7 +290,8 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
     openDefault = function(self)
         local settings = self.world.func:getSettings()
-
+        self.world:hideWindow()
+        
         if settings.autoOpenCodeEditor then
             if settings.codeEditor then
                 self.func:openCodeEditor()
@@ -298,12 +299,15 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 self.func:openDirectory()
             end
         end
+
+        self.world:showWindow()
     end,
 
     runGame = function(self)
         self.func:stopGame()
 
         self.world:restoreWindow()
+        self.world.forcedClickThrough = true
 
         local exe = Game.executable
 
@@ -342,6 +346,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
         })
 
         self.props.playButton.func:setIcon(13)
+        self.world.forcedClickThrough = false
     end,
 
     stopGame = function(self)
