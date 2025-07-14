@@ -24,6 +24,8 @@ namespace Amara {
 
         std::vector<std::string> starting_scripts;
 
+        double maxDeltaTime = 1;
+
         Creator(): Demiurge() {
             demiurgic = false;
 
@@ -302,6 +304,14 @@ namespace Amara {
 
                     gameProps.lua_exception_thrown = false;
 
+                    if (currentWorld->destroyed || currentWorld->paused) {
+                        continue;
+                    }
+                    if (currentWorld->pauseOnce) {
+                        currentWorld->pauseOnce = false;
+                        continue;
+                    }
+
                     currentWorld->run(game.deltaTime);
 
                     if (currentWorld->exception_thrown) {
@@ -311,7 +321,7 @@ namespace Amara {
 
                 cleanDestroyedWorlds();
                 std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
-
+                
                 for (auto it = worlds.begin(); it != worlds.end(); it++) {
                     currentWorld = *it;
                     if (currentWorld->headless) continue;
@@ -334,7 +344,10 @@ namespace Amara {
                     }
                 }
                 current_tick = SDL_GetPerformanceCounter();
-                gameProps.deltaTime = game.deltaTime = (double)(current_tick - rec_tick) / (double)freq;
+                
+                maxDeltaTime = (1.0 / (double)game.targetFPS) * 10;
+                
+                gameProps.deltaTime = game.deltaTime = fmin((double)(current_tick - rec_tick) / (double)freq,  maxDeltaTime);
                 game.fps = 1 / game.deltaTime;
                 rec_tick = current_tick;
                 

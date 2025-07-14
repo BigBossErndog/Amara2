@@ -110,6 +110,22 @@ namespace Amara {
                         }
                         break;
                     }
+                    case SDL_EVENT_WINDOW_MOVED: {
+                        for (auto w: worlds) {
+                            if (w->window != nullptr && w->windowID == e.window.windowID) {
+                                w->pauseOnce = true;
+                            }
+                        }
+                        break;
+                    }
+                    case SDL_EVENT_WINDOW_RESIZED: {
+                        for (auto w: worlds) {
+                            if (w->window != nullptr && w->windowID == e.window.windowID) {
+                                w->pauseOnce = true;
+                            }
+                        }
+                        break;
+                    }
                     case SDL_EVENT_MOUSE_MOTION: {
                         for (auto w: worlds) {
                             if (e.motion.which == SDL_TOUCH_MOUSEID) {

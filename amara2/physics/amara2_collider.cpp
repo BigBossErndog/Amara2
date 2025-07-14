@@ -14,6 +14,7 @@ namespace Amara {
         double targetAccuracy = 0.001;
 
         int maxChecks = 64;
+        int splitChecks = 8;
         int correctionChecks = 16;
 
         int collisionDirections = 0;
@@ -115,16 +116,19 @@ namespace Amara {
             Vector2 change = v * deltaTime;
 
             Vector2 last_pos = parent->pos;
-            Vector2 fix_pos = parent->pos + (change/2);
-            Vector2 rec_pos;
+            Vector2 fix_pos, rec_pos;
 
             parent->pos = fix_pos;
 
-            if (hasCollided()) { // Check halfway first, helps prevent tunneling.
-                fix_pos = start_pos + change;
+            std::vector<Vector2> points = Line(start_pos, start_pos + change).split(splitChecks);
+            for (Vector2 p: points) {
+                fix_pos = p;
+                parent->pos = fix_pos;
+                if (hasCollided()) {
+                    break;
+                }
+                last_pos = fix_pos;
             }
-
-            parent->pos = fix_pos;
 
             bool is_stuck = false;
 

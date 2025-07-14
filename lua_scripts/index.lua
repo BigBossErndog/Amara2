@@ -30,7 +30,8 @@ return Creator:createWorld({
         clickThrough = true,
         alwaysOnTop = true,
         vsync = true,
-        graphics = Graphics.Render2D
+        graphics = Graphics.Render2D,
+        screenMode = ScreenMode.BorderlessFullscreen,
     },
     
     onPreload = function(world)

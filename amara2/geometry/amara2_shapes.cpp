@@ -232,6 +232,17 @@ namespace Amara {
 
         Vector2 start = Vector2( 0, 0 );
         Vector2 end = Vector2( 0, 0 );
+
+        std::vector<Vector2> split(int num) {
+            std::vector<Vector2> points;
+            for (int i = 0; i <= (num-1); i++) {
+                points.push_back(Vector2(
+                    start.x + (end.x - start.x) * i / (num-1),
+                    start.y + (end.y - start.y) * i / (num-1)
+                ));
+            }
+            return points;
+        }
     };
 
     class Shape {
@@ -575,7 +586,16 @@ namespace Amara {
             "end", sol::property(
                 [](const Line& l) { return l.end; },
                 [](Line& l, sol::object v) { l.end = v; }
-            )
+            ),
+            "split", [](Line& l, sol::object _n) {
+                if (_n.is<int>()) {
+                    return l.split(_n.as<int>());
+                }
+                if (_n.is<double>()) {
+                    return l.split(static_cast<int>(_n.as<double>()));
+                }
+                return std::vector<Vector2>();
+            }
         );
 
         lua.new_usertype<Shape>("shape",

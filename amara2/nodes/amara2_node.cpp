@@ -58,6 +58,8 @@ namespace Amara {
         bool visible = true;
         bool actuated = false;
 
+        bool pauseOnce = false;
+
         double lifeTime = 0;
 
         bool is_camera = false;
@@ -407,6 +409,11 @@ namespace Amara {
 					++it;
 					continue;
 				}
+                if (child->pauseOnce) {
+                    child->pauseOnce = false;
+                    ++it;
+                    continue;
+                }
                 
 				child->run(deltaTime);
 				++it;

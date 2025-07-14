@@ -46,6 +46,7 @@
     "toolTip_toggleBGOpacity": "Toggle Background Opacity",
 
     "label_empty": "--",
+    "label_continue": "Continue",
     "label_projectName": "Project Name",
     "label_renameProject": "Rename Project",
     "label_enterTextHere": "Enter Text Here",

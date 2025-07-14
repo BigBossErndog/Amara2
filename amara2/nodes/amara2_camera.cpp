@@ -14,7 +14,7 @@ namespace Amara {
 
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
-
+        
         Vector2 center = { 0, 0 };
         float left = 0;
         float right = 0;
@@ -193,7 +193,7 @@ namespace Amara {
         }
 
         sol::object startFollow(Amara::Node* node) {
-            return startFollow(node, 0);
+            return startFollow(node, lerp.x, lerp.y);
         }
 
         sol::object stopFollow() {
