@@ -215,7 +215,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
             y = buttonPos.y,
             icon = 19,
             onPress = function()
-                
+                System:openWebsite("https://github.com/BigBossErndog/Amara2/wiki")
             end
         })
 
