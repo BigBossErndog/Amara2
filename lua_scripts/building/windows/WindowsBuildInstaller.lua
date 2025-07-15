@@ -1,6 +1,6 @@
-Nodes:define("WindowsBuildOptions", "UIWindow", {
+Nodes:define("WindowsBuildInstaller", "UIWindow", {
     width = 256,
-    height = 106,
+    height = 108,
 
     onConfigure = function(self, config)
         if config.projectPath then
@@ -11,12 +11,19 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
-        local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
-
         self.props.title = self.props.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
-            text = Localize:get("title_buildOptions"),
+            text = Localize:get("label_windowsBuilderNotFound"),
+            color = Colors.Red,
+            origin = 0,
+            input = true
+        })
+
+        self.props.msgTxt = self.props.content:createChild("Text", {
+            x = 10, y = 24,
+            font = "defaultFont",
+            text = Localize:get("label_windowsBuilderNotice"),
             color = Colors.White,
             origin = 0,
             input = true
@@ -45,51 +52,27 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
             end
         })
 
-        self.props.iconBacker = self.props.content:createChild("FillRect", {
-            x = 8, y = 28,
-            width = 32,
-            height = 32,
-            color = Colors.Black,
-            origin = 0
-        })
-
-        self.props.iconPreview = self.props.content:createChild("Sprite", {
-            x = self.props.iconBacker.x,
-            y = self.props.iconBacker.y,
-            visible = false,
-            origin = 0
-        })
-
-        local exeIconTitle = self.props.content:createChild("Text", {
-            x = self.props.iconBacker.x + self.props.iconBacker.width + 8,
-            y = self.props.iconBacker.y,
-            text = Localize:get("title_executableIcon"),
-            font = "defaultFont",
-            color = Colors.White,
-            origin = 0
-        })
-
-        self.props.iconField = self.props.content:createChild("TextField", {
-            x = self.props.iconBacker.x + self.props.iconBacker.width + 6,
-            y = self.props.iconBacker.y + 14,
-            width = self.props.targetWidth - exeIconTitle.x - 8 - 18,
+        self.props.pathField = self.props.content:createChild("TextField", {
+            x = 8,
+            y = self.props.msgTxt.y + self.props.msgTxt.height + 6,
+            width = self.props.targetWidth - 16 - 18,
             inputEnabled = false,
-            defaultText = Localize:get("label_selectIcon")
+            defaultText = Localize:get("label_windowsModuleFile")
         })
 
         self.props.browseButton = self.props.content:createChild("UIButton", {
             id = "browseButton",
             toolTip = "toolTip_browseFile",
-            x = self.props.iconField.x + self.props.iconField.width + 4,
-            y = self.props.iconField.y,
+            x = self.props.pathField.x + self.props.pathField.width + 4,
+            y = self.props.pathField.y,
             icon = 6,
             onPress = function()
                 self.world:hideWindow()
 
                 self:wait(0.2):next(function()
-                    self.props.iconPath = nil
+                    self.props.modulePath = nil
 
-                    local path = System:browseFile(self.props.projectPath)
+                    local path = System:browseDirectory(self.props.projectPath)
 
                     self.world:showWindow()
                     
@@ -97,10 +80,10 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
                         return
                     end
 
-                    self.props.iconField.func:setText("")
+                    self.props.pathField.func:setText("")
                     if self.func:checkIcon(path) then
-                        self.props.iconPath = path
-                        self.props.iconField.func:setText(self.func:truncatePath(path))
+                        self.props.modulePath = path
+                        self.props.pathField.func:setText(self.func:truncatePath(path))
                     end
                 end)
             end
@@ -114,27 +97,25 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
             x = 10, y = 64
         })
 
-        if projectData["exe-icon"] then
-            local path = projectData["exe-icon"]
-            if self.func:checkIcon(path) then
-                self.props.iconPath = path
-                self.props.iconField.func:setText(self.func:truncatePath(path))
-            else
-                projectData["exe-icon"] = nil
-                System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
-            end
-            self.props.errorMessage.visible = false
-        end
-
         local buildButton = self.props.content:createChild("UIButton", {
             id = "buildProjectButton",
-            text = "label_buildProject",
+            text = "label_continue",
             onPress = function()
                 self.func:startBuilding()
             end
         })
         buildButton.x = self.props.targetWidth - buildButton.width - 8
         buildButton.y = self.props.targetHeight - buildButton.height - 6
+
+        local downloadButton = self.props.content:createChild("UIButton", {
+            id = "downloadButton",
+            text = "label_downloadModule",
+            onPress = function()
+                self.func:downloadModule()
+            end
+        })
+        downloadButton.x = buildButton.x - downloadButton.width - 8
+        downloadButton.y = buildButton.y
     end,
 
     checkIcon = function(self, path)
@@ -175,12 +156,12 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
     startBuilding = function(self)
         self.func:closeWindow(function(win)
             local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
-            projectData["exe-icon"] = self.props.iconPath
+            projectData["exe-icon"] = self.props.modulePath
             System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
 
             self.world.props.windows:createChild("WindowsBuildNode", {
                 projectPath = self.props.projectPath,
-                iconPath = self.props.iconPath
+                modulePath = self.props.modulePath
             })
 
             win:destroy()
@@ -188,16 +169,22 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
     end,
 
     truncatePath = function(self, _path)
-        local txt = self.props.iconField.props.txt
+        local txt = self.props.pathField.props.txt
         local str = _path
         local path = str
 
         local edited = false
         txt.text = str
-        while txt.width > self.props.iconField.width - 16 do
+        while txt.width > self.props.pathField.width - 16 do
             str = string.sub(str, 2)
             txt.text = string.concat("...", str)
         end
         return txt.text
+    end,
+
+    downloadModule = function(self)
+        self.func:closeWindow(function(win)
+            
+        end)
     end
 })

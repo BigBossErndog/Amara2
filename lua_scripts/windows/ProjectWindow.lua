@@ -361,9 +361,20 @@ Nodes:define("ProjectWindow", "UIWindow", {
             window:destroy()
         end)
 
-        local newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
-            projectPath = self.props.projectPath
-        })
-        newWindow.func:openWindow()
+        if Game.platform == "windows" then
+            local settings = self.world.func:getSettings()
+            
+            if (not settings.windowsBuildToolsPath) or (not System:exists(settings.windowsBuildToolsPath)) then
+                local newWindow = self.world.props.windows:createChild("WindowsBuildInstaller", {
+                    projectPath = self.props.projectPath
+                })
+                newWindow.func:openWindow()
+            else
+                local newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
+                    projectPath = self.props.projectPath
+                })
+                newWindow.func:openWindow()
+            end
+        end
     end
 })

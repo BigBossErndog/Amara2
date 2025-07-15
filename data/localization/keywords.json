@@ -62,6 +62,13 @@
     "label_performingInitialSetup": "Performing Initial Setup...",
     "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
 
+    "label_downloadModule": "Download Module",
+
+    "label_windowsBuilderNotFound": "Amara2 Windows Build Module not found.",
+    "label_windowsBuilderNotice": "Amara2 requires the Amara2 Windows build module.\nPlease download and open the .zip below.",
+
+    "label_windowsModuleFile": "amara2_windows_build_module.zip",
+
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",
     "error_pathToFile": "Error: File exists at path.",

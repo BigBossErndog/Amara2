@@ -42,12 +42,14 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
                     
                     local settings = self.world.func:getSettings(true)
                     
-                    if settings.vsBuildToolsNotInstalled then
+                    -- if settings.vsBuildToolsNotInstalled then
+                    -- TODO
+                    -- else
                         
-                    else
-                        local win = self.parent:createChild("MainWindow")
-                        win.func:openWindow()
-                    end
+                    -- end
+
+                    local win = self.parent:createChild("MainWindow")
+                    win.func:openWindow()
 
                     self:destroy()
                 end)

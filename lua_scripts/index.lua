@@ -17,6 +17,7 @@ Nodes:load("windows/ProjectWindow")
 Nodes:load("windows/TerminalWindow")
 Nodes:load("windows/CopyProjectWindow")
 
+Nodes:load("building/windows/WindowsBuildInstaller")
 Nodes:load("building/windows/WindowsBuildOptions")
 Nodes:load("building/windows/WindowsBuildNode")
 
