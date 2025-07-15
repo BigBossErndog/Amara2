@@ -1,6 +1,6 @@
 Nodes:define("WindowsBuildInstaller", "UIWindow", {
     width = 256,
-    height = 108,
+    height = 120,
 
     onConfigure = function(self, config)
         if config.projectPath then
@@ -72,7 +72,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                 self:wait(0.2):next(function()
                     self.props.modulePath = nil
 
-                    local path = System:browseDirectory(self.props.projectPath)
+                    local path = System:browseFile(self.props.projectPath)
 
                     self.world:showWindow()
                     
@@ -81,7 +81,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                     end
 
                     self.props.pathField.func:setText("")
-                    if self.func:checkIcon(path) then
+                    if self.func:checkModule(path) then
                         self.props.modulePath = path
                         self.props.pathField.func:setText(self.func:truncatePath(path))
                     end
@@ -94,14 +94,14 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
             origin = 0,
             color = Colors.Red,
             visible = false,
-            x = 10, y = 64
+            x = 10, y = 72
         })
 
         local buildButton = self.props.content:createChild("UIButton", {
             id = "buildProjectButton",
             text = "label_continue",
             onPress = function()
-                self.func:startBuilding()
+                
             end
         })
         buildButton.x = self.props.targetWidth - buildButton.width - 8
@@ -118,54 +118,9 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
         downloadButton.y = buildButton.y
     end,
 
-    checkIcon = function(self, path)
-        self.props.iconPreview.visible = false
-        self.props.errorMessage.visible = false
-        if not System:exists(path) then
-            return false
-        end
-        local validFileExt = { ".png", ".jpg", ".jpeg", ".bmp" }
-        local valid = false
-        for i = 1, #validFileExt do
-            if string.sub(path, -#validFileExt[i]) == validFileExt[i] then
-                valid = true
-                break
-            end
-        end
-        if not valid then
-            self.props.errorMessage.text = Localize:get("error_invalidIcon")
-            self.props.errorMessage.visible = true
-            return false
-        end
-        self.load:image("iconPreview", path)
-        self.props.iconPreview.texture = "iconPreview"
-        if self.props.iconPreview.width == 256 and self.props.iconPreview.height == 256 then
-            self.props.iconPreview.visible = true
-            self.props.iconPreview.rect = { 
-                self.props.iconPreview.x,
-                self.props.iconPreview.y,
-                32, 32
-            }
-            return true
-        end
-        self.props.errorMessage.text = Localize:get("error_invalidIconSize")
-        self.props.errorMessage.visible = true
+    checkModule = function(self, path)
+        
         return false
-    end,
-
-    startBuilding = function(self)
-        self.func:closeWindow(function(win)
-            local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
-            projectData["exe-icon"] = self.props.modulePath
-            System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
-
-            self.world.props.windows:createChild("WindowsBuildNode", {
-                projectPath = self.props.projectPath,
-                modulePath = self.props.modulePath
-            })
-
-            win:destroy()
-        end)
     end,
 
     truncatePath = function(self, _path)
@@ -183,8 +138,14 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     end,
 
     downloadModule = function(self)
+        
+    end,
+
+    continueBuilding = function(self)
         self.func:closeWindow(function(win)
-            
+            if not System:exists("build_modules") then
+                System:createDirectory("build_modules")
+            end
         end)
     end
 })

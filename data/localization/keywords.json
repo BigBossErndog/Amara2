@@ -68,6 +68,7 @@
     "label_windowsBuilderNotice": "Amara2 requires the Amara2 Windows build module.\nPlease download and open the .zip below.",
 
     "label_windowsModuleFile": "amara2_windows_build_module.zip",
+    "label_windowsWebModuleFile": "amara2_windows_web_build_module.zip",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",

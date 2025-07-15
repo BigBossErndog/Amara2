@@ -517,6 +517,20 @@ namespace Amara {
             return copy(input, output, true);
         }
 
+        void unzip(std::string zipPath, std::string outputDirectory) {
+            std::filesystem::path zipFilePath = getRelativePath(zipPath);
+            std::filesystem::path outputPath = getRelativePath(outputDirectory);
+            if (!std::filesystem::exists(zipFilePath)) {
+                debug_log("Error: \"", zipFilePath.string(), "\" does not exist.");
+                return;
+            }
+            if (!std::filesystem::exists(outputPath)) {
+                std::filesystem::create_directories(outputPath);
+            }
+            miniz_cpp::zip_file file(zipFilePath.string());
+            file.extractall(outputPath.string());
+        }
+
         void setCursor(CursorEnum cursor) {
             switch (cursor) {
                 case CursorEnum::Default:
@@ -1060,6 +1074,7 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string, bool)>(&SystemManager::copy),
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::copy)
                 ),
+                "unzip", &SystemManager::unzip,
                 "run", &SystemManager::run,
                 "compileScript", sol::overload(
                     sol::resolve<bool(std::string, std::string, std::string)>(&SystemManager::compileScript),

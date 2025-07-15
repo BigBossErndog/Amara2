@@ -67,6 +67,8 @@
     #if defined(_WIN32)
         #define AMARA_DESKTOP
         #include <windows.h>
+        #undef min
+        #undef max
     #elif defined(__linux__)
         #define AMARA_DESKTOP
         #include <SDL_syswm.h>
@@ -92,6 +94,8 @@
     #ifdef AMARA_DESKTOP
         #include <portable-file-dialogs.h>
     #endif
+
+    #include <zip_file.hpp>
 
     #define LUA_IMPLEMENTATION
     #define SOL_ALL_SAFETIES_ON 1
