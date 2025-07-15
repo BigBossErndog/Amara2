@@ -15,7 +15,7 @@ Built in C++ using SDL3.
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
 - Built using SDL3, so porting to other platforms shouldn't be too great a task for porting companies.
 
-![Screenshot 2025-06-30 213758](https://github.com/user-attachments/assets/e0a09742-6a23-4d5e-af4d-2cf07ab95655)
+<img width="1920" height="1080" alt="Screenshot 2025-07-15 141959" src="https://github.com/user-attachments/assets/98571dfa-3573-4019-bfe9-5382c862b4e7" />
 
 ## What I'm Currently Working On
 - Automated web export via emscripten
