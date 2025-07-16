@@ -101,7 +101,9 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
             id = "buildProjectButton",
             text = "label_continue",
             onPress = function()
-                
+                if self.func:checkModule(self.props.modulePath) then
+                    self.func:continueBuilding()
+                end
             end
         })
         buildButton.x = self.props.targetWidth - buildButton.width - 8
@@ -119,8 +121,16 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     end,
 
     checkModule = function(self, path)
-        
-        return false
+        if not path then
+            return false
+        end
+        if not System:exists(path) then
+            return false
+        end
+        if not (System:getFileName(path) == "amara2_windows_build_module.zip") then
+            return false
+        end
+        return true
     end,
 
     truncatePath = function(self, _path)
@@ -138,14 +148,47 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     end,
 
     downloadModule = function(self)
-        
+        System:openWebsite("https://github.com/BigBossErndog/Amara2-Build-Modules/releases")
     end,
 
     continueBuilding = function(self)
         self.func:closeWindow(function(win)
-            if not System:exists("build_modules") then
-                System:createDirectory("build_modules")
-            end
+            local printLog = self.world.props.windows:createChild("TerminalWindow", {
+                props = {
+                    projectPath = self.props.projectPath
+                },
+                allowMinimize = true,
+                disableSavePosition = true,
+
+                onCreate = function(self)
+                    self.classes.TerminalWindow.func:onCreate()
+                    
+                    self.props.gameProcess = self:createChild("ProcessNode", {
+                        arguments = {
+                            Game.executable,
+                            "-buildmodule", self.props.modulePath,
+                            "-script", System:getScriptPath("building/windows/WindowsBuildExtractor")
+                        },
+                        onOutput = function(process, msg)
+                            print(msg)
+                            self.func:handleMessage(msg)
+                        end,
+                        onExit = function()
+
+                        end
+                    })
+                end,
+
+                onExit = function(self)
+                    local newWindow = self.world.props.windows:createChild("ProjectWindow", {
+                        projectPath = self.props.projectPath
+                    })
+                    newWindow.func:openWindow()
+                end
+            })
+            printLog.func:openWindow()
+            
+            self:destroy()
         end)
     end
 })

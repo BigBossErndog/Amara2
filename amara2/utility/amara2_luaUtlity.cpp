@@ -310,9 +310,12 @@ namespace Amara {
         math_metatable.set_function("hypotenuse", [](double a, double b) -> int {
             return std::sqrt(a * a + b * b);
         });
-
-
+        
         sol::table table_metatable = lua["table"];
         table_metatable.set_function("to_string", string_to_lua_object(lua, lua_table_to_string));
+
+        lua["fatal_error"] = [](sol::variadic_args args) {
+            fatal_error(lua_string_sep_concat(" ", args));
+        };
     }
 }
