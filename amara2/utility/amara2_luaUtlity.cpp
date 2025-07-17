@@ -315,7 +315,7 @@ namespace Amara {
         table_metatable.set_function("to_string", string_to_lua_object(lua, lua_table_to_string));
 
         lua["fatal_error"] = [](sol::variadic_args args) {
-            fatal_error(lua_string_sep_concat(" ", args));
+            fatal_error(lua_string_concat(args));
         };
     }
 }

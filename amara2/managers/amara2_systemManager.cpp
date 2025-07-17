@@ -516,7 +516,7 @@ namespace Amara {
         bool copy(std::string input, std::string output) {
             return copy(input, output, true);
         }
-
+        
         void unzip(std::string zipPath, std::string outputDirectory) {
             std::filesystem::path zipFilePath = getRelativePath(zipPath);
             std::filesystem::path outputPath = getRelativePath(outputDirectory);

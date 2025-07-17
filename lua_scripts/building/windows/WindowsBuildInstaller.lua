@@ -15,7 +15,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
             x = 10, y = 8,
             font = "defaultFont",
             text = Localize:get("label_windowsBuilderNotFound"),
-            color = Colors.Red,
+            color = Colors.Yellow,
             origin = 0,
             input = true
         })
@@ -83,6 +83,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                     self.props.pathField.func:setText("")
                     if self.func:checkModule(path) then
                         self.props.modulePath = path
+                        print("SET MODULE:", path)
                         self.props.pathField.func:setText(self.func:truncatePath(path))
                     end
                 end)
@@ -152,6 +153,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     end,
 
     continueBuilding = function(self)
+        local installerNode = self
         self.func:closeWindow(function(win)
             local printLog = self.world.props.windows:createChild("TerminalWindow", {
                 props = {
@@ -162,24 +164,29 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
 
                 onCreate = function(self)
                     self.classes.TerminalWindow.func:onCreate()
-                    
+
                     self.props.gameProcess = self:createChild("ProcessNode", {
                         arguments = {
                             Game.executable,
-                            "-buildmodule", self.props.modulePath,
-                            "-script", System:getScriptPath("building/windows/WindowsBuildExtractor")
+                            "-context", System:getBasePath(),
+                            "-script", System:getScriptPath("building/windows/WindowsBuildExtractor"),
+                            "-buildmodule", installerNode.props.modulePath
                         },
                         onOutput = function(process, msg)
-                            print(msg)
                             self.func:handleMessage(msg)
                         end,
-                        onExit = function()
-
+                        onExit = function(process, exitCode)
+                            print("FINISHED: ", exitCode)
+                            self.func:unbindGameProcess()
                         end
                     })
                 end,
 
                 onExit = function(self)
+                    if self.props.gameProcess then
+                        self.props.gameProcess:destroy()
+                        self.props.gameProcess = nil
+                    end
                     local newWindow = self.world.props.windows:createChild("ProjectWindow", {
                         projectPath = self.props.projectPath
                     })

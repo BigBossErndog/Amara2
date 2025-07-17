@@ -1,4 +1,3 @@
-print("HELLO!")
 local argtable = Game.argtable
 
 local buildModulePath
@@ -10,9 +9,9 @@ if not buildModulePath or not System:exists(buildModulePath) then
     fatal_error("Error: Build module not found at \"", buildModulePath, "\"")
 end
 
-if not System:exists("build_modules") then
-    System:createDirectory("build_modules")
-end
+print("Extracting module: \"" .. System:getFileName(buildModulePath) .. "\"")
+print("Note: Please wait. This may take a while.")
 
-print("Extracting module: \"", System:getFileName(buildModulePath), "\"")
 System:unzip(buildModulePath, "build_modules")
+
+print("Extraction complete. You are now ready to build your projects.")
