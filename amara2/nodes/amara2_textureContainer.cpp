@@ -428,6 +428,10 @@ namespace Amara {
 					continue;
 				}
 
+                if (passOn.insideCamera && child->is_camera) {
+                    continue;
+                }
+
                 update_properties();
 				child->draw(v);
 

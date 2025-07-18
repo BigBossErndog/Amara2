@@ -128,6 +128,10 @@ namespace Amara {
 					++it;
 					continue;
 				}
+
+                if (passOn.insideCamera && child->is_camera) {
+                    continue;
+                }
                 
                 update_properties();
 				child->draw(Rectangle(destRect));

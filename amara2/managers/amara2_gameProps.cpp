@@ -64,6 +64,7 @@ namespace Amara {
         Vector2 window_zoom = { 1, 1 };
 
         bool insideTextureContainer = false;
+        bool insideCamera = false;
         
         void reset() {
             PassOnProps new_props;

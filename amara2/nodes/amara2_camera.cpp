@@ -278,6 +278,11 @@ namespace Amara {
 
             pass_on_properties();
 
+            PassOnProps rec_passOn = gameProps->passOn;
+
+            passOn.insideCamera = true;
+            gameProps->passOn = passOn;
+
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 child = *it;
@@ -285,13 +290,19 @@ namespace Amara {
 					++it;
 					continue;
 				}
+
+                if (passOn.insideCamera && child->is_camera) {
+                    continue;
+                }
                 
                 update_properties();
-				if (!child->is_camera) child->draw(viewport);
+				child->draw(viewport);
 
                 gameProps->passOn = passOn;
 				++it;
 			}
+
+            gameProps->passOn = rec_passOn;
         }
 
         static void bind_lua(sol::state& lua) {
