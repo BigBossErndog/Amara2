@@ -292,7 +292,7 @@ namespace Amara {
             else {
                 viewport = Rectangle(
                     vcenter.x + (pos.x - (width*origin.x)*scale.x*passOn.scale.x)*passOn.zoom.x*passOn.window_zoom.x,
-                    vecnter.y + (pos.y - (height*origin.y)*scale.y*passOn.scale.y - pos.z)*passOn.zoom.y*passOn.window_zoom.y,
+                    vcenter.y + (pos.y - (height*origin.y)*scale.y*passOn.scale.y - pos.z)*passOn.zoom.y*passOn.window_zoom.y,
                     width*scale.x*passOn.scale.x*passOn.zoom.x*passOn.window_zoom.x,
                     height*scale.y*passOn.scale.x*passOn.zoom.y*passOn.window_zoom.y
                 );
@@ -314,12 +314,13 @@ namespace Amara {
 				}
 
                 if (passOn.insideCamera && child->is_camera) {
+                    ++it;
                     continue;
                 }
                 
                 update_properties();
 				child->draw(viewport);
-
+                
                 gameProps->passOn = passOn;
 				++it;
 			}

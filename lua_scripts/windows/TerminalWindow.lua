@@ -265,6 +265,10 @@ Nodes:define("TerminalWindow", "UIWindow", {
                 item.color = Colors.Cyan
             elseif string.starts_with(msg, "Note:") then
                 item.color = Colors.Yellow
+            elseif string.starts_with(msg, "Success:") then
+                item.color = Colors.Green
+            elseif string.starts_with(msg, "Warning:") then
+                item.color = Colors.Yellow
             else
                 item.color = Colors.White
             end

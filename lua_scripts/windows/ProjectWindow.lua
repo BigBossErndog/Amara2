@@ -312,8 +312,8 @@ Nodes:define("ProjectWindow", "UIWindow", {
             arguments = {
                 exe,
                 "-context", self.props.projectPath,
-                "-script", "index.lua",
-                "-script", System:getScriptPath("utility/BringGameToFront.lua")
+                "-script", System:getScriptPath("utility/BringGameToFront.lua"),
+                "-script", "index.lua"
             },
             onOutput = function(process, msg)
                 if self.props.printLog then
@@ -364,7 +364,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
         if Game.platform == "windows" then
             local settings = self.world.func:getSettings()
             
-            if (not settings.windowsBuildToolsPath) or (not System:exists(settings.windowsBuildToolsPath)) then
+            if not System:exists(System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm/bin/clang.exe")) then
                 local newWindow = self.world.props.windows:createChild("WindowsBuildInstaller", {
                     projectPath = self.props.projectPath
                 })

@@ -12,6 +12,8 @@ end
 print("Extracting module: \"" .. System:getFileName(buildModulePath) .. "\"")
 print("Note: Please wait. This may take a while.")
 
-System:unzip(buildModulePath, "build_modules")
-
-print("Extraction complete. You are now ready to build your projects.")
+if System:unzip(buildModulePath, "build_modules") then
+    print("Success: Extraction complete. You are now ready to build your project.")
+else
+    print("Error: Module extraction failed.")
+end

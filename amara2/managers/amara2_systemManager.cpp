@@ -517,18 +517,31 @@ namespace Amara {
             return copy(input, output, true);
         }
         
-        void unzip(std::string zipPath, std::string outputDirectory) {
+        bool unzip(std::string zipPath, std::string outputDirectory) {
+            #if defined(_WIN32)
             std::filesystem::path zipFilePath = getRelativePath(zipPath);
             std::filesystem::path outputPath = getRelativePath(outputDirectory);
             if (!std::filesystem::exists(zipFilePath)) {
                 debug_log("Error: \"", zipFilePath.string(), "\" does not exist.");
-                return;
+                return false;
             }
             if (!std::filesystem::exists(outputPath)) {
                 std::filesystem::create_directories(outputPath);
             }
-            miniz_cpp::zip_file file(zipFilePath.string());
-            file.extractall(outputPath.string());
+            std::string cmd = "powershell.exe -Command \"Expand-Archive -Path '" + zipFilePath.string() + "' -DestinationPath '" + outputPath.string() + "' -Force\"";
+            int ret = std::system(cmd.c_str());
+            if (ret != 0) {
+                if (std::filesystem::exists(outputPath)) {
+                    std::filesystem::remove_all(outputPath);
+                }
+                debug_log("Error: Failed to extract \"", zipFilePath.string(), "\"");
+                return false;
+            }
+            return true;
+            #else
+            debug_log("Error: Unzipping is not supported on this platform.");
+            return false;
+            #endif
         }
 
         void setCursor(CursorEnum cursor) {

@@ -11,8 +11,8 @@ CLANG_LLVM_PATH = resources/clang-llvm
 COMPILER = $(CLANG_LLVM_PATH)/bin/clang++
 RC_COMPILER = $(CLANG_LLVM_PATH)/bin/llvm-rc
 
-WINDOWS_COMPILER_FLAGS = -w -Wall -m64 -std=c++17 -Wl,/NOIMPLIB -DAMARA_DEBUG_BUILD
-# WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -Wl,/NOIMPLIB -std=c++17
+# WINDOWS_COMPILER_FLAGS = -w -Wall -m64 -std=c++17 -Wl,/NOIMPLIB -DAMARA_DEBUG_BUILD
+WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -Wl,/NOIMPLIB -std=c++17
 
 LINUX_COMPILER_FLAGS = -w -Wall -m32 -std=c++17
 
@@ -33,7 +33,7 @@ LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthre
 LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl2-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
 
 OTHER_LIB_LINKS = 
-OTHER_LIB_PATHS = -Isrc -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/minimp3 -Iresources/libs/portable-file-dialogs -Iresources/libs/tinyxml2 -Iresources/libs/miniz-cpp/include
+OTHER_LIB_PATHS = -Isrc -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/minimp3 -Iresources/libs/portable-file-dialogs -Iresources/libs/tinyxml2
 
 OTHER_LIB = $(OTHER_LIB_PATHS)
 

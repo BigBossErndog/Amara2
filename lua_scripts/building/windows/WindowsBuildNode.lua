@@ -28,7 +28,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local buildDir = System:join(self.props.projectPath, "build", "windows")
         self.props.buildDir = buildDir
 
-        local clangLLVMPath = System:getRelativePath("resources/clang-llvm")
+        local clangLLVMPath = System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm")
+        self.props.clangLLVMPath = clangLLVMPath
+        
         local sdl3Path = System:getRelativePath("resources/libs/SDL3-3.2.16")
 
         local nlohmannPath = System:getRelativePath("resources/libs/nlohmann/include")
@@ -65,7 +67,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.props.resOutputFile = System:join(buildDir, "icon.res")
         end
 
-        table.insert(args, System:getRelativePath("resources/clang-llvm/bin/clang++"))
+        table.insert(args, System:join(clangLLVMPath, "bin/clang++"))
         table.insert(args, System:getRelativePath("amara2/main/main.cpp"))
 
         if self.props.resOutputFile then
@@ -152,7 +154,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             System:WriteICO(self.props.iconPath, self.props.iconDest)
             System:writeFile(self.props.resFile, "1 ICON \"" .. self.props.iconDest .. "\"\n")
             
-            local command = string.format("%s \"%s\"", System:getRelativePath("resources/clang-llvm/bin/llvm-rc"), self.props.resFile)
+            local command = string.format("%s \"%s\"", System:join(self.props.clangLLVMPath, "bin/llvm-rc"), self.props.resFile)
             System:execute(command)
         end
 
@@ -184,6 +186,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         self.props.printLog.func:handleMessage(Localize:get("label_building"))
+        self.world.alwaysOnTop = false
     end,
 
     onOutput = function(self, msg)
@@ -193,6 +196,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
     end,
 
     onExit = function(self, exitCode)
+        self.world.alwaysOnTop = true
+        
         if self.props.printLog then
             self.props.printLog.func:unbindGameProcess()
         end

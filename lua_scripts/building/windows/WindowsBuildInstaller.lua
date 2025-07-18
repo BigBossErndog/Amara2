@@ -83,7 +83,6 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                     self.props.pathField.func:setText("")
                     if self.func:checkModule(path) then
                         self.props.modulePath = path
-                        print("SET MODULE:", path)
                         self.props.pathField.func:setText(self.func:truncatePath(path))
                     end
                 end)
@@ -155,6 +154,8 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     continueBuilding = function(self)
         local installerNode = self
         self.func:closeWindow(function(win)
+            win.world.alwaysOnTop = false
+
             local printLog = self.world.props.windows:createChild("TerminalWindow", {
                 props = {
                     projectPath = self.props.projectPath
@@ -176,21 +177,33 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                             self.func:handleMessage(msg)
                         end,
                         onExit = function(process, exitCode)
-                            print("FINISHED: ", exitCode)
+                            if exitCode == 0 and System:exists(System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm/bin/clang.exe")) then
+                                self.props.success = true                          
+                            end
+
                             self.func:unbindGameProcess()
                         end
                     })
                 end,
 
                 onExit = function(self)
+                    self.world.alwaysOnTop = true
+
                     if self.props.gameProcess then
                         self.props.gameProcess:destroy()
                         self.props.gameProcess = nil
                     end
-                    local newWindow = self.world.props.windows:createChild("ProjectWindow", {
-                        projectPath = self.props.projectPath
-                    })
-                    newWindow.func:openWindow()
+                    if self.props.success then
+                        local newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
+                            projectPath = self.props.projectPath
+                        })
+                        newWindow.func:openWindow()
+                    else
+                        local newWindow = self.world.props.windows:createChild("ProjectWindow", {
+                            projectPath = self.props.projectPath
+                        })
+                        newWindow.func:openWindow()
+                    end
                 end
             })
             printLog.func:openWindow()

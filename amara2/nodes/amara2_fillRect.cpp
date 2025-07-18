@@ -39,6 +39,7 @@ namespace Amara {
 				}
 
                 if (passOn.insideCamera && child->is_camera) {
+                    ++it;
                     continue;
                 }
                 
