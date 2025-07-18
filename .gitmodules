@@ -16,6 +16,3 @@
 [submodule "miniz-cpp"]
 	path = miniz-cpp
 	url = https://github.com/kkzi/miniz-cpp.git
-[submodule "resources/libs/miniz-cpp"]
-	path = resources/libs/miniz-cpp
-	url = https://github.com/kkzi/miniz-cpp.git
