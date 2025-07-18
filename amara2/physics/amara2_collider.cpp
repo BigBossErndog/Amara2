@@ -276,7 +276,10 @@ namespace Amara {
                     sol::resolve<bool()>(&Collider::hasCollided),
                     sol::resolve<bool(Amara::Node*)>(&Collider::hasCollided),
                     sol::resolve<bool(Amara::Direction)>(&Collider::hasCollided)
-                )
+                ),
+                "selfCorrect", &Collider::selfCorrect,
+                "addCollisionTarget", &Collider::addCollisionTarget,
+                "cleanCollisionTargets", &Collider::cleanCollisionTargets
             );
         }
     };

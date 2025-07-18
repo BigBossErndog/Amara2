@@ -7,7 +7,7 @@ EXE_OPTIONS = -context ../
 BUILD_EXECUTABLE_WIN = $(BUILD_PATH)/$(BUILD_NAME).exe
 BUILD_EXECUTABLE_LINUX = $(BUILD_PATH)/$(BUILD_NAME).game
 
-CLANG_LLVM_PATH = resources/clang-llvm
+CLANG_LLVM_PATH = clang-llvm
 COMPILER = $(CLANG_LLVM_PATH)/bin/clang++
 RC_COMPILER = $(CLANG_LLVM_PATH)/bin/llvm-rc
 

@@ -1,6 +1,6 @@
 /build
 /build-modules
-/resources/clang-llvm
+/clang-llvm
 /gimp
 /projects
 /settings.json

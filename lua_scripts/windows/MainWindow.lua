@@ -201,6 +201,18 @@ Nodes:define("MainWindow", "UIWindow", {
         })
 
         buttonPos = buttonPos - buttonSpacing
+        self.props.content:createChild("UIButton", {
+            id = "openDocsButton",
+            toolTip = "toolTip_openDocs",
+            x = buttonPos,
+            y = 4,
+            icon = 19,
+            onPress = function()
+                System:openWebsite("https://github.com/BigBossErndog/Amara2/wiki")
+            end
+        })
+
+        buttonPos = buttonPos - buttonSpacing
         local examplesButton = self.props.content:createChild("UIButton", {
             id = "openExamplesButton",
             toolTip = "toolTip_openExamples",
