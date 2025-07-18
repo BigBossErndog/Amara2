@@ -10,7 +10,7 @@ namespace Amara {
         float width = 0;
         float height = 0;
 
-        Vector2 origin = { 0, 0 };
+        Vector2 origin = { 0.5, 0.5 };
 
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
@@ -259,8 +259,13 @@ namespace Amara {
             if (parent->children.size() == 0) return;
             
             children_copy_list = parent->children;
-            SDL_Rect setv = Rectangle::makeSDLRect(v);
-            SDL_SetRenderViewport(gameProps->renderer, &setv);
+
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
+                SDL_Rect setv = Rectangle::makeSDLRect(v);
+                SDL_SetRenderViewport(gameProps->renderer, &setv);
+            }
+
+            Vector2 vcenter = Vector2(v.w/2.0f, v.h/2.0f);
 
             if (sizeTethered) {
                 viewport = v;
@@ -269,9 +274,9 @@ namespace Amara {
             }
             else {
                 viewport = Rectangle(
-                    (pos.x - (width*origin.x)*scale.x*passOn.scale.x)*passOn.zoom.x*passOn.window_zoom.x,
-                    (pos.y - (height*origin.y)*scale.y*passOn.scale.y - pos.z)*passOn.zoom.y*passOn.window_zoom.y,
-                    width*scale.x*passOn.scale.x*passOn.zoom.x*passOn.window_zoom.x, 
+                    vcenter.x + (pos.x - (width*origin.x)*scale.x*passOn.scale.x)*passOn.zoom.x*passOn.window_zoom.x,
+                    vecnter.y + (pos.y - (height*origin.y)*scale.y*passOn.scale.y - pos.z)*passOn.zoom.y*passOn.window_zoom.y,
+                    width*scale.x*passOn.scale.x*passOn.zoom.x*passOn.window_zoom.x,
                     height*scale.y*passOn.scale.x*passOn.zoom.y*passOn.window_zoom.y
                 );
             }
