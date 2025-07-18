@@ -72,8 +72,11 @@ namespace Amara {
             if (json_has(config, "lerpY")) lerp.y = config["lerpY"];
             if (json_has(config, "lerp")) lerp = config["lerp"];
 
-            if (json_has(config, "width")) width = config["width"];
-            if (json_has(config, "height")) height = config["height"];
+            if (json_has(config, "width")) setWidth(config["width"]);
+            else if (json_has(config, "w")) setWidth(config["w"]);
+
+            if (json_has(config, "height")) setHeight(config["height"]);
+            else if (json_has(config, "h")) setHeight(config["h"]);
 
             update_bounds();
 
@@ -221,6 +224,20 @@ namespace Amara {
             return changeZoom(_z, _z);
         }
 
+        sol::object setSize(sol::object _s) {
+            
+        }
+
+        sol::object setWidth(double _w) {
+            sizeTethered = false;
+            width = _w;
+        }
+
+        sol::object setHeight(double _h) {
+            sizeTethered = false;
+            height = _h;
+        }
+
         virtual void pass_on_properties() override {
             passOn = gameProps->passOn;
 
@@ -315,8 +332,14 @@ namespace Amara {
                 sol::base_classes, sol::bases<Amara::Node>(),
                 "w", &Camera::width,
                 "h", &Camera::height,
-                "width", &Camera::width,
-                "height", &Camera::height,
+                "width", sol::property(
+                    [](const Camera& cam) { return cam.width; },
+                    &Camera::setWidth
+                ),
+                "height", sol::property(
+                    [](const Camera& cam) { return cam.height; },
+                    &Camera::setHeight
+                ),
                 "scroll", sol::property(
                     [] (Camera& cam) -> Vector2& { return cam.scroll; },
                     [] (Camera& cam, sol::object _s) { cam.scroll = _s; }
