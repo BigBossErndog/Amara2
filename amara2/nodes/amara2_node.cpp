@@ -349,7 +349,7 @@ namespace Amara {
         virtual void run(double deltaTime) {
             update_properties();
             if (!actuated) {
-                if (!destroyed && !loader) {
+                if (!destroyed && finishedLoading()) {
                     create();
                     actuated = true;
                 }
@@ -376,10 +376,12 @@ namespace Amara {
 
             if (destroyed) return;
 
-            update(deltaTime);
+            if (finishedLoading()) {
+                update(deltaTime);
 
-            if (!destroyed && funcs.hasFunction("onUpdate")) {
-                funcs.callFunction("onUpdate", deltaTime);
+                if (!destroyed && funcs.hasFunction("onUpdate")) {
+                    funcs.callFunction("onUpdate", deltaTime);
+                }
             }
 
             if (yDepthLocked) depth = pos.y;
@@ -509,7 +511,7 @@ namespace Amara {
 
             if (!node->actuated) {
                 node->preload();
-                if (!node->destroyed && !node->loader) {
+                if (!node->destroyed && node->finishedLoading()) {
                     node->create();
                     node->actuated = true;
                 }

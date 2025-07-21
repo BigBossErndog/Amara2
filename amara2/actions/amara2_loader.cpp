@@ -241,8 +241,7 @@ namespace Amara {
 
         void onLoadProgress(sol::function callback) {
             funcs.setFunction(nodeID, "onLoadProgress", callback);
-        } 
-        
+        }
 
         virtual sol::object complete() override {
             if (parent && parent->loader == this) {
@@ -285,6 +284,6 @@ namespace Amara {
     };
 
     bool Amara::Node::finishedLoading() {
-        return loader == nullptr || loader->completed;
+        return loader == nullptr || loader->completed || loader->tasks.size() == 0;
     }
 }
