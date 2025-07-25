@@ -19,7 +19,7 @@ Built in C++ using SDL3.
 
 ## What I'm Currently Working On
 - Automated web export via emscripten
-- Android export via Android
+- Android export via Android Studio
 
 ## Community
 Join the Discord community where you can ask questions, promote your work and interact with fellow users of Amara2!
