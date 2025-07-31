@@ -274,8 +274,10 @@ namespace Amara {
                 createCanvas(width, height);
             }
 
+            #ifdef AMARA_OPENGL
             currentShaderProgram = gameProps->defaultShaderProgram;
-
+            #endif
+            
             if (update_canvas || !canvasLocked) {
                 drawCanvas(v);
                 update_canvas = false;

@@ -224,7 +224,10 @@
     #include "nodes/amara2_container.cpp"
 
     #include "nodes/amara2_textureContainer.cpp"
+
+    #ifdef AMARA_OPENGL
     #include "nodes/amara2_shaderContainer.cpp"
+    #endif
     
     #include "nodes/tilemap/amara2_tilemapLayer.cpp"
     #include "nodes/tilemap/amara2_tilemap.cpp"

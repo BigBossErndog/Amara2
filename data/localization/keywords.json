@@ -63,9 +63,13 @@
     "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
 
     "label_downloadModule": "Download Module",
-
+    "label_installVSBuildTools": "Install VS Build Tools",
+    
     "label_windowsBuilderNotFound": "Amara2 Windows Build Module not found.",
     "label_windowsBuilderNotice": "Amara2 requires the Amara2 Windows build module.\nPlease download and open the .zip below.",
+
+    "label_vsBuildToolsNotFound": "Visual Studio Build Tools not found.",
+    "label_vsBuildToolsNotice": "Amara2 requires the Amara2 Windows build module.\nPlease download and open the .zip below.",
 
     "label_windowsModuleFile": "amara2_windows_build_module.zip",
     "label_windowsWebModuleFile": "amara2_windows_web_build_module.zip",

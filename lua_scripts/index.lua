@@ -1,6 +1,6 @@
-version_string = "0.1.1"
+version_string = "0.1.2"
 
-Scripts:run("utility/localize")
+Scripts:run("utility/Localize")
 Scripts:run("utility/OpenCodeEditor")
 
 Nodes:load("ui/UIWindow")
@@ -17,11 +17,12 @@ Nodes:load("windows/ProjectWindow")
 Nodes:load("windows/TerminalWindow")
 Nodes:load("windows/CopyProjectWindow")
 
+Nodes:load("building/windows/VSBuildToolsInstaller")
 Nodes:load("building/windows/WindowsBuildInstaller")
 Nodes:load("building/windows/WindowsBuildOptions")
 Nodes:load("building/windows/WindowsBuildNode")
 
-return Creator:createWorld({
+Creator:createWorld({
     window = {
         width = 1280,
         height = 720,

@@ -1,4 +1,5 @@
 namespace Amara {
+    #ifdef AMARA_OPENGL
     enum class ShaderTypeEnum {
         None = -1,
         Vertex = GL_VERTEX_SHADER,
@@ -8,6 +9,17 @@ namespace Amara {
         TessControl = GL_TESS_CONTROL_SHADER,
         TessEvaluation = GL_TESS_EVALUATION_SHADER
     };
+    #else
+    enum class ShaderTypeEnum {
+        None = -1,
+        Vertex = 0,
+        Fragment = 1,
+        Geometry = 2,
+        Compute = 3,
+        TessControl = 4,
+        TessEvaluation = 5
+    };
+    #endif
 
     ShaderTypeEnum shaderTypeFromString(std::string key) {
         if (String::equal(key, "vertex")) return ShaderTypeEnum::Vertex;
@@ -33,11 +45,11 @@ namespace Amara {
     
     class ShaderManager {
     public:
+        Amara::GameProps* gameProps = nullptr;
+        
         #ifdef AMARA_OPENGL
         std::unordered_map<std::string, unsigned int> glShaders;
         std::unordered_map<std::string, ShaderProgram*> glPrograms;
-
-        Amara::GameProps* gameProps = nullptr;
 
         ShaderManager() {
             glShaders.clear();

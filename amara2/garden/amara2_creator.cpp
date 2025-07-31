@@ -373,8 +373,10 @@ namespace Amara {
             bind_lua_Geometry(lua);
 
             Color::bind_lua(lua);
+            #ifdef AMARA_OPENGL
             ShaderProgram::bind_lua(lua);
-
+            #endif
+            
             MessageBox::bind_lua(lua);
             NodeInput::bind_lua(lua);
             FunctionManager::bind_lua(lua);

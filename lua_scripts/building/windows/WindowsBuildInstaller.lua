@@ -193,13 +193,18 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                         self.props.gameProcess:destroy()
                         self.props.gameProcess = nil
                     end
-                    if self.props.success then
-                        local newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
+                    if not self.props.success then
+                        local newWindow = self.world.props.windows:createChild("ProjectWindow", {
+                            projectPath = self.props.projectPath
+                        })
+                        newWindow.func:openWindow()
+                    elseif not System:VSBuildToolsInstalled() then
+                        local newWindow = self.world.props.windows:createChild("VSBuildToolsInstaller", {
                             projectPath = self.props.projectPath
                         })
                         newWindow.func:openWindow()
                     else
-                        local newWindow = self.world.props.windows:createChild("ProjectWindow", {
+                        local newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
                             projectPath = self.props.projectPath
                         })
                         newWindow.func:openWindow()

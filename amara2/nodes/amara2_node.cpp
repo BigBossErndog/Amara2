@@ -132,9 +132,11 @@ namespace Amara {
                 { "props", lua_to_json(props) }
             });
 
+            #ifdef AMARA_OPENGL
             if (shaderProgram) {
                 data["shaderProgram"] = shaderProgram->key;
             }
+            #endif
 
             return data;
         }
@@ -211,8 +213,10 @@ namespace Amara {
             if (json_has(config, "sortable")) sortable = config["sortable"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
 
+            #ifdef AMARA_OPENGL
             if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
-
+            #endif
+            
             if (json_has(config, "input")) input.configure(config["input"]);
             
             return this;

@@ -8,7 +8,7 @@ namespace Amara {
         GLuint glCanvas2ID = 0;
         GLuint glBuffer2ID = 0;
         #endif
-
+        
         SDL_Texture* canvas1Texture = nullptr;
         SDL_Texture* canvas2Texture = nullptr;
 
@@ -200,7 +200,6 @@ namespace Amara {
         }
 
         void drawCanvas(const Rectangle& v) {
-            ShaderProgram* rec_shader = currentShaderProgram;
             canvas_flip = true;
 
             SDL_Rect prevSDLViewport;
@@ -209,6 +208,7 @@ namespace Amara {
                 SDL_GetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL
+            ShaderProgram* rec_shader = currentShaderProgram;
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 gameProps->renderBatch->flush();
 
@@ -244,12 +244,12 @@ namespace Amara {
 
             gameProps->passOn = rec_props;
 
-            currentShaderProgram = rec_shader;
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = (canvas_flip) ? canvas1Texture : canvas2Texture;
                 SDL_SetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL
+            currentShaderProgram = rec_shader;
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 gameProps->renderBatch->flush();
 

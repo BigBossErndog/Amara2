@@ -16,7 +16,7 @@ namespace Amara {
         GraphicsEnum::VulkanMetalDirectX,
     };
     #endif
-
+    
     struct PositionColorVertex {
         float x, y, z;
         Uint8 r, g, b, a;
