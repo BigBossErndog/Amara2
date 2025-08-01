@@ -68,12 +68,7 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
             local platform = self.props.platformMenu.selected
 
             if platform == "windows" then
-                if not System:exists(System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm/bin/clang.exe")) then
-                    newWindow = self.world.props.windows:createChild("WindowsBuildInstaller", {
-                        projectPath = self.props.projectPath
-                    })
-                    newWindow.func:openWindow()
-                elseif not System:VSBuildToolsInstalled() then
+                if not System:VSBuildToolsInstalled() then
                     newWindow = self.world.props.windows:createChild("VSBuildToolsInstaller", {
                         projectPath = self.props.projectPath
                     })
@@ -84,6 +79,8 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
                     })
                     newWindow.func:openWindow()
                 end
+            elseif platform == "web" then
+                
             end
 
             self.world.forcedClickThrough = false
