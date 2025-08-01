@@ -12,8 +12,7 @@ Nodes:define("MainWindow", "UIWindow", {
             font = "defaultFont",
             text = Localize:get("title_windowTitle") .. " v" .. version_string,
             color = "#a8bee0",
-            origin = 0,
-            input = true
+            origin = 0
         })
 
         local recentProjectsTitle = self.props.content:createChild("Text", {

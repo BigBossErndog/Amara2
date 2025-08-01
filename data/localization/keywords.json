@@ -7,6 +7,7 @@
     "title_copyProject": "Copy Project",
     "title_buildOptions": "Build Options",
     "title_executableIcon": "Executable Icon (optional)",
+    "title_choosePlatform": "Select Target Platform",
 
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit (Ctrl + Alt + F4)",

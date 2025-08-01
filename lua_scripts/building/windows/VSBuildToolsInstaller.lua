@@ -44,7 +44,10 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
     end,
 
     continueBuilding = function(self)
-
+        local newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
+            projectPath = self.props.projectPath
+        })
+        newWindow.func:openWindow()
     end,
 
     downloadVSBuildTools = function(self)
