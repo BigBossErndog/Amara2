@@ -129,6 +129,7 @@ linux:
 	mkdir $(BUILD_PATH)/saves
 
 EMSCRIPTEN_COMPILER = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\em++"
+EMSCRIPTEN_SERVER = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\emrun"
 EMSCRIPTEN_BUILD_NAME = $(BUILD_NAME).html
 EMSCRIPTEN_BUILD_PATH = $(BUILD_PATH)/$(EMSCRIPTEN_BUILD_NAME)
 EMSCRIPTEN_SDL = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\cache\sysroot\lib\libSDL3.a" -I$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\cache\sysroot\include\SDL3
@@ -137,10 +138,11 @@ EMSCRIPTEN_PRELOADS = --preload-file assets --preload-file lua_scripts --preload
 EMSCRIPTEN_EXTRA_OPTIONS = -DAMARA_OPENGL -DAMARA_ENGINE_TOOLS
 web: $(ENTRY_FILES)
 	mkdir -p build
+	rm -rf ./$(BUILD_PATH)/*
 	$(EMSCRIPTEN_COMPILER) $(ENTRY_FILES) $(EMSCRIPTEN_SDL) $(AMARA_PATH) $(OTHER_LIB) $(EMSCRIPTEN_COMPILER_FLAGS) $(EMSCRIPTEN_EXTRA_OPTIONS) $(EMSCRIPTEN_PRELOADS) -o $(EMSCRIPTEN_BUILD_PATH)
 	
 playweb:
-	emrun --port 8080 .
+	$(EMSCRIPTEN_SERVER) --port 8080 .
 
 valgrind:
 	rm -rf build/assets/*

@@ -6,6 +6,7 @@
     "title_printLog": "Print Log",
     "title_copyProject": "Copy Project",
     "title_buildOptions": "Build Options",
+    "title_executableFileName": "Executable File Name",
     "title_executableIcon": "Executable Icon (optional)",
     "title_choosePlatform": "Select Target Platform",
 
@@ -59,6 +60,7 @@
     "label_building": "Building... Please wait.",
     "label_buildSuccess": "Success: Build successfully completed.",
     "label_buildFailed": "Error: Build failed to complete.",
+    "label_enterExecutableFileName": "Enter Executable File Name",
     "label_selectIcon": "Select Icon",
     "label_performingInitialSetup": "Performing Initial Setup...",
     "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
@@ -75,7 +77,13 @@
     "label_windowsModuleFile": "amara2_windows_build_module.zip",
     "label_windowsWebModuleFile": "amara2_windows_web_build_module.zip",
 
+    "label_platform_windows": "Windows",
+    "label_platform_web": "Web",
+    "label_platform_linux": "Linux",
+    "label_platform_mac": "Mac",
+
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
+    "error_emptyExecutableFileName": "Error: Executable File Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",
     "error_pathToFile": "Error: File exists at path.",
     "error_failedToRunGame": "Error: Failed to run game.",

@@ -19,6 +19,10 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             end
         end
 
+        if (not self.props.executableName) and projectData["project-name"] then
+            self.props.executableName = projectData["project-name"]
+        end
+
         if config.printLog then
             self.props.printLog = config.printLog
         end

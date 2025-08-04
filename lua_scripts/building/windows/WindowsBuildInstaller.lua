@@ -41,7 +41,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
             icon = 5,
             onPress = function(button)
                 button.props.enabled = false
-                self.func:closeWindow(function(b)
+                self.func:closeWindow(function()
                     local newWindow = self.parent:createChild("ProjectWindow", {
                         projectPath = self.props.projectPath
                     })

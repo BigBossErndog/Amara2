@@ -39,14 +39,6 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
                 self.func:closeWindow(function()
                     self.world.func:getSettings(true)
                     self.world.func:fixSettings()
-                    
-                    local settings = self.world.func:getSettings(true)
-                    
-                    -- if settings.vsBuildToolsNotInstalled then
-                    -- TODO
-                    -- else
-                        
-                    -- end
 
                     local win = self.parent:createChild("MainWindow")
                     win.func:openWindow()

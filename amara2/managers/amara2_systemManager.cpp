@@ -1087,7 +1087,6 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string, bool)>(&SystemManager::copy),
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::copy)
                 ),
-                "unzip", &SystemManager::unzip,
                 "run", &SystemManager::run,
                 "compileScript", sol::overload(
                     sol::resolve<bool(std::string, std::string, std::string)>(&SystemManager::compileScript),

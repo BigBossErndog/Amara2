@@ -1,6 +1,6 @@
 Nodes:define("WindowsBuildOptions", "UIWindow", {
     width = 256,
-    height = 106,
+    height = 140,
 
     onConfigure = function(self, config)
         if config.projectPath then
@@ -45,8 +45,66 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
             end
         })
 
+        local exeNameTitle = self.props.content:createChild("Text", {
+            x = 10, y = 24,
+            text = Localize:get("title_executableFileName"),
+            font = "defaultFont",
+            color = Colors.White,
+            origin = 0
+        })
+
+        self.props.exeNameField = self.props.content:createChild("TextField", {
+            x = 8, y = exeNameTitle.y + exeNameTitle.height + 4,
+            width = self.props.targetWidth - 16,
+
+            defaultText = Localize:get("label_enterExecutableFileName"),
+
+            onCreate = function(self)
+                self.classes.TextField.func:onCreate(self)
+
+                self.props.exeTxt = self:createChild("Text", {
+                    x = 8, y = 2,
+                    font = "defaultFont",
+                    text = ".exe",
+                    color = "#515f73",
+                    origin = 0,
+                    visible = false,
+                    props = {
+                        backing = self
+                    }
+                })
+
+                self.props.maxTextWidth = self.width - 16 - self.props.exeTxt.width
+            end,
+
+            onChange = function(textField, txt)
+                textField.props.exeTxt.visible = true
+                textField.props.exeTxt.x = textField.props.txt.x + textField.props.txt.width
+            end,
+
+            onFocus = function(self)
+                self.props.exeTxt.visible = true
+                self.props.exeTxt.x = self.props.txt.x + self.props.txt.width
+            end,
+
+            onUnfocus = function(self)
+                if string.len(self.props.finalText) == 0 then
+                    self.props.exeTxt.visible = false
+                end
+            end,
+
+            onUpdate = function(self, deltaTime)
+                self.classes.TextField.func:onUpdate(self, deltaTime)
+            end
+        })
+
+        if projectData["executable-name"] then
+            self.props.exeNameField.func:setText(projectData["executable-name"])
+            self.props.exeNameField.func:onChange(projectData["executable-name"])
+        end
+
         self.props.iconBacker = self.props.content:createChild("FillRect", {
-            x = 8, y = 28,
+            x = 8, y = 64,
             width = 32,
             height = 32,
             color = Colors.Black,
@@ -111,7 +169,7 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
             origin = 0,
             color = Colors.Red,
             visible = false,
-            x = 10, y = 64
+            x = 10, y = 98
         })
 
         if projectData["exe-icon"] then
@@ -173,18 +231,25 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
     end,
 
     startBuilding = function(self)
-        self.func:closeWindow(function(win)
-            local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
-            projectData["exe-icon"] = self.props.iconPath
-            System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
+        if self.props.exeNameField.props.finalText == "" then
+            self.props.errorMessage.text = Localize:get("error_emptyExecutableFileName")
+            self.props.errorMessage.visible = true
+            return
+        else
+            self.func:closeWindow(function(win)
+                local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
+                projectData["exe-icon"] = self.props.iconPath
+                projectData["executable-name"] = self.props.exeNameField.props.finalText
+                System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
+                
+                self.world.props.windows:createChild("WindowsBuildNode", {
+                    projectPath = self.props.projectPath,
+                    iconPath = self.props.iconPath
+                })
 
-            self.world.props.windows:createChild("WindowsBuildNode", {
-                projectPath = self.props.projectPath,
-                iconPath = self.props.iconPath
-            })
-
-            win:destroy()
-        end)
+                win:destroy()
+            end)
+        end
     end,
 
     truncatePath = function(self, _path)

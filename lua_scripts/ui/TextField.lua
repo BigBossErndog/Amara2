@@ -22,6 +22,10 @@ Nodes:define("TextField", "FillRect", {
     onCreate = function(self)
         self.props.selected = false
         self.props.finalText = ""
+
+        if not self.props.maxTextWidth then
+            self.props.maxTextWidth = self.width - 16
+        end
         
         self.props.txt = self:createChild("Text",{
             x = 8, y = 2,
@@ -80,13 +84,17 @@ Nodes:define("TextField", "FillRect", {
 
         self.func:setText("")
     end,
-
+    
     focusField = function(self)
         if self.props.inputEnabled then
             self.props.selected = true
             self.props.cursor.func:show()
             self.func:setText(self.props.finalText)
             self.props.textInput:startInput()
+
+            if self.func.onFocus then
+                self.func:onFocus(self.props.finalText)
+            end
         end
     end,
 
@@ -106,7 +114,7 @@ Nodes:define("TextField", "FillRect", {
             self.props.txt.color = Colors.White
 
             self.props.textInput.text = txt
-            while self.props.txt.width > self.width - 16 do
+            while self.props.txt.width > self.props.maxTextWidth do
                 self.props.textInput:backspace()
                 self.props.txt.text = self.props.textInput.text
                 self.props.finalText = self.props.textInput.text
@@ -133,6 +141,11 @@ Nodes:define("TextField", "FillRect", {
                 self.props.selected = false
                 self.props.cursor.func:hide()
                 self.props.textInput:stopInput()
+
+                if self.func.onUnfocus then
+                    self.func:onUnfocus(self.props.finalText)
+                end
+
                 self.func:setText(self.props.finalText)
 
                 if Keyboard:justPressed(Key.Enter) then

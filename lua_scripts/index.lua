@@ -24,6 +24,8 @@ Nodes:load("building/windows/WindowsBuildInstaller")
 Nodes:load("building/windows/WindowsBuildOptions")
 Nodes:load("building/windows/WindowsBuildNode")
 
+Nodes:load("building/web/WebPlatformOptions")
+
 Creator:createWorld({
     window = {
         width = 1280,

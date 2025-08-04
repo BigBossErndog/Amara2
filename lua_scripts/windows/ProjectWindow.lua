@@ -96,7 +96,9 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 end
                 if self.props.printLog then
                     self.props.printLog.func:unbindGameProcess()
-                    self.props.printLog.func:closeWindow()
+                    self.props.printLog.func:closeWindow(function(self)
+                        self:destroy()
+                    end)
                     self.props.printLog = nil
                 end
                 self.func:closeWindow(function(button)
