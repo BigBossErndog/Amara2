@@ -24,7 +24,8 @@ Nodes:load("building/windows/WindowsBuildInstaller")
 Nodes:load("building/windows/WindowsBuildOptions")
 Nodes:load("building/windows/WindowsBuildNode")
 
-Nodes:load("building/web/WebPlatformOptions")
+Nodes:load("building/web/WebBuildOptions")
+Nodes:load("building/web/WebBuildNode")
 
 Creator:createWorld({
     window = {

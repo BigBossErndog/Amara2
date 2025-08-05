@@ -84,6 +84,26 @@ namespace Amara {
             return gameProps->system->run(path);
         }
 
+        sol::object execute(std::string code) {
+            sol::load_result loadResult = gameProps->lua.load(code, "inline_script", sol::load_mode::text);
+            if (!loadResult.valid()) {
+                sol::error err = loadResult;
+                debug_log(err.what());
+                gameProps->lua_exception_thrown = true;
+                return sol::nil;
+            }
+            sol::protected_function scriptFunc = loadResult;
+            sol::protected_function_result execResult = scriptFunc();
+            if (!execResult.valid()) {
+                sol::error err = execResult;
+                debug_log(err.what());
+                gameProps->lua_exception_thrown = true;
+                return sol::nil;
+            }
+            
+            return execResult;
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<ScriptFactory>("ScriptFactory",
                 "load", &ScriptFactory::load,

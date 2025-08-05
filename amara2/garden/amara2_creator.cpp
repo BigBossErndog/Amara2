@@ -23,6 +23,8 @@ namespace Amara {
         Demiurge* currentDemiurge = nullptr;
 
         std::vector<std::string> starting_scripts;
+        std::vector<std::string> inline_scripts;
+        bool inline_override = false;
 
         double maxDeltaTime = 1;
 
@@ -95,6 +97,17 @@ namespace Amara {
                             if (path.is_string()) {
                                 starting_scripts.push_back(path);
                             }
+                        }
+                        else if (String::equal(arg, "-inline-script")) {
+                            ++it;
+                            if (it == game.arguments.end()) break;
+                            nlohmann::json& path = *it;
+                            if (path.is_string()) {
+                                inline_scripts.push_back(path);
+                            }
+                        }
+                        else if (String::equal(arg, "-inline-override")) {
+                            inline_override = true;
                         }
                         #endif
                         else if (String::equal(arg, "-display")) {
@@ -242,7 +255,12 @@ namespace Amara {
         }
 
         int startCreation(std::string path) {
-            if (starting_scripts.size() == 0) {
+            if (inline_scripts.size() > 0) {
+                for (auto it = inline_scripts.begin(); it != inline_scripts.end(); it++) {
+                    scripts.execute(*it);
+                }
+            }
+            if (starting_scripts.size() == 0 && (inline_scripts.size() == 0 || !inline_override)) {
                 starting_scripts.push_back(path);
             }
             return startCreation();
@@ -274,6 +292,7 @@ namespace Amara {
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.
                 main_loop();
             }
+            #endif
 
             destroy();
             cleanDestroyedWorlds();
@@ -284,7 +303,6 @@ namespace Amara {
 
             if (gameProps.lua_exception_thrown) return 1;
             return gameProps.error_code;
-            #endif
         }
         
         void main_loop() {

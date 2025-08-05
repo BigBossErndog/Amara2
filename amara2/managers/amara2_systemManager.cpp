@@ -271,7 +271,7 @@ namespace Amara {
                 debug_log("Error: General exception while deleting \"", filePath.string(), "\": ", e.what());
                 return false;
             }
-		}
+        }
 
         bool isDirectory(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
@@ -300,7 +300,7 @@ namespace Amara {
                     debug_log("Error: Failed to create directory: \"", dir.string(), "\".");
                 }
             } else {
-                debug_log("Error: Directory already exists: \"", dir.string(), "\".");
+                debug_log("Note: Directory already exists: \"", dir.string(), "\".");
             }
             return false;
         }
@@ -515,6 +515,29 @@ namespace Amara {
         }
         bool copy(std::string input, std::string output) {
             return copy(input, output, true);
+        }
+
+        bool rename(std::string filePath, std::string newName) {
+            std::filesystem::path source = getRelativePath(filePath);
+            if (!std::filesystem::exists(source) || !std::filesystem::is_regular_file(source)) {
+                debug_log("Error: Source file does not exist or is not a file: ", source.string());
+                return false;
+            }
+
+            std::filesystem::path newNamePath(newName);
+            std::string newFileName = newNamePath.filename().string();
+            if (newNamePath.extension().empty()) {
+                newFileName += source.extension().string();
+            }
+
+            std::filesystem::path dest = source.parent_path() / newFileName;
+            try {
+                std::filesystem::rename(source, dest);
+                return true;
+            } catch (const std::exception& e) {
+                debug_log("Error: Failed to rename file: ", e.what());
+                return false;
+            }
         }
         
         bool unzip(std::string zipPath, std::string outputDirectory) {
@@ -1053,6 +1076,14 @@ namespace Amara {
             fatal_error(error);
         }
 
+        void exit() {
+            gameProps->game->hasQuit = true;
+        }
+        void exit(int code) {
+            gameProps->game->hasQuit = true;
+            gameProps->error_code = code;
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<SystemManager>("SystemManager",
                 "exists", &SystemManager::exists,
@@ -1087,6 +1118,7 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string, bool)>(&SystemManager::copy),
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::copy)
                 ),
+                "rename", &SystemManager::rename,
                 "run", &SystemManager::run,
                 "compileScript", sol::overload(
                     sol::resolve<bool(std::string, std::string, std::string)>(&SystemManager::compileScript),
@@ -1115,6 +1147,10 @@ namespace Amara {
                 "throwError", sol::overload(
                     sol::resolve<void(std::string)>(&SystemManager::throwError),
                     sol::resolve<void(std::string, int)>(&SystemManager::throwError)
+                ),
+                "exit", sol::overload(
+                    sol::resolve<void()>(&SystemManager::exit),
+                    sol::resolve<void(int)>(&SystemManager::exit)
                 )
             );
         }

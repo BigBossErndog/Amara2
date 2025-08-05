@@ -1,4 +1,4 @@
-Nodes:define("WebPlatformOptions", "UIWindow", {
+Nodes:define("WebBuildOptions", "UIWindow", {
     width = 256,
     height = 106,
 
@@ -51,5 +51,14 @@ Nodes:define("WebPlatformOptions", "UIWindow", {
         })
         buildButton.x = self.props.targetWidth - buildButton.width - 8
         buildButton.y = self.props.targetHeight - buildButton.height - 6
+    end,
+
+    startBuilding = function(self)
+        self.func:closeWindow(function(self)
+            local buildNode = self.world.props.windows:createChild("WebBuildNode", {
+                projectPath = self.props.projectPath
+            })
+            self:destroy()
+        end)
     end
 })
