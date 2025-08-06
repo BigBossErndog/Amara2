@@ -12,12 +12,13 @@
 
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit (Ctrl + Alt + F4)",
+    "toolTip_exitOnly": "Exit",
     "toolTip_minimize": "Minimize",
     "toolTip_back": "Back",
     "toolTip_browseDirectory": "Browse Directory",
     "toolTip_browseFile": "Browse File",
     "toolTip_openExistingProject": "Open Existing Project",
-    "toolTip_openExamples": "Open Examples", 
+    "toolTip_openExamples": "Open Examples",
 
     "toolTip_runGame": "Run Game (Ctrl + Alt + A)",
     "toolTip_buildGame": "Build Game (Ctrl + Alt + B)",

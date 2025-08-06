@@ -30,6 +30,7 @@ namespace Amara {
 
         Creator(): Demiurge() {
             demiurgic = false;
+            Demiurge::gameProps = &gameProps;
 
             garbageCollector.gameProps = &gameProps;
 
@@ -255,11 +256,6 @@ namespace Amara {
         }
 
         int startCreation(std::string path) {
-            if (inline_scripts.size() > 0) {
-                for (auto it = inline_scripts.begin(); it != inline_scripts.end(); it++) {
-                    scripts.execute(*it);
-                }
-            }
             if (starting_scripts.size() == 0 && (inline_scripts.size() == 0 || !inline_override)) {
                 starting_scripts.push_back(path);
             }
@@ -272,6 +268,12 @@ namespace Amara {
             }
 
             eventHandler.init(&gameProps);
+            
+            if (inline_scripts.size() > 0) {
+                for (auto it = inline_scripts.begin(); it != inline_scripts.end(); it++) {
+                    scripts.execute(*it);
+                }
+            }
             for (auto it = starting_scripts.begin(); it != starting_scripts.end(); it++) {
                 scripts.run(*it);
             }

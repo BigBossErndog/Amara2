@@ -39,6 +39,16 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             emscriptenPath = System:getRelativePath("build_modules/amara2_windows_build_module/emsdk/upstream/emscripten")
         end
 
+
+        -- Helper to quote paths with spaces
+        local function quote_if_needed(path)
+            if string.find(path, " ") then
+                return '"' .. path .. '"'
+            else
+                return path
+            end
+        end
+
         local compilerPath = System:join(emscriptenPath, "em++")
         local buildPath = System:join(buildDir, self.props.htmlName .. ".html")
         self.props.htmlPath = buildPath
@@ -47,10 +57,11 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         local sdlIncludePath = System:join(emscriptenPath, "cache", "sysroot", "include", "SDL3")
 
 
-        table.insert(args, compilerPath)
+
+        table.insert(args, quote_if_needed(compilerPath))
         table.insert(args, "./amara2/main/main.cpp")
-        table.insert(args, sdlLibPath)
-        table.insert(args, "-I" .. sdlIncludePath)
+        table.insert(args, quote_if_needed(sdlLibPath))
+        table.insert(args, "-I" .. quote_if_needed(sdlIncludePath))
 
         -- AMARA_PATH
         table.insert(args, "-Iamara2")
@@ -60,8 +71,9 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         end
 
         table.insert(args, "-Isrc")
+
         if self.props.installPlugins then
-            table.insert(args, "-I", System:join(self.props.projectPath, "plugins"))
+            table.insert(args, "-I" .. quote_if_needed(System:join(self.props.projectPath, "plugins")))
         end
 
         table.insert(args, "-Iresources/libs/nlohmann/include")
@@ -86,26 +98,35 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "-s")
         table.insert(args, "EXCEPTION_CATCHING_ALLOWED='[\"std::exception\"]'")
 
-        -- EMSCRIPTEN_EXTRA_OPTIONS (always add -DAMARA_PLUGINS as in Makefile)
+        -- EMSCRIPTEN_EXTRA_OPTIONS
         if self.props.installPlugins then
             table.insert(args, "-DAMARA_PLUGINS")
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
+
         -- EMSCRIPTEN_PRELOADS
         table.insert(args, "--preload-file")
-        table.insert(args, System:join(self.props.projectPath, "assets@/assets"))
+        table.insert(args, quote_if_needed(System:join(self.props.projectPath, "assets@/assets")))
         table.insert(args, "--preload-file")
-        table.insert(args, System:join(self.props.projectPath, "lua_scripts@/lua_scripts"))
+        table.insert(args, quote_if_needed(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")))
         -- table.insert(args, "--preload-file")
-        -- table.insert(args, System:join(self.props.projectPath, "data"))
+        -- table.insert(args, quote_if_needed(System:join(self.props.projectPath, "data@/data")))
+
+
+        -- Shell
+        table.insert(args, "--shell-file")
+        table.insert(args, quote_if_needed(System:join(System:getBasePath(), "amara2", "main", "emscripten_shell.html")))
+
 
         -- Output file
         table.insert(args, "-o")
-        table.insert(args, buildPath)
+        table.insert(args, quote_if_needed(buildPath))
 
         local buildCommand = string.sep_concat(" ", table.unpack(args))
-        local systemCommand = "System:execute(Game.argtable[\"-build-command\"])"
+        local systemCommand = "System:exit(System:execute(Game.argtable[\"-build-command\"]))"
+
+        print(buildCommand)
 
         if #args > 0 then
             self:configure({
@@ -144,8 +165,6 @@ Nodes:define("WebBuildNode", "ProcessNode", {
                     if self.props.gameProcess then
                         self.props.gameProcess:destroy()
                         self.props.gameProcess = nil
-                        
-                        System:remove(System:join(self.props.projectPath, "build", "web"))
                     end
                 end
             })
@@ -178,6 +197,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             System:rename(self.props.htmlPath, "index")
             -- Notify success
             self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
+            System:openDirectory(System:join(self.props.projectPath, "build", "web"))
         else
             -- Notify failure
             self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))

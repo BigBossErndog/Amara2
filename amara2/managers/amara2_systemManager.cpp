@@ -567,6 +567,47 @@ namespace Amara {
             #endif
         }
 
+        // Zips the contents of a directory into a zip file (Windows only)
+        bool zip(std::string sourceDirectory, std::string targetDirectory, std::string zipFileName) {
+            #if defined(_WIN32)
+            std::filesystem::path srcDir = getRelativePath(sourceDirectory);
+            std::filesystem::path tgtDir = getRelativePath(targetDirectory);
+            if (!std::filesystem::exists(srcDir) || !std::filesystem::is_directory(srcDir)) {
+                debug_log("Error: Source directory does not exist or is not a directory: ", srcDir.string());
+                return false;
+            }
+            if (!std::filesystem::exists(tgtDir)) {
+                std::filesystem::create_directories(tgtDir);
+            }
+            // Ensure .zip extension
+            std::string finalZipFileName = zipFileName;
+            if (finalZipFileName.length() < 4 || finalZipFileName.substr(finalZipFileName.length() - 4) != ".zip") {
+                finalZipFileName += ".zip";
+            }
+            std::filesystem::path zipPath = tgtDir / finalZipFileName;
+            // Remove existing zip if present
+            if (std::filesystem::exists(zipPath)) {
+                std::filesystem::remove(zipPath);
+            }
+            // PowerShell Compress-Archive
+            std::string cmd = "powershell.exe -Command \"Compress-Archive -Path '" + srcDir.string() + "\\*' -DestinationPath '" + zipPath.string() + "' -Force\"";
+            int ret = std::system(cmd.c_str());
+            if (ret != 0) {
+                debug_log("Error: Failed to create zip file: ", zipPath.string());
+                return false;
+            }
+            return true;
+            #else
+            debug_log("Error: Zipping is not supported on this platform.");
+            return false;
+            #endif
+        }
+        bool zip(std::string sourceDirectory, std::string targetDirectory) {
+            std::filesystem::path srcDir = getRelativePath(sourceDirectory);
+            std::string dirName = srcDir.filename().string();
+            return zip(sourceDirectory, targetDirectory, dirName);
+        }
+
         void setCursor(CursorEnum cursor) {
             switch (cursor) {
                 case CursorEnum::Default:
@@ -1076,12 +1117,13 @@ namespace Amara {
             fatal_error(error);
         }
 
-        void exit() {
+        int exit() {
             gameProps->game->hasQuit = true;
+            return gameProps->error_code;
         }
-        void exit(int code) {
-            gameProps->game->hasQuit = true;
+        int exit(int code) {
             gameProps->error_code = code;
+            return exit();
         }
 
         static void bind_lua(sol::state& lua) {
@@ -1119,6 +1161,11 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::copy)
                 ),
                 "rename", &SystemManager::rename,
+                "unzip", &SystemManager::unzip,
+                "zip", sol::overload(
+                    sol::resolve<bool(std::string, std::string, std::string)>(&SystemManager::zip),
+                    sol::resolve<bool(std::string, std::string)>(&SystemManager::zip)
+                ),
                 "run", &SystemManager::run,
                 "compileScript", sol::overload(
                     sol::resolve<bool(std::string, std::string, std::string)>(&SystemManager::compileScript),
@@ -1149,8 +1196,8 @@ namespace Amara {
                     sol::resolve<void(std::string, int)>(&SystemManager::throwError)
                 ),
                 "exit", sol::overload(
-                    sol::resolve<void()>(&SystemManager::exit),
-                    sol::resolve<void(int)>(&SystemManager::exit)
+                    sol::resolve<int()>(&SystemManager::exit),
+                    sol::resolve<int(int)>(&SystemManager::exit)
                 )
             );
         }

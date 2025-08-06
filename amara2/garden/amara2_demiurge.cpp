@@ -58,6 +58,8 @@ namespace Amara {
             gameProps = _gameProps;
 
             game.gameProps = gameProps;
+            gameProps->game = &game;
+
             factory.gameProps = gameProps;
             scripts.gameProps = gameProps;
             system.gameProps = gameProps;

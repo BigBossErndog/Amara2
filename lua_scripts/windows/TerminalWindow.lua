@@ -123,7 +123,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
         self.props.exitButton = self.props.content:createChild("UIButton", {
             id = "exitButton",
-            toolTip = "toolTip_exit",
+            toolTip = "toolTip_exitOnly",
             y = 4,
             icon = 1,
             props = {
