@@ -118,6 +118,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "--shell-file")
         table.insert(args, quote_if_needed(System:join(System:getBasePath(), "amara2", "main", "emscripten_shell.html")))
 
+        table.insert(args, "-O2 --closure 1")
 
         -- Output file
         table.insert(args, "-o")
