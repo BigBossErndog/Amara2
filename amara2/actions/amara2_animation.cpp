@@ -23,6 +23,11 @@ namespace Amara {
             set_base_node_id("Animation");
             is_animation = true;
         }
+        
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            setAnimation(config);
+            return Amara::Action::configure(config);
+        }
 
         void setAnimation(nlohmann::json config) {
             progress = 0;

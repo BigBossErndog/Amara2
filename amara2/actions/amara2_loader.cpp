@@ -282,7 +282,7 @@ namespace Amara {
             node_type["finishedLoading"] = sol::property(&Amara::Node::finishedLoading);
         }
     };
-
+6
     bool Amara::Node::finishedLoading() {
         return loader == nullptr || loader->completed || loader->tasks.size() == 0;
     }
