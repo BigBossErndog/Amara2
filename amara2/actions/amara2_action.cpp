@@ -29,7 +29,7 @@ namespace Amara {
         virtual void prepare() {
             has_started = true;
 
-            if (funcs.hasFunction("onPrepare")) funcs.callFunction(actor, "onPrepare");
+            if (funcs.hasFunction("onPrepare")) funcs.callFunction(actor, "onPrepare", get_lua_object());
         }
 
         virtual void act(double deltaTime) {
@@ -37,7 +37,7 @@ namespace Amara {
                 prepare();
             }
             if (has_started && !completed) {
-                if (funcs.hasFunction("onAct")) funcs.callFunction(actor, "onAct", deltaTime);
+                if (funcs.hasFunction("onAct")) funcs.callFunction(actor, "onAct", get_lua_object(), deltaTime);
             }
         }
 
@@ -72,7 +72,7 @@ namespace Amara {
         virtual sol::object complete() {
             if (completed) return get_lua_object();
             completed = true;
-            if (funcs.hasFunction("onComplete")) funcs.callFunction(actor, "onComplete");
+            if (funcs.hasFunction("onComplete")) funcs.callFunction(actor, "onComplete", get_lua_object());
 
             start_child_actions();
             waitingForChildren = true;
