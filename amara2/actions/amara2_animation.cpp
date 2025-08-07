@@ -25,7 +25,12 @@ namespace Amara {
         }
         
         virtual Amara::Node* configure(nlohmann::json config) override {
-            setAnimation(config);
+            if (json_has(config, "key")) {
+                setAnimation(config["key"]);
+            }
+            else {
+                setAnimation(config);
+            }
             return Amara::Action::configure(config);
         }
 
