@@ -479,11 +479,13 @@ namespace Amara {
                     }
 
                     if (wrapWidth > 0 && word.width + glyph.xadvance >= wrapWidth) {
-                        layout.height += line->height + lineSpacing;
-                        cursorY += lineHeight + lineSpacing;
-                        line = &layout.newLine();
-                        line->height = lineHeight;
-                        line->y = cursorY;
+                        if (line->width > 0) {
+                            layout.height += line->height + lineSpacing;
+                            cursorY += lineHeight + lineSpacing;
+                            line = &layout.newLine();
+                            line->height = lineHeight;
+                            line->y = cursorY;
+                        }
 
                         layout.height += line->height;
                         word.x = 0;

@@ -1,4 +1,4 @@
-version_string = "0.1.2"
+version_string = "0.2.1"
 
 Scripts:run("utility/Localize")
 Scripts:run("utility/OpenCodeEditor")

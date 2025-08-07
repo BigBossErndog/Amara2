@@ -74,7 +74,7 @@
 
     "label_vsBuildToolsNotFound": "Visual Studio Build Tools not found.",
     "label_vsBuildToolsNotice": "Amara2 requires the Amara2 Windows build module.\nPlease download and open the .zip below.",
-
+    
     "label_windowsModuleFile": "amara2_windows_build_module.zip",
     "label_windowsWebModuleFile": "amara2_windows_web_build_module.zip",
 
@@ -83,7 +83,7 @@
     "label_platform_linux": "Linux",
     "label_platform_mac": "Mac",
 
-    "label_doNotCloseCommandPrompt": "Note: Do not close the command prompt window.",
+    "label_doNotCloseCommandPrompt": "Warning: Do not close the command prompt window.",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_emptyExecutableFileName": "Error: Executable File Name cannot be empty.",

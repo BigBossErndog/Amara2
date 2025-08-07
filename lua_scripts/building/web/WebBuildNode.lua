@@ -35,8 +35,10 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         System:createDirectory(buildDir)
 
         local emscriptenPath
+        local pythonPath
         if Game.platform == "windows" then
             emscriptenPath = System:getRelativePath("build_modules/amara2_windows_build_module/emsdk/upstream/emscripten")
+            pythonPath = System:getRelativePath("build_modules/amara2_windows_build_module/emsdk/python/3.13.3_64bit/python.exe")
         end
 
         -- Helper to quote paths with spaces
@@ -48,17 +50,22 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             end
         end
 
+        local function fix_path(path)
+            return quote_if_needed(string.gsub(path, "\\", "/"))
+        end
+
         local compilerPath = System:join(emscriptenPath, "em++")
         local buildPath = System:join(buildDir, self.props.htmlName .. ".html")
         self.props.htmlPath = buildPath
 
-        local sdlLibPath = System:join(emscriptenPath, "cache", "sysroot", "lib", "libSDL3.a")
-        local sdlIncludePath = System:join(emscriptenPath, "cache", "sysroot", "include", "SDL3")
+        local sdlLibPath = System:join(emscriptenPath, "SDL3", "lib", "libSDL3.a")
+        local sdlIncludePath = System:join(emscriptenPath, "SDL3", "include")
 
-        table.insert(args, quote_if_needed(compilerPath))
+        -- table.insert(args, fix_path(compilerPath))
         table.insert(args, "./amara2/main/main.cpp")
-        table.insert(args, quote_if_needed(sdlLibPath))
-        table.insert(args, "-I" .. quote_if_needed(sdlIncludePath))
+
+        table.insert(args, fix_path(sdlLibPath))
+        table.insert(args, "-I" .. fix_path(sdlIncludePath))
 
         -- AMARA_PATH
         table.insert(args, "-Iamara2")
@@ -70,7 +77,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "-Isrc")
 
         if self.props.installPlugins then
-            table.insert(args, "-I" .. quote_if_needed(System:join(self.props.projectPath, "plugins")))
+            table.insert(args, "-I" .. fix_path(System:join(self.props.projectPath, "plugins")))
         end
 
         table.insert(args, "-Iresources/libs/nlohmann/include")
@@ -104,32 +111,41 @@ Nodes:define("WebBuildNode", "ProcessNode", {
 
         -- EMSCRIPTEN_PRELOADS
         table.insert(args, "--preload-file")
-        table.insert(args, quote_if_needed(System:join(self.props.projectPath, "assets@/assets")))
+        table.insert(args, fix_path(System:join(self.props.projectPath, "assets@/assets")))
         table.insert(args, "--preload-file")
-        table.insert(args, quote_if_needed(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")))
+        table.insert(args, fix_path(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")))
         -- table.insert(args, "--preload-file")
         -- table.insert(args, quote_if_needed(System:join(self.props.projectPath, "data@/data")))
 
 
         -- Shell
         table.insert(args, "--shell-file")
-        table.insert(args, quote_if_needed(System:join(System:getBasePath(), "amara2", "main", "emscripten_shell.html")))
+        table.insert(args, fix_path(System:join(System:getBasePath(), "amara2", "main", "emscripten_shell.html")))
 
         table.insert(args, "-O2 --closure 1")
 
         -- Output file
         table.insert(args, "-o")
-        table.insert(args, quote_if_needed(buildPath))
+        table.insert(args, fix_path(buildPath))
 
-        local buildCommand = string.sep_concat(" ", table.unpack(args))
-        local systemCommand = "System:exit(System:executeTerminal(Game.argtable[\"-build-command\"]))"
+        local pythonCommand = "set EMSDK_PYTHON=" .. quote_if_needed(pythonPath)
+        local argsFile = System:join(buildDir, "build_args.txt")
+        System:writeFile(argsFile, string.sep_concat(" ", table.unpack(args)))
+        local buildCommand = quote_if_needed(compilerPath) .. " @" .. quote_if_needed(argsFile)
+        
+        local batchFilePath = System:join(buildDir, "build_web.bat")
+        self.props.batchFilePath = batchFilePath
+        local batchFileContent = pythonCommand .. " && " .. buildCommand .. " && exit"
+
+        System:writeFile(batchFilePath, batchFileContent)
+
+        local systemCommand = "System:exit(System:executeTerminal(" .. string.format("%q", quote_if_needed(batchFilePath)) .. "))"
 
         if #args > 0 then
             self:configure({
                 arguments = {
                     Game.executable,
                     "-context", System:getBasePath(),
-                    "-build-command", buildCommand,
                     "-inline-script", systemCommand,
                     "-inline-override"
                 }
@@ -157,6 +173,8 @@ Nodes:define("WebBuildNode", "ProcessNode", {
                     newWindow.func:openWindow()
                     
                     if self.props.gameProcess then
+                        System:remove(self.props.gameProcess.props.batchFilePath)
+                        System:remove(System:join(self.props.gameProcess.props.buildDir, "build_args.txt"))
                         self.props.gameProcess:destroy()
                         self.props.gameProcess = nil
                     end
@@ -173,7 +191,16 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         end
     end,
 
+    -- onOutput = function(self, msg)
+    --     if self.props.printLog then
+    --         self.props.printLog.func:handleMessage(msg)
+    --     end
+    -- end,
+
     onExit = function(self, exitCode)
+        System:remove(self.props.batchFilePath)
+        System:remove(System:join(self.props.buildDir, "build_args.txt"))
+
         if self.props.printLog then
             self.props.printLog.func:stopLoading()
             self.props.printLog.func:unbindGameProcess()

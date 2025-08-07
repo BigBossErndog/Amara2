@@ -14,6 +14,12 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
         txt.x = math.floor(self.props.targetWidth/2.0 - txt.width/2.0)
         txt.y = math.floor(self.props.targetHeight/2.0 - txt.height/2.0)
 
+        self.props.loadingBar = self.props.content:createChild("LoadingBar", {
+            alpha = 0.3,
+            x = 2, y = self.props.targetHeight - 4,
+            width = self.props.targetWidth - 4
+        })
+
         local exe = Game.executable
 
         self.world:hideWindow()

@@ -183,6 +183,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                             self.func:handleMessage(msg)
                         end,
                         onExit = function(process, exitCode)
+                            self.func:stopLoading()
                             if exitCode == 0 and System:exists(System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm/bin/clang.exe")) then
                                 self.props.success = true                          
                             end
@@ -193,7 +194,6 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                 end,
 
                 onExit = function(self)
-                    self.func:stopLoading()
                     if self.props.gameProcess then
                         self.props.gameProcess:destroy()
                         self.props.gameProcess = nil

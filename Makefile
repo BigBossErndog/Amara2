@@ -1,3 +1,7 @@
+ifeq ($(OS),Windows_NT)
+SHELL := cmd.exe
+endif
+
 ENTRY_FILES = ./amara2/main/main.cpp
 
 BUILD_NAME = Amara2
@@ -43,6 +47,8 @@ AMARA_PATH = -Iamara2 -Iplugins
 
 EXTRA_OPTIONS = -DAMARA_TESTING -DAMARA_PLUGINS -DAMARA_ENGINE_TOOLS
 
+CURRENT_PATH := $(CURDIR)
+
 playwin:
 	$(BUILD_EXECUTABLE_WIN) $(EXE_OPTIONS)
 
@@ -64,27 +70,15 @@ build-icon:
 	@echo 1 ICON "$(ICON_SRC)" > $(ICON_RC)
 	$(RC_COMPILER) $(ICON_RC)
 
-cpAssets:
-	cp -R assets/ $(BUILD_PATH)/
-
 cpAssets_alt:
 	if not exist build md build
 	if not exist "build\assets" md "build\assets"
 	xcopy /s /e /i /y "assets\*.*" "build\assets"
 
 cpdll:
-	cp resources/dlls/win64/* $(BUILD_PATH)/
-
-cpdll-alt:
 	xcopy /s /e /i /y "resources\dlls\win64\*.*" "$(BUILD_PATH)\"
 
 cpdirs:
-	cp -R assets/ $(BUILD_PATH)/
-	cp -R data/ $(BUILD_PATH)/
-	cp -R lua_scripts/ $(BUILD_PATH)/
-	rm -f $(BUILD_PATH)/data/settings.json
-
-cpdirs-alt:
 	if not exist $(BUILD_PATH) md $(BUILD_PATH)
 	if not exist "$(BUILD_PATH)\assets" md "$(BUILD_PATH)\assets"
 	if not exist "$(BUILD_PATH)\data" md "$(BUILD_PATH)\data"
@@ -95,9 +89,9 @@ cpdirs-alt:
 	if exist "$(BUILD_PATH)\data\settings.json" del "$(BUILD_PATH)\data\settings.json"
 
 cpbuildmodules:
-	rm -rf $(BUILD_PATH)/build_modules/
-	cp -R build_modules/ $(BUILD_PATH)/
-	rm -f $(BUILD_PATH)/build_modules/amara2_windows_build_module/emsdk/upstream/emscripten/cache/sanity.txt
+	if exist "$(BUILD_PATH)\build_modules" rmdir /s /q "$(BUILD_PATH)\build_modules"
+	xcopy /s /e /i /y "build_modules\*.*" "$(BUILD_PATH)\build_modules\"
+	if exist "$(BUILD_PATH)\build_modules\amara2_windows_build_module\emsdk\upstream\emscripten\cache\sanity.txt" del /f /q "$(BUILD_PATH)\build_modules\amara2_windows_build_module\emsdk\upstream\emscripten\cache\sanity.txt"
 
 # Using clang from $(CLANG_LLVM_PATH)
 win: $(ENTRY_FILES)
@@ -106,24 +100,10 @@ win: $(ENTRY_FILES)
 	make cpdll
 
 win-release:
-	mkdir -p ./$(BUILD_PATH)
-	rm -rf ./$(BUILD_PATH)/*
-	make win
-	make cpdirs
-	cp -R amara2/ $(BUILD_PATH)/
-	cp -R resources/ $(BUILD_PATH)/
-
-# Using clang from $(CLANG_LLVM_PATH)
-win-alt: $(ENTRY_FILES)
-	make build-icon
-	$(COMPILER) $(ENTRY_FILES) $(ICON_RES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
-	make cpdll-alt
-
-win-release-alt:
 	if exist $(BUILD_PATH) ( rmdir /s /q $(BUILD_PATH) )
 	if not exist $(BUILD_PATH) md $(BUILD_PATH)
-	make win-alt
-	make cpdirs-alt
+	make win
+	make cpdirs
 	if not exist "$(BUILD_PATH)\amara2\" md "$(BUILD_PATH)\amara2\"
 	xcopy /s /e /i /y "amara2\*.*" "$(BUILD_PATH)\amara2"
 	if not exist "$(BUILD_PATH)\resources\" md "$(BUILD_PATH)\resources\"
@@ -137,15 +117,17 @@ EMSCRIPTEN_COMPILER = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\em+
 EMSCRIPTEN_SERVER = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\emrun"
 EMSCRIPTEN_BUILD_NAME = $(BUILD_NAME).html
 EMSCRIPTEN_BUILD_PATH = $(BUILD_PATH)/$(EMSCRIPTEN_BUILD_NAME)
-EMSCRIPTEN_SDL = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\cache\sysroot\lib\libSDL3.a" -I$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\cache\sysroot\include\SDL3
+EMSCRIPTEN_INCLUDE = -I$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\system\include
+EMSCRIPTEN_SDL = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\SDl3\lib\libSDL3.a" -I$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\SDL3\include
 EMSCRIPTEN_COMPILER_FLAGS = -w -std=c++17 -s FULL_ES3=1 -s ALLOW_MEMORY_GROWTH=1 -s FORCE_FILESYSTEM=1 -s EXCEPTION_CATCHING_ALLOWED='["std::exception"]'
 EMSCRIPTEN_PRELOADS = --preload-file assets --preload-file lua_scripts --preload-file data
 EMSCRIPTEN_EXTRA_OPTIONS = -DAMARA_ENGINE_TOOLS
 web:
-	mkdir -p build
-	rm -rf ./$(BUILD_PATH)/*
-	$(EMSCRIPTEN_COMPILER) $(ENTRY_FILES) $(EMSCRIPTEN_SDL) $(AMARA_PATH) $(OTHER_LIB) $(EMSCRIPTEN_COMPILER_FLAGS) $(EMSCRIPTEN_EXTRA_OPTIONS) $(EMSCRIPTEN_PRELOADS) -o $(EMSCRIPTEN_BUILD_PATH)
-	
+	if exist $(BUILD_PATH) ( rmdir /s /q $(BUILD_PATH) )
+	if not exist $(BUILD_PATH) md $(BUILD_PATH)
+	set EMSDK_PYTHON=$(CURRENT_PATH)\build_modules\amara2_windows_build_module\emsdk\python\3.13.3_64bit\python.exe && \
+    $(EMSCRIPTEN_COMPILER) $(ENTRY_FILES) $(EMSCRIPTEN_SDL) $(AMARA_PATH) $(OTHER_LIB) $(EMSCRIPTEN_COMPILER_FLAGS) $(EMSCRIPTEN_EXTRA_OPTIONS) $(EMSCRIPTEN_PRELOADS) -o $(EMSCRIPTEN_BUILD_PATH)
+
 playweb:
 	$(EMSCRIPTEN_SERVER) --port 8080 .
 
