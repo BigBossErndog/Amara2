@@ -59,10 +59,10 @@
     "label_noCodeEditorAvailable": "No code editors available.",
     "label_autoOpenCodeEditor": "Auto Open Code Editor",
     "label_building": "Building... Please wait.",
-    "label_buildSuccess": "Success: Build successfully completed.",
-    "label_buildFailed": "Error: Build failed to complete.",
+    "label_buildSuccess": "Success: Build successfully completed. Press Exit to return.",
+    "label_buildFailed": "Error: Build failed to complete. Press Exit to return.",
     "label_enterExecutableFileName": "Enter Executable File Name",
-    "label_selectIcon": "Select Icon",
+    "label_selectIcon": "32 x 32 px PNG, JPG, JPEG or BMP",
     "label_performingInitialSetup": "Performing Initial Setup...",
     "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
 
@@ -83,6 +83,8 @@
     "label_platform_linux": "Linux",
     "label_platform_mac": "Mac",
 
+    "label_doNotCloseCommandPrompt": "Note: Do not close the command prompt window.",
+
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_emptyExecutableFileName": "Error: Executable File Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",
@@ -90,7 +92,8 @@
     "error_failedToRunGame": "Error: Failed to run game.",
     "error_invalidIcon": "Error: Icon must be png, jpg, jpeg or bmp.",
     "error_invalidIconSize": "Error: Icon size must be 256 x 256 pixels.",
-    
+    "error_invalidFileGiven": "Error: Invalid file given.",
+    "error_expectedAmara2BuildModule": "Error: Expected \"amara2_windows_build_module.zip\".",
     "codeEditor_VSCode": "Visual Studio Code",
     "codeEditor_CodeOSS": "Code OSS",
     "codeEditor_VSCodeInsiders": "Visual Studio Code Insiders",

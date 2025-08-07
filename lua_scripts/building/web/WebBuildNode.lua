@@ -39,7 +39,6 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             emscriptenPath = System:getRelativePath("build_modules/amara2_windows_build_module/emsdk/upstream/emscripten")
         end
 
-
         -- Helper to quote paths with spaces
         local function quote_if_needed(path)
             if string.find(path, " ") then
@@ -55,8 +54,6 @@ Nodes:define("WebBuildNode", "ProcessNode", {
 
         local sdlLibPath = System:join(emscriptenPath, "cache", "sysroot", "lib", "libSDL3.a")
         local sdlIncludePath = System:join(emscriptenPath, "cache", "sysroot", "include", "SDL3")
-
-
 
         table.insert(args, quote_if_needed(compilerPath))
         table.insert(args, "./amara2/main/main.cpp")
@@ -125,9 +122,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, quote_if_needed(buildPath))
 
         local buildCommand = string.sep_concat(" ", table.unpack(args))
-        local systemCommand = "System:exit(System:execute(Game.argtable[\"-build-command\"]))"
-
-        print(buildCommand)
+        local systemCommand = "System:exit(System:executeTerminal(Game.argtable[\"-build-command\"]))"
 
         if #args > 0 then
             self:configure({
@@ -156,8 +151,6 @@ Nodes:define("WebBuildNode", "ProcessNode", {
                 allowMinimize = true,
                 disableSavePosition = true,
                 onExit = function(self)
-                    self.world.alwaysOnTop = true
-
                     local newWindow = self.world.props.windows:createChild("ProjectWindow", {
                         projectPath = self.props.projectPath
                     })
@@ -171,23 +164,18 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             })
             self.props.printLog.func:openWindow()
 
+            self.props.printLog.func:handleMessage(Localize:get("label_building"))
+            self.props.printLog.func:handleMessage(Localize:get("label_doNotCloseCommandPrompt"))
+
+            self.props.printLog.func:startLoading()
+
             self.world:showWindow()
-        end
-
-        self.props.printLog.func:handleMessage(Localize:get("label_building"))
-        self.world.alwaysOnTop = false
-    end,
-
-    onOutput = function(self, msg)
-        if self.props.printLog then
-            self.props.printLog.func:handleMessage(msg)
         end
     end,
 
     onExit = function(self, exitCode)
-        self.world.alwaysOnTop = true
-        
         if self.props.printLog then
+            self.props.printLog.func:stopLoading()
             self.props.printLog.func:unbindGameProcess()
         end
 

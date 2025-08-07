@@ -827,7 +827,7 @@ namespace Amara {
             }
             return execute(false, ss.str());
         }
-        int lua_execute_dettached(sol::variadic_args args) {
+        int lua_executeDettached(sol::variadic_args args) {
             std::ostringstream ss;
             bool first = true;
             for (auto arg : args) {
@@ -873,6 +873,82 @@ namespace Amara {
             }
             return true;
             #endif
+        }
+
+        int executeTerminal(std::string command) {
+            #if defined(_WIN32)
+                HANDLE hStdinRead, hStdinWrite;
+                SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
+                if (!CreatePipe(&hStdinRead, &hStdinWrite, &sa, 0)) {
+                    debug_log("Failed to create pipe for cmd.exe");
+                    return -1;
+                }
+
+                STARTUPINFOA si = { sizeof(STARTUPINFOA) };
+                si.dwFlags |= STARTF_USESTDHANDLES;
+                si.hStdInput = hStdinRead;
+                si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+                si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+
+                PROCESS_INFORMATION pi;
+                BOOL success = CreateProcessA(
+                    "C:\\Windows\\System32\\cmd.exe",
+                    NULL,
+                    NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi
+                );
+
+                if (!success) {
+                    debug_log("Failed to start cmd.exe");
+                    CloseHandle(hStdinRead);
+                    CloseHandle(hStdinWrite);
+                    return GetLastError();
+                }
+
+                debug_log("Executing command.");
+
+                // Compose the commands to send
+                std::string fullCmd;
+                // fullCmd += String::concat("echo ", "\"Executing Command\"", "\r\n");
+                fullCmd += command + "\r\nexit\r\n";
+
+                DWORD written;
+                WriteFile(hStdinWrite, fullCmd.c_str(), (DWORD)fullCmd.size(), &written, NULL);
+
+                WaitForSingleObject(pi.hProcess, INFINITE);
+
+                DWORD exitCode = 0;
+                GetExitCodeProcess(pi.hProcess, &exitCode);
+
+                CloseHandle(hStdinRead);
+                CloseHandle(hStdinWrite);
+                CloseHandle(pi.hProcess);
+                CloseHandle(pi.hThread);
+
+                return static_cast<int>(exitCode);
+            #elif defined(__APPLE__)
+                std::string appleScript = "tell application \"Terminal\" to do script \"" + command + "\"";
+                std::string fullCommand = "osascript -e '" + appleScript + "'";
+                return std::system(fullCommand.c_str());
+            #elif defined(__linux__) && !defined(__EMSCRIPTEN__)
+                std::string fullCommand = "x-terminal-emulator -e \"" + command + "\" &";
+                return std::system(fullCommand.c_str());
+            #else
+                debug_log("Error: System:executeTerminal is not supported on this platform.");
+                return -1;
+            #endif
+        }
+        int lua_executeTerminal(sol::variadic_args args) {
+            std::ostringstream ss;
+            bool first = true;
+            for (auto arg : args) {
+                if (!first) {
+                    ss << " && ";
+                }
+                ss << arg.as<std::string>();
+                first = false;
+            }
+            std::string command = ss.str();
+            return executeTerminal(command);
         }
 
         bool openDirectory(std::string path) {
@@ -1174,7 +1250,8 @@ namespace Amara {
                 "copyToClipboard", &SystemManager::copyToClipboard,
                 #if defined(AMARA_DESKTOP)
                 "execute", &SystemManager::lua_execute,
-                "execute_dettached", &SystemManager::lua_execute_dettached,
+                "executeDettached", &SystemManager::lua_executeDettached,
+                "executeTerminal", &SystemManager::lua_executeTerminal,
                 "openWebsite", &SystemManager::openWebsite,
                 "openDirectory", &SystemManager::openDirectory,
                 "browseDirectory", sol::overload(

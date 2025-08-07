@@ -456,5 +456,26 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
     unbindGameProcess = function(self)
         self.props.gameProcess = nil
+    end,
+
+    startLoading = function(self)
+        self.props.loadingBar = self.props.content:createChild("LoadingBar", {
+            alpha = 0.3,
+            x = 2, y = self.props.targetHeight - 4,
+            width = self.props.targetWidth - 4
+        })
+    end,
+
+    stopLoading = function(self)
+        if self.props.loadingBar then
+            self.props.loadingBar.tween:to({
+                alpha = 0,
+                duration = 0.25,
+                onComplete = function(loadingBar)
+                    loadingBar:destroy()
+                end
+            })
+            self.props.loadingBar = nil
+        end
     end
 })

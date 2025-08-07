@@ -189,8 +189,10 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.world:showWindow()
         end
 
+        self.props.printLog.func:startLoading()
+
         self.props.printLog.func:handleMessage(Localize:get("label_building"))
-        self.world.alwaysOnTop = false
+        self.props.printLog.func:handleMessage(Localize:get("label_doNotCloseCommandPrompt"))
     end,
 
     onOutput = function(self, msg)
@@ -200,9 +202,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
     end,
 
     onExit = function(self, exitCode)
-        self.world.alwaysOnTop = true
-        
         if self.props.printLog then
+            self.props.printLog.func:stopLoading()
             self.props.printLog.func:unbindGameProcess()
         end
 

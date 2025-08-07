@@ -13,8 +13,8 @@ CLANG_LLVM_PATH = $(WINDOWS_BUILDMODULE_PATH)/clang-llvm
 COMPILER = $(CLANG_LLVM_PATH)/bin/clang++
 RC_COMPILER = $(CLANG_LLVM_PATH)/bin/llvm-rc
 
-WINDOWS_COMPILER_FLAGS = -w -Wall -m64 -std=c++17 -Wl,/NOIMPLIB -DAMARA_DEBUG_BUILD
-# WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -Wl,/NOIMPLIB -std=c++17
+# WINDOWS_COMPILER_FLAGS = -w -Wall -m64 -std=c++17 -Wl,/NOIMPLIB -DAMARA_DEBUG_BUILD
+WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -Wl,/NOIMPLIB -std=c++17
 
 LINUX_COMPILER_FLAGS = -w -Wall -m32 -std=c++17
 
@@ -94,15 +94,20 @@ cpdirs-alt:
 	xcopy /s /e /i /y "lua_scripts\*.*" "$(BUILD_PATH)\lua_scripts"
 	if exist "$(BUILD_PATH)\data\settings.json" del "$(BUILD_PATH)\data\settings.json"
 
+cpbuildmodules:
+	rm -rf $(BUILD_PATH)/build_modules/
+	cp -R build_modules/ $(BUILD_PATH)/
+	rm -f $(BUILD_PATH)/build_modules/amara2_windows_build_module/emsdk/upstream/emscripten/cache/sanity.txt
+
 # Using clang from $(CLANG_LLVM_PATH)
 win: $(ENTRY_FILES)
-	mkdir -p ./$(BUILD_PATH)
-	rm -rf ./$(BUILD_PATH)/*
 	make build-icon
 	$(COMPILER) $(ENTRY_FILES) $(ICON_RES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpdll
 
 win-release:
+	mkdir -p ./$(BUILD_PATH)
+	rm -rf ./$(BUILD_PATH)/*
 	make win
 	make cpdirs
 	cp -R amara2/ $(BUILD_PATH)/
@@ -110,13 +115,13 @@ win-release:
 
 # Using clang from $(CLANG_LLVM_PATH)
 win-alt: $(ENTRY_FILES)
-	if exist $(BUILD_PATH) ( rmdir /s /q $(BUILD_PATH) )
-	if not exist $(BUILD_PATH) md $(BUILD_PATH)
 	make build-icon
 	$(COMPILER) $(ENTRY_FILES) $(ICON_RES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpdll-alt
 
 win-release-alt:
+	if exist $(BUILD_PATH) ( rmdir /s /q $(BUILD_PATH) )
+	if not exist $(BUILD_PATH) md $(BUILD_PATH)
 	make win-alt
 	make cpdirs-alt
 	if not exist "$(BUILD_PATH)\amara2\" md "$(BUILD_PATH)\amara2\"

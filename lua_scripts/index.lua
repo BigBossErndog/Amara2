@@ -9,6 +9,7 @@ Nodes:load("ui/ToolTips")
 Nodes:load("ui/TextField")
 Nodes:load("ui/CodeEditorButton")
 Nodes:load("ui/DropDownMenu")
+Nodes:load("ui/LoadingBar")
 
 Nodes:load("windows/InitialSetupWindow")
 Nodes:load("windows/MainWindow")

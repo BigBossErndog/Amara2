@@ -1,5 +1,5 @@
 Nodes:define("WindowsBuildInstaller", "UIWindow", {
-    width = 256,
+    width = 270,
     height = 120,
 
     onConfigure = function(self, config)
@@ -122,14 +122,21 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
 
     checkModule = function(self, path)
         if not path then
+            self.props.errorMessage:setText(Localize:get("error_expectedAmara2BuildModule"))
+            self.props.errorMessage.visible = true
             return false
         end
         if not System:exists(path) then
+            self.props.errorMessage:setText(Localize:get("error_windowsModuleNotFound"))
+            self.props.errorMessage.visible = true
             return false
         end
         if not (System:getFileName(path) == "amara2_windows_build_module.zip") then
+            self.props.errorMessage:setText(Localize:get("error_expectedAmara2BuildModule"))
+            self.props.errorMessage.visible = true
             return false
         end
+        self.props.errorMessage.visible = false
         return true
     end,
 
@@ -154,8 +161,6 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     continueBuilding = function(self)
         local installerNode = self
         self.func:closeWindow(function(win)
-            win.world.alwaysOnTop = false
-
             local printLog = self.world.props.windows:createChild("TerminalWindow", {
                 props = {
                     projectPath = self.props.projectPath
@@ -165,6 +170,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
 
                 onCreate = function(self)
                     self.classes.TerminalWindow.func:onCreate()
+                    self.func:startLoading()
 
                     self.props.gameProcess = self:createChild("ProcessNode", {
                         arguments = {
@@ -187,8 +193,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                 end,
 
                 onExit = function(self)
-                    self.world.alwaysOnTop = true
-
+                    self.func:stopLoading()
                     if self.props.gameProcess then
                         self.props.gameProcess:destroy()
                         self.props.gameProcess = nil

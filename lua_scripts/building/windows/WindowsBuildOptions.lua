@@ -35,7 +35,7 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
             onPress = function(button)
                 button.props.enabled = false
                 self.func:closeWindow(function(b)
-                    local newWindow = self.parent:createChild("ProjectWindow", {
+                    local newWindow = self.parent:createChild("BuildPlatformMenu", {
                         projectPath = self.props.projectPath
                     })
                     newWindow.func:openWindow()

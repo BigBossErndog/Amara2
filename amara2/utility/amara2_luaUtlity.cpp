@@ -60,18 +60,22 @@ namespace Amara {
             return node_to_short_string(obj);
         } else if (obj.get_type() == sol::type::table) {
             sol::table tbl = obj.as<sol::table>();
-            nlohmann::json json;
+            nlohmann::json json = nlohmann::json::array();
     
             bool isArray = true;
+
             size_t index = 1;
             for (auto& pair : tbl) {
                 sol::object key = pair.first;
                 sol::object value = pair.second;
     
                 if (key.get_type() == sol::type::number && key.as<size_t>() == index) {
-                    json.push_back(lua_to_json(value));
-                    ++index;
-                } else {
+                    if (isArray) {
+                        json.push_back(lua_to_json(value));
+                        ++index;
+                    }
+                }
+                else {
                     isArray = false;
                     break;
                 }
@@ -79,11 +83,13 @@ namespace Amara {
     
             if (isArray) {
                 return json;
-            } else {
+            }
+            else {
+                json = nlohmann::json::object();
                 for (auto& pair : tbl) {
                     sol::object key = pair.first;
                     sol::object value = pair.second;
-    
+                    
                     if (key.get_type() == sol::type::string) {
                         json[key.as<std::string>()] = lua_to_json(value);
                     }
