@@ -83,7 +83,7 @@
     "label_platform_linux": "Linux",
     "label_platform_mac": "Mac",
 
-    "label_doNotCloseCommandPrompt": "Warning: Do not close the command prompt window.",
+    "label_doNotCloseCommandPrompt": "Warning: Do not close the external command prompt window. You may minimize it instead.",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_emptyExecutableFileName": "Error: Executable File Name cannot be empty.",

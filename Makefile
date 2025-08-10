@@ -129,6 +129,7 @@ web:
     $(EMSCRIPTEN_COMPILER) $(ENTRY_FILES) $(EMSCRIPTEN_SDL) $(AMARA_PATH) $(OTHER_LIB) $(EMSCRIPTEN_COMPILER_FLAGS) $(EMSCRIPTEN_EXTRA_OPTIONS) $(EMSCRIPTEN_PRELOADS) -o $(EMSCRIPTEN_BUILD_PATH)
 
 playweb:
+	set EMSDK_PYTHON=$(CURRENT_PATH)\build_modules\amara2_windows_build_module\emsdk\python\3.13.3_64bit\python.exe && \
 	$(EMSCRIPTEN_SERVER) --port 8080 .
 
 valgrind:

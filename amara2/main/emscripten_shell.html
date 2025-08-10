@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <style>
       body {
-        background-color: black;
+        background-color: #1d3a51;
         margin: 0;
         padding: 0;
         font-family: sans-serif;
@@ -16,11 +16,20 @@
         color: white;
       }
 
-      #loading-container {
+      .preload-elements {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      #loading-container {
+        width: 50%;
         position: absolute;
-        top: 40%;
+        top: 50%;
         transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
 
       #made-with {
@@ -30,7 +39,7 @@
       }
 
       #progress {
-        width: 100%;
+        width: 100vw;
         height: 20px;
         appearance: none;
         -webkit-appearance: none;
@@ -44,16 +53,16 @@
       }
 
       #progress::-webkit-progress-value {
-        background-color: white;
+        background-color: #b1d7e9;
       }
 
       #progress::-moz-progress-bar {
-        background-color: white;
+        background-color: #b1d7e9;
       }
 
       canvas.emscripten {
         border: 0;
-        background-color: black;
+        background-color: #1d3a51;
         display: block;
         margin: auto;
       }
@@ -65,10 +74,12 @@
   </head>
   <body>
     <div id="loading-container" class="emscripten">
-      <div id="made-with">Made with Amara2</div>
-      <br><br>
-      <progress value="0" max="100" id="progress"></progress>
-      <br><br>
+      <div id="preload-elements">
+        <div id="made-with">Made with Amara2</div>
+        <br>
+        <progress value="0" max="100" id="progress"></progress>
+        <br><br>
+      </div>
       <div id="status">Downloading...</div>
     </div>
 
@@ -79,6 +90,7 @@
       var progressElement = document.getElementById('progress');
       var canvasElement = document.getElementById('canvas');
       var madeWithElement = document.getElementById('made-with');
+      var preloadElement = document.getElementById('preload-elements');
 
       canvasElement.addEventListener("webglcontextlost", (e) => {
         alert('WebGL context lost. You will need to reload the page.');
@@ -101,12 +113,10 @@
           if (m) {
             text = m[1];
             progressElement.value = parseInt(m[2]) / parseInt(m[4]) * 100;
-            progressElement.hidden = false;
-            madeWithElement.hidden = false;
+            preloadElement.hidden = false;
           } else {
             progressElement.value = null;
-            progressElement.hidden = true;
-            madeWithElement.hidden = true;
+            preloadElement.hidden = true;
           }
           statusElement.innerHTML = text;
         },

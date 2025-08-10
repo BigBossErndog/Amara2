@@ -7,6 +7,8 @@ Creator:createWorld({
         virtualWidth = 320,
         virtualHeight = 180,
 
+        backgroundColor = "#294d6a",
+
         screenMode = ScreenMode.Windowed,
         
         title = "${Window_Title}"
