@@ -57,7 +57,7 @@ Creator:createWorld({
         
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
 
-        Localize:registerJSON(System:readJSON("data/localization/keywords.json"))
+        Localize:registerJSON(System:readJSON("files/localization/keywords.json"))
         world.windowTitle = Localize:get("title_windowTitle")
     end,
 
@@ -85,7 +85,7 @@ Creator:createWorld({
             end
         })
 
-        if System:exists("data/settings.json") then
+        if System:exists("files/settings.json") then
             world.func:fixSettings()
             local win = props.windows:createChild("MainWindow")
             win.func:openWindow()
@@ -139,8 +139,8 @@ Creator:createWorld({
 
     getSettings = function(self, forceLoad)
         if forceLoad or not self.props.settings then
-            if System:exists("data/settings.json") then
-                self.props.settings = System:readJSON("data/settings.json")
+            if System:exists("files/settings.json") then
+                self.props.settings = System:readJSON("files/settings.json")
             else
                 self.props.settings = {}
             end
@@ -179,7 +179,7 @@ Creator:createWorld({
     end,
 
     saveSettings = function(self)
-        System:writeFile("data/settings.json", self.func:getSettings())
+        System:writeFile("files/settings.json", self.func:getSettings())
     end,
 
     registerProject = function(self, path)

@@ -180,7 +180,7 @@ Nodes:define("NewProjectWindow", "UIWindow", {
     createProject = function(self)
         System:createDirectory(self.props.projectPath)
         System:copy(
-            System:join(System:getBasePath(), "data", "defaultTemplate"),
+            System:join(System:getBasePath(), "files", "defaultTemplate"),
             self.props.projectPath
         )
 
@@ -195,6 +195,8 @@ Nodes:define("NewProjectWindow", "UIWindow", {
         local indexFile = System:readFile(System:join(self.props.projectPath, "lua_scripts", "index.lua"))
         local fixedIndexFile = string.gsub(indexFile, "${Window_Title}", self.props.nameField.props.finalText)
         System:writeFile(System:join(self.props.projectPath, "lua_scripts", "index.lua"), fixedIndexFile)
+
+        System:createDirectory(System:join(self.props.projectPath, "files"))
 
         self.func:closeWindow(function()
             self.func:closeWindow(function()

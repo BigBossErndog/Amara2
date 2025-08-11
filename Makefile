@@ -81,12 +81,12 @@ cpdll:
 cpdirs:
 	if not exist $(BUILD_PATH) md $(BUILD_PATH)
 	if not exist "$(BUILD_PATH)\assets" md "$(BUILD_PATH)\assets"
-	if not exist "$(BUILD_PATH)\data" md "$(BUILD_PATH)\data"
+	if not exist "$(BUILD_PATH)\files" md "$(BUILD_PATH)\files"
 	if not exist "$(BUILD_PATH)\lua_scripts" md "$(BUILD_PATH)\lua_scripts"
 	xcopy /s /e /i /y "assets\*.*" "$(BUILD_PATH)\assets"
-	xcopy /s /e /i /y "data\*.*" "$(BUILD_PATH)\data"
+	xcopy /s /e /i /y "files\*.*" "$(BUILD_PATH)\files"
 	xcopy /s /e /i /y "lua_scripts\*.*" "$(BUILD_PATH)\lua_scripts"
-	if exist "$(BUILD_PATH)\data\settings.json" del "$(BUILD_PATH)\data\settings.json"
+	if exist "$(BUILD_PATH)\files\settings.json" del "$(BUILD_PATH)\files\settings.json"
 
 cpbuildmodules:
 	if exist "$(BUILD_PATH)\build_modules" rmdir /s /q "$(BUILD_PATH)\build_modules"

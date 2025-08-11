@@ -229,12 +229,13 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 System:join(self.props.projectPath, "assets"),
                 System:join(self.props.projectPath, "build", "windows", "assets")
             )
-            if System:exists(System:join(self.props.projectPath, "data")) then
+            if System:exists(System:join(self.props.projectPath, "files")) then
                 System:copy(
-                    System:join(self.props.projectPath, "data"),
-                    System:join(self.props.projectPath, "build", "windows", "data")
+                    System:join(self.props.projectPath, "files"),
+                    System:join(self.props.projectPath, "build", "windows", "files")
                 )
             end
+
 
             System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
 

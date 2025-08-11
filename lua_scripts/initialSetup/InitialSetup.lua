@@ -1,7 +1,7 @@
 Settings = {}
 
-if System:exists("data/settings.json") then
-    Settings = System:readJSON("data/settings.json")
+if System:exists("files/settings.json") then
+    Settings = System:readJSON("files/settings.json")
 end
 
 Scripts:run("initialSetup/CheckCodeEditors.lua")
@@ -12,4 +12,4 @@ end
 
 Settings.setupDone = true
 
-System:writeFile("data/settings.json", Settings)
+System:writeFile("files/settings.json", Settings)

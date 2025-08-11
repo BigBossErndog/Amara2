@@ -115,8 +115,10 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "--preload-file")
         table.insert(args, fix_path(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")))
         -- table.insert(args, "--preload-file")
-        -- table.insert(args, quote_if_needed(System:join(self.props.projectPath, "data@/data")))
-
+        if System:exists(System:join(self.props.projectPath, "files")) then
+            table.insert(args, "--preload-file")
+            table.insert(args, quote_if_needed(System:join(self.props.projectPath, "files@/files")))
+        end
 
         -- Shell
         table.insert(args, "--shell-file")
