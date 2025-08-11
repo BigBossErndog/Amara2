@@ -195,6 +195,13 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 self.props.errorMessage.visible = false
             end
         elseif pageIndex == self.props.pageCount then
+            local backer = self.props.pageContent:createChild("FillRect", {
+                x = 6, y = 24,
+                width = self.props.targetWidth - 12,
+                height = 86,
+                color = "#111d27",
+                origin = 0
+            })
             local buildButton = self.props.pageContent:createChild("UIButton", {
                 id = "buildProjectButton",
                 text = "label_buildProject",
@@ -203,7 +210,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 end
             })
             buildButton.x = self.props.targetWidth/2 - buildButton.width/2
-            buildButton.y = self.props.targetHeight/2 - buildButton.height/2
+            buildButton.y = self.props.targetHeight/2 - buildButton.height/2 - 4
         end
     end,
 
