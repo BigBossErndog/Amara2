@@ -9,10 +9,12 @@
     "title_executableFileName": "Executable File Name",
     "title_executableIcon": "Executable Icon (optional)",
     "title_choosePlatform": "Select Target Platform",
+    "title_encryptionOptions": "Encryption Options",
 
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit (Ctrl + Alt + F4)",
     "toolTip_exitOnly": "Exit",
+    "toolTip_cancel": "Cancel",
     "toolTip_minimize": "Minimize",
     "toolTip_back": "Back",
     "toolTip_browseDirectory": "Browse Directory",
@@ -50,6 +52,7 @@
 
     "label_empty": "--",
     "label_continue": "Continue",
+    "label_confirm": "Confirm",
     "label_projectName": "Project Name",
     "label_renameProject": "Rename Project",
     "label_enterTextHere": "Enter Text Here",
@@ -83,6 +86,16 @@
     "label_platform_linux": "Linux",
     "label_platform_mac": "Mac",
 
+    "label_compileCode": "Compile Code",
+    "label_compilationDesc": "Compile your lua code for faster script loading and execution, however it will hamper the ability for other people to mod.",
+    
+    "label_openEncryptionOptions": "Open Encryption Options",
+    "label_encryptionDesc": "Encrypt to protect your code and assets, however it will hamper the ability for other people to mod.\n\nNote: Only light encryption is used, it will not stop the most determined.",
+    "label_encryption": "Encrypt Code and Assets",
+    "label_enterEncryptionKey": "Enter Encryption Key",
+    "label_encryptionKey": "Key",
+    "label_warningChangeEncryption": "Warning: Changing the encryption key may break compatibility of previous files.",
+
     "label_doNotCloseCommandPrompt": "Warning: Do not close the external command prompt window. You may minimize it instead.",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
@@ -93,6 +106,7 @@
     "error_invalidIcon": "Error: Icon must be png, jpg, jpeg or bmp.",
     "error_invalidIconSize": "Error: Icon size must be 256 x 256 pixels.",
     "error_invalidFileGiven": "Error: Invalid file given.",
+    "error_enterAnEncryptionKey": "Error: Please enter an encryption key.",
     "error_expectedAmara2BuildModule": "Error: Expected \"amara2_windows_build_module.zip\".",
     "codeEditor_VSCode": "Visual Studio Code",
     "codeEditor_CodeOSS": "Code OSS",

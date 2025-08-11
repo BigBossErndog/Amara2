@@ -3,7 +3,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
     height = 140,
 
     props = {
-        pageCount = 2
+        pageCount = 4
     },
 
     onConfigure = function(self, config)
@@ -47,7 +47,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             onPress = function(button)
                 button.props.enabled = false
                 self.func:closeWindow(function(b)
-                    local newWindow = self.parent:createChild("BuildPlatformMenu", {
+                    local newWindow = self.parent:createChild("ProjectWindow", {
                         projectPath = self.props.projectPath
                     })
                     newWindow.func:openWindow()
@@ -194,6 +194,91 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 end
                 self.props.errorMessage.visible = false
             end
+        elseif pageIndex == 2 then
+            local desc = self.props.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                text = Localize:get("label_compilationDesc"),
+                font = "defaultFont",
+                color = Colors.Yellow,
+                wrapWidth = self.props.targetWidth - 20,
+                wrapMode = WrapMode.ByWord,
+                origin = 0
+            })
+
+            local backer = self.props.pageContent:createChild("FillRect", {
+                x = 10, y = desc.y + desc.height + 8,
+                width = self.props.targetWidth - 20,
+                height = 18,
+                color = "#111d27",
+                origin = 0,
+                input = {
+                    active = true,
+                    cursor = Cursor.Pointer,
+                    onPointerDown = function()
+                        self.props.projectData["compile-code"] = not self.props.projectData["compile-code"]
+                        self.props.tickBox.frame = self.props.projectData["compile-code"] and 2 or 1
+                    end
+                }
+            })
+            
+            local compileTxt = self.props.pageContent:createChild("Text", {
+                x = backer.x + 8, y = backer.y + 2,
+                text = Localize:get("label_compileCode"),
+                font = "defaultFont",
+                color = Colors.White,
+                origin = 0
+            })
+
+            self.props.tickBox = self.props.pageContent:createChild("Sprite", {
+                origin = { 1, 0 },
+                x = compileTxt.x + compileTxt.width + 12,
+                y = compileTxt.y + 2,
+                frame = self.props.projectData["compile-code"] and 2 or 1,
+                texture = "tickBox"
+            })
+        elseif pageIndex == 3 then
+            local desc = self.props.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                text = Localize:get("label_encryptionDesc"),
+                font = "defaultFont",
+                color = Colors.Yellow,
+                wrapWidth = self.props.targetWidth - 20,
+                wrapMode = WrapMode.ByWord,
+                origin = 0
+            })
+
+            local encryptionButton = self.props.pageContent:createChild("UIButton", {
+                id = "encryptionButton",
+                text = "label_openEncryptionOptions",
+                onPress = function()
+                    self.func:closeWindow(function(win)
+                        local newWindow = self.world.props.windows:createChild("EncryptionOptions", {
+                            projectPath = self.props.projectPath,
+                            projectData = self.props.projectData,
+                            returnWindow = self,
+                            width = self.props.targetWidth,
+                            height = self.props.targetHeight,
+                            x = self.x,
+                            y = self.y
+                        })
+                        newWindow.func:openWindow()
+
+                        win.visible = false
+                    end)
+                end
+            })
+            encryptionButton.x = self.props.targetWidth/2 - encryptionButton.width/2
+            encryptionButton.y = desc.y + desc.height + 6
+
+            self.props.tickBox = self.props.pageContent:createChild("Sprite", {
+                origin = 0,
+                x = encryptionButton.x + encryptionButton.width + 5,
+                y = encryptionButton.y + 4,
+                frame = self.props.projectData["compile-code"] and 2 or 1,
+                texture = "tickBox"
+            })
+
+            self.func:checkEncryption()
         elseif pageIndex == self.props.pageCount then
             local backer = self.props.pageContent:createChild("FillRect", {
                 x = 6, y = 24,
@@ -250,6 +335,10 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
         return false
     end,
 
+    checkEncryption = function(self)
+        self.props.tickBox.frame = self.props.projectData["encryption"] and 2 or 1
+    end,
+
     startBuilding = function(self)
         self.func:closeWindow(function(win)
             System:writeFile(System:join(self.props.projectPath, "project.json"), self.props.projectData)
@@ -265,7 +354,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
 
     setPage = function(self, pageIndex)
         if self.props.pageIndex == 1 then
-            if self.props.exeNameField.props.finalText == "" then
+            if self.props.exeNameField and self.props.exeNameField.props.finalText == "" then
                 self.props.errorMessage.text = Localize:get("error_emptyExecutableFileName")
                 self.props.errorMessage.visible = true
                 return false

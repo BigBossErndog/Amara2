@@ -16,7 +16,7 @@ namespace Amara {
             middle.update(deltaTime);
 
             wheel = Vector2(0, 0);
-
+            
             Amara::Pointer::update(deltaTime);
         }
         
