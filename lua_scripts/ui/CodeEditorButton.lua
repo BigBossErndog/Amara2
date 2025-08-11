@@ -28,7 +28,7 @@ Nodes:define("CodeEditorButton", "UIButton", {
 
     onPress = function(self)
         local settings = self.world.func:getSettings()
-        local projectPath = self.parent.parent.props.projectPath
+        local projectPath = self.parent.parent.parent.props.projectPath
 
         OpenCodeEditor(settings, projectPath)
     end

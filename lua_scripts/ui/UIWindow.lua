@@ -3,11 +3,16 @@ Nodes:define("UIWindow", "NineSlice", {
     maxWidth = 640, maxHeight = 640,
     width = 128, height = 64,
     input = true,
+
+    props = {
+        isOpen = false,
+        speed = 0.1
+    },
     
     onCreate = function(self)
         self.props.defWidth = self.width
         self.props.defHeight = self.height
-
+        
         self.props.targetWidth = self.width
         self.props.targetHeight = self.height
 
@@ -17,15 +22,16 @@ Nodes:define("UIWindow", "NineSlice", {
         self.input:listen("onPointerDown", function(self, pointer)
             self:bringToFront()
         end)
-        
-        self.props.content = self:createChild("Group", {
-            x = self.left,
-            y = self.top,
-            visible = false,
-            alpha = 0
-        })
 
-        self.props.speed = 0.1
+        self.props.contentRoot = self:createChild("Group", {
+            x = 0, y = 0,
+            scale = 0
+        })
+        
+        self.props.content = self.props.contentRoot:createChild("Group", {
+            x = self.left,
+            y = self.top
+        })
 
         self:createChild("Hotkey", {
             keys = { Key.LeftCtrl, Key.LeftAlt, Key.F4 },
@@ -55,9 +61,6 @@ Nodes:define("UIWindow", "NineSlice", {
             self.y = self.world.bottom - self.height/2
         end
     end,
-    props = {
-        isOpen = true
-    },
     showContent = function(self)
         self.props.content.visible = true
     end,
@@ -86,13 +89,17 @@ Nodes:define("UIWindow", "NineSlice", {
         
         if not self.props.content.visible then
             self.props.content.visible = true
-            self.props.content.alpha = 0
+            self.props.contentRoot.scale = 0
         end
 
-        self.props.content.tween:to({
-            alpha = 1,
-            ease = Ease.SineIn,
-            duration = self.props.speed
+        self.props.contentRoot.tween:to({
+            scaleX = 1,
+            scaleY = 1,
+            ease = Ease.SineOut,
+            duration = self.props.speed,
+            onUpdate = function(self, progress)
+                print(self.scale)
+            end
         })
         self.tween:to({
             width = self.props.targetWidth,
@@ -109,13 +116,15 @@ Nodes:define("UIWindow", "NineSlice", {
             end
         end
 
-        self.props.content.tween:to({
-            alpha = 0,
-            ease = Ease.SineOut,
+        self.props.contentRoot.tween:to({
+            scaleX = 0,
+            scaleY = 0,
+            ease = Ease.SineIn,
             duration = self.props.speed
         })
 
         self.props.isOpen = false
+
         self.tween:to({
             width = 0,
             height = 0,

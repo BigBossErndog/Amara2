@@ -281,7 +281,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
         self.world.func:saveSettings()
     end,
-
+    
     openDirectory = function(self)
         System:openDirectory(self.props.projectPath)
     end,
