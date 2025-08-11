@@ -309,6 +309,12 @@ Nodes:define("ProjectWindow", "UIWindow", {
         self.func:stopGame()
 
         local exe = Game.executable
+        if Game.platform == "windows" then
+            local testBuild = System:join(self.props.projectPath, "build", "test", "Amara2.exe")
+            if System:exists(testBuild) then
+                exe = testBuild
+            end
+        end
 
         self.props.gameProcess = self:createChild("ProcessNode", {
             arguments = {
