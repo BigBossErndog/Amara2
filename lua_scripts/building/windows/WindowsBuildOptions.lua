@@ -1,6 +1,10 @@
-Nodes:define("WindowsBuildOptions", "UIWindow", {
+Nodes:define("WindowsBuildOptions", "PagedWindow", {
     width = 256,
     height = 140,
+
+    props = {
+        pageCount = 2
+    },
 
     onConfigure = function(self, config)
         if config.projectPath then
@@ -9,9 +13,17 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
     end,
 
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.props.projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
 
-        local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
+        self.classes.PagedWindow.func:onCreate()
+        
+        self.props.errorMessage = self.props.content:createChild("Text", {
+            font = "defaultFont",
+            origin = 0,
+            color = Colors.Red,
+            visible = false,
+            x = 10, y = 98
+        })
 
         self.props.title = self.props.content:createChild("Text", {
             x = 10, y = 8,
@@ -26,7 +38,7 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
         local buttonSpacing = 20
 
         -- buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
+        local backButton = self.props.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos,
@@ -44,155 +56,155 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
                 end)
             end
         })
+    end,
 
-        local exeNameTitle = self.props.content:createChild("Text", {
-            x = 10, y = 24,
-            text = Localize:get("title_executableFileName"),
-            font = "defaultFont",
-            color = Colors.White,
-            origin = 0
-        })
+    onCreatePage = function(self, pageIndex)
+        if pageIndex == 1 then
+            local exeNameTitle = self.props.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                text = Localize:get("title_executableFileName"),
+                font = "defaultFont",
+                color = Colors.White,
+                origin = 0
+            })
 
-        self.props.exeNameField = self.props.content:createChild("TextField", {
-            x = 8, y = exeNameTitle.y + exeNameTitle.height + 4,
-            width = self.props.targetWidth - 16,
+            self.props.exeNameField = self.props.pageContent:createChild("TextField", {
+                x = 8, y = exeNameTitle.y + exeNameTitle.height + 4,
+                width = self.props.targetWidth - 16,
 
-            defaultText = Localize:get("label_enterExecutableFileName"),
+                defaultText = Localize:get("label_enterExecutableFileName"),
 
-            onCreate = function(self)
-                self.classes.TextField.func:onCreate(self)
+                onCreate = function(self)
+                    self.classes.TextField.func:onCreate(self)
 
-                self.props.exeTxt = self:createChild("Text", {
-                    x = 8, y = 2,
-                    font = "defaultFont",
-                    text = ".exe",
-                    color = "#515f73",
-                    origin = 0,
-                    visible = false,
-                    props = {
-                        backing = self
-                    }
-                })
+                    self.props.exeTxt = self:createChild("Text", {
+                        x = 8, y = 2,
+                        font = "defaultFont",
+                        text = ".exe",
+                        color = "#515f73",
+                        origin = 0,
+                        visible = false,
+                        props = {
+                            backing = self
+                        }
+                    })
 
-                self.props.maxTextWidth = self.width - 16 - self.props.exeTxt.width
-            end,
+                    self.props.maxTextWidth = self.width - 16 - self.props.exeTxt.width
+                end,
 
-            onChange = function(textField, txt)
-                textField.props.exeTxt.visible = true
-                textField.props.exeTxt.x = textField.props.txt.x + textField.props.txt.width
-            end,
+                onChange = function(textField, txt)
+                    textField.props.exeTxt.visible = true
+                    textField.props.exeTxt.x = textField.props.txt.x + textField.props.txt.width
 
-            onFocus = function(self)
-                self.props.exeTxt.visible = true
-                self.props.exeTxt.x = self.props.txt.x + self.props.txt.width
-            end,
+                    if string.len(txt) > 0 then
+                        self.props.projectData["executable-name"] = self.props.exeNameField.props.finalText
+                    end
+                end,
 
-            onUnfocus = function(self)
-                if string.len(self.props.finalText) == 0 then
-                    self.props.exeTxt.visible = false
+                onFocus = function(self)
+                    self.props.exeTxt.visible = true
+                    self.props.exeTxt.x = self.props.txt.x + self.props.txt.width
+                end,
+
+                onUnfocus = function(self)
+                    if string.len(self.props.finalText) == 0 then
+                        self.props.exeTxt.visible = false
+                    end
+                end,
+
+                onUpdate = function(self, deltaTime)
+                    self.classes.TextField.func:onUpdate(self, deltaTime)
                 end
-            end,
+            })
 
-            onUpdate = function(self, deltaTime)
-                self.classes.TextField.func:onUpdate(self, deltaTime)
+            if self.props.projectData["executable-name"] then
+                self.props.exeNameField.func:setText(self.props.projectData["executable-name"])
+                self.props.exeNameField.func:onChange(self.props.projectData["executable-name"])
             end
-        })
 
-        if projectData["executable-name"] then
-            self.props.exeNameField.func:setText(projectData["executable-name"])
-            self.props.exeNameField.func:onChange(projectData["executable-name"])
+            self.props.iconBacker = self.props.pageContent:createChild("FillRect", {
+                x = 8, y = 64,
+                width = 32,
+                height = 32,
+                color = Colors.Black,
+                origin = 0
+            })
+
+            self.props.iconPreview = self.props.pageContent:createChild("Sprite", {
+                x = self.props.iconBacker.x,
+                y = self.props.iconBacker.y,
+                visible = false,
+                origin = 0
+            })
+
+            local exeIconTitle = self.props.pageContent:createChild("Text", {
+                x = self.props.iconBacker.x + self.props.iconBacker.width + 8,
+                y = self.props.iconBacker.y,
+                text = Localize:get("title_executableIcon"),
+                font = "defaultFont",
+                color = Colors.White,
+                origin = 0
+            })
+
+            self.props.iconField = self.props.pageContent:createChild("TextField", {
+                x = self.props.iconBacker.x + self.props.iconBacker.width + 6,
+                y = self.props.iconBacker.y + 14,
+                width = self.props.targetWidth - exeIconTitle.x - 8 - 18,
+                inputEnabled = false,
+                defaultText = Localize:get("label_selectIcon")
+            })
+
+            self.props.browseButton = self.props.pageContent:createChild("UIButton", {
+                id = "browseButton",
+                toolTip = "toolTip_browseFile",
+                x = self.props.iconField.x + self.props.iconField.width + 4,
+                y = self.props.iconField.y,
+                icon = 6,
+                onPress = function()
+                    self.world:hideWindow()
+
+                    self:wait(0.2):next(function()
+                        self.props.iconPath = nil
+
+                        local path = System:browseFile(self.props.projectPath)
+
+                        self.world:showWindow()
+                        
+                        if string.len(path) == 0 then
+                            return
+                        end
+
+                        self.props.iconField.func:setText("")
+                        if self.func:checkIcon(path) then
+                            self.props.iconPath = path
+                            self.props.iconField.func:setText(self.func:truncatePath(path))
+                        end
+                    end)
+                end
+            })
+
+            if self.props.projectData["exe-icon"] then
+                local path = self.props.projectData["exe-icon"]
+                if self.func:checkIcon(path) then
+                    self.props.iconPath = path
+                    self.props.iconField.func:setText(self.func:truncatePath(path))
+                else
+                    self.props.projectData["exe-icon"] = nil
+                    System:writeFile(System:join(self.props.projectPath, "project.json"), self.props.projectData)
+                end
+                self.props.errorMessage.visible = false
+            end
+        elseif pageIndex == self.props.pageCount then
+            local buildButton = self.props.pageContent:createChild("UIButton", {
+                id = "buildProjectButton",
+                text = "label_buildProject",
+                onPress = function()
+                    self.func:startBuilding()
+                end
+            })
+            buildButton.x = self.props.targetWidth/2 - buildButton.width/2
+            buildButton.y = self.props.targetHeight/2 - buildButton.height/2
         end
-
-        self.props.iconBacker = self.props.content:createChild("FillRect", {
-            x = 8, y = 64,
-            width = 32,
-            height = 32,
-            color = Colors.Black,
-            origin = 0
-        })
-
-        self.props.iconPreview = self.props.content:createChild("Sprite", {
-            x = self.props.iconBacker.x,
-            y = self.props.iconBacker.y,
-            visible = false,
-            origin = 0
-        })
-
-        local exeIconTitle = self.props.content:createChild("Text", {
-            x = self.props.iconBacker.x + self.props.iconBacker.width + 8,
-            y = self.props.iconBacker.y,
-            text = Localize:get("title_executableIcon"),
-            font = "defaultFont",
-            color = Colors.White,
-            origin = 0
-        })
-
-        self.props.iconField = self.props.content:createChild("TextField", {
-            x = self.props.iconBacker.x + self.props.iconBacker.width + 6,
-            y = self.props.iconBacker.y + 14,
-            width = self.props.targetWidth - exeIconTitle.x - 8 - 18,
-            inputEnabled = false,
-            defaultText = Localize:get("label_selectIcon")
-        })
-
-        self.props.browseButton = self.props.content:createChild("UIButton", {
-            id = "browseButton",
-            toolTip = "toolTip_browseFile",
-            x = self.props.iconField.x + self.props.iconField.width + 4,
-            y = self.props.iconField.y,
-            icon = 6,
-            onPress = function()
-                self.world:hideWindow()
-
-                self:wait(0.2):next(function()
-                    self.props.iconPath = nil
-
-                    local path = System:browseFile(self.props.projectPath)
-
-                    self.world:showWindow()
-                    
-                    if string.len(path) == 0 then
-                        return
-                    end
-
-                    self.props.iconField.func:setText("")
-                    if self.func:checkIcon(path) then
-                        self.props.iconPath = path
-                        self.props.iconField.func:setText(self.func:truncatePath(path))
-                    end
-                end)
-            end
-        })
-
-        self.props.errorMessage = self.props.content:createChild("Text", {
-            font = "defaultFont",
-            origin = 0,
-            color = Colors.Red,
-            visible = false,
-            x = 10, y = 98
-        })
-
-        if projectData["exe-icon"] then
-            local path = projectData["exe-icon"]
-            if self.func:checkIcon(path) then
-                self.props.iconPath = path
-                self.props.iconField.func:setText(self.func:truncatePath(path))
-            else
-                projectData["exe-icon"] = nil
-                System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
-            end
-            self.props.errorMessage.visible = false
-        end
-
-        local buildButton = self.props.content:createChild("UIButton", {
-            id = "buildProjectButton",
-            text = "label_buildProject",
-            onPress = function()
-                self.func:startBuilding()
-            end
-        })
-        buildButton.x = self.props.targetWidth - buildButton.width - 8
-        buildButton.y = self.props.targetHeight - buildButton.height - 6
     end,
 
     checkIcon = function(self, path)
@@ -223,6 +235,7 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
                 self.props.iconPreview.y,
                 32, 32
             }
+            self.props.projectData["exe-icon"] = self.props.iconPath
             return true
         end
         self.props.errorMessage.text = Localize:get("error_invalidIconSize")
@@ -231,25 +244,31 @@ Nodes:define("WindowsBuildOptions", "UIWindow", {
     end,
 
     startBuilding = function(self)
-        if self.props.exeNameField.props.finalText == "" then
-            self.props.errorMessage.text = Localize:get("error_emptyExecutableFileName")
-            self.props.errorMessage.visible = true
-            return
-        else
-            self.func:closeWindow(function(win)
-                local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
-                projectData["exe-icon"] = self.props.iconPath
-                projectData["executable-name"] = self.props.exeNameField.props.finalText
-                System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
-                
-                self.world.props.windows:createChild("WindowsBuildNode", {
-                    projectPath = self.props.projectPath,
-                    iconPath = self.props.iconPath
-                })
+        self.func:closeWindow(function(win)
+            System:writeFile(System:join(self.props.projectPath, "project.json"), self.props.projectData)
+            
+            self.world.props.windows:createChild("WindowsBuildNode", {
+                projectPath = self.props.projectPath,
+                iconPath = self.props.iconPath
+            })
 
-                win:destroy()
-            end)
+            win:destroy()
+        end)
+    end,
+
+    setPage = function(self, pageIndex)
+        if self.props.pageIndex == 1 then
+            if self.props.exeNameField.props.finalText == "" then
+                self.props.errorMessage.text = Localize:get("error_emptyExecutableFileName")
+                self.props.errorMessage.visible = true
+                return false
+            end
         end
+
+        if self.props.errorMessage then
+            self.props.errorMessage.visible = false
+        end
+        return self.classes.PagedWindow.func:setPage(pageIndex)
     end,
 
     truncatePath = function(self, _path)

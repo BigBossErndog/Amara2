@@ -91,6 +91,7 @@ namespace Amara {
 
                     if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", sol::nil });
                     handleMessage({ nullptr, "onPointerExit", sol::nil });
+                    held = false;
                     
                     hover_by_mouse = false;
                 }
