@@ -203,7 +203,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
     onExit = function(self, exitCode)
         if self.props.printLog then
-            self.props.printLog.func:stopLoading()
             self.props.printLog.func:unbindGameProcess()
         end
 
@@ -211,37 +210,41 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.world:hideWindow()
 
         if exitCode == 0 then
-            if self.props.iconDest then
-                System:remove(self.props.iconDest)
-            end
-            if self.props.resFile then
-                System:remove(self.props.resFile)
-            end
-            if self.props.resOutputFile then
-                System:remove(self.props.resOutputFile)
-            end
-
-            System:copy(
-                System:join(self.props.projectPath, "lua_scripts"),
-                System:join(self.props.projectPath, "build", "windows", "lua_scripts")
-            )
-            System:copy(
-                System:join(self.props.projectPath, "assets"),
-                System:join(self.props.projectPath, "build", "windows", "assets")
-            )
-            if System:exists(System:join(self.props.projectPath, "files")) then
-                System:copy(
-                    System:join(self.props.projectPath, "files"),
-                    System:join(self.props.projectPath, "build", "windows", "files")
-                )
-            end
-
-
-            System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
-
-                
-            self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
+            local newProcess = self.parent:createChild("ProcessNode", {
+                props = {
+                    printLog = self.props.printLog
+                },
+                arguments = {
+                    Game.executable,
+                    "-context", System:getBasePath(),
+                    "-script", System:getScriptPath("building/windows/WindowsFileHandling"),
+                    "-props", self.props
+                },
+                onOutput = function(self, msg)
+                    self.props.printLog.func:handleMessage(msg)
+                end,
+                onExit = function(self, exitCode)
+                    if self.props.printLog then
+                        self.props.printLog.func:unbindGameProcess()
+                        self.props.printLog.func:stopLoading()
+                    end
+                    
+                    if exitCode == 0 then
+                        System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
+                        self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
+                    else
+                        System:remove(System:join(self.props.projectPath, "build", "windows"))
+                        self.props.printLog.func:handleMessage("from file handler")
+                        self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
+                        if not System:VSBuildToolsInstalled() then
+                            self.props.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
+                        end
+                    end
+                end
+            })
+            self.props.printLog.props.gameProcess = newProcess
         else
+            self.props.printLog.func:stopLoading()
             System:remove(System:join(self.props.projectPath, "build", "windows"))
             
             self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
