@@ -35,23 +35,30 @@ namespace Amara {
 
             Sint64 fileSize = SDL_GetIOSize(rw);
             unsigned char *buffer = (unsigned char*)SDL_malloc(fileSize);
-            SDL_ReadIO(rw, buffer, fileSize);
+            if (fileSize > 0) {
+                SDL_ReadIO(rw, buffer, fileSize);
+            }
             SDL_CloseIO(rw);
+
+            unsigned char* imageData = nullptr;
 
             if (Amara::Encryption::is_buffer_encrypted(buffer, fileSize)) {
                 #if defined(AMARA_ENCRYPTION_KEY)
-                    Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY)
+                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY);
+                    SDL_free(buffer);
+                    stbi_set_flip_vertically_on_load(0);
+                    imageData = stbi_load_from_memory(decrypted_data.data(), decrypted_data.size(), &width, &height, &channels, 4);
                 #else
-                    fatal_error("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
+                    fatal_error("Error: Attempted to load encrypted data without encryption key. ", path, ".");
                     SDL_free(buffer);
                     gameProps->breakWorld();
                     return false;
                 #endif
+            } else {
+                stbi_set_flip_vertically_on_load(0);
+                imageData = stbi_load_from_memory(buffer, fileSize, &width, &height, &channels, 4);
+                SDL_free(buffer);
             }
-
-            stbi_set_flip_vertically_on_load(0);
-            unsigned char *imageData = stbi_load_from_memory(buffer, fileSize, &width, &height, &channels, 4);
-            SDL_free(buffer);
 
             if (!imageData) {
                 fatal_error("Error: Failed to load image data: ", path);

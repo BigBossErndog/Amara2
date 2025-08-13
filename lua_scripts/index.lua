@@ -20,8 +20,9 @@ Nodes:load("windows/TerminalWindow")
 Nodes:load("windows/CopyProjectWindow")
 
 Nodes:load("building/BuildPlatformMenu")
-
+Nodes:load("building/IncludeFolders")
 Nodes:load("building/EncryptionOptions")
+
 Nodes:load("building/windows/VSBuildToolsInstaller")
 Nodes:load("building/windows/WindowsBuildInstaller")
 Nodes:load("building/windows/WindowsBuildOptions")

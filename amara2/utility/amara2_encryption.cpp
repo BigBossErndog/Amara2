@@ -4,6 +4,14 @@ namespace Amara {
         /*
          * Really basic encryption for the sake of obfuscation and not security.
          * Using the TEA encryption algorithm.
+         * 
+         * V2 Update: Refactored encryption and decryption functions to be more robust.
+         * The old functions had memory management issues and incorrect size handling.
+         * The new functions use std::vector to manage memory and return the correct sizes.
+         * 
+         * Note on padding: The current padding scheme is not robust and may fail for certain data.
+         * It works by removing trailing null bytes, which could be part of the original data.
+         * A more robust padding scheme like PKCS#7 should be used in the future.
          */ 
         static constexpr uint8_t ENCRYPTION_HEADER[] = {'_', 'A', 'R', 'A'}; // Never change this.
         
@@ -36,7 +44,7 @@ namespace Amara {
             v[1] = v1;
         }
 
-        static bool is_buffer_encrypted(unsigned char* buffer, size_t size) {
+        static bool is_buffer_encrypted(const unsigned char* buffer, size_t size) {
             if (size < sizeof(ENCRYPTION_HEADER)) {
                 return false;
             }
@@ -73,7 +81,7 @@ namespace Amara {
             v[1] = v1;
         }
 
-        static void encryptBuffer(unsigned char* buffer, size_t& size, const std::string& keyStr) {
+        static std::vector<unsigned char> encryptBuffer(const unsigned char* buffer, size_t size, const std::string& keyStr) {
             size_t paddedSize = (size + 7) & ~7; // round up to multiple of 8
             std::vector<unsigned char> data(paddedSize, 0);
             std::memcpy(data.data(), buffer, size);
@@ -83,67 +91,54 @@ namespace Amara {
             }
 
             size_t encryptedSize = paddedSize + sizeof(ENCRYPTION_HEADER);
-            unsigned char* encryptedData = new unsigned char[encryptedSize];
+            std::vector<unsigned char> encryptedData(encryptedSize);
             
-            std::memcpy(encryptedData, ENCRYPTION_HEADER, sizeof(ENCRYPTION_HEADER)); 
-            std::memcpy(encryptedData + sizeof(ENCRYPTION_HEADER), data.data(), paddedSize);
+            std::memcpy(encryptedData.data(), ENCRYPTION_HEADER, sizeof(ENCRYPTION_HEADER)); 
+            std::memcpy(encryptedData.data() + sizeof(ENCRYPTION_HEADER), data.data(), paddedSize);
 
-            std::memcpy(buffer, encryptedData, encryptedSize);
-            size = encryptedSize;
-            delete[] encryptedData;
+            return encryptedData;
         }
         
-        static void decryptBuffer(unsigned char* buffer, size_t& size, const std::string& keyStr) {
+        static std::vector<unsigned char> decryptBuffer(const unsigned char* buffer, size_t size, const std::string& keyStr) {
             if (!Encryption::is_buffer_encrypted(buffer, size)) {
                 debug_log("Warning: Attempted to decrypt non-encrypted data (type buffer).");
-                return;
+                return {};
             }
 
-            unsigned char* data = buffer + sizeof(ENCRYPTION_HEADER);
-            size -= sizeof(ENCRYPTION_HEADER); // Adjust size to remove header
-        
-            for (size_t i = 0; i < size; i += 8) {
-                Encryption::tea_decrypt(reinterpret_cast<uint32_t*>(&data[i]), keyStr);
+            const unsigned char* data = buffer + sizeof(ENCRYPTION_HEADER);
+            size_t encrypted_content_size = size - sizeof(ENCRYPTION_HEADER);
+
+            std::vector<unsigned char> decrypted_data(data, data + encrypted_content_size);
+
+            for (size_t i = 0; i < encrypted_content_size; i += 8) {
+                Encryption::tea_decrypt(reinterpret_cast<uint32_t*>(&decrypted_data[i]), keyStr);
             }
 
-            size_t newSize = size;
-            while (newSize > 0 && data[newSize - 1] == 0) {
+            size_t newSize = encrypted_content_size;
+            while (newSize > 0 && decrypted_data[newSize - 1] == 0) {
                 --newSize;
             }
+            decrypted_data.resize(newSize);
 
-            size = newSize;
+            return decrypted_data;
         }
 
         static std::string encryptString(const std::string& input, const std::string& keyStr) {
-            size_t size = input.size();
-            unsigned char* buffer = new unsigned char[size];
-            std::memcpy(buffer, input.data(), size);
-
-            Encryption::encryptBuffer(buffer, size, keyStr);
-
-            std::string encrypted(reinterpret_cast<char*>(buffer), size);
-            
-            delete[] buffer;
-            return encrypted;
+            std::vector<unsigned char> encrypted = Encryption::encryptBuffer(reinterpret_cast<const unsigned char*>(input.data()), input.size(), keyStr);
+            return std::string(reinterpret_cast<char*>(encrypted.data()), encrypted.size());
         }
 
         static std::string decryptString(const std::string& encrypted, const std::string& keyStr) {
-            size_t size = encrypted.size();
-            unsigned char* buffer = new unsigned char[size];
-            std::memcpy(buffer, encrypted.data(), size);
-
-            if (!Encryption::is_buffer_encrypted(buffer, size)) {
-                debug_log("Error: Attempted to decrypt non-encrypted data (type string).");
-                delete[] buffer;
+            std::vector<unsigned char> decrypted_vector = decryptBuffer(
+                reinterpret_cast<const unsigned char*>(encrypted.data()),
+                encrypted.size(),
+                keyStr
+            );
+            if (decrypted_vector.empty() && is_string_encrypted(encrypted)) {
+                debug_log("Error: Failed to decrypt string.");
                 return "";
             }
-
-            Encryption::decryptBuffer(buffer, size, keyStr);
-
-            std::string decrypted(reinterpret_cast<char*>(buffer), size);
-        
-            delete[] buffer;
-            return decrypted;
+            return std::string(reinterpret_cast<char*>(decrypted_vector.data()), decrypted_vector.size());
         }
     };
 }

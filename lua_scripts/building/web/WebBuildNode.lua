@@ -142,7 +142,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         System:writeFile(batchFilePath, batchFileContent)
 
         local systemCommand = "System:exit(System:executeTerminal(" .. string.format("%q", quote_if_needed(batchFilePath)) .. "))"
-
+        
         if #args > 0 then
             self:configure({
                 arguments = {

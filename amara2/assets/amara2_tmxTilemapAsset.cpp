@@ -233,7 +233,6 @@ namespace Amara {
             mapDir = path.substr(0, lastSlash + 1);
         }
 
-
         SDL_IOStream* rw = SDL_IOFromFile(path.c_str(), "rb");
         if (!rw) {
             fatal_error("Error: Failed to open TMX file: ", path, " - ", SDL_GetError());
@@ -248,7 +247,7 @@ namespace Amara {
         }
 
         size_t fileSize = static_cast<size_t>(fileSize_s64);
-        std::unique_ptr<unsigned char[]> buffer(new (std::nothrow) unsigned char[fileSize + 1]);
+        std::unique_ptr<unsigned char[]> buffer(new (std::nothrow) unsigned char[fileSize]);
         if (!buffer) {
             SDL_CloseIO(rw);
             fatal_error("Error: Failed to allocate memory for TMX file buffer: ", path);
@@ -262,22 +261,25 @@ namespace Amara {
             fatal_error("Error: Failed to read entire TMX file: ", path);
             return false;
         }
-        buffer[fileSize] = '\0';
 
-        unsigned char* raw_buffer_ptr = buffer.get();
-        if (Amara::Encryption::is_buffer_encrypted(raw_buffer_ptr, fileSize)) {
+        std::vector<char> tmxData;
+
+        if (Amara::Encryption::is_buffer_encrypted(buffer.get(), fileSize)) {
             #if defined(AMARA_ENCRYPTION_KEY)
-                Amara::Encryption::decryptBuffer(raw_buffer_ptr, fileSize, AMARA_ENCRYPTION_KEY);
-                raw_buffer_ptr[fileSize] = '\0';
+                std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer.get(), fileSize, AMARA_ENCRYPTION_KEY);
+                tmxData.assign(decrypted_data.begin(), decrypted_data.end());
             #else
                 fatal_error("Error: Attempted to load encrypted TMX data without encryption key: \"", path, "\".");
                 gameProps->breakWorld();
                 return false;
             #endif
+        } else {
+            tmxData.assign(buffer.get(), buffer.get() + fileSize);
         }
+        tmxData.push_back('\0');
 
         tinyxml2::XMLDocument doc;
-        tinyxml2::XMLError parseResult = doc.Parse(reinterpret_cast<const char*>(raw_buffer_ptr), fileSize);
+        tinyxml2::XMLError parseResult = doc.Parse(tmxData.data(), tmxData.size() - 1);
 
         if (parseResult != tinyxml2::XML_SUCCESS) {
             fatal_error("Error: Failed to parse TMX file XML: ", path, " - Error Code: ", parseResult, " - ", doc.ErrorStr());

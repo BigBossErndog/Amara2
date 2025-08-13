@@ -3,7 +3,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
     height = 140,
 
     props = {
-        pageCount = 4
+        pageCount = 5
     },
 
     onConfigure = function(self, config)
@@ -230,8 +230,8 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             })
 
             self.props.tickBox = self.props.pageContent:createChild("Sprite", {
-                origin = { 1, 0 },
-                x = compileTxt.x + compileTxt.width + 12,
+                origin = 0,
+                x = compileTxt.x + compileTxt.width + 5,
                 y = compileTxt.y + 2,
                 frame = self.props.projectData["compile-code"] and 2 or 1,
                 texture = "tickBox"
@@ -256,8 +256,6 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                             projectPath = self.props.projectPath,
                             projectData = self.props.projectData,
                             returnWindow = self,
-                            width = self.props.targetWidth,
-                            height = self.props.targetHeight,
                             x = self.x,
                             y = self.y
                         })
@@ -268,7 +266,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 end
             })
             encryptionButton.x = self.props.targetWidth/2 - encryptionButton.width/2
-            encryptionButton.y = desc.y + desc.height + 6
+            encryptionButton.y = desc.y + desc.height + 5
 
             self.props.tickBox = self.props.pageContent:createChild("Sprite", {
                 origin = 0,
@@ -279,13 +277,29 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             })
 
             self.func:checkEncryption()
+        elseif pageIndex == 4 then
+            local txt = self.props.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                origin = 0,
+                text = Localize:get("label_includeFoldersDesc"),
+                font = "defaultFont",
+                color = Colors.White,
+            })
+            self.props.includeFolders = self.props.pageContent:createChild("IncludeFolders", {
+                projectPath = self.props.projectPath,
+                projectData = self.props.projectData,
+                x = 10, y = 40,
+                width = self.props.targetWidth - 20,
+                height= self.props.targetHeight - 40 - 28
+            })
         elseif pageIndex == self.props.pageCount then
             local backer = self.props.pageContent:createChild("FillRect", {
-                x = 6, y = 24,
-                width = self.props.targetWidth - 12,
+                x = 10, y = 26,
+                width = self.props.targetWidth - 20,
                 height = 86,
                 color = "#111d27",
-                origin = 0
+                origin = 0,
+                alpha = 0.75
             })
             local buildButton = self.props.pageContent:createChild("UIButton", {
                 id = "buildProjectButton",
@@ -295,7 +309,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 end
             })
             buildButton.x = self.props.targetWidth/2 - buildButton.width/2
-            buildButton.y = self.props.targetHeight/2 - buildButton.height/2 - 2
+            buildButton.y = self.props.targetHeight/2 - buildButton.height/2 + 4
         end
     end,
 
@@ -359,6 +373,8 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 self.props.errorMessage.visible = true
                 return false
             end
+        elseif self.props.pageIndex == 4 then
+            self.props.includeFolders.func:confirmOptions()
         end
 
         if self.props.errorMessage then

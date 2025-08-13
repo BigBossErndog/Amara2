@@ -8,6 +8,18 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             return
         end
 
+        local function quote_if_needed(path)
+            if string.find(path, " ") then
+                return '"' .. path .. '"'
+            else
+                return path
+            end
+        end
+
+        local function fix_path(path)
+            return quote_if_needed(string.gsub(path, "\\", "/"))
+        end
+
         if config.installPlugins then
             self.props.installPlugins = config.installPlugins
         end
@@ -18,6 +30,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 self.props.executableName = projectData["executable-name"]
             end
         end
+        self.props.projectData = projectData
 
         if (not self.props.executableName) and projectData["project-name"] then
             self.props.executableName = projectData["project-name"]
@@ -120,6 +133,13 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
+        if self.props.projectData.encryption then
+            table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. "\"" .. self.props.projectData.encryption["key"] .. "\"")
+            if self.props.projectData.encryption["encrypt-write-output"] then
+                table.insert(args, "-DAMARA_ENCRYPTION_OUTPUT")
+            end
+        end
+
         -- LINKER_FLAGS_WIN64
         table.insert(args, "-fuse-ld=lld")
         table.insert(args, "-stdlib=libc++")
@@ -212,6 +232,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         if exitCode == 0 then
             local newProcess = self.parent:createChild("ProcessNode", {
                 props = {
+                    projectPath = self.props.projectPath,
                     printLog = self.props.printLog
                 },
                 arguments = {
@@ -234,11 +255,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                         self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
                     else
                         System:remove(System:join(self.props.projectPath, "build", "windows"))
-                        self.props.printLog.func:handleMessage("from file handler")
                         self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
-                        if not System:VSBuildToolsInstalled() then
-                            self.props.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
-                        end
                     end
                 end
             })

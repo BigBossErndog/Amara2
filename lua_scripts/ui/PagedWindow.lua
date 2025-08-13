@@ -37,9 +37,11 @@ Nodes:define("PagedWindow", "UIWindow", {
     changePage = function(self, dir)
         local nextIndex = self.props.pageIndex + dir
         if nextIndex < 1 then
-            nextIndex = self.props.pageCount
-        elseif nextIndex > self.props.pageCount then
             nextIndex = 1
+            return
+        elseif nextIndex > self.props.pageCount then
+            nextIndex = self.props.pageCount
+            return
         end
         
         self.func:setPage(nextIndex)

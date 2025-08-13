@@ -1,4 +1,7 @@
 Nodes:define("EncryptionOptions", "UIWindow", {
+    width = 256,
+    height = 148,
+
     onConfigure = function(self, config)
         if config.projectPath then
             self.props.projectPath = config.projectPath
@@ -13,6 +16,17 @@ Nodes:define("EncryptionOptions", "UIWindow", {
 
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
+
+        self.props.tempData = {}
+        self.props.tempData["encrypt-lua-scripts"] = true
+        self.props.tempData["encrypt-files-assets"] = true
+        self.props.tempData["encrypt-write-output"] = true
+
+        if self.props.projectData.encryption then
+            for k, v in pairs(self.props.projectData.encryption) do
+                self.props.tempData[k] = v
+            end
+        end
 
         local title = self.props.content:createChild("Text", {
             x = 10, y = 6,
@@ -35,6 +49,23 @@ Nodes:define("EncryptionOptions", "UIWindow", {
             onPress = function(button)
                 button.props.enabled = false
                 self.func:closeWindow(function(b)
+                    local newWindow = self.props.returnWindow
+                    newWindow.x = self.x
+                    newWindow.y = self.y
+                    newWindow.func:checkEncryption()
+                    newWindow.func:openWindow()
+                    
+                    self:destroy()
+                end)
+            end
+        })
+
+        local removeButton = self.props.content:createChild("UIButton", {
+            id = "removeButton",
+            text = "label_removeEncryption",
+            y = backButton.y,
+            onPress = function(button)
+                self.func:closeWindow(function(b)
                     self.props.projectData.encryption = nil
 
                     local newWindow = self.props.returnWindow
@@ -47,6 +78,7 @@ Nodes:define("EncryptionOptions", "UIWindow", {
                 end)
             end
         })
+        removeButton.x = backButton.x - removeButton.width - 4
 
         local keyTxt = self.props.content:createChild("Text", {
             x = 12, y = title.y + title.height + 10,
@@ -89,10 +121,8 @@ Nodes:define("EncryptionOptions", "UIWindow", {
                     self.props.errorMessage.color = Colors.Red
                     return
                 end
-                self.props.projectData.encryption = {
-                    key = encryptionKey
-                }
-                local encryptionData = self.props.projectData.encryption
+                self.props.tempData.key = encryptionKey
+                self.props.projectData.encryption = self.props.tempData
 
                 button.props.enabled = false
                 self.func:closeWindow(function(b)
@@ -114,8 +144,97 @@ Nodes:define("EncryptionOptions", "UIWindow", {
             x = 8, y = 48,
             origin = 0,
             width = self.props.targetWidth - 16,
-            height = 48,
-            color = "#111d27"
+            height = 18,
+            color = "#111d27",
+            alpha = self.props.tempData["encrypt-lua-scripts"] and 1 or 0.5,
+            onCreate = function(backer)
+                local txt = backer:createChild("Text", {
+                    x = 8, y = 2, origin = 0,
+                    font = "defaultFont", color = Colors.White,
+                    text = Localize:get("label_encryptLuaScripts"),
+                })
+                backer.props.txt = txt
+                backer.props.ticker = backer:createChild("Sprite", {
+                    origin = 0,
+                    x = txt.x + txt.width + 4,
+                    y = txt.y + 2,
+                    frame = self.props.tempData["encrypt-lua-scripts"] and 2 or 1,
+                    texture = "tickBox"
+                })
+            end,
+            input = {
+                active = true,
+                cursor = Cursor.Pointer,
+                onPointerDown = function(box)
+                    self.func:toggleEncryptionOption("encrypt-lua-scripts")
+                    box.props.ticker.frame = self.props.tempData["encrypt-lua-scripts"] and 2 or 1
+                    box.props.txt.alpha = self.props.tempData["encrypt-lua-scripts"] and 1 or 0.5
+                end
+            }
+        })
+        backer = self.props.content:createChild("FillRect", {
+            x = 8, y = 48 + 18,
+            origin = 0,
+            width = self.props.targetWidth - 16,
+            height = 18,
+            color = "#111d27",
+            alpha = self.props.tempData["encrypt-lua-scripts"] and 1 or 0.5,
+            onCreate = function(backer)
+                local txt = backer:createChild("Text", {
+                    x = 8, y = 2, origin = 0,
+                    font = "defaultFont", color = Colors.White,
+                    text = Localize:get("label_encryptFilesAndAssets"),
+                })
+                backer.props.txt = txt
+                backer.props.ticker = backer:createChild("Sprite", {
+                    origin = 0,
+                    x = txt.x + txt.width + 4,
+                    y = txt.y + 2,
+                    frame = self.props.tempData["encrypt-files-assets"] and 2 or 1,
+                    texture = "tickBox"
+                })
+            end,
+            input = {
+                active = true,
+                cursor = Cursor.Pointer,
+                onPointerDown = function(box)
+                    self.func:toggleEncryptionOption("encrypt-files-assets")
+                    box.props.ticker.frame = self.props.tempData["encrypt-files-assets"] and 2 or 1
+                    box.props.txt.alpha = self.props.tempData["encrypt-files-assets"] and 1 or 0.5
+                end
+            }
+        })
+        backer = self.props.content:createChild("FillRect", {
+            x = 8, y = 48 + 18*2,
+            origin = 0,
+            width = self.props.targetWidth - 16,
+            height = 18,
+            color = "#111d27",
+            alpha = self.props.tempData["encrypt-lua-scripts"] and 1 or 0.5,
+            onCreate = function(backer)
+                local txt = backer:createChild("Text", {
+                    x = 8, y = 2, origin = 0,
+                    font = "defaultFont", color = Colors.White,
+                    text = Localize:get("label_encryptWriteOutput"),
+                })
+                backer.props.txt = txt
+                backer.props.ticker = backer:createChild("Sprite", {
+                    origin = 0,
+                    x = txt.x + txt.width + 4,
+                    y = txt.y + 2,
+                    frame = self.props.tempData["encrypt-write-output"] and 2 or 1,
+                    texture = "tickBox"
+                })
+            end,
+            input = {
+                active = true,
+                cursor = Cursor.Pointer,
+                onPointerDown = function(box)
+                    self.func:toggleEncryptionOption("encrypt-write-output")
+                    box.props.ticker.frame = self.props.tempData["encrypt-write-output"] and 2 or 1
+                    box.props.txt.alpha = self.props.tempData["encrypt-write-output"] and 1 or 0.5
+                end
+            }
         })
 
         self.props.errorMessage = self.props.content:createChild("Text", {
@@ -128,5 +247,9 @@ Nodes:define("EncryptionOptions", "UIWindow", {
             wrapMode = WrapMode.ByWord,
             wrapWidth = self.props.targetWidth - 20
         })
+    end,
+
+    toggleEncryptionOption = function(self, option)
+        self.props.tempData[option] = not self.props.tempData[option]
     end
 })

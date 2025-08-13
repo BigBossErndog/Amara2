@@ -191,6 +191,14 @@ namespace Amara {
         return ss.str();
     }
 
+    sol::table lua_shallow_copy(sol::state& lua, sol::table tbl) {
+        sol::table copy = lua.create_table();
+        for (auto& pair : tbl) {
+            copy[pair.first] = pair.second;
+        }
+        return copy;
+    }
+
     const char* lua_table_to_string = R"(
         function(val, name, skipnewlines, depth)
             skipnewlines = skipnewlines or false
@@ -319,7 +327,9 @@ namespace Amara {
         
         sol::table table_metatable = lua["table"];
         table_metatable.set_function("to_string", string_to_lua_object(lua, lua_table_to_string));
-
+        table_metatable.set_function("shallow_copy", [&lua](sol::table tbl) -> sol::table {
+            return lua_shallow_copy(lua, tbl);
+        });
         lua["fatal_error"] = [](sol::variadic_args args) {
             fatal_error(lua_string_concat(args));
         };

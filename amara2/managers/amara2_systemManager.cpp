@@ -33,25 +33,24 @@ namespace Amara {
             }
 
             Sint64 fileSize = SDL_GetIOSize(rw);
-            unsigned char *buffer = (unsigned char*)SDL_malloc(fileSize);
-            SDL_ReadIO(rw, buffer, fileSize);
+            std::vector<unsigned char> buffer(fileSize);
+            if (fileSize > 0) {
+                SDL_ReadIO(rw, buffer.data(), fileSize);
+            }
             SDL_CloseIO(rw);
 
-            if (Amara::Encryption::is_buffer_encrypted(buffer, fileSize)) {
+            if (Amara::Encryption::is_buffer_encrypted(buffer.data(), buffer.size())) {
                 #if defined(AMARA_ENCRYPTION_KEY)
-                    Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY)
+                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer.data(), buffer.size(), AMARA_ENCRYPTION_KEY);
+                    return std::string(reinterpret_cast<char*>(decrypted_data.data()), decrypted_data.size());
                 #else
                     fatal_error("Error: Attempted to load encrypted data without encryption key. \"", filePath.string(), "\".");
-                    SDL_free(buffer);
                     gameProps->breakWorld();
                     return "";
                 #endif
             }
 
-            std::string contents(reinterpret_cast<char*>(buffer), fileSize);
-            SDL_free(buffer);
-
-            return contents;
+            return std::string(reinterpret_cast<char*>(buffer.data()), buffer.size());
         }
 
         nlohmann::json readJSON(std::string path) {
@@ -96,27 +95,13 @@ namespace Amara {
             #endif
             
             if (!encryptionKey.empty()) {
-                std::vector<unsigned char> data_to_encrypt(output_str.begin(), output_str.end());
-                size_t original_size = data_to_encrypt.size();
-
-                if (original_size > 0) {
-                    size_t maxEncryptedSize = (original_size + 7) & ~7;
-                    maxEncryptedSize += sizeof(Amara::Encryption::ENCRYPTION_HEADER);
-
-                    encrypted_buffer_vec.resize(maxEncryptedSize);
-
-                    std::memcpy(encrypted_buffer_vec.data(), data_to_encrypt.data(), original_size);
-
-                    size_t actualEncryptedSize = original_size;
-                    Amara::Encryption::encryptBuffer(encrypted_buffer_vec.data(), actualEncryptedSize, encryptionKey);
-
-                    buffer_to_write = encrypted_buffer_vec.data();
-                    size_to_write = actualEncryptedSize;
-                } 
-                else {
-                    buffer_to_write = nullptr;
-                    size_to_write = 0;
-                }
+                encrypted_buffer_vec = Amara::Encryption::encryptBuffer(
+                    reinterpret_cast<const unsigned char*>(output_str.data()),
+                    output_str.size(),
+                    encryptionKey
+                );
+                buffer_to_write = encrypted_buffer_vec.data();
+                size_to_write = encrypted_buffer_vec.size();
             }
             else {
                 // No encryption, just write the original string data
@@ -177,56 +162,48 @@ namespace Amara {
                 debug_log("Error: Failed to get size of input file: ", filePath.string(), " - ", SDL_GetError());
                 return false;
             }
-             if (fileSize_s64 == 0) {
+            if (fileSize_s64 == 0) {
                 SDL_CloseIO(read_rw);
                 debug_log("Warning: Input file is empty from path ", filePath.string());
-                return false;
             }
             size_t originalSize = static_cast<size_t>(fileSize_s64);
+            std::vector<unsigned char> buffer(originalSize);
 
-            size_t maxEncryptedSize = (originalSize + 7) & ~7;
-            maxEncryptedSize += sizeof(Amara::Encryption::ENCRYPTION_HEADER);
-
-            unsigned char *buffer = (unsigned char*)SDL_malloc(maxEncryptedSize);
-            if (!buffer) {
-                SDL_CloseIO(read_rw);
-                debug_log("Error: Failed to allocate memory (", maxEncryptedSize, " bytes) for file: \"", filePath.string(), "\".");
-                return false;
+            size_t bytesRead = 0;
+            if (originalSize > 0) {
+                bytesRead = SDL_ReadIO(read_rw, buffer.data(), originalSize);
             }
-
-            size_t bytesRead = SDL_ReadIO(read_rw, buffer, originalSize);
             SDL_CloseIO(read_rw);
 
             if (bytesRead != originalSize) {
-                SDL_free(buffer);
                 debug_log("Error: Failed to read entire input file (read ", bytesRead, " of ", originalSize, " bytes): ", filePath.string());
                 return false;
             }
 
-            size_t currentSize = originalSize;
-            Amara::Encryption::encryptBuffer(buffer, currentSize, encryptionKey);
+            std::vector<unsigned char> encryptedData = Amara::Encryption::encryptBuffer(buffer.data(), originalSize, encryptionKey);
 
             std::filesystem::path destPath = getRelativePath(dest);
             try {
                 std::filesystem::create_directories(destPath.parent_path());
             } catch (const std::exception& e) {
-                SDL_free(buffer);
                 debug_log("Error: Failed to create destination directory: ", destPath.parent_path().string(), " - ", e.what());
                 return false;
             }
 
             SDL_IOStream *write_rw = SDL_IOFromFile(destPath.string().c_str(), "wb");
             if (!write_rw) {
-                SDL_free(buffer);
                 debug_log("Error: Failed to open destination file for writing: ", destPath.string(), " - ", SDL_GetError());
                 return false;
             }
 
-            size_t bytesWritten = SDL_WriteIO(write_rw, buffer, currentSize);
+            size_t bytesWritten = 0;
+            if (!encryptedData.empty()) {
+                bytesWritten = SDL_WriteIO(write_rw, encryptedData.data(), encryptedData.size());
+            }
+            
             SDL_CloseIO(write_rw);
-            SDL_free(buffer);
 
-            if (bytesWritten != currentSize) {
+            if (bytesWritten != encryptedData.size()) {
                 debug_log("Error: Failed to finish writing to \"", destPath.string(), "\".");
                 remove(destPath.string());
                 return false;
@@ -444,6 +421,10 @@ namespace Amara {
         std::string getFileName(std::string path) {
             return std::filesystem::path(path).filename().string();
         }
+        std::string getFileName(std::string path, bool withExtension) {
+            if (withExtension) return getFileName(path);
+            return removeFileExtension(getFileName(path));
+        }
         std::string getDirectoryName(std::string path) {
             return getFileName(path);
         }
@@ -480,7 +461,10 @@ namespace Amara {
         bool copy(std::string input, std::string output, bool overwrite) {
             std::filesystem::path source = getRelativePath(input);
             std::filesystem::path destination = getRelativePath(output);
+            
             try {
+                std::filesystem::create_directories(destination.parent_path());
+
                 if (!exists(source.string())) {
                     debug_log("Error: \"", source.string(), "\" does not exist.");
                     return false;
@@ -767,7 +751,6 @@ namespace Amara {
                         std::string bytecode_str = bytecode.as<std::string>();
 
                         if (writeFile(destPath.string(), bytecode_str, encryptionKey)) {
-                            debug_log("Compiled script to \"", destPath.string(), "\"");
                             return true;
                         }
                     }
@@ -1224,7 +1207,10 @@ namespace Amara {
                 "resetBasePath", &SystemManager::resetBasePath,
                 "getRelativePath", &SystemManager::getRelativePath,
                 "getScriptPath", &SystemManager::getScriptPath,
-                "getFileName", &SystemManager::getFileName,
+                "getFileName", sol::overload(
+                    sol::resolve<std::string(std::string)>(&SystemManager::getFileName),
+                    sol::resolve<std::string(std::string, bool)>(&SystemManager::getFileName)
+                ),
                 "getDirectoryName", &SystemManager::getDirectoryName,
                 "getFileExtension", &SystemManager::getFileExtension,
                 "removeFileExtension", &SystemManager::removeFileExtension,

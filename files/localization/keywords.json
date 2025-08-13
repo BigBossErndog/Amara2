@@ -51,6 +51,8 @@
     "toolTip_toggleBGOpacity": "Toggle Background Opacity",
 
     "label_empty": "--",
+    "label_ON": "ON",
+    "label_OFF": "OFF",
     "label_continue": "Continue",
     "label_confirm": "Confirm",
     "label_projectName": "Project Name",
@@ -93,8 +95,14 @@
     "label_encryptionDesc": "Encrypt to protect your code and assets, however it will hamper the ability for other people to mod.\n\nNote: Only light encryption is used, it will not stop the most determined.",
     "label_encryption": "Encrypt Code and Assets",
     "label_enterEncryptionKey": "Enter Encryption Key",
+    "label_removeEncryption": "Remove Encryption",
     "label_encryptionKey": "Key",
     "label_warningChangeEncryption": "Warning: Changing the encryption key may break compatibility of previous files.",
+    "label_encryptLuaScripts": "Encrypt Lua Scripts",
+    "label_encryptFilesAndAssets": "Encrypt Files and Assets",
+    "label_encryptWriteOutput": "Encrypt Write Output",
+
+    "label_includeFoldersDesc": "Choose directories to include in build.",
 
     "label_doNotCloseCommandPrompt": "Warning: Do not close the external command prompt window. You may minimize it instead.",
 

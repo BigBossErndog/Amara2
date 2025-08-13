@@ -158,19 +158,32 @@ namespace Amara {
             }
 
             Sint64 fileSize = SDL_GetIOSize(rw);
-            fontBuffer = (unsigned char*)SDL_malloc(fileSize);
-            SDL_ReadIO(rw, fontBuffer, fileSize);
+            unsigned char* raw_buffer = (unsigned char*)SDL_malloc(fileSize);
+            if (fileSize > 0) {
+                SDL_ReadIO(rw, raw_buffer, fileSize);
+            }
             SDL_CloseIO(rw);
 
-            if (Amara::Encryption::is_buffer_encrypted(fontBuffer, fileSize)) {
+            if (Amara::Encryption::is_buffer_encrypted(raw_buffer, fileSize)) {
                 #if defined(AMARA_ENCRYPTION_KEY)
-                    Amara::Encryption::decryptBuffer(fontBuffer, fileSize, AMARA_ENCRYPTION_KEY)
+                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(raw_buffer, fileSize, AMARA_ENCRYPTION_KEY);
+                    SDL_free(raw_buffer);
+                    
+                    size_t dataSize = decrypted_data.size();
+                    fontBuffer = (unsigned char*)SDL_malloc(dataSize);
+                    if (!fontBuffer) { 
+                        fatal_error("Failed to allocate memory for decrypted font.");
+                        return false; 
+                    }
+                    std::memcpy(fontBuffer, decrypted_data.data(), dataSize);
                 #else
-                    fatal_error("Error: Attempted to load encrypted data without encryption key. \"", path, "\".");
-                    SDL_free(fontBuffer);
+                    fatal_error("Error: Attempted to load encrypted data without encryption key. \"", path, ".\"");
+                    SDL_free(raw_buffer);
                     gameProps->breakWorld();
                     return false;
                 #endif
+            } else {
+                fontBuffer = raw_buffer;
             }
 
             stbtt_InitFont(&font, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));

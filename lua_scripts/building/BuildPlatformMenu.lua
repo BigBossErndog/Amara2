@@ -1,6 +1,6 @@
 Nodes:define("BuildPlatformMenu", "UIWindow", {
     width = 200,
-    height = 80,
+    height = 82,
 
     onConfigure = function(self, config)
         if config.projectPath then
