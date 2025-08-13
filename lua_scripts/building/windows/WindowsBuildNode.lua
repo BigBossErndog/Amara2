@@ -136,7 +136,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
         if self.props.projectData.encryption then
-            table.insert(args, "-DAMARA_ENCRYPTION_KEY='" .. '"' .. self.props.projectData.encryption["key"] .. '"' .. "'")
+            table.insert(args, "-DAMARA_ENCRYPTION_KEY=TET")
             if self.props.projectData.encryption["encrypt-write-output"] then
                 table.insert(args, "-DAMARA_ENCRYPT_OUTPUT")
             end
@@ -281,7 +281,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.props.printLog.props.gameProcess = newProcess
         else
             self.props.printLog.func:stopLoading()
-            System:remove(System:join(self.props.projectPath, "build", "windows"))
+            -- System:remove(System:join(self.props.projectPath, "build", "windows"))
             
             self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
             self.props.printLog.func:handleMessage("Build failed with exit code: " .. exitCode)

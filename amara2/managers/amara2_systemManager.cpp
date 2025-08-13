@@ -41,7 +41,7 @@ namespace Amara {
 
             if (Amara::Encryption::is_buffer_encrypted(buffer.data(), buffer.size())) {
                 #if defined(AMARA_ENCRYPTION_KEY)
-                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer.data(), buffer.size(), AMARA_ENCRYPTION_KEY);
+                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer.data(), buffer.size(), AMARA_STR(AMARA_ENCRYPTION_KEY));
                     return std::string(reinterpret_cast<char*>(decrypted_data.data()), decrypted_data.size());
                 #else
                     fatal_error("Error: Attempted to load encrypted data without encryption key. \"", filePath.string(), "\".");
@@ -91,7 +91,7 @@ namespace Amara {
             std::vector<unsigned char> encrypted_buffer_vec;
 
             #if (defined(AMARA_ENCRYPT_OUTPUT) && defined(AMARA_ENCRYPTION_KEY))
-            if (encryptionKey.empty()) encryptionKey = AMARA_ENCRYPTION_KEY;
+            if (encryptionKey.empty()) encryptionKey = AMARA_STR(AMARA_ENCRYPTION_KEY);
             #endif
             
             if (!encryptionKey.empty()) {

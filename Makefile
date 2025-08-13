@@ -86,7 +86,6 @@ cpdirs:
 	xcopy /s /e /i /y "assets\*.*" "$(BUILD_PATH)\assets"
 	xcopy /s /e /i /y "files\*.*" "$(BUILD_PATH)\files"
 	xcopy /s /e /i /y "lua_scripts\*.*" "$(BUILD_PATH)\lua_scripts"
-	if exist "$(BUILD_PATH)\files\settings.json" del "$(BUILD_PATH)\files\settings.json"
 
 cpbuildmodules:
 	if exist "$(BUILD_PATH)\build_modules" rmdir /s /q "$(BUILD_PATH)\build_modules"
@@ -108,6 +107,7 @@ win-release:
 	xcopy /s /e /i /y "amara2\*.*" "$(BUILD_PATH)\amara2"
 	if not exist "$(BUILD_PATH)\resources\" md "$(BUILD_PATH)\resources\"
 	xcopy /s /e /i /y "resources\*.*" "$(BUILD_PATH)\resources"
+	if exist "$(BUILD_PATH)\files\settings.json" del "$(BUILD_PATH)\files\settings.json"
 	
 linux:
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(LINUX_COMPILER_FLAGS) $(STDLIB_FLAG) $(LINKER_FLAGS_LINUX) -o $(BUILD_EXECUTABLE_LINUX)

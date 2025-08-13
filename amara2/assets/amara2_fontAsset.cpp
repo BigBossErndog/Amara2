@@ -166,7 +166,7 @@ namespace Amara {
 
             if (Amara::Encryption::is_buffer_encrypted(raw_buffer, fileSize)) {
                 #if defined(AMARA_ENCRYPTION_KEY)
-                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(raw_buffer, fileSize, AMARA_ENCRYPTION_KEY);
+                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(raw_buffer, fileSize, AMARA_STR(AMARA_ENCRYPTION_KEY));
                     SDL_free(raw_buffer);
                     
                     size_t dataSize = decrypted_data.size();

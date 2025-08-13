@@ -44,7 +44,7 @@ namespace Amara {
 
             if (Amara::Encryption::is_buffer_encrypted(buffer, fileSize)) {
                 #if defined(AMARA_ENCRYPTION_KEY)
-                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_ENCRYPTION_KEY);
+                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer, fileSize, AMARA_STR(AMARA_ENCRYPTION_KEY));
                     SDL_free(buffer);
                     stbi_set_flip_vertically_on_load(0);
                     imageData = stbi_load_from_memory(decrypted_data.data(), decrypted_data.size(), &width, &height, &channels, 4);
