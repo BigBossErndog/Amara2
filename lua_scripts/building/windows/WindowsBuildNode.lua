@@ -84,35 +84,37 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.props.resOutputFile = System:join(buildDir, "icon.res")
         end
 
-        table.insert(args, System:join(clangLLVMPath, "bin/clang++"))
-        table.insert(args, System:getRelativePath("amara2/main/main.cpp"))
+        local compilerPath = fix_path(System:join(clangLLVMPath, "bin/clang.exe"))
+        
+        -- table.insert(args, compilerPath)
+        table.insert(args, fix_path(System:getRelativePath("amara2/main/main.cpp")))
 
         if self.props.resOutputFile then
-            table.insert(args, self.props.resOutputFile)
+            table.insert(args, fix_path(self.props.resOutputFile))
         end
 
         -- AMARA_PATH
         table.insert(args, "-Iamara2")
         if self.props.installPlugins then
-            table.insert(args, "-I", System:join(self.props.projectPath, "plugins"))
+            table.insert(args, "-I", fix_path(System:join(self.props.projectPath, "plugins")))
         end
 
         -- OTHER_LIB_PATHS
         table.insert(args, "-Isrc")
-        table.insert(args, "-I" .. nlohmannPath)
-        table.insert(args, "-I" .. murmurhash3Path)
-        table.insert(args, "-I" .. luaPath)
-        table.insert(args, "-I" .. sol2Path)
-        table.insert(args, "-I" .. stbPath)
-        table.insert(args, "-I" .. glmPath)
-        table.insert(args, "-I" .. tinyxml2Path)
-        table.insert(args, "-I" .. minimp3Path)
-        table.insert(args, "-I" .. pfdPath)
-        table.insert(args, "-I" .. tinyxml2Path)
+        table.insert(args, "-I" .. fix_path(nlohmannPath))
+        table.insert(args, "-I" .. fix_path(murmurhash3Path))
+        table.insert(args, "-I" .. fix_path(luaPath))
+        table.insert(args, "-I" .. fix_path(sol2Path))
+        table.insert(args, "-I" .. fix_path(stbPath))
+        table.insert(args, "-I" .. fix_path(glmPath))
+        table.insert(args, "-I" .. fix_path(tinyxml2Path))
+        table.insert(args, "-I" .. fix_path(minimp3Path))
+        table.insert(args, "-I" .. fix_path(pfdPath))
+        table.insert(args, "-I" .. fix_path(tinyxml2Path))
 
         -- SDL_PATHS_WIN64
-        table.insert(args, "-I" .. System:join(sdl3Path, "include"))
-        table.insert(args, "-L" .. System:join(sdl3Path, "lib", "x64"))
+        table.insert(args, "-I" .. fix_path(System:join(sdl3Path, "include")))
+        table.insert(args, "-L" .. fix_path(System:join(sdl3Path, "lib", "x64")))
         
         -- WINDOWS_COMPILER_FLAGS
         table.insert(args, "-w")
@@ -134,7 +136,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
         if self.props.projectData.encryption then
-            table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. '"' .. self.props.projectData.encryption["key"] .. '"' .. "")
+            table.insert(args, "-DAMARA_ENCRYPTION_KEY='" .. '"' .. self.props.projectData.encryption["key"] .. '"' .. "'")
             if self.props.projectData.encryption["encrypt-write-output"] then
                 table.insert(args, "-DAMARA_ENCRYPT_OUTPUT")
             end
@@ -143,7 +145,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         -- LINKER_FLAGS_WIN64
         table.insert(args, "-fuse-ld=lld")
         table.insert(args, "-stdlib=libc++")
-        table.insert(args, "-L" .. System:join(clangLLVMPath, "lib"))
+        table.insert(args, "-L" .. fix_path(System:join(clangLLVMPath, "lib")))
         table.insert(args, "-pthread")
         table.insert(args, "-DAMARA_OPENGL")
         table.insert(args, "-lopengl32")
@@ -160,12 +162,28 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         -- Output file
         table.insert(args, "-o")
-        table.insert(args, System:join(buildDir, self.props.executableName .. ".exe"))
+        table.insert(args, fix_path(System:join(buildDir, self.props.executableName .. ".exe")))
+
+        local argsFile = System:join(buildDir, "build_args.txt")
+        System:writeFile(argsFile, string.sep_concat(" ", table.unpack(args)))
+        local buildCommand = quote_if_needed(compilerPath) .. " @" .. quote_if_needed(argsFile)
+        
+        local batchFilePath = System:join(buildDir, "build_windows.bat")
+        self.props.batchFilePath = batchFilePath
+        local batchFileContent = buildCommand .. " && exit"
+
+        System:writeFile(batchFilePath, batchFileContent)
+
+        local systemCommand = "System:exit(System:executeTerminal(" .. string.format("%q", quote_if_needed(batchFilePath)) .. "))"
 
         if #args > 0 then
-            
             self:configure({
-                arguments = args
+                arguments = {
+                    Game.executable,
+                    "-context", System:getBasePath(),
+                    "-inline-script", systemCommand,
+                    "-inline-override"
+                }
             })
         end
     end,
@@ -216,11 +234,11 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.props.printLog.func:handleMessage(Localize:get("label_doNotCloseCommandPrompt"))
     end,
 
-    onOutput = function(self, msg)
-        if self.props.printLog then
-            self.props.printLog.func:handleMessage(msg)
-        end
-    end,
+    -- onOutput = function(self, msg)
+    --     if self.props.printLog then
+    --         self.props.printLog.func:handleMessage(msg)
+    --     end
+    -- end,
 
     onExit = function(self, exitCode)
         if self.props.printLog then
