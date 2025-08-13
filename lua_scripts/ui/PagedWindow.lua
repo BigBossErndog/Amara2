@@ -53,6 +53,9 @@ Nodes:define("PagedWindow", "UIWindow", {
         end
         self.props.pageIndex = pageIndex
 
+        self.props.leftButton.visible = pageIndex > 1
+        self.props.rightButton.visible = pageIndex < self.props.pageCount
+
         if self.props.pageContent then
             self.props.pageContent:destroy()
         end

@@ -362,6 +362,36 @@ Nodes:define("TerminalWindow", "UIWindow", {
         self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - item.y - item.height
         self.props.bottomLocked = true
 
+        item.input:activate()
+        item.input:listen("onRightMouseDown", function(txt)
+            System:copyToClipboard(txt.text)
+            txt.alpha = 0;
+            txt.tween:to({
+                alpha = 1,
+                duration = 0.25
+            })
+            local copyMsg = self.world:createChild("Text", {
+                font = "defaultFont",
+                text = "Copied",
+                x = self.input.mouse.x,
+                y = self.input.mouse.y - 10,
+                alpha = 0
+            })
+            copyMsg.tween:to({
+                alpha = 1,
+                duration = 0.25,
+                onComplete = function(copyMsg)
+                    copyMsg.tween:to({
+                        alpha = 0,
+                        duration = 0.25,
+                        onComplete = function(copyMsg)
+                            copyMsg:destroy()
+                        end
+                    })
+                end
+            })
+        end)
+
         return item
     end,
 

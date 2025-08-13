@@ -320,8 +320,8 @@ Nodes:define("ProjectWindow", "UIWindow", {
             arguments = {
                 exe,
                 "-context", self.props.projectPath,
-                "-script", System:getScriptPath("utility/BringGameToFront.lua"),
-                "-script", "index.lua"
+                "-script", "index.lua",
+                "-script", System:getScriptPath("utility/BringGameToFront.lua")
             },
             onOutput = function(process, msg)
                 if self.props.printLog then

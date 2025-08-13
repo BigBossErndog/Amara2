@@ -82,9 +82,13 @@ namespace Amara {
         }
 
         static std::vector<unsigned char> encryptBuffer(const unsigned char* buffer, size_t size, const std::string& keyStr) {
-            size_t paddedSize = (size + 7) & ~7; // round up to multiple of 8
+            uint32_t originalSize = static_cast<uint32_t>(size);
+            size_t dataSizeWithHeader = sizeof(originalSize) + size;
+            size_t paddedSize = (dataSizeWithHeader + 7) & ~7;
+
             std::vector<unsigned char> data(paddedSize, 0);
-            std::memcpy(data.data(), buffer, size);
+            std::memcpy(data.data(), &originalSize, sizeof(originalSize));
+            std::memcpy(data.data() + sizeof(originalSize), buffer, size);
 
             for (size_t i = 0; i < paddedSize; i += 8) {
                 tea_encrypt(reinterpret_cast<uint32_t*>(&data[i]), keyStr);
@@ -114,13 +118,22 @@ namespace Amara {
                 Encryption::tea_decrypt(reinterpret_cast<uint32_t*>(&decrypted_data[i]), keyStr);
             }
 
-            size_t newSize = encrypted_content_size;
-            while (newSize > 0 && decrypted_data[newSize - 1] == 0) {
-                --newSize;
+            if (decrypted_data.size() < sizeof(uint32_t)) {
+                debug_log("Error: Decrypted data is too small to contain original size.");
+                return {};
             }
-            decrypted_data.resize(newSize);
 
-            return decrypted_data;
+            uint32_t originalSize;
+            std::memcpy(&originalSize, decrypted_data.data(), sizeof(originalSize));
+
+            if (originalSize > decrypted_data.size() - sizeof(originalSize)) {
+                debug_log("Error: Original size is larger than the decrypted data.");
+                return {};
+            }
+            
+            std::vector<unsigned char> final_data(decrypted_data.begin() + sizeof(originalSize), decrypted_data.begin() + sizeof(originalSize) + originalSize);
+            
+            return final_data;
         }
 
         static std::string encryptString(const std::string& input, const std::string& keyStr) {

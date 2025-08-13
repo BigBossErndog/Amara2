@@ -58,18 +58,33 @@ namespace Amara {
                 sol::table t = config.as<sol::table>();
 
                 if (t["targets"].valid()) {
-                    sol::table targets = t["targets"];
-                    for (auto& pair: targets) {
-                        sol::object obj = pair.second;
-                        if (obj.is<Amara::Node>()) {
-                            addCollisionTarget(obj.as<Amara::Node*>());
+                    sol::object tobj = t["targets"];
+                    if (tobj.is<sol::table>()) {
+                        sol::table targets = tobj;
+                        for (auto& pair: targets) {
+                            sol::object obj = pair.second;
+                            if (obj.is<Amara::Node>()) {
+                                addCollisionTarget(obj.as<Amara::Node*>());
+                            }
                         }
+                    }
+                    else if (tobj.is<Amara::Node>()) {
+                        addCollisionTarget(tobj.as<Amara::Node*>());
                     }
                 }
                 if (t["target"].valid()) {
-                    sol::object obj = t["target"];
-                    if (obj.is<Amara::Node>()) {
-                        addCollisionTarget(obj.as<Amara::Node*>());
+                    sol::object tobj = t["target"];
+                    if (tobj.is<sol::table>()) {
+                        sol::table targets = tobj.as<sol::table>();
+                        for (auto& pair: targets) {
+                            sol::object obj = pair.second;
+                            if (obj.is<Amara::Node>()) {
+                                addCollisionTarget(obj.as<Amara::Node*>());
+                            }
+                        }
+                    }
+                    else if (tobj.is<Amara::Node>()) {
+                        addCollisionTarget(tobj.as<Amara::Node*>());
                     }
                 }
             }

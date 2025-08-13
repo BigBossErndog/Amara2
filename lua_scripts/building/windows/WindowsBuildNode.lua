@@ -134,9 +134,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
         if self.props.projectData.encryption then
-            table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. "\"" .. self.props.projectData.encryption["key"] .. "\"")
+            table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. '"' .. self.props.projectData.encryption["key"] .. '"' .. "")
             if self.props.projectData.encryption["encrypt-write-output"] then
-                table.insert(args, "-DAMARA_ENCRYPTION_OUTPUT")
+                table.insert(args, "-DAMARA_ENCRYPT_OUTPUT")
             end
         end
 
@@ -163,6 +163,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, System:join(buildDir, self.props.executableName .. ".exe"))
 
         if #args > 0 then
+            
             self:configure({
                 arguments = args
             })
@@ -265,6 +266,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             System:remove(System:join(self.props.projectPath, "build", "windows"))
             
             self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
+            self.props.printLog.func:handleMessage("Build failed with exit code: " .. exitCode)
             if not System:VSBuildToolsInstalled() then
                 self.props.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
             end

@@ -10,11 +10,25 @@ namespace Amara {
         #endif
     }
 
+    #include <fstream> // Add this include
+
     template<typename... Args>
     void fatal_error(Args... args) {
         std::ostringstream ss;
         (ss << ... << args);
-        throw std::runtime_error(ss.str());
+        std::string errorMessage = ss.str();
+
+        // Write to error_log.txt
+        std::ofstream errorLogFile("error_log.txt", std::ios_base::app);
+        if (errorLogFile.is_open()) {
+            errorLogFile << "FATAL ERROR: " << errorMessage << std::endl;
+            errorLogFile.close();
+        } else {
+            // Fallback if file cannot be opened (e.g., print to console)
+            std::cerr << "FATAL ERROR: Could not open error_log.txt for writing!" << std::endl;
+        }
+
+        throw std::runtime_error(errorMessage);
     }
 
     template <class T> bool vector_contains(std::vector<T> list, T f) {
