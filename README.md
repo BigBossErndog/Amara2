@@ -38,7 +38,7 @@ This is a game engine for people who dislike game engine GUIs. If you're like me
 
 Get the benefits of an easy-to-use game framework while also taking out all the frustrations of setting up a new project, making builds and running tests.
 
-All your core necessities sit in small windows on top of your desktop over the program you're currently using, so you can use whichever tools you want without having to switch out of the engine.
+All your core necessities sit in small windows floating on top of other game dev programs you may be using, so you can use whichever tools you want without having to switch out of the engine.
 
 Over time I want this program to tie in with all your favorite game dev tools, easy access to everything you need.
 
@@ -50,6 +50,10 @@ I'm committed to using this to create all my games from now on (1st July 2025).
 ## Supported Tools
 - Code Editors such as VS Code, Atom, Sublime.
 - Tiled .tmx file support.
+
+## Supported Platform Exports
+- Windows
+- Web (HTML)
   
 *More will be supported along the way.*
 
