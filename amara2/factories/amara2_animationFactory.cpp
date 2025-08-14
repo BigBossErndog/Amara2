@@ -102,8 +102,15 @@ namespace Amara {
                 
                 if (json_has(config, "endFrame")) {
                     int endFrame = config["endFrame"];
-                    for (int i = startFrame; i <= endFrame; i++) {
-                        anim.frames.push_back(i);
+                    if (endFrame > startFrame) {
+                        for (int i = startFrame; i <= endFrame; i++) {
+                            anim.frames.push_back(i);
+                        }
+                    }
+                    else {
+                        for (int i = startFrame; i >= endFrame; i--) {
+                            anim.frames.push_back(i);
+                        }
                     }
                     anim.numFrames = 1 + endFrame - startFrame;
                 }

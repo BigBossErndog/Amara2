@@ -38,13 +38,13 @@ Nodes:define("MainWindow", "UIWindow", {
         local failedProjects = 0
 
         if settings.projects and #settings.projects > 0 then
+            local window = self
+            
             for i = 1, #settings.projects do
                 local projectPath = settings.projects[i]
                 if System:exists(projectPath) and System:exists(System:join(projectPath, "project.json")) then
                     local projectData = System:readJSON(System:join(projectPath, "project.json"))
                     local projectName = projectData["project-name"]
-                    
-                    local window = self
 
                     local optBacker = self.props.content:createChild("FillRect", {
                         x = backer.x + 6,
