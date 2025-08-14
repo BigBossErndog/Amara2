@@ -43,7 +43,7 @@ namespace Amara {
             
             if (String::startsWith(contents, "_amara_encrypted_")) {
                 #if defined(AMARA_ENCRYPTION_KEY)
-                contents = decrypt(contents.substr(16), AMARA_STR(AMARA_ENCRYPTION_KEY));
+                contents = decrypt(contents.substr(17), AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY));
                 #endif
             }
 
@@ -86,7 +86,7 @@ namespace Amara {
             }
 
             #if (defined(AMARA_ENCRYPT_OUTPUT) && defined(AMARA_ENCRYPTION_KEY))
-            if (encryptionKey.empty()) encryptionKey = AMARA_STR(AMARA_ENCRYPTION_KEY);
+            if (encryptionKey.empty()) encryptionKey = AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY);
             #endif
             
             if (!encryptionKey.empty()) {
@@ -194,8 +194,6 @@ namespace Amara {
                 } else {
                     debug_log("Error: Failed to create directory: \"", dir.string(), "\".");
                 }
-            } else {
-                debug_log("Note: Directory already exists: \"", dir.string(), "\".");
             }
             return false;
         }
@@ -381,39 +379,55 @@ namespace Amara {
             std::filesystem::path destination = getRelativePath(output);
             
             try {
-                std::filesystem::create_directories(destination.parent_path());
-
-                if (!exists(source.string())) {
-                    debug_log("Error: \"", source.string(), "\" does not exist.");
+                if (!std::filesystem::exists(source)) {
+                    debug_log("Error: Source path \"", source.string(), "\" does not exist.");
                     return false;
                 }
-                if (exists(destination.string())) {
-                    if (overwrite) remove(destination.string());
-                    else {
-                        debug_log("Error: \"", destination.string(), "\" already exists.");
+
+                if (std::filesystem::is_directory(source)) {
+                    if (std::filesystem::exists(destination) && !std::filesystem::is_directory(destination)) {
+                        debug_log("Error: Cannot copy a directory to a file path \"", destination.string(), "\".");
                         return false;
                     }
+                    if (!overwrite && std::filesystem::exists(destination)) {
+                        debug_log("Error: Destination path \"", destination.string(), "\" already exists.");
+                        return false;
+                    }
+                    
+                    if (!std::filesystem::exists(destination)) {
+                        std::filesystem::create_directories(destination);
+                    }
+
+                    for (const auto& entry : std::filesystem::directory_iterator(source)) {
+                        const std::filesystem::path& current_source_path = entry.path();
+                        const std::filesystem::path& new_dest_path = destination / current_source_path.filename();
+                        copy(current_source_path.string(), new_dest_path.string(), overwrite);
+                    }
+                } 
+                else { // Is a file
+                    if (std::filesystem::exists(destination) && std::filesystem::is_directory(destination)) {
+                        std::filesystem::path file_in_dir = destination / source.filename();
+                        if (!overwrite && std::filesystem::exists(file_in_dir)) {
+                            debug_log("Error: Destination file \"", file_in_dir.string(), "\" already exists.");
+                            return false;
+                        }
+                        std::filesystem::copy_file(source, file_in_dir, std::filesystem::copy_options::overwrite_existing);
+                    } 
+                    else {
+                        if (!overwrite && std::filesystem::exists(destination)) {
+                            debug_log("Error: Destination file \"", destination.string(), "\" already exists.");
+                            return false;
+                        }
+                        std::filesystem::create_directories(destination.parent_path());
+                        std::filesystem::copy_file(source, destination, std::filesystem::copy_options::overwrite_existing);
+                    }
                 }
-                
-                if (std::filesystem::is_regular_file(source)) {
-                    std::filesystem::copy_options options = std::filesystem::copy_options::update_existing;
-                    std::filesystem::copy(source, destination, options);
-                }
-                else if (std::filesystem::is_directory(source)) {
-                    std::filesystem::copy_options options = std::filesystem::copy_options::recursive;
-                    std::filesystem::copy(source, destination, options);
-                }
-                else {
-                    debug_log("Error: Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
-                    return false;
-                }
-        
                 return true;
+            } 
+            catch (const std::filesystem::filesystem_error& e) {
+                debug_log("Error: ", e.what());
+                return false;
             }
-            catch (const std::exception& e) {
-                debug_log("Error: Unable to copy file \"", source.string(), "\" to \"", destination.string(), "\".");
-            }
-            return false;
         }
         bool copy(std::string input, std::string output) {
             return copy(input, output, true);

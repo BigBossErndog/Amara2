@@ -7,6 +7,7 @@ Nodes:define("UIButton", "NineSlice", {
         active = true,
         cursor = Cursor.Pointer,
         onPointerDown = function(self, pointer)
+            self.props.clicked = true
             if self.props.enabled then
                 self.frame = 2
             end
@@ -84,14 +85,11 @@ Nodes:define("UIButton", "NineSlice", {
                 self.props.txt.y = math.floor(self.height/2.0 - self.props.txt.height/2.0) - 2 + 1 
             end
         end
-
         if self.props.toolTip and self.props.enabled and self.input.hovered then
-            if self.input.mouse.left.isDown then
-                self.props.clicked = true
-            elseif not self.props.clicked then
+            if not self.props.clicked then
                 self.world.props.toolTips.func:showToolTip(self.props.toolTip, deltaTime)
             end
-        elseif self.props.clicked then
+        else
             self.props.clicked = nil
         end
     end,

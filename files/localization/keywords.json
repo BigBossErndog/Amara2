@@ -92,7 +92,7 @@
     "label_compilationDesc": "Compile your lua code for faster script loading and execution, however it will hamper the ability for other people to mod.",
     
     "label_openEncryptionOptions": "Open Encryption Options",
-    "label_encryptionDesc": "Encrypt to protect your code and assets, however it will hamper the ability for other people to mod.\n\nNote: Only light encryption is used, it will not stop the most determined.",
+    "label_encryptionDesc": "Encrypt to protect your code and assets, however it will hamper the ability for other people to mod.\n\nNote: Only simple encryption is used, it will not stop the most determined.",
     "label_encryption": "Encrypt Code and Assets",
     "label_enterEncryptionKey": "Enter Encryption Key",
     "label_removeEncryption": "Remove Encryption",

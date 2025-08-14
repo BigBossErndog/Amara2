@@ -125,6 +125,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         -- table.insert(args, "-w")
         -- table.insert(args, "-Wall")
+        -- table.insert(args, "-m64")
         -- table.insert(args, "-std=c++17")
         -- table.insert(args, "-Wl,/NOIMPLIB")
         -- table.insert(args, "-DAMARA_DEBUG_BUILD")

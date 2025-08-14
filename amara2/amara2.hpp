@@ -121,6 +121,7 @@
 #define AMARA_DEF
     #ifndef AMARA_STR
         #define AMARA_STR(x) #x
+        #define AMARA_STRINGIFY(x) AMARA_STR(x)
     #endif
 
     #ifndef AMARA_ENCRYPTION_SETUP
