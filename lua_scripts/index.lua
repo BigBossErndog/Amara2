@@ -86,15 +86,15 @@ Creator:createWorld({
             end
         })
 
-        if System:exists("files/settings.json") then
+        if System:exists("files/settings.json") and System:readJSON("files/settings.json") ~= nil then
             world.func:fixSettings()
             local win = props.windows:createChild("MainWindow")
             win.func:openWindow()
-            else
+        else
             local win = props.windows:createChild("InitialSetupWindow")
             win.func:openWindow()
         end
-
+        
         props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
             target = props.windows,
             x = -6, y = 8
@@ -142,11 +142,11 @@ Creator:createWorld({
         if forceLoad or not self.props.settings then
             if System:exists("files/settings.json") then
                 self.props.settings = System:readJSON("files/settings.json")
-            else
-                self.props.settings = {}
             end
         end
-
+        if not self.props.settings then
+            self.props.settings = {}
+        end
         return self.props.settings
     end,
 

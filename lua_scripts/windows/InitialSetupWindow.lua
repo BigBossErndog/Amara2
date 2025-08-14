@@ -4,7 +4,7 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
     
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
-        
+
         local txt = self.props.content:createChild("Text", {
             text = Localize:get("label_performingInitialSetup"),
             font = "defaultFont",
@@ -13,7 +13,7 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
         })
         txt.x = math.floor(self.props.targetWidth/2.0 - txt.width/2.0)
         txt.y = math.floor(self.props.targetHeight/2.0 - txt.height/2.0)
-
+        
         self.props.loadingBar = self.props.content:createChild("LoadingBar", {
             alpha = 0.3,
             x = 2, y = self.props.targetHeight - 4,
@@ -24,7 +24,7 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
 
         self.world:hideWindow()
         self.world.forcedClickThrough = true
-
+        
         self:createChild("ProcessNode", {
             arguments = {
                 exe,
@@ -35,6 +35,9 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
                 "-display",
                 self.world.displayID
             },
+            onOutput = function(process, msg)
+                print(msg)
+            end,
             onExit = function(process, exitCode, errorMessage)
                 if exitCode ~= 0 then
                     self.func:closeWindow(function()

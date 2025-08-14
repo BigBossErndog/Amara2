@@ -89,6 +89,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "-Iresources/libs/minimp3")
         table.insert(args, "-Iresources/libs/portable-file-dialogs")
         table.insert(args, "-Iresources/libs/tinyxml2")
+        table.insert(args, "-Iresources/libs/easy-encryption")
 
         -- EMSCRIPTEN_COMPILER_FLAGS (combine -s flags with their values)
         table.insert(args, "-w")

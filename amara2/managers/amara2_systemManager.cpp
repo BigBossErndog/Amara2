@@ -39,26 +39,24 @@ namespace Amara {
             }
             SDL_CloseIO(rw);
 
-            if (Amara::Encryption::is_buffer_encrypted(buffer.data(), buffer.size())) {
+            std::string contents = std::string(reinterpret_cast<char*>(buffer.data()), buffer.size());
+            
+            if (String::startsWith(contents, "_amara_encrypted_")) {
                 #if defined(AMARA_ENCRYPTION_KEY)
-                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer.data(), buffer.size(), AMARA_STR(AMARA_ENCRYPTION_KEY));
-                    return std::string(reinterpret_cast<char*>(decrypted_data.data()), decrypted_data.size());
-                #else
-                    fatal_error("Error: Attempted to load encrypted data without encryption key. \"", filePath.string(), "\".");
-                    gameProps->breakWorld();
-                    return "";
+                contents = decrypt(contents.substr(16), AMARA_STR(AMARA_ENCRYPTION_KEY));
                 #endif
             }
 
-            return std::string(reinterpret_cast<char*>(buffer.data()), buffer.size());
+            return contents;
         }
 
         nlohmann::json readJSON(std::string path) {
-            if (!exists(path)) {
-                debug_log("Error: File does not exist \"", path, "\"");
-                return nullptr;
+            std::string contents = readFile(path);
+            if (!contents.empty() && nlohmann::json::accept(contents)) {
+                return nlohmann::json::parse(contents);
             }
-            return nlohmann::json::parse(readFile(path));
+            debug_log("Warning: Invalid JSON file read from \"", getRelativePath(path), "\".");
+            return nullptr;
         }
         sol::object luaReadJSON(std::string path) {
             return json_to_lua(gameProps->lua, readJSON(path));
@@ -77,7 +75,8 @@ namespace Amara {
             std::string output_str;
             if (input.is_string()) {
                 output_str = input.get<std::string>();
-            } else {
+            }
+            else {
                 try {
                     output_str = input.dump(4);
                 } catch (const std::exception& e) {
@@ -86,45 +85,28 @@ namespace Amara {
                 }
             }
 
-            const unsigned char* buffer_to_write = nullptr;
-            size_t size_to_write = 0;
-            std::vector<unsigned char> encrypted_buffer_vec;
-
             #if (defined(AMARA_ENCRYPT_OUTPUT) && defined(AMARA_ENCRYPTION_KEY))
             if (encryptionKey.empty()) encryptionKey = AMARA_STR(AMARA_ENCRYPTION_KEY);
             #endif
             
             if (!encryptionKey.empty()) {
-                encrypted_buffer_vec = Amara::Encryption::encryptBuffer(
-                    reinterpret_cast<const unsigned char*>(output_str.data()),
-                    output_str.size(),
-                    encryptionKey
-                );
-                buffer_to_write = encrypted_buffer_vec.data();
-                size_to_write = encrypted_buffer_vec.size();
-            }
-            else {
-                // No encryption, just write the original string data
-                buffer_to_write = reinterpret_cast<const unsigned char*>(output_str.data());
-                size_to_write = output_str.size();
+                output_str = std::string("_amara_encrypted_") + encrypt(output_str, encryptionKey);
             }
 
             SDL_IOStream* rw = SDL_IOFromFile(filePath.string().c_str(), "wb");
             if (!rw) {
-                debug_log("Error [writeFile]: Failed to open file for writing: ", filePath.string(), " - ", SDL_GetError());
+                debug_log("Error: Failed to open file for writing: ", filePath.string(), " - ", SDL_GetError());
                 return false;
             }
 
             size_t bytesWritten = 0;
-            if (size_to_write > 0 && buffer_to_write != nullptr) {
-                 bytesWritten = SDL_WriteIO(rw, buffer_to_write, size_to_write);
-            } else {
-                bytesWritten = 0;
+            if (!output_str.empty()) {
+                bytesWritten = SDL_WriteIO(rw, output_str.c_str(), output_str.length());
             }
 
             SDL_CloseIO(rw);
             
-            if (bytesWritten != size_to_write) {
+            if (bytesWritten != output_str.length()) {
                 debug_log("Error: Failed to finish writing to \"", filePath.string(), "\".");
                 try { std::filesystem::remove(filePath); } catch(...) {}
                 return false;
@@ -144,72 +126,8 @@ namespace Amara {
         }
 
         bool encryptFile(std::string path, std::string dest, std::string encryptionKey) {
-            std::filesystem::path filePath = getRelativePath(path);
-            if (!exists(filePath.string())) {
-                debug_log("Error: Input file not found \"", filePath.string(), "\".");
-                return false;
-            }
-
-            SDL_IOStream *read_rw = SDL_IOFromFile(filePath.string().c_str(), "rb");
-            if (!read_rw) {
-                debug_log("Error: Failed to open file for reading: ", filePath.string(), " - ", SDL_GetError());
-                return false;
-            }
-
-            Sint64 fileSize_s64 = SDL_GetIOSize(read_rw);
-            if (fileSize_s64 < 0) {
-                SDL_CloseIO(read_rw);
-                debug_log("Error: Failed to get size of input file: ", filePath.string(), " - ", SDL_GetError());
-                return false;
-            }
-            if (fileSize_s64 == 0) {
-                SDL_CloseIO(read_rw);
-                debug_log("Warning: Input file is empty from path ", filePath.string());
-            }
-            size_t originalSize = static_cast<size_t>(fileSize_s64);
-            std::vector<unsigned char> buffer(originalSize);
-
-            size_t bytesRead = 0;
-            if (originalSize > 0) {
-                bytesRead = SDL_ReadIO(read_rw, buffer.data(), originalSize);
-            }
-            SDL_CloseIO(read_rw);
-
-            if (bytesRead != originalSize) {
-                debug_log("Error: Failed to read entire input file (read ", bytesRead, " of ", originalSize, " bytes): ", filePath.string());
-                return false;
-            }
-
-            std::vector<unsigned char> encryptedData = Amara::Encryption::encryptBuffer(buffer.data(), originalSize, encryptionKey);
-
-            std::filesystem::path destPath = getRelativePath(dest);
-            try {
-                std::filesystem::create_directories(destPath.parent_path());
-            } catch (const std::exception& e) {
-                debug_log("Error: Failed to create destination directory: ", destPath.parent_path().string(), " - ", e.what());
-                return false;
-            }
-
-            SDL_IOStream *write_rw = SDL_IOFromFile(destPath.string().c_str(), "wb");
-            if (!write_rw) {
-                debug_log("Error: Failed to open destination file for writing: ", destPath.string(), " - ", SDL_GetError());
-                return false;
-            }
-
-            size_t bytesWritten = 0;
-            if (!encryptedData.empty()) {
-                bytesWritten = SDL_WriteIO(write_rw, encryptedData.data(), encryptedData.size());
-            }
-            
-            SDL_CloseIO(write_rw);
-
-            if (bytesWritten != encryptedData.size()) {
-                debug_log("Error: Failed to finish writing to \"", destPath.string(), "\".");
-                remove(destPath.string());
-                return false;
-            }
-
-            return true;
+            std::string input = readFile(path);
+            return writeFile(dest, input, encryptionKey);
         }
 
         bool remove(std::string path) {

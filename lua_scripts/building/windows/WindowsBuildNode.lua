@@ -136,7 +136,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
         if self.props.projectData.encryption then
-            table.insert(args, "-DAMARA_ENCRYPTION_KEY=TET")
+            table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.props.projectData.encryption["key"]))
             if self.props.projectData.encryption["encrypt-write-output"] then
                 table.insert(args, "-DAMARA_ENCRYPT_OUTPUT")
             end
@@ -178,6 +178,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         if #args > 0 then
             self:configure({
+                -- arguments = args
                 arguments = {
                     Game.executable,
                     "-context", System:getBasePath(),
@@ -210,6 +211,11 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 allowMinimize = true,
                 disableSavePosition = true,
                 onExit = function(self)
+                    if self.props.gameProcess then
+                        System:remove(self.props.gameProcess.props.batchFilePath)
+                        System:remove(System:join(self.props.gameProcess.props.buildDir, "build_args.txt"))
+                    end
+
                     local newWindow = self.world.props.windows:createChild("ProjectWindow", {
                         projectPath = self.props.projectPath
                     })
@@ -241,6 +247,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
     -- end,
 
     onExit = function(self, exitCode)
+        System:remove(self.props.batchFilePath)
+        System:remove(System:join(self.props.buildDir, "build_args.txt"))
+        
         if self.props.printLog then
             self.props.printLog.func:unbindGameProcess()
         end
@@ -284,7 +293,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             -- System:remove(System:join(self.props.projectPath, "build", "windows"))
             
             self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
-            self.props.printLog.func:handleMessage("Build failed with exit code: " .. exitCode)
             if not System:VSBuildToolsInstalled() then
                 self.props.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
             end

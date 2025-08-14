@@ -264,18 +264,8 @@ namespace Amara {
 
         std::vector<char> tmxData;
 
-        if (Amara::Encryption::is_buffer_encrypted(buffer.get(), fileSize)) {
-            #if defined(AMARA_ENCRYPTION_KEY)
-                std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(buffer.get(), fileSize, AMARA_STR(AMARA_ENCRYPTION_KEY));
-                tmxData.assign(decrypted_data.begin(), decrypted_data.end());
-            #else
-                fatal_error("Error: Attempted to load encrypted TMX data without encryption key: \"", path, "\".");
-                gameProps->breakWorld();
-                return false;
-            #endif
-        } else {
-            tmxData.assign(buffer.get(), buffer.get() + fileSize);
-        }
+        std::string contents = gameProps->system->readFile(path);
+        tmxData.assign(contents.begin(), contents.end());
         tmxData.push_back('\0');
 
         tinyxml2::XMLDocument doc;

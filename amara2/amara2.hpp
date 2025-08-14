@@ -123,16 +123,20 @@
         #define AMARA_STR(x) #x
     #endif
 
+    #ifndef AMARA_ENCRYPTION_SETUP
+    
+    #endif
+
     #ifndef M_PI
         #define M_PI 3.14159265358979323846264338327950288
     #endif
 
     #include "utility/amara2_enums.cpp"
     #include "utility/amara2_string.cpp"
+    #include "utility/amara2_encryption.cpp"
     #include "utility/amara2_jsonUtility.cpp"
     #include "utility/amara2_utility.cpp"
     #include "utility/amara2_color.cpp"
-    #include "utility/amara2_encryption.cpp"
     #include "utility/amara2_easing.cpp"
 
     #ifdef AMARA_OPENGL

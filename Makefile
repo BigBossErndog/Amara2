@@ -98,6 +98,17 @@ win: $(ENTRY_FILES)
 	$(COMPILER) $(ENTRY_FILES) $(ICON_RES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_PATHS_WIN64) $(WINDOWS_COMPILER_FLAGS) $(EXTRA_OPTIONS) $(LINKER_FLAGS_WIN64) -o $(BUILD_EXECUTABLE_WIN)
 	make cpdll
 
+win-test-copy:
+	make cpdirs
+	if not exist "$(BUILD_PATH)\amara2\" md "$(BUILD_PATH)\amara2\"
+	xcopy /s /e /i /y "amara2\*.*" "$(BUILD_PATH)\amara2"
+	if not exist "$(BUILD_PATH)\resources\" md "$(BUILD_PATH)\resources\"
+	xcopy /s /e /i /y "resources\*.*" "$(BUILD_PATH)\resources"
+
+win-test:
+	make win
+	make win-test-copy
+
 win-release:
 	if exist $(BUILD_PATH) ( rmdir /s /q $(BUILD_PATH) )
 	if not exist $(BUILD_PATH) md $(BUILD_PATH)
@@ -108,7 +119,7 @@ win-release:
 	if not exist "$(BUILD_PATH)\resources\" md "$(BUILD_PATH)\resources\"
 	xcopy /s /e /i /y "resources\*.*" "$(BUILD_PATH)\resources"
 	if exist "$(BUILD_PATH)\files\settings.json" del "$(BUILD_PATH)\files\settings.json"
-	
+
 linux:
 	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(LINUX_COMPILER_FLAGS) $(STDLIB_FLAG) $(LINKER_FLAGS_LINUX) -o $(BUILD_EXECUTABLE_LINUX)
 	mkdir $(BUILD_PATH)/saves

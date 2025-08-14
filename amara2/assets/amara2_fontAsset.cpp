@@ -147,45 +147,15 @@ namespace Amara {
             fontSize = _size;
             
             if (!gameProps->system->exists(path)) {
-                fatal_error("Error: Font file not found at \"", path, "\".");
+                fatal_error("Error: Font file not found at \"", path, ".\"");
                 return false;
             }
 
-            SDL_IOStream *rw = SDL_IOFromFile(path.c_str(), "rb");
-            if (!rw) {
-                debug_log("Failed to open file: ", SDL_GetError());
-                return false;
-            }
-
-            Sint64 fileSize = SDL_GetIOSize(rw);
-            unsigned char* raw_buffer = (unsigned char*)SDL_malloc(fileSize);
-            if (fileSize > 0) {
-                SDL_ReadIO(rw, raw_buffer, fileSize);
-            }
-            SDL_CloseIO(rw);
-
-            if (Amara::Encryption::is_buffer_encrypted(raw_buffer, fileSize)) {
-                #if defined(AMARA_ENCRYPTION_KEY)
-                    std::vector<unsigned char> decrypted_data = Amara::Encryption::decryptBuffer(raw_buffer, fileSize, AMARA_STR(AMARA_ENCRYPTION_KEY));
-                    SDL_free(raw_buffer);
-                    
-                    size_t dataSize = decrypted_data.size();
-                    fontBuffer = (unsigned char*)SDL_malloc(dataSize);
-                    if (!fontBuffer) { 
-                        fatal_error("Failed to allocate memory for decrypted font.");
-                        return false; 
-                    }
-                    std::memcpy(fontBuffer, decrypted_data.data(), dataSize);
-                #else
-                    fatal_error("Error: Attempted to load encrypted data without encryption key. \"", path, ".\"");
-                    SDL_free(raw_buffer);
-                    gameProps->breakWorld();
-                    return false;
-                #endif
-            } else {
-                fontBuffer = raw_buffer;
-            }
-
+            std::string contents = gameProps->system->readFile(path);
+            size_t bufferSize = contents.size();
+            fontBuffer = (unsigned char*)SDL_malloc(bufferSize);
+            memcpy(fontBuffer, contents.c_str(), bufferSize);
+            
             stbtt_InitFont(&font, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));
             
             scale = stbtt_ScaleForMappingEmToPixels(&font, fontSize);
