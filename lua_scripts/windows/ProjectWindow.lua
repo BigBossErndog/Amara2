@@ -292,7 +292,6 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
     openDefault = function(self)
         local settings = self.world.func:getSettings()
-        self.world:hideWindow()
         
         if settings.autoOpenCodeEditor then
             if settings.codeEditor then
@@ -301,8 +300,6 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 self.func:openDirectory()
             end
         end
-
-        self.world:showWindow()
     end,
 
     runGame = function(self)

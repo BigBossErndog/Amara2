@@ -81,6 +81,7 @@
     #elif defined(__APPLE__)
         #include <SDL_syswm.h>
         #include <TargetConditionals.h>
+        #include <CoreGraphics/CoreGraphics.h>
         #if TARGET_OS_IPHONE
         #else
             #define AMARA_DESKTOP

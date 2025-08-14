@@ -122,7 +122,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-Wl,/SUBSYSTEM:WINDOWS")
         table.insert(args, "-Wl,/NOIMPLIB")
         table.insert(args, "-std=c++17")
-
+        table.insert(args, "-O2")
+        
         -- table.insert(args, "-w")
         -- table.insert(args, "-Wall")
         -- table.insert(args, "-m64")

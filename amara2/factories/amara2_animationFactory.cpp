@@ -19,7 +19,7 @@ namespace Amara {
         TextureAnimations() = default;
         std::unordered_map<std::string, AnimationData> animations;
     };
-
+    
     class AnimationFactory {
     public:
         std::unordered_map<std::string, TextureAnimations> textureMap;
