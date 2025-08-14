@@ -79,7 +79,7 @@ Nodes:define("UIButton", "NineSlice", {
             end
         else
             if self.props.icon then
-                self.props.icon.y = self.height / 2.0 + 1 
+                self.props.icon.y = self.height / 2.0 + 1
             end
             if self.props.txt then
                 self.props.txt.y = math.floor(self.height/2.0 - self.props.txt.height/2.0) - 2 + 1 
@@ -87,6 +87,7 @@ Nodes:define("UIButton", "NineSlice", {
         end
         if self.props.toolTip and self.props.enabled and self.input.hovered then
             if not self.props.clicked then
+                print(self.props.toolTip, self.input.hovered)
                 self.world.props.toolTips.func:showToolTip(self.props.toolTip, deltaTime)
             end
         else

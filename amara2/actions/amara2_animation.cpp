@@ -70,73 +70,7 @@ namespace Amara {
                 }
             }
             else if (config.is_object()) {
-                AnimationData anim;
-                anim.frames.clear();
-
-                if (json_has(config, "frames")) {
-                    nlohmann::json frames = config["frames"];
-                    if (frames.is_array()) {
-                        for (int i = 0; i < frames.size(); i++) {
-                            anim.frames.push_back(frames[i]);
-                        }
-                        anim.numFrames = frames.size();
-                    }
-                    else {
-                        fatal_error("Error: Animation couldn't be created from ", config.dump());
-                        gameProps->breakWorld();
-                        return;
-                    }
-                }
-                else if (json_has(config, "startFrame")) {
-                    int startFrame = config["startFrame"];
-                    
-                    if (json_has(config, "endFrame")) {
-                        int endFrame = config["endFrame"];
-                        for (int i = startFrame; i <= endFrame; i++) {
-                            anim.frames.push_back(i);
-                        }
-                        anim.numFrames = 1 + endFrame - startFrame;
-                    }
-                    else if (json_has(config, "numFrames")) {
-                        int numFrames = config["numFrames"];
-                        for (int i = 0; i < numFrames; i++) {
-                            anim.frames.push_back(startFrame + i);
-                        }
-                        anim.numFrames = numFrames;
-                    }
-                    else {
-                        fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: endFrame or numFrame must be defined.");
-                        gameProps->breakWorld();
-                        return;
-                    }
-                }
-                else {
-                    fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: Animation frames must be defined.");
-                    gameProps->breakWorld();
-                    return;
-                }
-    
-                if (json_has(config, "frameRate")) {
-                    anim.frameRate = config["frameRate"];
-                    if (anim.frameRate <= 0) {
-                        fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: frameRate must be more than 0.");
-                        gameProps->breakWorld();
-                        return;
-                    }
-                }
-                
-                anim.repeats = 0;
-                if (json_has(config, "repeats")) {
-                    anim.repeats = config["repeats"];
-                }
-    
-                anim.yoyo = json_is(config, "yoyo");
-
-                frames = anim.frames;
-                repeats = anim.repeats;
-                frameRate = anim.frameRate;
-                yoyo = anim.yoyo;
-                numFrames = anim.numFrames;
+                AnimationData anim = gameProps->animations->createAnimation(config);
 
                 anim_configured = true;
             }

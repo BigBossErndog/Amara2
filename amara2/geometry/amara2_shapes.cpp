@@ -219,6 +219,13 @@ namespace Amara {
         Vector2 p1 = {0, 0};
         Vector2 p2 = {0, 0};
         Vector2 p3 = {0, 0};
+
+        explicit operator std::string() const {
+            return String::concat("{ p1: ", std::string(p1), ", p2: ", std::string(p2), ", p3: ", std::string(p3), " }");
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Triangle& v) {
+            return os << static_cast<std::string>(v);
+        }
     };
 
     struct Line {
@@ -246,6 +253,13 @@ namespace Amara {
                 start.x + (end.x - start.x) * t,
                 start.y + (end.y - start.y) * t
             );
+        }
+
+        explicit operator std::string() const {
+            return String::concat("{ start: ", std::string(start), ", end: ", std::string(end), " }");
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Line& v) {
+            return os << static_cast<std::string>(v);
         }
     };
 
@@ -519,6 +533,40 @@ namespace Amara {
                 return sol::make_object(lua, as<Vector3>());
             }
             return sol::nil;
+        }
+        
+        explicit operator std::string() const {
+            return std::visit([](const auto& s) -> std::string {
+                using T = std::decay_t<decltype(s)>;
+                if constexpr (
+                    std::is_same_v<T, Vector2> ||
+                    std::is_same_v<T, Vector3> ||
+                    std::is_same_v<T, Rectangle> ||
+                    std::is_same_v<T, Quad> ||
+                    std::is_same_v<T, Circle> ||
+                    std::is_same_v<T, Triangle> ||
+                    std::is_same_v<T, Line>
+                ) {
+                    return std::string(s);
+                }
+                else if constexpr (std::is_same_v<T, std::vector<Shape>>) {
+                    std::string result = "[";
+                    bool first = true;
+                    for (const auto& shape : s) {
+                        if (!first) {
+                            result += ", ";
+                        }
+                        result += std::string(shape);
+                        first = false;
+                    }
+                    result += "]";
+                    return result;
+                }
+                return "Unknown Shape";
+            }, shape);
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Shape& v) {
+            return os << static_cast<std::string>(v);
         }
     };
 

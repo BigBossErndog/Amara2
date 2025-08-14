@@ -110,6 +110,10 @@ namespace Amara {
     }
 
     bool isPointInside(const Quad& quad, const Vector2& p) {
+        if (quad.p1 == quad.p2 && quad.p1 == quad.p3 && quad.p1 == quad.p4) {
+            return quad.p1 == p;
+        }
+
         auto sign = [](const Vector2& a, const Vector2& b, const Vector2& c) {
             return (b - a).cross(c - a);
         };

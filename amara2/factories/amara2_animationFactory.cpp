@@ -1,14 +1,18 @@
 namespace Amara {
     struct AnimationData {
         AnimationData() = default;
+        AnimationData(bool _invalid) {
+            invalid = true;
+        }
 
         std::string key;
         std::vector<int> frames;
         float frameRate = 60;
         int repeats = 0;
         bool yoyo = false;
-
         int numFrames = 0;
+
+        bool invalid = false;
     };
 
     struct TextureAnimations {
@@ -23,6 +27,8 @@ namespace Amara {
         Amara::GameProps* gameProps = nullptr;
 
         AnimationFactory() = default;
+
+        static AnimationData invalidAnim;
 
         void clear() {
             textureMap.clear();
@@ -59,8 +65,22 @@ namespace Amara {
             }
             std::string textureKey = config["texture"];
             
-            AnimationData anim;
+            AnimationData anim = createAnimation(config);
             anim.key = animKey;
+            
+            if (anim.invalid) {
+                return false;
+            }
+            
+            if (textureMap.find(textureKey) == textureMap.end()) textureMap[textureKey] = TextureAnimations();
+            TextureAnimations& texAnims = textureMap[textureKey];
+            texAnims.animations[animKey] = anim;
+
+            return true;
+        }
+
+        AnimationData createAnimation(const nlohmann::json& config) {
+            AnimationData anim;
 
             anim.frames.clear();
 
@@ -74,7 +94,7 @@ namespace Amara {
                 }
                 else {
                     debug_log("Error: Animation couldn't be created from ", config.dump());
-                    return false;
+                    return invalidAnim;
                 }
             }
             else if (json_has(config, "startFrame")) {
@@ -97,13 +117,13 @@ namespace Amara {
                 else {
                     fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: endFrame or numFrame must be defined.");
                     gameProps->breakWorld();
-                    return false;
+                    return invalidAnim;
                 }
             }
             else {
                 fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: Animation frames must be defined.");
                 gameProps->breakWorld();
-                return false;
+                return invalidAnim;
             }
 
             if (json_has(config, "frameRate")) {
@@ -111,23 +131,19 @@ namespace Amara {
                 if (anim.frameRate <= 0) {
                     fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: frameRate must be more than 0.");
                     gameProps->breakWorld();
-                    return false;
+                    return invalidAnim;
                 }
             }
 
             if (json_has(config, "repeats")) {
                 anim.repeats = config["repeats"];
             }
-
+            
             if (json_has(config, "yoyo")) {
                 anim.yoyo = config["yoyo"];
             }
-            
-            if (textureMap.find(textureKey) == textureMap.end()) textureMap[textureKey] = TextureAnimations();
-            TextureAnimations& texAnims = textureMap[textureKey];
-            texAnims.animations[animKey] = anim;
 
-            return true;
+            return anim;
         }
 
         bool lua_add(sol::object config) {
@@ -151,4 +167,5 @@ namespace Amara {
             );
         }
     };
+    AnimationData AnimationFactory::invalidAnim = AnimationData(true);
 }
