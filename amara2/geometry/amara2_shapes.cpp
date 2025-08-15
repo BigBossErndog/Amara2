@@ -1,4 +1,6 @@
 namespace Amara {
+    class Shape;
+
     nlohmann::json lua_to_json(sol::object obj);
     
     struct Rectangle: public Vector2 {
@@ -263,6 +265,21 @@ namespace Amara {
         }
     };
 
+    class CustomCollider {
+    public:
+        CustomCollider() = default;
+
+        virtual bool collidesWithShape(const Shape& other) { return false; };
+    };
+    struct CustomShape {
+        CustomShape() = default;
+        CustomShape(CustomCollider* _collider) {
+            collider = _collider;
+        }
+
+        CustomCollider* collider = nullptr;
+    };
+
     class Shape {
     public:
         using ShapeVariant = std::variant<
@@ -270,10 +287,11 @@ namespace Amara {
             Vector3,
             Rectangle,
             Quad,
-            Circle, 
+            Circle,
             Triangle, 
             Line,
-            std::vector<Shape>
+            std::vector<Shape>,
+            CustomShape
         >;
 
         ShapeVariant shape;
@@ -289,6 +307,9 @@ namespace Amara {
         Shape(const Circle& c) : shape(c) {}
         Shape(const Triangle& t) : shape(t) {}
         Shape(const Line& l) : shape(l) {}
+        Shape(const std::vector<Shape>& list) : shape(list) {}
+        Shape(const CustomShape& c) : shape(c) {}
+
         Shape(const nlohmann::json& config) {
             *this = config;
         }
@@ -325,23 +346,24 @@ namespace Amara {
             if (other.is<std::vector<Shape>>()) {
                 return collision(other.as<std::vector<Shape>>(), *this);
             }
+            if (is<CustomShape>()) {
+                const CustomShape& custom = as<CustomShape>();
+                if (custom.collider) {
+                    return custom.collider->collidesWithShape(other);
+                }
+                return false;
+            }
+            if (other.is<CustomShape>()) {
+                const CustomShape& custom = other.as<CustomShape>();
+                if (custom.collider) {
+                    return custom.collider->collidesWithShape(*this);
+                }
+                return false;
+            }
             return std::visit([](const auto& s1, const auto& s2) {
                 return collision(s1, s2);
             }, shape, other.shape);
         }
-
-        // static bool collision(const Rectangle& r1, const Rectangle& r2) {
-        //     return (r1.w > 0 && r1.h > 0 && r2.w > 0 && r2.h > 0);
-        // }
-    
-        // static bool collision(const Circle& c1, const Circle& c2) {
-        //     double distance = std::abs(c1.radius - c2.radius);
-        //     return distance < (c1.radius + c2.radius);
-        // }
-    
-        // static bool collision(const Triangle& t1, const Triangle& t2) {
-        //     return (t1.base > 0 && t1.height > 0 && t2.base > 0 && t2.height > 0);
-        // }
 
         static bool collision(const Rectangle& r1, const Rectangle& r2) {
             if (r1.x + r1.w <= r2.x || r2.x + r2.w <= r1.x) {

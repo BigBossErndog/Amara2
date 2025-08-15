@@ -15,7 +15,7 @@ namespace Amara {
         bool waitingYoyo = false;
 
         double progress = 0;
-
+        
         std::string animKey;
         bool anim_configured = false;
 

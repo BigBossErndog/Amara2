@@ -737,6 +737,14 @@ namespace Amara {
             #endif
         }
 
+        #if defined(__EMSCRIPTEN__)
+        void execute(std::string command) {
+            EM_ASM({
+                window.location.href = UTF8ToString($0);
+            }, command.c_str());
+        }
+        #endif
+
         #if defined(AMARA_DESKTOP)
         static int run_command(std::string command) {
             #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
@@ -1164,6 +1172,9 @@ namespace Amara {
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::compileScript)
                 ),
                 "copyToClipboard", &SystemManager::copyToClipboard,
+                #if defined(__EMSCRIPTEN__)
+                "execute", &SystemManager::execute,
+                #endif
                 #if defined(AMARA_DESKTOP)
                 "execute", &SystemManager::lua_execute,
                 "executeDettached", &SystemManager::lua_executeDettached,

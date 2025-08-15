@@ -145,6 +145,9 @@ namespace Amara {
             if (json_has(config, "repeats")) {
                 anim.repeats = config["repeats"];
             }
+            if (json_is(config, "loop")) {
+                anim.repeats = -1;
+            }
             
             if (json_has(config, "yoyo")) {
                 anim.yoyo = config["yoyo"];
