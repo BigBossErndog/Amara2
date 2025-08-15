@@ -1,6 +1,6 @@
 Nodes:define("WebBuildOptions", "UIWindow", {
     width = 256,
-    height = 106,
+    height = 140,
 
     onConfigure = function(self, config)
         if config.projectPath then
@@ -9,6 +9,8 @@ Nodes:define("WebBuildOptions", "UIWindow", {
     end,
 
     onCreate = function(self)
+        self.props.projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
+
         self.classes.UIWindow.func:onCreate()
 
         local title = self.props.content:createChild("Text", {
@@ -42,6 +44,21 @@ Nodes:define("WebBuildOptions", "UIWindow", {
             end
         })
 
+        local txt = self.props.content:createChild("Text", {
+            x = 10, y = 24,
+            origin = 0,
+            text = Localize:get("label_includeFoldersDesc"),
+            font = "defaultFont",
+            color = Colors.White,
+        })
+        self.props.includeFolders = self.props.content:createChild("IncludeFolders", {
+            projectPath = self.props.projectPath,
+            projectData = self.props.projectData,
+            x = 10, y = 40,
+            width = self.props.targetWidth - 20,
+            height= self.props.targetHeight - 40 - 28
+        })
+
         local buildButton = self.props.content:createChild("UIButton", {
             id = "buildProjectButton",
             text = "label_buildProject",
@@ -55,6 +72,8 @@ Nodes:define("WebBuildOptions", "UIWindow", {
 
     startBuilding = function(self)
         self.func:closeWindow(function(self)
+            System:writeFile(System:join(self.props.projectPath, "project.json"), self.props.projectData)
+            
             local buildNode = self.world.props.windows:createChild("WebBuildNode", {
                 projectPath = self.props.projectPath
             })

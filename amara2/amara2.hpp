@@ -67,6 +67,7 @@
     #if defined(_WIN32)
         #define AMARA_DESKTOP
         #include <windows.h>
+        #include <shellapi.h>
         #undef min
         #undef max
     #elif defined(__linux__)

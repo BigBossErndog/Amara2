@@ -285,7 +285,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
     openDirectory = function(self)
         System:openDirectory(self.props.projectPath)
     end,
-
+    
     openCodeEditor = function(self)
         self.props.codeEditorButton.func:onPress()
     end,

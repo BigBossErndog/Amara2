@@ -87,7 +87,6 @@ Nodes:define("UIButton", "NineSlice", {
         end
         if self.props.toolTip and self.props.enabled and self.input.hovered then
             if not self.props.clicked then
-                print(self.props.toolTip, self.input.hovered)
                 self.world.props.toolTips.func:showToolTip(self.props.toolTip, deltaTime)
             end
         else

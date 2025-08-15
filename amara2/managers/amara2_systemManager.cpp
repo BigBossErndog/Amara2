@@ -1,8 +1,4 @@
 namespace Amara {
-#if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
-#include <windows.h>
-#include <shellapi.h>
-#endif
     class SystemManager {
     public:
         std::string basePath;
@@ -704,6 +700,43 @@ namespace Amara {
             SDL_SetClipboardText(text.c_str());
         }
 
+        bool openWebsite(std::string url) {
+            std::string command;
+            int result = -1;
+
+            #if defined(_WIN32)
+                #if !defined(AMARA_DEBUG_BUILD)
+                    HINSTANCE hinst = ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                    result = ((int)hinst > 32) ? 0 : 1;
+                #else
+                    command = "start \"\" \"" + url + "\"";
+                    result = std::system(command.c_str());
+                #endif
+            #elif defined(__APPLE__)
+                command = "open \"" + url + "\"";
+                result = std::system(command.c_str());
+            #elif defined(__linux__) && !defined(__EMSCRIPTEN__)
+                command = "xdg-open \"" + url + "\"";
+                result = std::system(command.c_str());
+            #elif defined(__EMSCRIPTEN__)
+                EM_ASM({
+                    window.open(UTF8ToString($0), '_blank');
+                }, url.c_str());
+                return true;
+            #else
+                debug_log("Error: System:openWebsite is not supported on this platform.");
+                return false;
+            #endif
+
+            #if !defined(__EMSCRIPTEN__)
+            if (result != 0) {
+                debug_log("Warning: Failed to open website with url: ", url, "'");
+                return false;
+            }
+            return true;
+            #endif
+        }
+
         #if defined(AMARA_DESKTOP)
         static int run_command(std::string command) {
             #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
@@ -753,41 +786,6 @@ namespace Amara {
                 first = false;
             }
             return execute(true, ss.str());
-        }
-
-        bool openWebsite(std::string url) {
-            std::string command;
-            int result = -1;
-
-            #if defined(_WIN32)
-                #if !defined(AMARA_DEBUG_BUILD)
-                    HINSTANCE hinst = ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-                    result = ((int)hinst > 32) ? 0 : 1;
-                #else
-                    command = "start \"\" \"" + url + "\"";
-                    result = std::system(command.c_str());
-                #endif
-            #elif defined(__APPLE__)
-                command = "open \"" + url + "\"";
-                result = std::system(command.c_str());
-            #elif defined(__linux__) && !defined(__EMSCRIPTEN__)
-                command = "xdg-open \"" + url + "\"";
-                result = std::system(command.c_str());
-            #elif defined(__EMSCRIPTEN__)
-                emscripten_open_url_in_new_tab(url.c_str());
-                return true;
-            #else
-                debug_log("Error: System:openWebsite is not supported on this platform.");
-                return false;
-            #endif
-
-            #if !defined(__EMSCRIPTEN__)
-            if (result != 0) {
-                debug_log("Warning: Failed to open website with url: ", url, "'");
-                return false;
-            }
-            return true;
-            #endif
         }
 
         int executeTerminal(std::string command) {

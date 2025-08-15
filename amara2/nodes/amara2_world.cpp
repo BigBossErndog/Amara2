@@ -92,6 +92,7 @@ namespace Amara {
             world = this;
             passOnPropsEnabled = false;
             is_world = true;
+            pos = Vector3(-1, -1, -1);
         }
 
         virtual void init() override {
@@ -355,6 +356,9 @@ namespace Amara {
             if (json_has(config, "backgroundColor")) {
                 backgroundColor = config["backgroundColor"];
             }
+            if (json_has(config, "x")) pos.x = config["x"];
+            if (json_has(config, "y")) pos.y = config["y"];
+            if (json_has(config, "pos")) pos = config["pos"];
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
@@ -863,10 +867,16 @@ namespace Amara {
 
             if (window) {
                 int wx, wy;
-                SDL_GetWindowPosition(window, &wx, &wy);
-                pos.x = static_cast<int>(wx);
-                pos.y = static_cast<int>(wy);
-                rec_pos = pos;
+                if (pos == Vector3(-1, -1, -1)) {
+                    SDL_GetWindowPosition(window, &wx, &wy);
+                    pos.x = static_cast<int>(wx);
+                    pos.y = static_cast<int>(wy);
+                    rec_pos = pos;
+                }
+                else {
+                    SDL_SetWindowPosition(window, pos.x, pos.y);
+                    rec_pos = pos;
+                }
 
                 gameProps->graphics = graphics;
 

@@ -116,7 +116,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                 self.func:downloadModule()
             end
         })
-        downloadButton.x = buildButton.x - downloadButton.width - 8
+        downloadButton.x = 8
         downloadButton.y = buildButton.y
     end,
 

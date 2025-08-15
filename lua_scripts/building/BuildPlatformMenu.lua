@@ -106,10 +106,10 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
                     newWindow.func:openWindow()
                 end
             elseif platform == "label_platform_web" then
-                self.world.props.windows:createChild("WebBuildNode", {
+                newWindow = self.world.props.windows:createChild("WebBuildOptions", {
                     projectPath = self.props.projectPath
                 })
-                -- newWindow.func:openWindow()
+                newWindow.func:openWindow()
             end
 
             settings.lastBuildPlatform = platform

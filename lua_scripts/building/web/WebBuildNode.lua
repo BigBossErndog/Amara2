@@ -111,15 +111,28 @@ Nodes:define("WebBuildNode", "ProcessNode", {
 
 
         -- EMSCRIPTEN_PRELOADS
-        table.insert(args, "--preload-file")
-        table.insert(args, fix_path(System:join(self.props.projectPath, "assets@/assets")))
-        table.insert(args, "--preload-file")
-        table.insert(args, fix_path(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")))
-        -- table.insert(args, "--preload-file")
-        if System:exists(System:join(self.props.projectPath, "files")) then
+        if System:exists(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")) then
             table.insert(args, "--preload-file")
-            table.insert(args, quote_if_needed(System:join(self.props.projectPath, "files@/files")))
+            table.insert(args, fix_path(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")))
         end
+
+        if projectData["build-directories"] then
+            for i, dir in ipairs(projectData["build-directories"]) do
+                if System:exists(System:join(self.props.projectPath, dir)) then
+                    table.insert(args, "--preload-file")
+                    table.insert(args, fix_path(System:join(self.props.projectPath, dir .. "@/" .. dir)))
+                end
+            end
+        end
+
+            -- table.insert(args, "--preload-file")
+            -- table.insert(args, fix_path(System:join(self.props.projectPath, "assets@/assets")))
+            
+            -- -- table.insert(args, "--preload-file")
+            -- if System:exists(System:join(self.props.projectPath, "files")) then
+            --     table.insert(args, "--preload-file")
+            --     table.insert(args, quote_if_needed(System:join(self.props.projectPath, "files@/files")))
+            -- end
 
         -- Shell
         table.insert(args, "--shell-file")
