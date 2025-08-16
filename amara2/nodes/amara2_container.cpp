@@ -169,7 +169,7 @@ namespace Amara {
                 "right", sol::readonly(&Container::right),
                 "top", sol::readonly(&Container::top),
                 "bottom", sol::readonly(&Container::bottom),
-                "origin", &Container::origin
+                "origin", sol::property([] (Amara::Container& c) -> Vector2& { return c.origin; }, [](Amara::Container& c, sol::object v) { c.origin = v; })
             );
         }
     };

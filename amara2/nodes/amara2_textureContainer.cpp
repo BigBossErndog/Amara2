@@ -595,7 +595,7 @@ namespace Amara {
                 "right", sol::readonly(&TextureContainer::right),
                 "top", sol::readonly(&TextureContainer::top),
                 "bottom", sol::readonly(&TextureContainer::bottom),
-                "origin", &TextureContainer::origin,
+                "origin", sol::property([](Amara::TextureContainer& t) -> Vector2& { return t.origin; }, [](Amara::TextureContainer& t, sol::object v) { t.origin = v; }),
                 "originX", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.x; }, [](Amara::TextureContainer& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.y; }, [](Amara::TextureContainer& t, float v) { t.origin.y = v; }),
                 "canvasLocked", &TextureContainer::canvasLocked,

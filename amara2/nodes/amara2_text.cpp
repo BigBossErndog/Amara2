@@ -617,7 +617,7 @@ namespace Amara {
                     }
                 ),
                 "length", sol::property(&Text::length),
-                "origin", &Text::origin,
+                "origin", sol::property([](Amara::Text& t) -> Vector2& { return t.origin; }, [](Amara::Text& t, Vector2 v) { t.origin = v; }),
                 "originX", sol::property([](Amara::Text& t) -> float { return t.origin.x; }, [](Amara::Text& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::Text& t) -> float { return t.origin.y; }, [](Amara::Text& t, float v) { t.origin.y = v; }),
                 "alignment", sol::property([](Amara::Text& t) -> int { return static_cast<int>(t.alignment); }, [](Amara::Text& t, int v) { t.align(static_cast<Amara::AlignmentEnum>(v)); }),

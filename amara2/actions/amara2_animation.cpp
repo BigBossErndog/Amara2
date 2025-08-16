@@ -15,7 +15,7 @@ namespace Amara {
         bool waitingYoyo = false;
 
         double progress = 0;
-        
+
         std::string animKey;
         bool anim_configured = false;
 
@@ -160,14 +160,19 @@ namespace Amara {
                 }
                 return false;
             });
-            sprite_type["animation"] = sol::property([](Amara::Sprite& s) -> sol::object {
-                for (Amara::Node* node: s.children) {
-                    if (!node->is_animation || node->destroyed) continue;
-                    Amara::Animation* anim = node->as<Amara::Animation*>();
-                    if (!anim->completed) return anim->get_lua_object();
+            sprite_type["animation"] = sol::property(
+                [](Amara::Sprite& s) -> sol::object {
+                    for (Amara::Node* node: s.children) {
+                        if (!node->is_animation || node->destroyed) continue;
+                        Amara::Animation* anim = node->as<Amara::Animation*>();
+                        if (!anim->completed) return anim->get_lua_object();
+                    }
+                    return sol::nil;
+                },
+                [](Amara::Sprite& s, sol::object v) {
+                    s.animate(v);
                 }
-                return sol::nil;
-            });
+            );
         }
     };
 

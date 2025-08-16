@@ -818,7 +818,7 @@ namespace Amara {
                     sol::resolve<sol::object(float, float, float)>(&Node::goTo),
                     sol::resolve<sol::object(float, float)>(&Node::goTo)
                 ),
-                "scale", sol::property([](Node& e, sol::object val) { e.scale = val; }, [](Node& e) { return e.scale; }),
+                "scale", sol::property([](Node& e, sol::object val) { e.scale = val; }, [](Node& e) -> Vector2& { return e.scale; }),
                 "scaleX", sol::property([](Node& e, float val) { e.scale.x = val; }, [](Node& e) { return e.scale.x; }),
                 "scaleY", sol::property([](Node& e, float val) { e.scale.y = val; }, [](Node& e) { return e.scale.y; }),
                 "rotation", &Node::rotation,

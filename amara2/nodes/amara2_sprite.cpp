@@ -29,8 +29,6 @@ namespace Amara {
 
         bool renderPixelPerfect = false;
 
-        Animation* animation = nullptr;
-
         #ifdef AMARA_OPENGL
         std::array<float, 16> vertices = {
             -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
@@ -396,7 +394,7 @@ namespace Amara {
                 "cropRight", &Sprite::cropRight,
                 "cropTop", &Sprite::cropTop,
                 "cropBottom", &Sprite::cropBottom,
-                "origin", &Sprite::origin,
+                "origin", sol::property([](Amara::Sprite& t) -> Vector2& { return t.origin; }, [](Amara::Sprite& t, sol::object v) { t.origin = v; }),
                 "originX", sol::property([](Amara::Sprite& t) -> float { return t.origin.x; }, [](Amara::Sprite& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::Sprite& t) -> float { return t.origin.y; }, [](Amara::Sprite& t, float v) { t.origin.y = v; }),
                 "w", sol::property(&Sprite::getWidth),
