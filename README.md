@@ -120,7 +120,7 @@ Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node 
     onUpdate = function(self, deltaTime)
         -- Keyboard global object handles key input
         if Keyboard:justPressed(Key.Space) then
-            self.props.mySprite:animate("waveHello")
+            self.props.mySprite.animation = "waveHello"
         end
     end
 })
