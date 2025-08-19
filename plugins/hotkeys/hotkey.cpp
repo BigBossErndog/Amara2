@@ -3,6 +3,11 @@ public:
     bool pressed = false;
     bool rec_pressed = false;
 
+    bool justPressed = false;
+    bool justReleased = false;
+
+    double timeHeld = 0;
+
     std::vector<SDL_Keycode> keys;
 
     Hotkey(): Amara::Action() {
@@ -276,6 +281,9 @@ public:
         rec_pressed = pressed;
         pressed = true;
 
+        justPressed = false;
+        justReleased = false;
+
         if (keys.size() > 0) {
             for (int i = 0; i < keys.size(); i++) {
                 if (!is_key_pressed(SDLKeyToWindowsVK(keys[i]))) {
@@ -286,10 +294,15 @@ public:
         else pressed = false;
 
         if (pressed) {
-            if (!rec_pressed && funcs.hasFunction("onPress")) funcs.callFunction(actor, "onPress");
+            timeHeld += deltaTime;
+            if (!rec_pressed) {
+                timeHeld = 0;
+                justPressed = true;
+                if (funcs.hasFunction("onPress")) funcs.callFunction(actor, "onPress");
+            }
             if (funcs.hasFunction("whilePressed")) funcs.callFunction(actor, "whilePressed");
         }
-        else if (rec_pressed) {
+        if (rec_pressed) {
             if (funcs.hasFunction("onRelease")) funcs.callFunction(actor, "onRelease");
         }
     }
@@ -297,7 +310,10 @@ public:
     static void bind_lua(sol::state& lua) {
         lua.new_usertype<Hotkey>("Hotkey",
             "pressed", sol::readonly(&Hotkey::pressed),
-            "isDown", &Hotkey::keyPressed
+            "isDown", &Hotkey::keyPressed,
+            "justPressed", sol::readonly(&Hotkey::justPressed),
+            "justReleased", sol::readonly(&Hotkey::justReleased),
+            "timeHeld", sol::readonly(&Hotkey::timeHeld)
         );
     }
 };

@@ -109,7 +109,7 @@ namespace Amara {
             }
             return false;
         }
-
+        
         bool hasCollided(Amara::Node* other) {
             if (other == nullptr || other->destroyed || other == this || other == actor) return false;
             return other->collidesWith(this);

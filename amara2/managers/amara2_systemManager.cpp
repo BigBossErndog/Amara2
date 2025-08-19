@@ -920,6 +920,82 @@ namespace Amara {
             auto result = pfd::open_file("Select a file", defPath).result();
             return result.empty() ? "" : result[0];
         }
+
+        bool downloadFile(const std::string& url, const std::string& localPath) {
+            #if defined(_WIN32)
+                std::wstring wUrl = String::string_to_wstring(url);
+                std::wstring wLocalPath = String::string_to_wstring(localPath);
+
+                bool result = false;
+                URL_COMPONENTS urlComp = {};
+                urlComp.dwStructSize = sizeof(URL_COMPONENTS);
+                
+                wchar_t hostName[256];
+                wchar_t urlPath[1024];
+                urlComp.lpszHostName = hostName;
+                urlComp.dwHostNameLength = _countof(hostName);
+                urlComp.lpszUrlPath = urlPath;
+                urlComp.dwUrlPathLength = _countof(urlPath);
+
+                if (!WinHttpCrackUrl(wUrl.c_str(), 0, 0, &urlComp)) {
+                    std::cerr << "Invalid URL\n";
+                    return false;
+                }
+
+                HINTERNET hSession = WinHttpOpen(L"WinHTTP Downloader/1.0",
+                                                WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+                                                WINHTTP_NO_PROXY_NAME,
+                                                WINHTTP_NO_PROXY_BYPASS, 0);
+                if (!hSession) return false;
+
+                HINTERNET hConnect = WinHttpConnect(hSession, hostName,
+                                                    urlComp.nPort, 0);
+                if (!hConnect) {
+                    WinHttpCloseHandle(hSession);
+                    return false;
+                }
+
+                DWORD flags = (urlComp.nScheme == INTERNET_SCHEME_HTTPS) ?
+                            WINHTTP_FLAG_SECURE : 0;
+
+                HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"GET",
+                                                        urlPath, nullptr,
+                                                        WINHTTP_NO_REFERER,
+                                                        WINHTTP_DEFAULT_ACCEPT_TYPES,
+                                                        flags);
+                if (!hRequest) {
+                    WinHttpCloseHandle(hConnect);
+                    WinHttpCloseHandle(hSession);
+                    return false;
+                }
+
+                if (WinHttpSendRequest(hRequest,
+                                    WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                    WINHTTP_NO_REQUEST_DATA, 0,
+                                    0, 0) &&
+                    WinHttpReceiveResponse(hRequest, nullptr)) {
+                    
+                    std::ofstream outFile(localPath, std::ios::binary);
+                    if (!outFile.is_open()) goto cleanup;
+
+                    DWORD bytesRead = 0;
+                    BYTE buffer[8192];
+
+                    while (WinHttpReadData(hRequest, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
+                        outFile.write(reinterpret_cast<char*>(buffer), bytesRead);
+                    }
+
+                    outFile.close();
+                    result = true;
+                }
+
+            cleanup:
+                WinHttpCloseHandle(hRequest);
+                WinHttpCloseHandle(hConnect);
+                WinHttpCloseHandle(hSession);
+                return result;
+            #endif
+        }
         #endif
 
         #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
@@ -1189,6 +1265,7 @@ namespace Amara {
                     sol::resolve<std::string(std::string)>(&SystemManager::browseFile),
                     sol::resolve<std::string()>(&SystemManager::browseFile)
                 ),
+                "downloadFile", &SystemManager::downloadFile,
                 #endif
                 #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
                 "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled,

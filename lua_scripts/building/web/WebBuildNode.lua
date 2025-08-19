@@ -111,7 +111,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
 
 
         -- EMSCRIPTEN_PRELOADS
-        if System:exists(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")) then
+        if System:exists(System:join(self.props.projectPath, "lua_scripts")) then
             table.insert(args, "--preload-file")
             table.insert(args, fix_path(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")))
         end

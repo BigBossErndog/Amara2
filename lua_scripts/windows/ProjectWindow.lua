@@ -38,14 +38,24 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 else 
                     self.func:stopGame()
                 end
-            end
-        })
-        
-        self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftAlt, Key.A },
-            onPress = function()
-                self.props.playButton.func:forcePress()
-            end
+            end,
+            input = {
+                onRightMouseDown = function(button)
+                    button.props.clicked = true
+                    if button.props.enabled then
+                        button.frame = 2
+                    end
+                end,
+                onRightMouseUp = function(button)
+                    button.frame = 1
+                    if not self.props.gameProcess then
+                        self.func:runGame()
+                    else 
+                        self.func:stopGame()
+                        self.func:runGame()
+                    end
+                end
+            }
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
@@ -57,13 +67,6 @@ Nodes:define("ProjectWindow", "UIWindow", {
             icon = 7
         })
 
-        self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftAlt, Key.E },
-            onPress = function()
-                self.props.codeEditorButton.func:forcePress()
-            end
-        })
-
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.openDirectoryButton = self.props.content:createChild("UIButton", {
             id = "openDirectoryButton",
@@ -73,13 +76,6 @@ Nodes:define("ProjectWindow", "UIWindow", {
             icon = 6,
             onPress = function()
                 System:openDirectory(self.props.projectPath)
-            end
-        })
-
-        self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftAlt, Key.P },
-            onPress = function()
-                self.props.openDirectoryButton.func:forcePress()
             end
         })
 
@@ -142,13 +138,6 @@ Nodes:define("ProjectWindow", "UIWindow", {
             end
         })
 
-        self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftAlt, Key.B },
-            onPress = function()
-                self.props.buildButton.func:forcePress()
-            end
-        })
-
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.printLogButton = self.props.content:createChild("UIButton", {
             id = "printLogButton",
@@ -170,13 +159,6 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 else
                     self.props.printLog.props.exitButton.func:forcePress()
                 end
-            end
-        })
-
-        self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftAlt, Key.M },
-            onPress = function()
-                self.props.printLogButton.func:forcePress()
             end
         })
 
@@ -264,11 +246,46 @@ Nodes:define("ProjectWindow", "UIWindow", {
             end
         end)
 
+        self.func:setHotkeys()
+
         self.input:listen("onPointerUp", function(self)
             self.func:savePosition()
         end)
 
         self.world.func:registerProject(self.props.projectPath)
+    end,
+
+    setHotkeys = function(self)
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftShift, Key.A },
+            onPress = function()
+                self.props.playButton.func:forcePress()
+            end
+        })
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftShift, Key.E },
+            onPress = function()
+                self.props.codeEditorButton.func:forcePress()
+            end
+        })
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftShift, Key.P },
+            onPress = function()
+                self.props.openDirectoryButton.func:forcePress()
+            end
+        })
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftShift, Key.B },
+            onPress = function()
+                self.props.buildButton.func:forcePress()
+            end
+        })
+        self:createChild("Hotkey", {
+            keys = { Key.LeftCtrl, Key.LeftShift, Key.M },
+            onPress = function()
+                self.props.printLogButton.func:forcePress()
+            end
+        })
     end,
 
     savePosition = function(self)
@@ -317,6 +334,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
             arguments = {
                 exe,
                 "-context", self.props.projectPath,
+                "-debugging",
                 "-script", "index.lua",
                 "-script", System:getScriptPath("utility/BringGameToFront.lua")
             },

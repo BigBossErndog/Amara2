@@ -92,10 +92,19 @@ namespace Amara {
                     }
                     anim.numFrames = frames.size();
                 }
+                else if (frames.is_number()) {
+                    anim.frames.push_back(frames);
+                    anim.numFrames = 1;
+                }
                 else {
                     debug_log("Error: Animation couldn't be created from ", config.dump());
                     return invalidAnim;
                 }
+            }
+            else if (json_has(config, "frame")) {
+                int frame = config["frame"];
+                anim.frames.push_back(frame);
+                anim.numFrames = 1;
             }
             else if (json_has(config, "startFrame")) {
                 int startFrame = config["startFrame"];

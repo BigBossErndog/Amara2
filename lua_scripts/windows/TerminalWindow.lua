@@ -478,7 +478,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         end
         
         if self.props.wallHeight > (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
-            self.props.scrollBar.func:manageScrollPosition(self.props.scrollBar)
+            self.props.scrollBar.func:manageScrollPosition()
         else
             self.props.scrollBar.visible = false
         end

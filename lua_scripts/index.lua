@@ -1,4 +1,8 @@
-version_string = "0.2.2"
+version_major = 0
+version_minor = 2
+version_patch = 3
+
+version_string = version_major .. "." .. version_minor .. "." .. version_patch
 
 Scripts:run("utility/Localize")
 Scripts:run("utility/OpenCodeEditor")

@@ -27,6 +27,8 @@ Nodes:define("IncludeFolders", "FillRect", {
     end,
 
     onCreate = function(self)
+        self.props.wallHeight = 0
+
         self.props.content = self:createChild("Container", {
             x = self.props.margin.left,
             y = self.props.margin.top,
@@ -63,7 +65,7 @@ Nodes:define("IncludeFolders", "FillRect", {
         end
 
         for i, v in ipairs(self.props.directories) do
-            self.props.root:createChild("FillRect", {
+            local opt = self.props.root:createChild("FillRect", {
                 x = 0, y = (i - 1)*16,
                 width = self.width,
                 height = 16,
@@ -96,6 +98,47 @@ Nodes:define("IncludeFolders", "FillRect", {
                     end
                 }
             })
+            if opt.y + opt.height > self.props.wallHeight then
+                self.props.wallHeight = opt.y + opt.height
+            end
+        end
+
+        self.props.scrollBar = self.props.content:createChild("FillRect", {
+            color = { 80, 80, 80 },
+            width = 2,
+            origin = 0,
+            visible = false,
+            
+            onCreate = function(scrollBar)
+                scrollBar.props.pos = scrollBar:createChild("FillRect", {
+                    color = { 200, 200, 200 },
+                    width = 2,
+                    height = 1,
+                    origin = 0
+                })
+
+            end,
+            manageScrollPosition = function(scrollBar)
+                scrollBar.visible = true
+
+                scrollBar.x = self.props.content.x + self.props.content.width + scrollBar.width - 1
+                scrollBar.y = self.props.content.y + 2
+                
+                scrollBar.height = self.props.content.height - 4
+
+                local pos = scrollBar.props.pos
+
+                pos.height = scrollBar.height * ((self.props.content.height - self.props.margin.bottom - self.props.margin.top) / (self.props.wallHeight + self.props.marginBottom + self.props.marginTop - firstItem.y))
+                pos.y = -(scrollBar.height - pos.height) * ((-self.props.pool.y + self.props.content.top + self.props.margin.top) / ((self.props.content.bottom - self.props.marginBottom - self.props.wallHeight) - (self.props.content.top + self.props.margin.top)))
+            end
+        })
+    end,
+
+    onUpdate = function(self, deltaTime)
+        if self.props.wallHeight > (self.props.content.height - self.props.marginBottom - self.props.marginTop) then
+            self.props.scrollBar.func:manageScrollPosition()
+        else
+            self.props.scrollBar.visible = false
         end
     end,
 

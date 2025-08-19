@@ -20,7 +20,7 @@ namespace Amara {
         
         std::string executable;
 
-        bool testing = false;
+        bool debugging = false;
         
         GameManager() {
             #if defined(__EMSCRIPTEN__)
@@ -41,8 +41,8 @@ namespace Amara {
                 platform = "unknown";
             #endif
 
-            #if defined(AMARA_TESTING)
-                testing = true;
+            #ifdef AMARA_DEBUGGING
+                debugging = true;
             #endif
         }
         
@@ -83,10 +83,30 @@ namespace Amara {
             return Rectangle( -1, -1, -1, -1 );
         }
 
+        Rectangle getMainDisplay() {
+            SDL_Rect rect;
+            if (SDL_GetDisplayBounds(0, &rect)) {
+                return { 
+                    static_cast<float>(rect.x),
+                    static_cast<float>(rect.y), 
+                    static_cast<float>(rect.w),
+                    static_cast<float>(rect.h)
+                };
+            }
+            return Rectangle( -1, -1, -1, -1 );
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<GameManager>("GameManager",
                 "FPS", sol::readonly(&GameManager::fps),
-                "targetFPS", sol::readonly(&GameManager::targetFPS),
+                "targetFPS", sol::property(
+                    [] (GameManager& g) {
+                        return g.targetFPS;
+                    },
+                    [] (GameManager& g, float _fps) {
+                        g.setTargetFPS(_fps);
+                    }
+                ),
                 "setTargetFPS", &GameManager::setTargetFPS,
                 "uncapFPS", &GameManager::uncapFPS,
                 "deltaTime", sol::readonly(&GameManager::deltaTime),
@@ -102,7 +122,8 @@ namespace Amara {
                 }),
                 "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint,
                 "getDisplayBounds", &GameManager::getDisplayBounds,
-                "testing", sol::readonly(&GameManager::testing)
+                "mainDisplay", sol::property(&GameManager::getMainDisplay),
+                "debugging", sol::readonly(&GameManager::debugging)
             );
         }
     };

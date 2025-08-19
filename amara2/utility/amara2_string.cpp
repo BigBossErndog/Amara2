@@ -218,5 +218,16 @@ namespace Amara {
             }
             return utf8;
         }
+
+        static std::wstring string_to_wstring(const std::string& str) {
+            #if defined(_WIN32)
+                int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(),
+                                                    (int)str.length(), nullptr, 0);
+                std::wstring wstrTo(size_needed, 0);
+                MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(),
+                                    &wstrTo[0], size_needed);
+                return wstrTo;
+            #endif
+        }
     };
 }

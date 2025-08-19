@@ -119,6 +119,11 @@ namespace Amara {
                                 gameProps.targetDisplayID = path;
                             }
                         }
+                        #ifdef AMARA_ENGINE_TOOLS
+                        else if (String::equal(arg, "-debugging")) {
+                            game.debugging = true;
+                        }
+                        #endif
                         else if (String::startsWith(arg, "-")) {
                             std::string lbl = arg.get<std::string>();
                             it++;

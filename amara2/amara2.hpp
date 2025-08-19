@@ -68,6 +68,8 @@
         #define AMARA_DESKTOP
         #include <windows.h>
         #include <shellapi.h>
+        #include <winhttp.h>
+        #pragma comment(lib, "winhttp.lib")
         #undef min
         #undef max
     #elif defined(__linux__)

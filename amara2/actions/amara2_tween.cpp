@@ -119,7 +119,7 @@ namespace Amara {
             if (lua_data["backgroundColor"].valid()) {
                 sol::object color_obj = lua_data["backgroundColor"];
                 Amara::Color color = color_obj;
-                target_data["fill"] = color.toJSON();
+                target_data["backgroundColor"] = color.toJSON();
                 lua_data["backgroundColor"] = sol::nil;
             }
             if (lua_data["rect"].valid()) {
