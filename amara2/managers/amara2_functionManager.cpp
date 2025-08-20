@@ -43,7 +43,7 @@ namespace Amara {
                 }
             }
             catch (const std::exception& e) {
-                debug_log(e.what());
+                fatal_error(e.what());
                 gameProps->breakWorld();
             }
 

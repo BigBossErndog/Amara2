@@ -1,3 +1,13 @@
-FATAL ERROR: Error: Asset "uiBox" was not found.
-FATAL ERROR: Error: Asset "uiBox" was not found.
-FATAL ERROR: Error: Asset "uiBox" was not found.
+Error: Animation with key "idlse" was not found on texture "amara_tiny".
+stack traceback:
+	[C]: in metamethod 'newindex'
+	[string "Player.lua"]:44: in function <[string "Player.lua"]:43>
+	[C]: in method 'createChild'
+	[string "index.lua"]:30: in function <[string "index.lua"]:24>
+	[C]: in method 'createWorld'
+	[string "index.lua"]:3: in main chunk
+stack traceback:
+	[C]: in method 'createChild'
+	[string "index.lua"]:30: in function <[string "index.lua"]:24>
+	[C]: in method 'createWorld'
+	[string "index.lua"]:3: in main chunk

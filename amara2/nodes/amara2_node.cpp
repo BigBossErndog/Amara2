@@ -255,7 +255,12 @@ namespace Amara {
                             input.configure(val);
                         }
                         else if (String::equal("collider", key)) {
-                            collider = luaCreateChild("Collider", val).as<Amara::Node*>();
+                            if (collider) {
+                                collider->luaConfigure(val);
+                            }
+                            else {
+                                collider = luaCreateChild("Collider", val).as<Amara::Node*>();
+                            }
                         }
                     }
                 }

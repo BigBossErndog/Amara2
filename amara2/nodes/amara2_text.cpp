@@ -642,7 +642,24 @@ namespace Amara {
                     sol::resolve<sol::object()>(&Text::removeManipulator),
                     sol::resolve<sol::object(std::string)>(&Text::removeManipulator)
                 ),
-                "manipulator", &Text::currentManipulator,
+                "manipulator", sol::property(
+                    [](Amara::Text& t) -> sol::protected_function { return t.currentManipulator; },
+                    [](Amara::Text& t, sol::object v) {
+                        if (v.is<sol::protected_function>()) {
+                            t.currentManipulator = v;
+                        }
+                        else if (v.is<std::string>()) {
+                            if (t.manipulators.find(v.as<std::string>()) != t.manipulators.end()) {
+                                t.currentManipulator = t.manipulators[v.as<std::string>()];
+                            }
+                            else {
+                                fatal_error("Error: Text Manipulator \"", v.as<std::string>(), "\" was not found.");
+                                t.gameProps->breakWorld();
+                            }
+                        }
+                        return t.currentManipulator;
+                    }
+                ),
                 "autoProgress", sol::overload(
                     sol::resolve<sol::object(double)>(&Text::autoProgress),
                     sol::resolve<sol::object(sol::table)>(&Text::autoProgress)

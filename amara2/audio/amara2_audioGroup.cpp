@@ -55,22 +55,17 @@ namespace Amara {
             }
         }
         
-        void togglePause() {
-            Amara::Audio::togglePause();
-        }
-        void togglePause(std::string gid) {
-            Amara::Node* node = getChild(gid);
-            if (node) {
-                Amara::Audio* audio = node->as<Amara::Audio*>();
+        void stop() {
+            Amara::Audio::stop();
+            for (Amara::Node* child : children) {
+                if (child == nullptr || child->destroyed || child->parent != this) continue;
+                
+                Amara::Audio* audio = child->as<Amara::Audio*>();
                 if (audio) {
-                    audio->togglePause();
+                    audio->stop();
                     return;
                 }
             }
-        }
-
-        void stop() {
-            Amara::Audio::stop();
         }
         void stop(std::string gid) {
             Amara::Node* node = getChild(gid);
@@ -111,10 +106,6 @@ namespace Amara {
                 "resume", sol::overload(
                     sol::resolve<void()>(&AudioGroup::resume),
                     sol::resolve<void(std::string)>(&AudioGroup::resume)
-                ),
-                "togglePause", sol::overload(
-                    sol::resolve<void()>(&AudioGroup::togglePause),
-                    sol::resolve<void(std::string)>(&AudioGroup::togglePause)
                 ),
                 "stop", sol::overload(
                     sol::resolve<void()>(&AudioGroup::stop),

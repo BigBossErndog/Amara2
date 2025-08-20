@@ -14,7 +14,7 @@ namespace Amara {
 
         bool invalid = false;
     };
-
+    
     struct TextureAnimations {
         TextureAnimations() = default;
         std::unordered_map<std::string, AnimationData> animations;

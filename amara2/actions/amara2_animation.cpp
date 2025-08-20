@@ -49,9 +49,10 @@ namespace Amara {
                 if (sprite && !animKey.empty()) {
                     if (sprite->spritesheet) {
                         AnimationData* animData = gameProps->animations->get(sprite->spritesheet->key, animKey);
-                                
+                        
                         if (animData == nullptr) {
-                            fatal_error("Error: Node ", *sprite, " could not be animated.\n", "Animation with key \"", animKey, "\" was not found on texture \"", sprite->spritesheet->key, "\".");
+                            fatal_error("Error: Animation with key \"", animKey, "\" was not found on texture \"", sprite->spritesheet->key, "\".");
+                            animKey.clear();
                             return;
                         }
 
@@ -65,14 +66,17 @@ namespace Amara {
                     else {
                         fatal_error("Error: Node ", *sprite, " does not have a valid texture for animation.");
                         gameProps->breakWorld();
+                        animKey.clear();
                         return;
                     }
                 }
+                return;
             }
             else if (config.is_object()) {
                 AnimationData anim = gameProps->animations->createAnimation(config);
 
                 anim_configured = true;
+                return;
             }
         }
 
@@ -83,7 +87,7 @@ namespace Amara {
                 sprite = actor->as<Amara::Sprite*>();
             }
             if (sprite) {
-                if (!animKey.empty()) setAnimation(animKey);
+                if (!anim_configured && !animKey.empty()) setAnimation(animKey);
             }
             else {
                 fatal_error("Error: Node ", *actor, " cannot be animated.");
@@ -194,8 +198,9 @@ namespace Amara {
                 }
             }
         }
-        if (!config.is_null()) {
+        if (config.is_object() || config.is_string()) {
             Amara::Animation* anim = createChild("Animation")->as<Amara::Animation*>();
+            anim->sprite = this;
             anim->setAnimation(config);
             return anim;
         }

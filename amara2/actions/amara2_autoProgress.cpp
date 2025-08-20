@@ -2,6 +2,8 @@ namespace Amara {
     class AutoProgress: public Amara::Action {
     public:
         Amara::Text* text = nullptr;
+
+        int startIndex = -1;
         double timer = 0;
         double speed = 1; // speed = characters per second
 
@@ -16,17 +18,29 @@ namespace Amara {
             Action::configure(config);
 
             if (json_has(config, "speed")) speed = config["speed"];
-            if (json_has(config, "until")) until = config["until"];
+            if (json_has(config, "start")) startIndex = config["start"];
+            if (json_has(config, "progressUntil")) until = config["progressUntil"];
 
             return this;
         }
-                
+        
+        virtual sol::object luaConfigure(std::string key, sol::object val) override {
+            if (val.is<sol::function>()) {
+                if (String::equal(key, "skipCondition")) {
+                    funcs.setFunction(nodeID, "skipCondition", val);
+                }
+            }
+            return Amara::Action::luaConfigure(key, val);
+        }
 
         virtual void prepare() override {
             Amara::Action::prepare();
 
             if (text == nullptr) text = actor->as<Amara::Text*>();
             if (text == nullptr) complete();
+            else {
+                if (startIndex >= 0) text->progress = startIndex;
+            }
 
             if (until < 0) until = text->layout.size();
         }
@@ -41,6 +55,11 @@ namespace Amara {
                     if (text->progressText(1) || text->progress >= until) {
                         complete();
                         break;
+                    }
+                }
+                if (!completed && funcs.hasFunction("skipCondition")) {
+                    if (funcs.callFunction(actor, "skipCondition").as<bool>()) {
+                        skip();
                     }
                 }
             }

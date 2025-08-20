@@ -137,6 +137,54 @@ namespace Amara {
                 "removeKey", &ControlScheme::removeKey,
                 "clearKeys", &ControlScheme::clearKeys,
 
+                "key", sol::property(
+                    [](ControlScheme& t) -> sol::optional<int> {
+                        if (!t.keys.empty()) {
+                            return t.keys[0];
+                        }
+                        return sol::nullopt;
+                    },
+                    [](ControlScheme& t, sol::object v) {
+                        t.clearKeys();
+                        if (v.is<SDL_Keycode>()) {
+                            t.addKey(v.as<int>());
+                        }
+                        else if (v.is<sol::table>()) {
+                            sol::table keys = v.as<sol::table>();
+                            for (auto& pair: keys) {
+                                sol::object obj = pair.second;
+                                if (obj.is<int>()) {
+                                    t.addKey(obj.as<int>());
+                                }
+                            }
+                        }
+                    }
+                ),
+                "keys", sol::property(
+                    [](ControlScheme& t) -> sol::object {
+                        sol::table keys = t.gameProps->lua.create_table();
+                        for (SDL_Keycode k: t.keys) {
+                            keys.add((int)k);
+                        }
+                        return keys;
+                    },
+                    [](ControlScheme& t, sol::object v) {
+                        t.clearKeys();
+                        if (v.is<int>()) {
+                            t.addKey(v.as<int>());
+                        }
+                        else if (v.is<sol::table>()) {
+                            sol::table keys = v.as<sol::table>();
+                            for (auto& pair: keys) {
+                                sol::object obj = pair.second;
+                                if (obj.is<int>()) {
+                                    t.addKey(obj.as<int>());
+                                }
+                            }
+                        }
+                    }
+                ),
+
                 "addButton", &ControlScheme::addButton,
                 "setButton", &ControlScheme::setButton,
                 "addButtons", &ControlScheme::addButtons,

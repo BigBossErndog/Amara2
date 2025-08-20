@@ -135,7 +135,8 @@ namespace Amara {
 
         sol::object animate(sol::object config) {
             Amara::Action* anim = animate(lua_to_json(config));
-            return anim->get_lua_object();
+            if (anim) return anim->get_lua_object();
+            return sol::nil;
         }
         sol::object stopAnimating() {
             for (Amara::Node* node: children) {

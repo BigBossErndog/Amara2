@@ -326,7 +326,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         if string.starts_with(msg, "\t[C") or string.starts_with(msg, "stack traceback") then
             return;
         end
-        if string.starts_with(msg, "\t[string") and not self.props.allowTrace then
+        if string.starts_with(msg, "\t[str") and not self.props.allowTrace then
             return;
         end
         self.props.allowTrace = false
@@ -363,11 +363,12 @@ Nodes:define("TerminalWindow", "UIWindow", {
         self.props.bottomLocked = true
 
         item.input:activate()
+        item.input.cursor = Cursor.Pointer
         item.input:listen("onRightMouseDown", function(txt)
             System:copyToClipboard(txt.text)
-            txt.alpha = 0;
+            txt.color = Colors.White;
             txt.tween:to({
-                alpha = 1,
+                color = txt.props.defColor,
                 duration = 0.25
             })
             local copyMsg = self.world:createChild("Text", {

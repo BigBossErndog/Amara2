@@ -58,6 +58,7 @@ namespace Amara {
                 sol::table t = config.as<sol::table>();
 
                 if (t["targets"].valid()) {
+                    collisionTargets.clear();
                     sol::object tobj = t["targets"];
                     if (tobj.is<Amara::Node>()) {
                         addCollisionTarget(tobj.as<Amara::Node*>());
@@ -73,6 +74,7 @@ namespace Amara {
                     }
                 }
                 if (t["target"].valid()) {
+                    collisionTargets.clear();
                     sol::object tobj = t["target"];
                     if (tobj.is<Amara::Node>()) {
                         addCollisionTarget(tobj.as<Amara::Node*>());
@@ -294,7 +296,52 @@ namespace Amara {
                 ),
                 "selfCorrect", &Collider::selfCorrect,
                 "addCollisionTarget", &Collider::addCollisionTarget,
-                "cleanCollisionTargets", &Collider::cleanCollisionTargets
+                "cleanCollisionTargets", &Collider::cleanCollisionTargets,
+                "target", sol::property(
+                    [](Collider& t) -> sol::object {
+                        if (t.collisionTargets.size() > 0) return t.collisionTargets[0]->get_lua_object();
+                        return sol::nil;
+                    },
+                    [](Collider& t, sol::object v) {
+                        t.collisionTargets.clear();
+                        if (v.is<Amara::Node>()) {
+                            t.addCollisionTarget(v.as<Amara::Node*>());
+                        }
+                        else if (v.is<sol::table>()) {
+                            sol::table targets = v.as<sol::table>();
+                            for (auto& pair: targets) {
+                                sol::object obj = pair.second;
+                                if (obj.is<Amara::Node>()) {
+                                    t.addCollisionTarget(obj.as<Amara::Node*>());
+                                }
+                            }
+                        }
+                    }
+                ),
+                "targets", sol::property(
+                    [](Collider& t) -> sol::object {
+                        sol::table targets = t.gameProps->lua.create_table();
+                        for (Amara::Node* target: t.collisionTargets) {
+                            targets.add(target->get_lua_object());
+                        }
+                        return targets;
+                    },
+                    [](Collider& t, sol::object v) {
+                        t.collisionTargets.clear();
+                        if (v.is<Amara::Node>()) {
+                            t.addCollisionTarget(v.as<Amara::Node*>());
+                        }
+                        else if (v.is<sol::table>()) {
+                            sol::table targets = v.as<sol::table>();
+                            for (auto& pair: targets) {
+                                sol::object obj = pair.second;
+                                if (obj.is<Amara::Node>()) {
+                                    t.addCollisionTarget(obj.as<Amara::Node*>());
+                                }
+                            }
+                        }
+                    }
+                )
             );
         }
     };

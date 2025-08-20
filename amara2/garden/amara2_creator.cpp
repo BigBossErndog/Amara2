@@ -336,8 +336,13 @@ namespace Amara {
                         currentWorld->pauseOnce = false;
                         continue;
                     }
-
-                    currentWorld->run(game.deltaTime);
+                    try {
+                        currentWorld->run(game.deltaTime);
+                    }
+                    catch (std::exception& e) {
+                        debug_log(e.what());
+                        currentWorld->destroy();
+                    }
 
                     if (currentWorld->exception_thrown) {
                         currentWorld->destroy();

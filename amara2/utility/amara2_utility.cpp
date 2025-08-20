@@ -19,13 +19,10 @@ namespace Amara {
         std::string errorMessage = ss.str();
 
         // Write to error_log.txt
-        std::ofstream errorLogFile("error_log.txt", std::ios_base::app);
+        std::ofstream errorLogFile("error_log.txt");
         if (errorLogFile.is_open()) {
-            errorLogFile << "FATAL ERROR: " << errorMessage << std::endl;
+            errorLogFile << errorMessage << std::endl;
             errorLogFile.close();
-        } else {
-            // Fallback if file cannot be opened (e.g., print to console)
-            std::cerr << "FATAL ERROR: Could not open error_log.txt for writing!" << std::endl;
         }
 
         throw std::runtime_error(errorMessage);
