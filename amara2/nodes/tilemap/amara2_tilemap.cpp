@@ -83,24 +83,57 @@ namespace Amara {
                 return;
             }
             if (tmxAsset) {
+                const unsigned int FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
+                const unsigned int FLIPPED_VERTICALLY_FLAG   = 0x40000000;
+                const unsigned int FLIPPED_DIAGONALLY_FLAG   = 0x20000000;
+                const unsigned int ALL_FLIP_FLAGS = FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG;
+                
                 for (int i = 0; i < tmxAsset->objectGroups.size(); ++i) {
                     const Amara::TMXObjectGroup& objectGroup = tmxAsset->objectGroups[i];
                     for (int j = 0; j < objectGroup.objects.size(); ++j) {
                         const Amara::TMXObject& object = objectGroup.objects[j];
                         nlohmann::json config = nlohmann::json::object();
+
+                        unsigned int gid = object.gid;
+
+                        bool flipped_horizontally = (gid & FLIPPED_HORIZONTALLY_FLAG);
+                        bool flipped_vertically   = (gid & FLIPPED_VERTICALLY_FLAG);
+                        bool flipped_diagonally   = (gid & FLIPPED_DIAGONALLY_FLAG); // Less common, might need special rotation/texture coord handling
+
+                        unsigned int cleanGid = gid & ~ALL_FLIP_FLAGS;
+
+                        const Amara::TMXTileset* tileset = tmxAsset->findTilesetForGid(cleanGid);
+                        if (!tileset) {
+                            Amara::debug_log("Warning: Could not find tileset for GID: ", cleanGid);
+                            continue;
+                        }
+
+                        unsigned int localTileId = cleanGid - tileset->firstGid;
+
+                        config["id"] = localTileId;
+
+                        config["layer"] = objectGroup.name;
+                        
                         config["x"] = object.x;
                         config["y"] = object.y;
+
+                        config["tileX"] = floor(object.x / tmxAsset->tileWidth);
+                        config["tileY"] = floor((object.y - tmxAsset->tileHeight) / tmxAsset->tileHeight);
+
                         config["width"] = object.width;
                         config["height"] = object.height;
                         config["rotation"] = object.rotation;
                         config["visible"] = object.visible;
 
-                        config["gid"] = object.gid;
+                        config["flippedHorizontally"] = flipped_horizontally;
+                        config["flippedVertically"] = flipped_vertically;
+                        config["flippedDiagonally"] = flipped_diagonally;
+                        
                         config["name"] = object.name;
                         config["type"] = object.type;
-
+                        
                         try {
-                            sol::protected_function_result result = func(get_lua_object(), json_to_lua(gameProps->lua, config));
+                            sol::protected_function_result result = func(json_to_lua(gameProps->lua, config));
                             if (!result.valid()) {
                                 sol::error err = result;
                                 throw std::runtime_error(std::string(err.what()));

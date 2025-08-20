@@ -890,19 +890,58 @@ namespace Amara {
                 sol::meta_function::index, [](std::vector<Amara::Node*>& vec, sol::object getter) -> sol::object {
                     if (getter.is<size_t>()) {
                         size_t index = getter.as<size_t>();
-                        std::vector<Amara::Node*> copylist = vec;
-                        clean_node_list(copylist);
                         if (index > 0 && index <= vec.size()) {
-                            return copylist[index-1]->get_lua_object();
+                            return vec[index-1]->get_lua_object();
                         }
                     }
                     else if (getter.is<std::string>()) {
                         std::string gid = getter.as<std::string>();
+                        std::string findKey;
+                        std::string nextKey;
+                        bool forwardSlash = false;
+
+                        for (char c: gid) {
+                            if (forwardSlash) {
+                                nextKey += c;
+                            }
+                            else if (c == '/') {
+                                forwardSlash = true;
+                            }
+                            else findKey += c;
+                        }
+
+                        if (String::equal(findKey, ".")) {
+                            if (forwardSlash && !nextKey.empty()) {
+                                std::string new_gid = nextKey;
+                                findKey.clear();
+                                nextKey.clear();
+                                forwardSlash = false;
+
+                                for (char c: new_gid) {
+                                    if (forwardSlash) {
+                                        nextKey += c;
+                                    }
+                                    else if (c == '/') {
+                                        forwardSlash = true;
+                                    }
+                                    else findKey += c;
+                                }
+                            }
+                        }
+
+                        Amara::Node* found = nullptr;
                         for (Amara::Node* node: vec) {
                             if (node->destroyed) continue;
-                            if (String::equal(node->id, gid)) {
-                                return node->get_lua_object();
+                            if (String::equal(node->id, findKey)) {
+                                found = node;
                             }
+                        }
+                        if (found != nullptr) {
+                            if (forwardSlash && !nextKey.empty()) {
+                                Amara::Node* child = found->getChild(nextKey);
+                                if (child) return child->get_lua_object();
+                            }
+                            else return found->get_lua_object();
                         }
                     }
                     return sol::nil;
@@ -911,10 +950,8 @@ namespace Amara {
                     vec.push_back(node);
                 },
                 "get", [](std::vector<Amara::Node*>& vec, size_t index) -> sol::object {
-                    std::vector<Amara::Node*> copylist = vec;
-                    clean_node_list(copylist);
                     if (index > 0 && index <= vec.size()) {
-                        return copylist[index-1]->get_lua_object();
+                        return vec[index-1]->get_lua_object();
                     }
                     return sol::nil;
                 },
@@ -927,15 +964,6 @@ namespace Amara {
                     }
                     return sol::nil;
                 },
-                "remove", [](std::vector<Amara::Node*>& vec, size_t index) {
-                    if (index > 0 && index <= vec.size()) {
-                        vec.erase(vec.begin() + index-1);
-                    }
-                },
-                "clear", [](std::vector<Amara::Node*>& vec) {
-                    // This is dangerous.
-                    vec.clear();
-                },
                 "string", [](std::vector<Amara::Node*>& vec) -> std::string {
                     std::string output;
                     for (int i = 0; i < vec.size(); i++) {
@@ -944,6 +972,17 @@ namespace Amara {
                             output += "\n";
                         }
                     }
+                    return output;
+                },
+                sol::meta_function::to_string, [](std::vector<Amara::Node*>& vec) -> std::string {
+                    std::string output = "{";
+                    for (int i = 0; i < vec.size(); i++) {
+                        output += std::string(*vec[i]);
+                        if (i < vec.size()-1) {
+                            output += ", ";
+                        }
+                    }
+                    output += '}';
                     return output;
                 }
             );

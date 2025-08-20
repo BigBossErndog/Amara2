@@ -19,8 +19,38 @@ namespace Amara {
             Amara::Node::create();
         }
 
+        void runCameras(double deltaTime) {
+            if (cameras.size() == 0) return;
+
+            children_copy_list = cameras;
+
+            Amara::Node* child;
+			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
+				if (destroyed) break;
+                update_properties();
+
+                child = *it;
+				if (child == nullptr || child->destroyed || child->parent != this || child->paused) {
+					++it;
+					continue;
+				}
+                if (child->pauseOnce) {
+                    child->pauseOnce = false;
+                    ++it;
+                    continue;
+                }
+                
+				child->run(deltaTime);
+				++it;
+				if (destroyed) break;
+			}
+        }
+
         virtual void run(double deltaTime) override {
             Amara::Node::run(deltaTime);
+            
+            runCameras(deltaTime);
+
             if (
                 camera != nullptr &&
                 camera->destroyed
@@ -66,7 +96,23 @@ namespace Amara {
         Amara::Node* addChild(Amara::Node* node) override {
             Amara::Camera* cam = node->as<Amara::Camera*>();
             if (cam) {
+                if (destroyed || node->parent == this) return node;
+            
+                update_properties();
+                node->gameProps = gameProps;
+                node->world = world;
+                if (scene) node->scene = scene;
+                node->parent = this;
                 cameras.push_back(cam);
+
+                if (!node->actuated) {
+                node->preload();
+                if (!node->destroyed && node->finishedLoading()) {
+                    node->create();
+                    node->actuated = true;
+                }
+                return node;
+            }
             }
             return Amara::Node::addChild(node);
         }

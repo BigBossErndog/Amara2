@@ -326,7 +326,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         if string.starts_with(msg, "\t[C") or string.starts_with(msg, "stack traceback") then
             return;
         end
-        if string.starts_with(msg, "\t[str") and not self.props.allowTrace then
+        if string.starts_with(msg, "\t[") and not self.props.allowTrace then
             return;
         end
         self.props.allowTrace = false
