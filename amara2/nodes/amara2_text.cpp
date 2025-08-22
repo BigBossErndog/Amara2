@@ -340,15 +340,13 @@ namespace Amara {
                         }
                     }
 
-                    Vector3 glyphPos = Vector3(
-                        rotateAroundAnchor(
-                            anchoredPos, 
-                            Vector2( 
-                                anchoredPos.x + (line.x + glyph.x + temp_props.offsetX - layout.width*origin.x)*passOn.scale.x*scale.x,
-                                anchoredPos.y + (line.y + glyph.y + temp_props.offsetY - layout.height*origin.y)*passOn.scale.y*scale.y
-                            ),
-                            passOn.rotation + rotation
-                        ),
+                    Vector2 unrotated_glyph_offset(
+                        (line.x + glyph.x + temp_props.offsetX - layout.width*origin.x)*passOn.scale.x*scale.x,
+                        (line.y + glyph.y + temp_props.offsetY - layout.height*origin.y)*passOn.scale.y*scale.y
+                    );
+                    Vector3 glyphPos(
+                        anchoredPos.x + unrotated_glyph_offset.x,
+                        anchoredPos.y + unrotated_glyph_offset.y,
                         anchoredPos.z
                     );
 
@@ -384,8 +382,8 @@ namespace Amara {
                                 destRect.w+4, destRect.h+4
                             )),
                             Vector2(
-                                destRect.x + dorigin.x,
-                                destRect.y + dorigin.y
+                                vcenter.x + anchoredPos.x * totalZoom.x,
+                                vcenter.y + anchoredPos.y * totalZoom.y
                             ),
                             passOn.rotation + rotation
                         );
@@ -396,17 +394,14 @@ namespace Amara {
                     }
 
                     if (font->texture && gameProps->renderer) {
-                                           SDL_FPoint glyphOrigin = {
-                            (glyph.src.w/2.0f)*scale.x*passOn.scale.x*totalZoom.x,
-                            (glyph.src.h/2.0f)*scale.y*passOn.scale.y*totalZoom.y
-                        };
+                        SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
+                        SDL_SetTextureColorMod(font->texture, temp_props.color.r, temp_props.color.g, temp_props.color.b);
+                        SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * temp_props.alpha * 255);
+                        Apply_SDL_BlendMode(gameProps, font->texture, temp_props.blendMode);
 
-                        destRect.x += dorigin.x - glyphOrigin.x;
-                        destRect.y += dorigin.y - glyphOrigin.y;
-
-                        SDL_RenderTextureRotated(
-                                                 (destRect.w/2.0f),
-                            (destRect.h/2.0f)
+                        SDL_FPoint glyph_dorigin = {
+                            -unrotated_glyph_offset.x * totalZoom.x,
+                            -unrotated_glyph_offset.y * totalZoom.y
                         };
 
                         SDL_RenderTextureRotated(
@@ -415,7 +410,7 @@ namespace Amara {
                             &srcRect,
                             &destRect,
                             getDegrees(passOn.rotation + rotation),
-                            &glyphOrigin,
+                            &glyph_dorigin,
                             SDL_FLIP_NONE
                         );
                     }
@@ -430,10 +425,8 @@ namespace Amara {
                         Quad destQuad = glTranslateQuad(v, rotateQuad(
                             Quad(destRect),
                             Vector2(
-                                destRect.x + destRect.w/2.0f,
-                                destRect.y + destRect.h/2.0f
-gin.y
-.y
+                                vcenter.x + anchoredPos.x * totalZoom.x,
+                                vcenter.y + anchoredPos.y * totalZoom.y
                             ),
                             passOn.rotation + rotation
                         ), passOn.insideTextureContainer);
