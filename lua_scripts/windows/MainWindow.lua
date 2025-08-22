@@ -235,7 +235,17 @@ Nodes:define("MainWindow", "UIWindow", {
                 self.world:hideWindow()
 
                 self:wait(0.2):next(function()
-                    local path = System:browseDirectory()
+                    local path = nil
+
+                    if settings.projects and #settings.projects > 0 then
+                        if System:exists(System:getDirectoryOf(settings.projects[1])) then
+                            path = System:browseDirectory(System:getDirectoryOf(settings.projects[1]))
+                        end
+                    end
+                    
+                    if not path then
+                        path = System:browseDirectory()
+                    end
 
                     self.world:showWindow()
 

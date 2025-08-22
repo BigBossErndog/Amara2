@@ -7,13 +7,15 @@ namespace Amara {
         bool randomOrder = false;
 
         virtual Amara::Node* configure(nlohmann::json config) {
+            if (json_has(config, "id")) id = json_extract(config, "id");
+
             if (json_has(config, "randomOrder")) randomOrder = config["randomOrder"];
 
             bool play_now = false;
             if (json_has(config, "playing")) {
                 play_now = json_extract(config, "playing");
             }
-
+            
             if (json_has(config, "audio")) {
                 if (config["audio"].is_string()) {
                     std::string key = json_extract(config, "audio");
@@ -22,8 +24,19 @@ namespace Amara {
                         if (json_has(config, "poolSize")) poolSize = config["poolSize"];
                         for (int i = 0; i < poolSize; ++i) {
                             Amara::Audio* child = createChild("Audio")->as<Amara::Audio*>();
-                            child->configure(config);
                             child->setAudio(key);
+                        }
+                    }
+                }
+                else if (config["audio"].is_array()) {
+                    nlohmann::json audioList = json_extract(config, "audio");
+                    for (const auto& audio : audioList) {
+                        if (audio.is_string()) {
+                            std::string key = audio;
+                            if (setAudio(key)) {
+                                Amara::Audio* child = createChild("Audio")->as<Amara::Audio*>();
+                                child->setAudio(key);
+                            }
                         }
                     }
                 }

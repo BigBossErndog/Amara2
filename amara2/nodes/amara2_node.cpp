@@ -167,6 +167,13 @@ namespace Amara {
         bool collidesWith(Amara::Node* other) {
             return getCollisionShape().collidesWith(other->getCollisionShape());
         }
+        bool overlaps(sol::object other) {
+            if (other.is<Amara::Node*>()) {
+                return collidesWith(other.as<Amara::Node*>());
+            }
+            Shape shape = Shape(other);
+            return getCollisionShape().collidesWith(shape);
+        }
 
         virtual Amara::Node* configure(nlohmann::json config) {
             update_properties();
@@ -719,6 +726,10 @@ namespace Amara {
             rotation += _r;
             return get_lua_object();
         }
+        sol::object pointTowards(Amara::Node* other) {
+            rotation = angleBetween(pos, other->pos);
+            return get_lua_object();
+        }
 
         void stopActing() {
             for (Amara::Node* node: children) {
@@ -869,7 +880,7 @@ namespace Amara {
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
                 },
-                "collidesWith", &Node::collidesWith,
+                "overlaps", &Node::overlaps,
                 "collider", sol::property([](Node& e) -> sol::object { 
                     return (e.collider) ? e.collider->get_lua_object() : sol::nil;
                 }),

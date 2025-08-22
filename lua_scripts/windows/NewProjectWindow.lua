@@ -5,8 +5,16 @@ Nodes:define("NewProjectWindow", "UIWindow", {
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
+        local settings = self.world.func:getSettings()
+
         self.props.folderPath = System:getRelativePath("projects")
         self.props.projectPath = ""
+
+        if settings.projects and #settings.projects > 0 then
+            if System:exists(System:getDirectoryOf(settings.projects[1])) then
+                self.props.folderPath = System:getDirectoryOf(settings.projects[1])
+            end
+        end
 
         local title = self.props.content:createChild("Text", {
             x = 10, y = 8,

@@ -178,7 +178,10 @@ namespace Amara {
         }
 
         void setText(std::string str) {
-            if (String::equal(text, str)) return;
+            if (String::equal(text, str)) {
+                progress = layout.display_size();
+                return;
+            }
             
             text = str;
 
@@ -393,10 +396,18 @@ namespace Amara {
                     }
 
                     if (font->texture && gameProps->renderer) {
-                        SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
-                        SDL_SetTextureColorMod(font->texture, temp_props.color.r, temp_props.color.g, temp_props.color.b);
-                        SDL_SetTextureAlphaMod(font->texture, alpha * passOn.alpha * temp_props.alpha * 255);
-                        Apply_SDL_BlendMode(gameProps, font->texture, temp_props.blendMode);
+                                           SDL_FPoint glyphOrigin = {
+                            (glyph.src.w/2.0f)*scale.x*passOn.scale.x*totalZoom.x,
+                            (glyph.src.h/2.0f)*scale.y*passOn.scale.y*totalZoom.y
+                        };
+
+                        destRect.x += dorigin.x - glyphOrigin.x;
+                        destRect.y += dorigin.y - glyphOrigin.y;
+
+                        SDL_RenderTextureRotated(
+                                                 (destRect.w/2.0f),
+                            (destRect.h/2.0f)
+                        };
 
                         SDL_RenderTextureRotated(
                             gameProps->renderer, 
@@ -404,7 +415,7 @@ namespace Amara {
                             &srcRect,
                             &destRect,
                             getDegrees(passOn.rotation + rotation),
-                            &dorigin,
+                            &glyphOrigin,
                             SDL_FLIP_NONE
                         );
                     }
@@ -419,8 +430,10 @@ namespace Amara {
                         Quad destQuad = glTranslateQuad(v, rotateQuad(
                             Quad(destRect),
                             Vector2(
-                                destRect.x + dorigin.x,
-                                destRect.y + dorigin.y
+                                destRect.x + destRect.w/2.0f,
+                                destRect.y + destRect.h/2.0f
+gin.y
+.y
                             ),
                             passOn.rotation + rotation
                         ), passOn.insideTextureContainer);

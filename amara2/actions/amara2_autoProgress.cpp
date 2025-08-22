@@ -15,13 +15,11 @@ namespace Amara {
         }
 
         Amara::Node* configure(nlohmann::json config) override {
-            Action::configure(config);
-
             if (json_has(config, "speed")) speed = config["speed"];
             if (json_has(config, "start")) startIndex = config["start"];
             if (json_has(config, "progressUntil")) until = config["progressUntil"];
 
-            return this;
+            return Action::configure(config);
         }
         
         virtual sol::object luaConfigure(std::string key, sol::object val) override {

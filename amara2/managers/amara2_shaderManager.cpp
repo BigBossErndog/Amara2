@@ -137,7 +137,7 @@ namespace Amara {
                         temp = true;
                     }
                     else {
-                        debug_log("Error: Compute shader not found: ", shader_key);
+                        fatal_error("Error: Compute shader not found: ", shader_key);
                         return nullptr;
                     }
                 }
@@ -167,19 +167,19 @@ namespace Amara {
                         temp = true;
                     }
                     else {
-                        debug_log("Error: Vertex shader not found: ", shader_key);
+                        fatal_error("Error: Vertex shader not found: ", shader_key);
                         return nullptr;
                     }
                 }
                 if (shaderID != 0) glAttachShader(shaderProgramID, shaderID);
                 else {
-                    debug_log("Error: Unable to compile vertex shader: ", shader_key);
+                    fatal_error("Error: Unable to compile vertex shader: ", shader_key);
                     return nullptr;
                 }
                 if (temp) glDeleteShader(shaderID);
             }
             else if (!has_compute_shader) {
-                debug_log("Error: No vertex shader specified.");
+                fatal_error("Error: No vertex shader specified.");
                 return nullptr;
             }
 
@@ -198,19 +198,19 @@ namespace Amara {
                         temp = true;
                     }
                     else {
-                        debug_log("Error: Fragment shader not found: ", shader_key);
+                        fatal_error("Error: Fragment shader not found: ", shader_key);
                         return nullptr;
                     }
                 }
                 if (shaderID != 0) glAttachShader(shaderProgramID, shaderID);
                 else {
-                    debug_log("Error: Unable to compile fragment shader: ", shader_key);
+                    fatal_error("Error: Unable to compile fragment shader: ", shader_key);
                     return nullptr;
                 }
                 if (temp) glDeleteShader(shaderID);
             }
             else if (!has_compute_shader) {
-                debug_log("Error: No fragment shader specified.");
+                fatal_error("Error: No fragment shader specified.");
                 return nullptr;
             }
             
@@ -234,17 +234,17 @@ namespace Amara {
                         shaderID = compileGLShader("", source, type);
                     }
                     else {
-                        debug_log("Error: Shader not found: ", shader_key);
+                        fatal_error("Error: Shader not found: ", shader_key);
                         return nullptr;
                     }
                 }
                 else if (!shader_key.empty()) {
-                    debug_log("Error: Shader not found: ", shader_key);
+                    fatal_error("Error: Shader not found: ", shader_key);
                     return nullptr;
                 }
                 if (shaderID != 0) glAttachShader(shaderProgramID, shaderID);
                 else {
-                    debug_log("Error: Unable to compile ", it.key() ," shader: ", shader_key);
+                    fatal_error("Error: Unable to compile ", it.key() ," shader: ", shader_key);
                     return nullptr;
                 }
                 if (temp) glDeleteShader(shaderID);
@@ -262,7 +262,7 @@ namespace Amara {
                 glGetProgramiv(shaderProgramID, GL_INFO_LOG_LENGTH, &logLength);
                 char* log = new char[logLength];
                 glGetProgramInfoLog(shaderProgramID, logLength, &logLength, log);
-                debug_log("Error: Shader Program Linking Failed: ", log);
+                fatal_error("Error: Shader Program Linking Failed: ", log);
                 delete[] log;
                 return 0;
             }
@@ -282,7 +282,7 @@ namespace Amara {
 
             ShaderProgram* shaderProgram = createShaderProgram(config);
             if (shaderProgram == nullptr) {
-                debug_log("Error: Failed to create shader program \"", key, "\".");
+                fatal_error("Error: Failed to create shader program \"", key, "\".");
                 return nullptr;
             }
             if (hasShaderProgram(key)) {

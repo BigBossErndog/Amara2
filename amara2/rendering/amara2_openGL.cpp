@@ -265,7 +265,7 @@ namespace Amara {
         }
         
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            debug_log("Error: Failed to create frame buffer.");
+            fatal_error("Error: Failed to create frame buffer.");
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);

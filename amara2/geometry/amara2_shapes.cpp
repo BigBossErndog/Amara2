@@ -313,6 +313,9 @@ namespace Amara {
         Shape(const nlohmann::json& config) {
             *this = config;
         }
+        Shape(sol::object obj) {
+            *this = obj;
+        }
 
         template <typename T>
         operator T() const {
@@ -531,7 +534,7 @@ namespace Amara {
             
             return *this;
         }
-
+        
         sol::object get_lua_object(sol::state& lua) {
             if (is<Rectangle>()) {
                 return sol::make_object(lua, as<Rectangle>());

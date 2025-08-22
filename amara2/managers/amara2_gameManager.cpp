@@ -48,7 +48,7 @@ namespace Amara {
         
         void setTargetFPS(float _fps) {
             if (_fps < 0) {
-                debug_log("Error: Target FPS cannot be less than 0. (You can use 0 for uncapped frame rate).");
+                fatal_error("Error: Target FPS cannot be less than 0. (You can use 0 for uncapped frame rate).");
                 return;
             }
             if (demiurgic) {

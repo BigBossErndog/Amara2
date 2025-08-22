@@ -79,7 +79,7 @@ namespace Amara {
                 return;
             }
             if (!func.valid()) {
-                debug_log("Error: Tilemap.createObjects requires a function to be passed as an argument.");
+                fatal_error("Error: Tilemap.createObjects requires a function to be passed as an argument.");
                 return;
             }
             if (tmxAsset) {
@@ -139,7 +139,7 @@ namespace Amara {
                                 throw std::runtime_error(std::string(err.what()));
                             }
                         } catch (const std::exception& e) {
-                            debug_log(e.what());
+                            fatal_error(e.what());
                             gameProps->breakWorld();
                         }
                     }

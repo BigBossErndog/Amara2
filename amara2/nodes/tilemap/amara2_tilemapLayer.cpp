@@ -118,7 +118,7 @@ namespace Amara {
 
         void setTile(int gx, int gy, sol::object sol_config) {
             if (gx < 0 || gx >= mapWidth || gy < 0 || gy >= mapHeight) {
-                debug_log("Error: (", gx, ", ", gy, ") is out of bounds of TilemapLayer.");
+                fatal_error("Error: (", gx, ", ", gy, ") is out of bounds of TilemapLayer.");
                 return;
             }
             nlohmann::json config = lua_to_json(sol_config);

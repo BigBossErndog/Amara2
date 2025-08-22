@@ -64,7 +64,7 @@ namespace Amara {
             try {
                  std::filesystem::create_directories(filePath.parent_path());
             } catch (const std::exception& e) {
-                debug_log("Error: Failed to create directory for writing: ", filePath.parent_path().string(), " - ", e.what());
+                fatal_error("Error: Failed to create directory for writing: ", filePath.parent_path().string(), " - ", e.what());
                 return false;
             }
 
@@ -76,7 +76,7 @@ namespace Amara {
                 try {
                     output_str = input.dump(4);
                 } catch (const std::exception& e) {
-                    debug_log("Error: Failed to dump JSON to string for writing: ", filePath.string(), " - ", e.what());
+                    fatal_error("Error: Failed to dump JSON to string for writing: ", filePath.string(), " - ", e.what());
                     return false;
                 }
             }
@@ -91,7 +91,7 @@ namespace Amara {
 
             SDL_IOStream* rw = SDL_IOFromFile(filePath.string().c_str(), "wb");
             if (!rw) {
-                debug_log("Error: Failed to open file for writing: ", filePath.string(), " - ", SDL_GetError());
+                fatal_error("Error: Failed to open file for writing: ", filePath.string(), " - ", SDL_GetError());
                 return false;
             }
 
@@ -103,7 +103,7 @@ namespace Amara {
             SDL_CloseIO(rw);
             
             if (bytesWritten != output_str.length()) {
-                debug_log("Error: Failed to finish writing to \"", filePath.string(), "\".");
+                fatal_error("Error: Failed to finish writing to \"", filePath.string(), "\".");
                 try { std::filesystem::remove(filePath); } catch(...) {}
                 return false;
             }
@@ -130,7 +130,7 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(filePath)) {
-                debug_log("Error: \"", filePath.string(), "\" does not exist.");
+                fatal_error("Error: \"", filePath.string(), "\" does not exist.");
                 return false;
             }
 
@@ -140,7 +140,7 @@ namespace Amara {
                         return true;
                     }
                     else {
-                        debug_log("Error: Failed to delete directory \"", filePath.string(), "\" (unknown reason).");
+                        fatal_error("Error: Failed to delete directory \"", filePath.string(), "\" (unknown reason).");
                         return false;
                     }
                 } 
@@ -149,17 +149,17 @@ namespace Amara {
                         return true;
                     }
                     else {
-                        debug_log("Error: Failed to delete file \"", filePath.string(), "\" (unknown reason).");
+                        fatal_error("Error: Failed to delete file \"", filePath.string(), "\" (unknown reason).");
                         return false;
                     }
                 }
             }
             catch (const std::filesystem::filesystem_error& e) {
-                debug_log("Error: Filesystem exception while deleting \"", filePath.string(), "\": ", e.what());
+                fatal_error("Error: Filesystem exception while deleting \"", filePath.string(), "\": ", e.what());
                 return false;
             }
             catch (const std::exception& e) { // Catch other exceptions
-                debug_log("Error: General exception while deleting \"", filePath.string(), "\": ", e.what());
+                fatal_error("Error: General exception while deleting \"", filePath.string(), "\": ", e.what());
                 return false;
             }
         }
@@ -173,7 +173,7 @@ namespace Amara {
             std::filesystem::path filePath = getRelativePath(path);
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(path)) {
-                debug_log("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
+                fatal_error("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
                 return false;
             }
         
@@ -188,7 +188,7 @@ namespace Amara {
                 if (std::filesystem::create_directory(dir)) {
                     return true;
                 } else {
-                    debug_log("Error: Failed to create directory: \"", dir.string(), "\".");
+                    fatal_error("Error: Failed to create directory: \"", dir.string(), "\".");
                 }
             }
             return false;
@@ -200,7 +200,7 @@ namespace Amara {
             std::vector<std::string> contents;
 
             if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(filePath)) {
-                debug_log("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
+                fatal_error("Error: \"", filePath.string(), "\" does not exist or is not a directory.");
                 return contents;
             }
 
@@ -253,11 +253,11 @@ namespace Amara {
                     std::filesystem::remove_all(dirPath);  // Deletes the directory and all its contents
                     return true;
                 } else {
-                    debug_log("Error: Path does not exist or is not a directory \"", dirPath.string(), "\".");
+                    fatal_error("Error: Path does not exist or is not a directory \"", dirPath.string(), "\".");
                 }
             } 
             catch (const std::filesystem::filesystem_error& e) {
-                debug_log("Error: Failed to delete directory \"", dirPath.string(), "\".");
+                fatal_error("Error: Failed to delete directory \"", dirPath.string(), "\".");
             }
             return false;
         }
@@ -277,11 +277,11 @@ namespace Amara {
                     }
                     return true;
                 } else {
-                    debug_log("Error: Cannot clear directory, target path is not a directory \"", path, "\".");
+                    fatal_error("Error: Cannot clear directory, target path is not a directory \"", path, "\".");
                 }
             } 
             catch (const std::filesystem::filesystem_error& e) {
-                debug_log("Error: Failed to clear directory \"", path, "\".");
+                fatal_error("Error: Failed to clear directory \"", path, "\".");
             }
             return false;
         }
@@ -376,17 +376,17 @@ namespace Amara {
             
             try {
                 if (!std::filesystem::exists(source)) {
-                    debug_log("Error: Source path \"", source.string(), "\" does not exist.");
+                    fatal_error("Error: Source path \"", source.string(), "\" does not exist.");
                     return false;
                 }
 
                 if (std::filesystem::is_directory(source)) {
                     if (std::filesystem::exists(destination) && !std::filesystem::is_directory(destination)) {
-                        debug_log("Error: Cannot copy a directory to a file path \"", destination.string(), "\".");
+                        fatal_error("Error: Cannot copy a directory to a file path \"", destination.string(), "\".");
                         return false;
                     }
                     if (!overwrite && std::filesystem::exists(destination)) {
-                        debug_log("Error: Destination path \"", destination.string(), "\" already exists.");
+                        fatal_error("Error: Destination path \"", destination.string(), "\" already exists.");
                         return false;
                     }
                     
@@ -404,14 +404,14 @@ namespace Amara {
                     if (std::filesystem::exists(destination) && std::filesystem::is_directory(destination)) {
                         std::filesystem::path file_in_dir = destination / source.filename();
                         if (!overwrite && std::filesystem::exists(file_in_dir)) {
-                            debug_log("Error: Destination file \"", file_in_dir.string(), "\" already exists.");
+                            fatal_error("Error: Destination file \"", file_in_dir.string(), "\" already exists.");
                             return false;
                         }
                         std::filesystem::copy_file(source, file_in_dir, std::filesystem::copy_options::overwrite_existing);
                     } 
                     else {
                         if (!overwrite && std::filesystem::exists(destination)) {
-                            debug_log("Error: Destination file \"", destination.string(), "\" already exists.");
+                            fatal_error("Error: Destination file \"", destination.string(), "\" already exists.");
                             return false;
                         }
                         std::filesystem::create_directories(destination.parent_path());
@@ -421,7 +421,7 @@ namespace Amara {
                 return true;
             } 
             catch (const std::filesystem::filesystem_error& e) {
-                debug_log("Error: ", e.what());
+                fatal_error("Error: ", e.what());
                 return false;
             }
         }
@@ -432,7 +432,7 @@ namespace Amara {
         bool rename(std::string filePath, std::string newName) {
             std::filesystem::path source = getRelativePath(filePath);
             if (!std::filesystem::exists(source) || !std::filesystem::is_regular_file(source)) {
-                debug_log("Error: Source file does not exist or is not a file: ", source.string());
+                fatal_error("Error: Source file does not exist or is not a file: ", source.string());
                 return false;
             }
 
@@ -447,7 +447,7 @@ namespace Amara {
                 std::filesystem::rename(source, dest);
                 return true;
             } catch (const std::exception& e) {
-                debug_log("Error: Failed to rename file: ", e.what());
+                fatal_error("Error: Failed to rename file: ", e.what());
                 return false;
             }
         }
@@ -457,7 +457,7 @@ namespace Amara {
             std::filesystem::path zipFilePath = getRelativePath(zipPath);
             std::filesystem::path outputPath = getRelativePath(outputDirectory);
             if (!std::filesystem::exists(zipFilePath)) {
-                debug_log("Error: \"", zipFilePath.string(), "\" does not exist.");
+                fatal_error("Error: \"", zipFilePath.string(), "\" does not exist.");
                 return false;
             }
             if (!std::filesystem::exists(outputPath)) {
@@ -469,12 +469,12 @@ namespace Amara {
                 if (std::filesystem::exists(outputPath)) {
                     std::filesystem::remove_all(outputPath);
                 }
-                debug_log("Error: Failed to extract \"", zipFilePath.string(), "\"");
+                fatal_error("Error: Failed to extract \"", zipFilePath.string(), "\"");
                 return false;
             }
             return true;
             #else
-            debug_log("Error: Unzipping is not supported on this platform.");
+            fatal_error("Error: Unzipping is not supported on this platform.");
             return false;
             #endif
         }
@@ -485,7 +485,7 @@ namespace Amara {
             std::filesystem::path srcDir = getRelativePath(sourceDirectory);
             std::filesystem::path tgtDir = getRelativePath(targetDirectory);
             if (!std::filesystem::exists(srcDir) || !std::filesystem::is_directory(srcDir)) {
-                debug_log("Error: Source directory does not exist or is not a directory: ", srcDir.string());
+                fatal_error("Error: Source directory does not exist or is not a directory: ", srcDir.string());
                 return false;
             }
             if (!std::filesystem::exists(tgtDir)) {
@@ -505,12 +505,12 @@ namespace Amara {
             std::string cmd = "powershell.exe -Command \"Compress-Archive -Path '" + srcDir.string() + "\\*' -DestinationPath '" + zipPath.string() + "' -Force\"";
             int ret = std::system(cmd.c_str());
             if (ret != 0) {
-                debug_log("Error: Failed to create zip file: ", zipPath.string());
+                fatal_error("Error: Failed to create zip file: ", zipPath.string());
                 return false;
             }
             return true;
             #else
-            debug_log("Error: Zipping is not supported on this platform.");
+            fatal_error("Error: Zipping is not supported on this platform.");
             return false;
             #endif
         }
@@ -529,7 +529,7 @@ namespace Amara {
                     SDL_SetCursor(gameProps->cursor_pointer);
                     break;
                 default:
-                    debug_log("Error: Unsupported cursor type.");
+                    fatal_error("Error: Unsupported cursor type.");
                     break;
             }
         }
@@ -632,10 +632,10 @@ namespace Amara {
 
             if (scriptContent.empty()) {
                 if (fileExists) {
-                    debug_log("Error: Script '", chunkFileName, "' is empty or could not be read/decrypted. Cannot execute.");
+                    fatal_error("Error: Script '", chunkFileName, "' is empty or could not be read/decrypted. Cannot execute.");
                 }
                 else {
-                    debug_log("Error: Script '", chunkFileName, "' does not exist. Cannot execute.");
+                    fatal_error("Error: Script '", chunkFileName, "' does not exist. Cannot execute.");
                 }
                 gameProps->breakWorld();
             }
@@ -657,7 +657,7 @@ namespace Amara {
         bool compileScript(std::string path, std::string dest, std::string encryptionKey) {
             std::filesystem::path filePath = getRelativePath(path);
             if (!exists(filePath.string())) {
-                debug_log("Error: Script not found \"", filePath.string(), "\".");
+                fatal_error("Error: Script not found \"", filePath.string(), "\".");
                 return false;
             }
             sol::load_result script = gameProps->lua.load_file(filePath.string());
@@ -683,11 +683,11 @@ namespace Amara {
                         }
                     }
                     else {
-                        debug_log("Error: Could not compile script \"", filePath.string(), "\"");
+                        fatal_error("Error: Could not compile script \"", filePath.string(), "\"");
                     }
                 }
                 catch (const sol::error& e) {
-                    debug_log("Error: Could not compile script \"", filePath.string(), "\"");
+                    fatal_error("Error: Could not compile script \"", filePath.string(), "\"");
                 }
             }
             return false;
@@ -724,7 +724,7 @@ namespace Amara {
                 }, url.c_str());
                 return true;
             #else
-                debug_log("Error: System:openWebsite is not supported on this platform.");
+                fatal_error("Error: System:openWebsite is not supported on this platform.");
                 return false;
             #endif
 
@@ -854,7 +854,7 @@ namespace Amara {
                 std::string fullCommand = "x-terminal-emulator -e \"" + command + "\" &";
                 return std::system(fullCommand.c_str());
             #else
-                debug_log("Error: System:executeTerminal is not supported on this platform.");
+                fatal_error("Error: System:executeTerminal is not supported on this platform.");
                 return -1;
             #endif
         }
@@ -892,7 +892,7 @@ namespace Amara {
                 command = "xdg-open \"" + absolutePath + "\"";
                 result = std::system(command.c_str());
             #else
-                debug_log("Error: System:openDirectory is not supported on this platform.");
+                fatal_error("Error: System:openDirectory is not supported on this platform.");
                 return false;
             #endif
             
@@ -908,7 +908,7 @@ namespace Amara {
             return path.empty() ? "" : path;
         }
         std::string browseDirectory(std::string defPath) {
-            auto path = pfd::select_folder("Select folder", defPath).result();
+            auto path = pfd::select_folder("Select folder", defPath, pfd::opt::force_path).result();
             return path.empty() ? "" : path;
         }
 
@@ -916,8 +916,12 @@ namespace Amara {
             auto result = pfd::open_file("Select a file").result();
             return result.empty() ? "" : result[0];
         }
-        std::string browseFile(std::string defPath) {
-            auto result = pfd::open_file("Select a file", defPath).result();
+        std::string browseFile(const std::string& defPath) {
+            auto result = pfd::open_file("Select a file", defPath, { "All Files", "*" }, pfd::opt::force_path).result();
+            return result.empty() ? "" : result[0];
+        }
+        std::string browseFile(const std::string& defPath, const std::vector<std::string>& filters) {
+            auto result = pfd::open_file("Select a file", defPath, filters, pfd::opt::force_path).result();
             return result.empty() ? "" : result[0];
         }
 
@@ -1030,10 +1034,10 @@ namespace Amara {
 
         bool WriteICO(const std::string& input_path, const std::string& output_path) {
             int width, height, channels;
-
+            
             SDL_IOStream *rw = SDL_IOFromFile(input_path.c_str(), "rb");
             if (!rw) {
-                debug_log("Error: Failed to open file: ", SDL_GetError());
+                fatal_error("Error: Failed to open file: ", SDL_GetError());
                 return false;
             }
 
@@ -1262,8 +1266,24 @@ namespace Amara {
                     sol::resolve<std::string()>(&SystemManager::browseDirectory)
                 ),
                 "browseFile", sol::overload(
-                    sol::resolve<std::string(std::string)>(&SystemManager::browseFile),
-                    sol::resolve<std::string()>(&SystemManager::browseFile)
+                    sol::resolve<std::string(const std::string&)>(&SystemManager::browseFile),
+                    sol::resolve<std::string()>(&SystemManager::browseFile),
+                    [] (SystemManager& s, std::string defPath, sol::object v) {
+                        std::vector<std::string> filters;
+                        if (v.is<sol::table>()) {
+                            sol::table t = v.as<sol::table>();
+                            for (int i = 0; i < t.size(); i++) {
+                                sol::object obj = t[i];
+                                if (obj.is<std::string>()) {
+                                    filters.push_back(obj.as<std::string>());
+                                }
+                            }
+                        }
+                        else if (v.is<std::string>()) {
+                            filters.push_back(v.as<std::string>());
+                        }
+                        return s.browseFile(defPath, filters);
+                    }
                 ),
                 "downloadFile", &SystemManager::downloadFile,
                 #endif

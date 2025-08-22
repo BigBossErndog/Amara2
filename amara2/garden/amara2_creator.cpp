@@ -341,7 +341,7 @@ namespace Amara {
                     }
                     catch (std::exception& e) {
                         debug_log(e.what());
-                        currentWorld->destroy();
+                        gameProps.breakWorld();
                     }
 
                     if (currentWorld->exception_thrown) {

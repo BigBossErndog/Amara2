@@ -160,7 +160,7 @@ namespace Amara {
             if (inheritance_map.find(className) != inheritance_map.end()) {
                 return callFunction(inheritance_map[className], funcName, std::forward<CallArgs>(args)...);
             }
-            else debug_log("Error: ", owner_node_string(), " does not have the function \"", funcName, "\".");
+            else fatal_error("Error: ", owner_node_string(), " does not have the function \"", funcName, "\".");
             return sol::nil;
         }
         

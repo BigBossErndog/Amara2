@@ -139,9 +139,9 @@ namespace Amara {
                 if (node) {
                     if (!desc.data.is_null()) node->configure(desc.data);
                     if (desc.definition.valid()) node->luaConfigure(desc.definition);
-                }
 
-                return prepNode(node, key);
+                    return prepNode(node, key);
+                }
             }
             
             std::string script_path = gameProps->system->getScriptPath(key);
@@ -149,9 +149,10 @@ namespace Amara {
                 if (String::endsWith(script_path, ".lua") || String::endsWith(script_path, ".luac")) {
                     sol::object result = gameProps->system->run(script_path);
                     
-                    Amara::Node* node = result.as<Amara::Node*>();
-
-                    return prepNode(node, node->baseNodeID);
+                    if (result.is<Amara::Node*>()) {
+                        Amara::Node* node = result.as<Amara::Node*>();
+                        return prepNode(node, node->baseNodeID);
+                    }
                 }
                 else if (String::endsWith(script_path, ".amara")) {
                     NodeDescriptor desc;
@@ -163,9 +164,10 @@ namespace Amara {
 
                     Amara::Node* node = create(desc.baseNodeID);
                     node->gameProps = gameProps;
-                    if (node) node->configure(desc.data);
-
-                    return prepNode(node, key);
+                    if (node) {
+                        node->configure(desc.data);
+                        return prepNode(node, key);
+                    }
                 }
             }
             
@@ -254,7 +256,7 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             registerNode<Amara::ShaderContainer>("ShaderContainer");
             #endif
-
+            
             registerNode<Amara::TilemapLayer>("TilemapLayer");
             registerNode<Amara::Tilemap>("Tilemap");
 
