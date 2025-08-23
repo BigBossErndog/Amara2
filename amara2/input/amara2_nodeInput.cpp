@@ -97,6 +97,10 @@ namespace Amara {
                 }
                 else {
                     handleMessage({ nullptr, "whilePointerHover", sol::nil });
+
+                    if (hover_by_mouse) {
+                        handleMessage({ nullptr, "whileMouseHover", sol::nil });
+                    }
                 }
             }
 

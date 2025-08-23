@@ -350,6 +350,17 @@ namespace Amara {
             return std::filesystem::path(path).parent_path().string();
         }
 
+        std::string getUserArea() {
+            #if defined(_WIN32)
+                const char* dir = std::getenv("USERPROFILE");
+                return dir;
+            #elif defined(__linux__)
+            #elif defined(__APPLE__)
+            #else
+                return "";
+            #endif
+        }
+
         std::string mergePaths(std::string str1, std::string str2) {
             std::filesystem::path p1(getRelativePath(str1));
             std::filesystem::path p2(getRelativePath(str2));
@@ -1233,6 +1244,7 @@ namespace Amara {
                 "getFileExtension", &SystemManager::getFileExtension,
                 "removeFileExtension", &SystemManager::removeFileExtension,
                 "getDirectoryOf", &SystemManager::getDirectoryOf,
+                "getUserArea", &SystemManager::getUserArea,
                 "mergePaths", &SystemManager::mergePaths,
                 "join", &SystemManager::lua_join,
                 "remove", &SystemManager::remove,
