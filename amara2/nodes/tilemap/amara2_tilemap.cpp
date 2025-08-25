@@ -18,6 +18,11 @@ namespace Amara {
         int partitionWidth = 8;
         int partitionHeight = 8;
 
+        float left = 0;
+        float right = 0;
+        float top = 0;
+        float bottom = 0;
+
         sol::object objects = sol::nil;
 
         Vector2 origin = Vector2(0.5, 0.5);
@@ -34,6 +39,8 @@ namespace Amara {
             if (json_has(config, "origin")) origin = config["origin"];
             if (json_has(config, "texture")) setTexture(config["texture"]);
             if (json_has(config, "tilemap")) createTilemap(config["tilemap"]);
+
+            update_size();
 
             return this;
         }
@@ -63,6 +70,13 @@ namespace Amara {
             }
 
             return true;
+        }
+
+        void update_size() {
+            left = pos.x - widthInPixels*scale.x*origin.x;
+            right = pos.x + widthInPixels*scale.x*origin.x;
+            top = pos.y - heightInPixels*scale.y*origin.y;
+            bottom = pos.y + heightInPixels*scale.y*origin.y;
         }
 
         bool createTilemap(std::string key) {
@@ -268,10 +282,11 @@ namespace Amara {
 
                 for (int i = 0; i < tmxAsset->objectGroups.size(); ++i) {
                     const Amara::TMXObjectGroup& objectGroup = tmxAsset->objectGroups[i];
+                    
+                    sol::table objectLayer = gameProps->lua.create_table();
+                    objects.as<sol::table>()[objectGroup.name] = objectLayer;
+                    
                     for (int j = 0; j < objectGroup.objects.size(); ++j) {
-                        sol::table objectLayer = gameProps->lua.create_table();
-                        objects.as<sol::table>()[objectGroup.name] = objectLayer;
-                        
                         const Amara::TMXObject& object = objectGroup.objects[j];
                         nlohmann::json config = nlohmann::json::object();
 
@@ -317,6 +332,13 @@ namespace Amara {
                     }
                 }
             }
+
+            update_size();
+        }
+
+        virtual void update(double deltaTime) override {
+            Amara::Group::update(deltaTime);
+            update_size();
         }
 
         Quad getFillTileQuad(int gx, int gy) {
@@ -420,6 +442,10 @@ namespace Amara {
                 "tileHeight", sol::readonly(&Tilemap::tileHeight),
                 "widthInPixels", sol::readonly(&Tilemap::widthInPixels),
                 "heightInPixels", sol::readonly(&Tilemap::heightInPixels),
+                "left", sol::readonly(&Tilemap::left),
+                "right", sol::readonly(&Tilemap::right),
+                "top", sol::readonly(&Tilemap::top),
+                "bottom", sol::readonly(&Tilemap::bottom),
                 "partitionWidth", sol::property([](Amara::Tilemap& t) -> int { return t.partitionWidth; }, [](Amara::Tilemap& t, double value) { t.partitionWidth = floor(value); } ),
                 "partitionHeight", sol::property([](Amara::Tilemap& t) -> int { return t.partitionHeight; }, [](Amara::Tilemap& t, double value) { t.partitionHeight = floor(value); } ),
                 "rect", sol::property(&Tilemap::getRectangle),

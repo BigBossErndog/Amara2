@@ -1,8 +1,15 @@
-[string "building/IncludeFolders.lua"]:132: attempt to perform arithmetic on a nil value (field 'marginBottom')
+[string "scenes/Circus.lua"]:48: attempt to perform arithmetic on a nil value (field 'left')
 stack traceback:
-	[string "building/IncludeFolders.lua"]:132: in function <[string "building/IncludeFolders.lua"]:121>
-	[C]: in method 'manageScrollPosition'
-	[string "building/IncludeFolders.lua"]:139: in function <[string "building/IncludeFolders.lua"]:137>
+	[string "scenes/Circus.lua"]:48: in function <[string "scenes/Circus.lua"]:11>
+	[C]: in method 'createChild'
+	[string "index.lua"]:35: in function <[string "index.lua"]:28>
+	[C]: in method 'createWorld'
+	[string "index.lua"]:7: in main chunk
 stack traceback:
-	[C]: in method 'manageScrollPosition'
-	[string "building/IncludeFolders.lua"]:139: in function <[string "building/IncludeFolders.lua"]:137>
+	[C]: in method 'createChild'
+	[string "index.lua"]:35: in function <[string "index.lua"]:28>
+	[C]: in method 'createWorld'
+	[string "index.lua"]:7: in main chunk
+stack traceback:
+	[C]: in method 'createWorld'
+	[string "index.lua"]:7: in main chunk

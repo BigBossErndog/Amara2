@@ -276,11 +276,23 @@ namespace Amara {
             
             if (inline_scripts.size() > 0) {
                 for (auto it = inline_scripts.begin(); it != inline_scripts.end(); it++) {
-                    scripts.execute(*it);
+                    try {
+                        scripts.execute(*it);
+                    }
+                    catch(std::exception& e) {
+                        debug_log(e.what());
+                        return gameProps.error_code;
+                    }
                 }
             }
             for (auto it = starting_scripts.begin(); it != starting_scripts.end(); it++) {
-                scripts.run(*it);
+                try {
+                    scripts.run(*it);
+                }
+                catch(std::exception& e) {
+                    debug_log(e.what());
+                    return gameProps.error_code;
+                }
             }
             
             game.hasQuit = gameProps.lua_exception_thrown || gameProps.error_code != 0;

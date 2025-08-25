@@ -11,7 +11,7 @@ namespace Amara {
         bool load(std::string key, std::string path) {
             std::string script_path = gameProps->system->getScriptPath(path);
             if (!gameProps->system->exists(script_path)) {
-                debug_log("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
+                fatal_error("Failed to load script \"", key, "\" from \"", path, "\". File not found.");
                 gameProps->lua_exception_thrown = true;
                 gameProps->breakWorld();
                 return false;
@@ -64,7 +64,7 @@ namespace Amara {
                     return result;
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to run cached script \"", path, "\".");
+                    fatal_error(e.what());
                     gameProps->lua_exception_thrown = true;
                     return sol::nil;
                 }
@@ -75,7 +75,7 @@ namespace Amara {
                     return result;
                 }
                 catch (const sol::error& e) {
-                    debug_log("Failed to run script \"", path, "\" from file \"", gameProps->system->getScriptPath(readScripts[path]), "\".");
+                    fatal_error(e.what());
                     gameProps->lua_exception_thrown = true;
                     return sol::nil;
                 }
@@ -88,7 +88,7 @@ namespace Amara {
             sol::load_result loadResult = gameProps->lua.load(code, "inline_script", sol::load_mode::text);
             if (!loadResult.valid()) {
                 sol::error err = loadResult;
-                debug_log(err.what());
+                fatal_error(err.what());
                 gameProps->lua_exception_thrown = true;
                 return sol::nil;
             }
@@ -96,7 +96,7 @@ namespace Amara {
             sol::protected_function_result execResult = scriptFunc();
             if (!execResult.valid()) {
                 sol::error err = execResult;
-                debug_log(err.what());
+                fatal_error(err.what());
                 gameProps->lua_exception_thrown = true;
                 return sol::nil;
             }

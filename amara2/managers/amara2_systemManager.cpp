@@ -671,7 +671,7 @@ namespace Amara {
 
                 if (!execResult.valid()) {
                     sol::error err = execResult;
-                    debug_log(err.what());
+                    fatal_error(err.what());
                     gameProps->lua_exception_thrown = true;
                     gameProps->breakWorld();
                     return sol::nil;
@@ -680,7 +680,7 @@ namespace Amara {
                 return execResult;
             }
             catch (const sol::error& e) {
-                debug_log(e.what());
+                fatal_error(e.what());
                 gameProps->lua_exception_thrown = true;
                 gameProps->breakWorld();
                 return sol::nil;
