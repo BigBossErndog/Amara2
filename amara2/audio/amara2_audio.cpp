@@ -136,7 +136,7 @@ namespace Amara {
         bool setAudio(std::string key) {
             audio = nullptr;
             destroyAudioStream();
-
+            
             if (destroyed) return false;
 
             if (!gameProps->assets->has(key)) {

@@ -16,7 +16,7 @@ namespace Amara {
                 play_now = json_extract(config, "playing");
             }
             
-            if (json_has(config, "audio")) {
+    if (json_has(config, "audio")) {
                 if (config["audio"].is_string()) {
                     std::string key = json_extract(config, "audio");
                     if (setAudio(key)) {

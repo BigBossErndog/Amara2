@@ -47,6 +47,7 @@ namespace Amara {
 
         virtual void run(double deltaTime) override {
             Amara::Node::run(deltaTime);
+            
             if (completed && !destroyed && !has_running_child_actions()) {
                 waitingForChildren = false;
                 // Destroy self when done and children are done.

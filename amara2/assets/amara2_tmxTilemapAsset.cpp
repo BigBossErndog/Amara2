@@ -27,7 +27,7 @@ namespace Amara {
         bool text_wrap = false, text_bold = false, text_italic = false, text_underline = false, text_strikeout = false, text_kerning = true;
         TMXProperties properties;
     };
-
+    
     struct TMXObjectGroup {
         std::string name;
         std::string color;

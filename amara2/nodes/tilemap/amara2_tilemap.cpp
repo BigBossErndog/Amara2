@@ -15,6 +15,8 @@ namespace Amara {
         int widthInPixels = 0;
         int heightInPixels = 0;
 
+        sol::object objects = sol::nil;
+
         Tilemap(): Amara::Group() {
             set_base_node_id("Tilemap");
         }
@@ -236,6 +238,64 @@ namespace Amara {
                         }
                     }
                 }
+
+                if (tmxAsset->objectGroups.size() > 0) {
+                    objects = gameProps->lua.create_table();
+                }
+                else {
+                    objects = sol::object(gameProps->lua, sol::nil);
+                }
+
+                for (int i = 0; i < tmxAsset->objectGroups.size(); ++i) {
+                    const Amara::TMXObjectGroup& objectGroup = tmxAsset->objectGroups[i];
+                    for (int j = 0; j < objectGroup.objects.size(); ++j) {
+                        sol::table objectLayer = gameProps->lua.create_table();
+                        objects.as<sol::table>()[objectGroup.name] = objectLayer;
+                        
+                        const Amara::TMXObject& object = objectGroup.objects[j];
+                        nlohmann::json config = nlohmann::json::object();
+
+                        unsigned int gid = object.gid;
+
+                        bool flipped_horizontally = (gid & FLIPPED_HORIZONTALLY_FLAG);
+                        bool flipped_vertically   = (gid & FLIPPED_VERTICALLY_FLAG);
+                        bool flipped_diagonally   = (gid & FLIPPED_DIAGONALLY_FLAG); // Less common, might need special rotation/texture coord handling
+
+                        unsigned int cleanGid = gid & ~ALL_FLIP_FLAGS;
+
+                        const Amara::TMXTileset* tileset = tmxAsset->findTilesetForGid(cleanGid);
+                        if (!tileset) {
+                            Amara::debug_log("Warning: Could not find tileset for GID: ", cleanGid);
+                            continue;
+                        }
+
+                        unsigned int localTileId = cleanGid - tileset->firstGid;
+
+                        config["id"] = localTileId;
+
+                        config["layer"] = objectGroup.name;
+                        
+                        config["x"] = object.x;
+                        config["y"] = object.y;
+
+                        config["tileX"] = floor(object.x / tmxAsset->tileWidth);
+                        config["tileY"] = floor((object.y - tmxAsset->tileHeight) / tmxAsset->tileHeight);
+
+                        config["width"] = object.width;
+                        config["height"] = object.height;
+                        config["rotation"] = object.rotation;
+                        config["visible"] = object.visible;
+
+                        config["flippedHorizontally"] = flipped_horizontally;
+                        config["flippedVertically"] = flipped_vertically;
+                        config["flippedDiagonally"] = flipped_diagonally;
+                        
+                        config["name"] = object.name;
+                        config["type"] = object.type;
+
+                        objectLayer[objectLayer.size() + 1] = json_to_lua(gameProps->lua, config);
+                    }
+                }
             }
         }
 
@@ -267,6 +327,7 @@ namespace Amara {
                 "tilemap", sol::property([](Amara::Tilemap& t) -> std::string { if (t.asset) return t.asset->key; else return ""; }, [](Amara::Tilemap& t, std::string key) { t.createTilemap(key); }),
                 "createTilemap", sol::resolve<bool(std::string)>(&Tilemap::createTilemap),
                 "createObjects", sol::resolve<void(sol::protected_function)>(&Tilemap::createObjects),
+                "objects", &Tilemap::objects,
                 "width", sol::readonly(&Tilemap::mapWidth),
                 "height", sol::readonly(&Tilemap::mapHeight),
                 "tileWidth", sol::readonly(&Tilemap::tileWidth),

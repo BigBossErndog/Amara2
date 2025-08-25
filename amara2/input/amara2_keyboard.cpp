@@ -71,10 +71,10 @@ namespace Amara {
                 "justPressed", &KeyboardManager::justPressed,
                 "justReleased", &KeyboardManager::justReleased,
                 "timeHeld", &KeyboardManager::timeHeld,
-                "keyPressed", &KeyboardManager::keyPressed,
-                "keyReleased", &KeyboardManager::keyReleased,
-                "lastKeyPressed", &KeyboardManager::lastKeyPressed,
-                "lastKeyReleased", &KeyboardManager::lastKeyReleased
+                "keyPressed", sol::readonly(&KeyboardManager::keyPressed),
+                "keyReleased", sol::readonly(&KeyboardManager::keyReleased),
+                "lastKeyPressed", sol::readonly(&KeyboardManager::lastKeyPressed),
+                "lastKeyReleased", sol::readonly(&KeyboardManager::lastKeyReleased)
             );
 
             sol::table keycode_enum = lua.create_table();

@@ -61,11 +61,10 @@ namespace Amara {
         bool writeFile(std::string path, nlohmann::json input, std::string encryptionKey) {
             std::filesystem::path filePath = getRelativePath(path);
 
-            try {
-                 std::filesystem::create_directories(filePath.parent_path());
-            } catch (const std::exception& e) {
-                fatal_error("Error: Failed to create directory for writing: ", filePath.parent_path().string(), " - ", e.what());
-                return false;
+            if (!exists(filePath.parent_path().string())) {
+                if (!createDirectory(filePath.parent_path().string())) {
+                    return false;
+                }
             }
 
             std::string output_str;
@@ -107,6 +106,10 @@ namespace Amara {
                 try { std::filesystem::remove(filePath); } catch(...) {}
                 return false;
             }
+
+            #if defined(__EMSCRIPTEN__)
+            flushPersistentFolder(filePath.parent_path().string());
+            #endif
 
             return true;
         }
@@ -180,19 +183,82 @@ namespace Amara {
             return std::filesystem::directory_iterator(path) == std::filesystem::directory_iterator();
         }
 
-        bool createDirectory(std::string path) {
-            std::filesystem::path dir = getRelativePath(path);
-            std::filesystem::create_directories(dir.parent_path());
+        bool createDirectory(const std::string &path) {
+            #if !defined(__EMSCRIPTEN__)
+                std::filesystem::path dir = getRelativePath(path);
+                std::filesystem::create_directories(dir.parent_path());
 
-            if (!std::filesystem::exists(dir)) {
-                if (std::filesystem::create_directory(dir)) {
-                    return true;
-                } else {
-                    fatal_error("Error: Failed to create directory: \"", dir.string(), "\".");
+                if (!std::filesystem::exists(dir)) {
+                    if (std::filesystem::create_directory(dir)) return true;
+                    else fatal_error("Error: Failed to create directory: \"", dir.string(), "\".");
                 }
-            }
-            return false;
+                return false;
+            #else
+                std::filesystem::path dir = path;
+                setupPersistentDirectory(dir.string());
+
+                return true;
+            #endif
         }
+
+        #if defined(__EMSCRIPTEN__)
+        void flushPersistentFolder(const std::string &path) {
+            std::filesystem::path dir(path);
+            std::filesystem::path parent = dir.parent_path();
+            std::string root = parent.empty() ? "/" : "/" + parent.begin()->string();
+
+            EM_ASM_({
+                var rootPath = UTF8ToString($0);
+                if (FS.analyzePath(rootPath).exists) {
+                    var done = false;
+                    FS.syncfs(false, function(err) {
+                        if (err) console.error("Flush error for", rootPath, err);
+                        done = true;
+                    });
+                    var start = Date.now();
+                    while (!done && Date.now() - start < 5000) {} // busy-wait
+                }
+            }, root.c_str());
+        }
+
+        void setupPersistentDirectory(const std::string &path) {
+            EM_ASM_({
+                var fullPath = UTF8ToString($0);
+                var parts = fullPath.split('/').filter(Boolean);
+                if (parts.length === 0) return;
+
+                var root = '/' + parts[0];
+
+                // Ensure root exists
+                if (!FS.analyzePath(root).exists) FS.mkdir(root);
+
+                // Mount IDBFS if not already
+                var rootInfo = FS.analyzePath(root);
+                var alreadyPersistent = rootInfo.object && rootInfo.object.mount &&
+                                        rootInfo.object.mount.type === FS.filesystems.IDBFS;
+
+                if (!alreadyPersistent) {
+                    FS.mount(FS.filesystems.IDBFS, {}, root);
+                    var done = false;
+                    FS.syncfs(true, function(err) {
+                        if (err) console.error("syncfs load error at", root, err);
+                        done = true;
+                    });
+                    var start = Date.now();
+                    while (!done && Date.now() - start < 5000) {} // busy-wait
+                }
+
+                // Create subfolders
+                var cur = root;
+                for (var i = 1; i < parts.length; i++) {
+                    cur += '/' + parts[i];
+                    if (!FS.analyzePath(cur).exists) FS.mkdir(cur);
+                }
+            }, path.c_str());
+
+            flushPersistentFolder(path);
+        }
+        #endif
 
         std::vector<std::string> getDirectoryContents(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);

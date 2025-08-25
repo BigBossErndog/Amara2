@@ -128,14 +128,14 @@ Nodes:define("IncludeFolders", "FillRect", {
 
                 local pos = scrollBar.props.pos
 
-                pos.height = scrollBar.height * ((self.props.content.height - self.props.margin.bottom - self.props.margin.top) / (self.props.wallHeight + self.props.marginBottom + self.props.marginTop - firstItem.y))
-                pos.y = -(scrollBar.height - pos.height) * ((-self.props.pool.y + self.props.content.top + self.props.margin.top) / ((self.props.content.bottom - self.props.marginBottom - self.props.wallHeight) - (self.props.content.top + self.props.margin.top)))
+                pos.height = scrollBar.height * ((self.props.content.height - self.props.margin.bottom - self.props.margin.top) / (self.props.wallHeight + self.props.margin.bottom + self.props.margin.top))
+                pos.y = -(scrollBar.height - pos.height) * ((-self.props.root.y + self.props.content.top + self.props.margin.top) / ((self.props.content.bottom - self.props.margin.bottom - self.props.wallHeight) - (self.props.content.top + self.props.margin.top)))
             end
         })
     end,
 
     onUpdate = function(self, deltaTime)
-        if self.props.wallHeight > (self.props.content.height - self.props.marginBottom - self.props.marginTop) then
+        if self.props.wallHeight > (self.props.content.height - self.props.margin.bottom - self.props.margin.top) then
             self.props.scrollBar.func:manageScrollPosition()
         else
             self.props.scrollBar.visible = false

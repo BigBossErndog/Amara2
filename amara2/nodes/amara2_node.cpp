@@ -62,6 +62,8 @@ namespace Amara {
 
         double lifeTime = 0;
 
+        double speed = 1;
+
         bool is_camera = false;
         bool is_action = false;
         bool is_autoprogress = false;
@@ -432,8 +434,8 @@ namespace Amara {
                     ++it;
                     continue;
                 }
-                
-				child->run(deltaTime);
+                child->run(deltaTime * child->speed);
+
 				++it;
 				if (destroyed) break;
 			}
@@ -750,6 +752,18 @@ namespace Amara {
             return get_lua_object();
         }
 
+        virtual void setSpeed(sol::object v) {
+            if (v.is<int>()) {
+                speed = v.as<int>();
+            }
+            else if (v.is<double>()) {
+                speed = v.as<double>();
+            }
+            else if (v.is<sol::nil_t>()) {
+                speed = 1;
+            }
+        }
+
         template <typename T>
         T as();
 
@@ -811,7 +825,18 @@ namespace Amara {
                 "id", &Node::id,
                 "baseNodeID", sol::readonly(&Node::baseNodeID),
                 "nodeID", sol::readonly(&Node::nodeID),
-                "parent", sol::property([](Node& e) { return e.parent->get_lua_object(); }),
+                "parent", sol::property(
+                    [](Node& e) { return e.parent->get_lua_object(); },
+                    [](Node& e, sol::object val) {
+                        if (val.is<Amara::Node>()) {
+                            e.switchParent(val.as<Amara::Node*>());
+                        }
+                        else {
+                            fatal_error("Error: Invalid value assigned as parent.");
+                            e.gameProps->breakWorld();
+                        }
+                    }
+                ),
                 "props", &Node::props,
                 "func", sol::property([](Node& e) {
                     return e.funcs.getClassTable(e.nodeID);
@@ -876,6 +901,7 @@ namespace Amara {
                 "deactivate", &Node::deactivate,
                 "actuated", sol::readonly(&Node::actuated),
                 "paused", &Node::paused,
+                "speed", sol::property([](Node& e, sol::object val) { e.setSpeed(val); }, [](Node& e) { return e.speed; }),
                 "visible", &Node::visible,
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
