@@ -6,7 +6,7 @@ namespace Amara {
         float rotation = 0;
     };
 
-    class TilemapLayer: public Amara::TextureContainer, public CustomCollider {
+    class TilemapLayer: public Amara::TextureContainer, public Amara::CustomCollider {
     public:
         ImageAsset* image = nullptr;
 
@@ -31,7 +31,6 @@ namespace Amara {
 
         TilemapLayer(): Amara::TextureContainer() {
             set_base_node_id("TilemapLayer");
-            origin = Vector2(0, 0);
             tmxAnimations.clear();
             drawOnce();
         }
@@ -250,20 +249,20 @@ namespace Amara {
             if (tileID == -1) return Quad();
             
             Rectangle rect = { 
-                pos.x + gx * tileWidth - widthInPixels*origin.x,
-                pos.y + gy * tileHeight - heightInPixels*origin.y,
-                (float)tileWidth,
-                (float)tileHeight
+                pos.x + gx * tileWidth - widthInPixels*scale.x*origin.x,
+                pos.y + gy * tileHeight - heightInPixels*scale.y*origin.y,
+                (float)tileWidth*scale.x,
+                (float)tileHeight*scale.y
             };
             return rotateQuad(Quad(rect), pos, rotation);
         }
 
         Quad getPartitionQuad(int j, int k) {
             Rectangle rect = { 
-                pos.x + j * partitionWidth*tileWidth - widthInPixels*origin.x,
-                pos.y + k * partitionHeight*tileHeight - heightInPixels*origin.y,
-                (float)partitionWidth*tileWidth,
-                (float)partitionHeight*tileHeight
+                pos.x + j * partitionWidth*tileWidth - widthInPixels*scale.x*origin.x,
+                pos.y + k * partitionHeight*tileHeight - heightInPixels*scale.y*origin.y,
+                (float)partitionWidth*tileWidth*scale.x,
+                (float)partitionHeight*tileHeight*scale.y
             };
             return rotateQuad(Quad(rect), pos, rotation);
         }

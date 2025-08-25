@@ -1,5 +1,5 @@
 namespace Amara {
-    class Tilemap: public Amara::Group {
+    class Tilemap: public Amara::Group, public Amara::CustomCollider {
     public:
         Amara::Asset* asset = nullptr;
         Amara::TMXTilemapAsset* tmxAsset = nullptr;
@@ -15,7 +15,14 @@ namespace Amara {
         int widthInPixels = 0;
         int heightInPixels = 0;
 
+        int partitionWidth = 8;
+        int partitionHeight = 8;
+
         sol::object objects = sol::nil;
+
+        Vector2 origin = Vector2(0.5, 0.5);
+
+        std::vector<unsigned int> fillMap;
 
         Tilemap(): Amara::Group() {
             set_base_node_id("Tilemap");
@@ -24,6 +31,7 @@ namespace Amara {
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Group::configure(config);
 
+            if (json_has(config, "origin")) origin = config["origin"];
             if (json_has(config, "texture")) setTexture(config["texture"]);
             if (json_has(config, "tilemap")) createTilemap(config["tilemap"]);
 
@@ -164,6 +172,9 @@ namespace Amara {
 
                 widthInPixels = mapWidth * tileWidth;
                 heightInPixels = mapHeight * tileHeight;
+
+                fillMap.clear();
+                fillMap.resize(mapWidth * mapHeight, 0);
                 
                 for (int layerIndex = 0; layerIndex < tmxAsset->layers.size(); ++layerIndex) {
                     const Amara::TMXTileLayer& layer = tmxAsset->layers[layerIndex];
@@ -178,7 +189,12 @@ namespace Amara {
                     layerNode->tileHeight = tmxAsset->tileHeight;
                     layerNode->width = layer.width * tmxAsset->tileWidth;
                     layerNode->height = layer.height * tmxAsset->tileHeight;
-
+                    layerNode->widthInPixels = layer.width * tmxAsset->tileWidth;
+                    layerNode->heightInPixels = layer.height * tmxAsset->tileHeight;
+                    layerNode->partitionWidth = partitionWidth;
+                    layerNode->partitionHeight = partitionHeight;
+                    layerNode->origin = origin;
+                    
                     for (unsigned int ty = 0; ty < layer.height; ++ty) {
                         for (unsigned int tx = 0; tx < layer.width; ++tx) {
                             unsigned int index = ty * layer.width + tx;
@@ -234,6 +250,10 @@ namespace Amara {
                                 tile.scale.y *= -1.0f;
                             }
 
+                            if (tile.tileID >= 0) {
+                                fillMap[ty * mapWidth + tx] = 1;
+                            }
+                            
                             layerNode->tiles.push_back(tile);
                         }
                     }
@@ -299,9 +319,72 @@ namespace Amara {
             }
         }
 
+        Quad getFillTileQuad(int gx, int gy) {
+            int tileID = fillMap[gy*mapWidth + gx];
+            if (tileID == 0) return Quad();
+            
+            Rectangle rect = { 
+                pos.x + gx * tileWidth - widthInPixels*scale.x*origin.x,
+                pos.y + gy * tileHeight - heightInPixels*scale.x*origin.y,
+                (float)tileWidth*scale.x,
+                (float)tileHeight*scale.y
+            };
+            return rotateQuad(Quad(rect), pos, rotation);
+        }
+
+        Quad getPartitionQuad(int j, int k) {
+            Rectangle rect = { 
+                pos.x + j * partitionWidth*tileWidth - widthInPixels*scale.x*origin.x,
+                pos.y + k * partitionHeight*tileHeight - heightInPixels*scale.y*origin.y,
+                (float)partitionWidth*tileWidth*scale.x,
+                (float)partitionHeight*tileHeight*scale.y
+            };
+            return rotateQuad(Quad(rect), pos, rotation);
+        }
+
+        virtual bool collidesWithShape(const Shape& other) override {
+            if (partitionWidth <= 0 || partitionHeight <= 0) return false;
+
+            int numPartitionsX = ceil((float)mapWidth / partitionWidth);
+            int numPartitionsY = ceil((float)mapHeight / partitionHeight);
+
+            for (int j = 0; j < numPartitionsX; ++j) {
+                for (int k = 0; k < numPartitionsY; ++k) {
+                    Quad partition = getPartitionQuad(j, k);
+                    if (other.collidesWith(partition)) {
+                        int startX = j * partitionWidth;
+                        int startY = k * partitionHeight;
+                        int endX = startX + partitionWidth;
+                        int endY = startY + partitionHeight;
+
+                        if (endX > mapWidth) endX = mapWidth;
+                        if (endY > mapHeight) endY = mapHeight;
+
+                        for (int x = startX; x < endX; ++x) {
+                            for (int y = startY; y < endY; ++y) {
+                                int tileID = fillMap[y*mapWidth + x];
+                                if (tileID == 0) continue;
+                                
+                                Quad tile = getFillTileQuad(x, y);
+                                if (other.collidesWith(tile)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        virtual Shape getCollisionShape() override {
+            return CustomShape(this);
+        }
+
         Rectangle getRectangle() {
             return Rectangle(
-                pos.x, pos.y,
+                pos.x - widthInPixels*scale.x*origin.x,
+                pos.y - heightInPixels*scale.y*origin.y,
                 widthInPixels*scale.x, 
                 heightInPixels*scale.y
             );
@@ -328,12 +411,17 @@ namespace Amara {
                 "createTilemap", sol::resolve<bool(std::string)>(&Tilemap::createTilemap),
                 "createObjects", sol::resolve<void(sol::protected_function)>(&Tilemap::createObjects),
                 "objects", &Tilemap::objects,
+                "origin", sol::property([](Amara::Tilemap& t) -> Vector2& { return t.origin; }, [](Amara::Tilemap& t, sol::object v) { t.origin = v; }),
+                "originX", sol::property([](Amara::Tilemap& t) -> float { return t.origin.x; }, [](Amara::Tilemap& t, float v) { t.origin.x = v; }),
+                "originY", sol::property([](Amara::Tilemap& t) -> float { return t.origin.y; }, [](Amara::Tilemap& t, float v) { t.origin.y = v; }),
                 "width", sol::readonly(&Tilemap::mapWidth),
                 "height", sol::readonly(&Tilemap::mapHeight),
                 "tileWidth", sol::readonly(&Tilemap::tileWidth),
                 "tileHeight", sol::readonly(&Tilemap::tileHeight),
                 "widthInPixels", sol::readonly(&Tilemap::widthInPixels),
                 "heightInPixels", sol::readonly(&Tilemap::heightInPixels),
+                "partitionWidth", sol::property([](Amara::Tilemap& t) -> int { return t.partitionWidth; }, [](Amara::Tilemap& t, double value) { t.partitionWidth = floor(value); } ),
+                "partitionHeight", sol::property([](Amara::Tilemap& t) -> int { return t.partitionHeight; }, [](Amara::Tilemap& t, double value) { t.partitionHeight = floor(value); } ),
                 "rect", sol::property(&Tilemap::getRectangle),
                 "center", sol::property(&Tilemap::getCenter)
             );
