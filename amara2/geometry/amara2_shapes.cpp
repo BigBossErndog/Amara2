@@ -2,7 +2,7 @@ namespace Amara {
     class Shape;
 
     nlohmann::json lua_to_json(sol::object obj);
-    
+
     struct Rectangle: public Vector2 {
         Rectangle() = default;
         Rectangle(float x_, float y_, float w_, float h_) : Vector2(x_, y_), w(w_), h(h_) {}
@@ -24,7 +24,7 @@ namespace Amara {
         Rectangle(sol::object obj) {
             *this = obj;
         }
-            
+        
         float w = 0;
         float h = 0;
 
@@ -217,10 +217,41 @@ namespace Amara {
             p2 = _p2;
             p3 = _p3;
         }
+        Triangle(nlohmann::json config) {
+            *this = config;
+        }
+        Triangle(sol::object obj) {
+            *this = obj;
+        }
 
         Vector2 p1 = {0, 0};
         Vector2 p2 = {0, 0};
         Vector2 p3 = {0, 0};
+
+        Triangle& operator= (const nlohmann::json& config) {
+            if (config.is_array()) {
+                if (config.size() == 3) {
+                    p1 = config[0];
+                    p2 = config[1];
+                    p3 = config[2];
+                }
+            }
+            else if (config.is_object()) {
+                if (json_has(config, "p1")) p1 = config["p1"];
+                if (json_has(config, "p2")) p2 = config["p2"];
+                if (json_has(config, "p3")) p3 = config["p3"];
+            }
+            return *this;
+        }
+        Triangle& operator= (sol::object obj);
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"p1", p1.toJSON()},
+                {"p2", p2.toJSON()},
+                {"p3", p3.toJSON()}
+            });
+        }
 
         explicit operator std::string() const {
             return String::concat("{ p1: ", std::string(p1), ", p2: ", std::string(p2), ", p3: ", std::string(p3), " }");
@@ -238,6 +269,12 @@ namespace Amara {
             end = Vector2( x2, y2 );
         }
         Line(Vector2 _s, Vector2 _e): Line(_s.x, _s.y, _e.x, _e.y) {}
+        Line(nlohmann::json config) {
+            *this = config;
+        }
+        Line(sol::object obj) {
+            *this = obj;
+        }
 
         Vector2 start = Vector2( 0, 0 );
         Vector2 end = Vector2( 0, 0 );
@@ -255,6 +292,34 @@ namespace Amara {
                 start.x + (end.x - start.x) * t,
                 start.y + (end.y - start.y) * t
             );
+        }
+
+        Line& operator= (const nlohmann::json& config) {
+            if (config.is_array()) {
+                if (config.size() == 4) {
+                    start = Vector2(config[0], config[1]);
+                    end = Vector2(config[2], config[3]);
+                }
+                else if (config.size() == 2) {
+                    start = Vector2(config[0]);
+                    end = Vector2(config[1]);
+                }
+            }
+            else if (config.is_object()) {
+                if (json_has(config, "start")) start = config["start"];
+                if (json_has(config, "end")) end = config["end"];
+                if (json_has(config, "p1")) start = config["p1"];
+                if (json_has(config, "p2")) end = config["p2"];
+            }
+            return *this;
+        }
+        Line& operator= (sol::object obj);
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"start", start.toJSON()},
+                {"end", end.toJSON()}
+            });
         }
 
         explicit operator std::string() const {
@@ -341,58 +406,6 @@ namespace Amara {
                 throw std::bad_cast();
             return std::get<T>(shape);
         }
-        
-        bool collidesWith(const Shape& other) const {
-            if (is<std::vector<Shape>>()) {
-                return collision(as<std::vector<Shape>>(), other);
-            }
-            if (other.is<std::vector<Shape>>()) {
-                return collision(other.as<std::vector<Shape>>(), *this);
-            }
-            if (is<CustomShape>()) {
-                const CustomShape& custom = as<CustomShape>();
-                if (custom.collider) {
-                    return custom.collider->collidesWithShape(other);
-                }
-                return false;
-            }
-            if (other.is<CustomShape>()) {
-                const CustomShape& custom = other.as<CustomShape>();
-                if (custom.collider) {
-                    return custom.collider->collidesWithShape(*this);
-                }
-                return false;
-            }
-            return std::visit([](const auto& s1, const auto& s2) {
-                return collision(s1, s2);
-            }, shape, other.shape);
-        }
-
-        static bool collision(const Rectangle& r1, const Rectangle& r2) {
-            if (r1.x + r1.w <= r2.x || r2.x + r2.w <= r1.x) {
-                return false;
-            }
-            if (r1.y + r1.h <= r2.y || r2.y + r2.h <= r1.y) {
-                return false;
-            }
-            return true;
-        }
-
-        static bool collision(const Quad& q1, const Quad& q2);
-        static bool collision(const Circle& c1, const Circle& c2);
-        static bool collision(const Vector2& p, const Quad& q);
-        static bool collision(const Vector2& p, const Rectangle& r);
-        static bool collision(const Rectangle& rect, const Quad& quad);
-        static bool collision(const Quad& q, const Circle& r);
-
-        static bool collision(const Shape& s1, const std::vector<Shape>& list) {
-            for (const auto& s2 : list) {
-                if (s1.collidesWith(s2)) {
-                    return true;
-                }
-            }
-            return false;
-        }
 
         Shape move(const Vector2 v) {
             if (is<Rectangle>()) {
@@ -458,16 +471,67 @@ namespace Amara {
             }
             return *this;
         }
-        
+
         template <typename T1, typename T2>
-        static std::enable_if_t<!std::is_same_v<T1, T2>, bool> collision(const T1& a, const T2& b) {
-            // Swap and call the correct function
-            return collision(b, a);
+        static bool checkCollision(const T1& s1, const T2& s2);
+        
+        bool collidesWith(const Shape& other) const {
+            if (is<std::vector<Shape>>()) {
+                return collision(as<std::vector<Shape>>(), other);
+            }
+            if (other.is<std::vector<Shape>>()) {
+                return collision(other.as<std::vector<Shape>>(), *this);
+            }
+            if (is<CustomShape>()) {
+                const CustomShape& custom = as<CustomShape>();
+                if (custom.collider) {
+                    return custom.collider->collidesWithShape(other);
+                }
+                return false;
+            }
+            if (other.is<CustomShape>()) {
+                const CustomShape& custom = other.as<CustomShape>();
+                if (custom.collider) {
+                    return custom.collider->collidesWithShape(*this);
+                }
+                return false;
+            }
+            return std::visit([](const auto& s1, const auto& s2) -> bool {
+                return checkCollision(s1, s2);
+            }, shape, other.shape);
         }
-        
-        template <typename T1, typename T2>
-        static std::enable_if_t<std::is_same_v<T1, T2>, bool> collision(const T1&, const T2&) {
+
+        static bool collision(const Rectangle& r1, const Rectangle& r2) {
+            if (r1.x + r1.w <= r2.x || r2.x + r2.w <= r1.x) {
+                return false;
+            }
+            if (r1.y + r1.h <= r2.y || r2.y + r2.h <= r1.y) {
+                return false;
+            }
+            return true;
+        }
+
+        static bool collision(const Quad& q1, const Quad& q2);
+        static bool collision(const Circle& c1, const Circle& c2);
+        static bool collision(const Triangle& t1, const Triangle& t2);
+        static bool collision(const Line& l1, const Line& l2);
+
+        static bool collision(const Vector2& p, const Quad& q);
+        static bool collision(const Vector2& p, const Rectangle& r);
+        static bool collision(const Rectangle& rect, const Quad& quad);
+        static bool collision(const Quad& q, const Circle& r);
+        static bool collision(const Quad& q, const Triangle& t);
+
+        static bool collision(const Shape& s1, const std::vector<Shape>& list) {
+            for (const auto& s2 : list) {
+                if (s1.collidesWith(s2)) {
+                    return true;
+                }
+            }
             return false;
+        }
+        static bool collision(const std::vector<Shape>& list, const Shape& s2) {
+            return collision(s2, list);
         }
 
         Shape& operator= (const nlohmann::json& config) {
@@ -495,8 +559,17 @@ namespace Amara {
                 else if (json_has(config, "p1", "p2", "p3", "p4")) {
                     shape = Quad(config);
                 }
+                else if (json_has(config, "p1", "p2", "p3")) {
+                    shape = Triangle(config);
+                }
+                else if (json_has(config, "p1", "p2")) {
+                    shape = Line(config);
+                }
                 else if (json_has(config, "x", "y", "r")) {
                     shape = Circle(config);
+                }
+                else if (json_has(config, "start", "end")) {
+                    shape = Line(config);
                 }
             }
             return *this;
@@ -594,6 +667,29 @@ namespace Amara {
             return os << static_cast<std::string>(v);
         }
     };
+    
+    template <typename T1, typename T2, typename = void>
+    struct has_collision_overload : std::false_type {};
+
+    template <typename T1, typename T2>
+    struct has_collision_overload<
+        T1, T2,
+        std::void_t<decltype(Shape::collision(std::declval<T1>(), std::declval<T2>()))>
+    > : std::true_type {};
+
+    template <typename T1, typename T2>
+    constexpr bool has_collision_overload_v = has_collision_overload<T1, T2>::value;
+    
+    template <typename T1, typename T2>
+    bool Shape::checkCollision(const T1& s1, const T2& s2) {
+        if constexpr (has_collision_overload_v<T1, T2>) {
+            return collision(s1, s2);
+        }
+        else if constexpr (has_collision_overload_v<T2, T1>) {
+            return collision(s2, s1);
+        }
+        else return false;
+    }
 
     void bind_lua_Shapes(sol::state& lua) {
         lua.new_usertype<Rectangle>("Rectangle",
@@ -678,31 +774,31 @@ namespace Amara {
         lua.new_usertype<Shape>("shape",
             "collision",  sol::overload(
                 [](const Rectangle& r1, const Rectangle& r2) {
-                    return Shape::collision(r1, r2);
+                    return Shape(r1).collidesWith(r2);
                 },
                 [](const Quad& q1, const Quad& q2) {
-                    return Shape::collision(q1, q2);
+                    return Shape(q1).collidesWith(q2);
                 },
                 [](const Circle& c1, const Circle& c2) {
-                    return Shape::collision(c1, c2);
+                    return Shape(c1).collidesWith(c2);
                 },
                 [](const Vector2& p, const Quad& q) {
-                    return Shape::collision(p, q);
+                    return Shape(p).collidesWith(q);
                 },
                 [](const Quad& q, const Vector2& p) {
-                    return Shape::collision(p, q);
+                    return Shape(p).collidesWith(q);
                 },
                 [](const Vector2& p, const Rectangle& r) {
-                    return Shape::collision(p, r);
+                    return Shape(p).collidesWith(r);
                 },
                 [](const Rectangle& r, const Vector2& p) {
-                    return Shape::collision(p, r);
+                    return Shape(p).collidesWith(r);
                 },
                 [](const Rectangle& rect, const Quad& quad) {
-                    return Shape::collision(rect, quad);
+                    return Shape(rect).collidesWith(quad);
                 },
                 [](const Quad& q, const Rectangle& r) {
-                    return Shape::collision(r, q);
+                    return Shape(r).collidesWith(q);
                 }
             )
         );

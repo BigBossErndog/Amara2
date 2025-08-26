@@ -15,8 +15,8 @@ namespace Amara {
         int widthInPixels = 0;
         int heightInPixels = 0;
 
-        int partitionWidth = 8;
-        int partitionHeight = 8;
+        int partitionWidth = 16;
+        int partitionHeight = 16;
 
         float left = 0;
         float right = 0;

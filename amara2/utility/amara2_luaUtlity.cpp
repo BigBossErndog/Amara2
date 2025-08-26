@@ -48,6 +48,10 @@ namespace Amara {
             return obj.as<Rectangle>().toJSON();
         } else if (obj.is<Circle>()) {
             return obj.as<Circle>().toJSON();
+        } else if (obj.is<Triangle>()) {
+            return obj.as<Triangle>().toJSON();
+        } else if (obj.is<Line>()) {
+            return obj.as<Line>().toJSON();
         } else if (obj.is<Quad>()) {
             return obj.as<Quad>().toJSON();
         } else if (obj.is<Vector4>()) {
@@ -281,6 +285,16 @@ namespace Amara {
     Circle& Circle::operator= (sol::object obj) {
         if (obj.is<Circle>()) *this = obj.as<Circle>();
         else if (obj.is<Vector2>()) *this = Circle(obj.as<Vector2>());
+        else *this = lua_to_json(obj);
+        return *this;
+    }
+    Triangle& Triangle::operator= (sol::object obj) {
+        if (obj.is<Triangle>()) *this = obj.as<Triangle>();
+        else *this = lua_to_json(obj);
+        return *this;
+    }
+    Line& Line::operator= (sol::object obj) {
+        if (obj.is<Line>()) *this = obj.as<Line>();
         else *this = lua_to_json(obj);
         return *this;
     }

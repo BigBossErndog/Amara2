@@ -31,6 +31,7 @@
     #include <atomic>
     #include <thread>
     #include <mutex>
+    #include <type_traits>
 #endif
 
 #ifndef AMARA_EXTLIBS

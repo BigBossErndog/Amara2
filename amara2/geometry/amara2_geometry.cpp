@@ -126,6 +126,24 @@ namespace Amara {
         return b1 == b2 && b2 == b3 && b3 == b4;
     }
 
+    bool isPointInside(const Triangle& triangle, const Vector2& p) {
+        auto sign = [](const Vector2& p1, const Vector2& p2, const Vector2& p3) {
+            return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+        };
+
+        float d1, d2, d3;
+        bool has_neg, has_pos;
+
+        d1 = sign(p, triangle.p1, triangle.p2);
+        d2 = sign(p, triangle.p2, triangle.p3);
+        d3 = sign(p, triangle.p3, triangle.p1);
+
+        has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+        return !(has_neg && has_pos);
+    }
+
     bool Shape::collision(const Quad& q1, const Quad& q2) {
         if (doIntersect(q1.p1, q1.p2, q2.p1, q2.p2) || doIntersect(q1.p1, q1.p2, q2.p2, q2.p3) ||
             doIntersect(q1.p1, q1.p2, q2.p3, q2.p4) || doIntersect(q1.p1, q1.p2, q2.p4, q2.p1) ||
@@ -150,6 +168,104 @@ namespace Amara {
     bool Shape::collision(const Circle& c1, const Circle& c2) {
         double distance = distanceBetween(c1.x, c1.y, c2.x, c2.y);
         if (distance <= (c1.radius + c2.radius)) return true;
+    }
+
+    bool Shape::collision(const Triangle& t1, const Triangle& t2) {
+        auto getAxes = [](const Vector2* vertices, int num_vertices) {
+            std::vector<Vector2> axes;
+            for (int i = 0; i < num_vertices; i++) {
+                Vector2 edge = vertices[(i + 1) % num_vertices] - vertices[i];
+                Vector2 axis(-edge.y, edge.x); // perpendicular
+                float len = std::sqrt(axis.x * axis.x + axis.y * axis.y);
+                if (len > 1e-6f) {
+                    axis.x /= len;
+                    axis.y /= len;
+                    axes.push_back(axis);
+                }
+            }
+            return axes;
+        };
+
+        auto project = [](const Vector2* vertices, int num_vertices, const Vector2& axis) {
+            float min = vertices[0].dot(axis);
+            float max = min;
+            for (int i = 1; i < num_vertices; i++) {
+                float p = vertices[i].dot(axis);
+                if (p < min) min = p;
+                else if (p > max) max = p;
+            }
+            return std::make_pair(min, max);
+        };
+
+        Vector2 t1v[] = { t1.p1, t1.p2, t1.p3 };
+        Vector2 t2v[] = { t2.p1, t2.p2, t2.p3 };
+
+        std::vector<Vector2> axes = getAxes(t1v, 3);
+        std::vector<Vector2> t2Axes = getAxes(t2v, 3);
+        axes.insert(axes.end(), t2Axes.begin(), t2Axes.end());
+
+        const float EPS = 1e-6f;
+        for (const auto& axis : axes) {
+            auto p1 = project(t1v, 3, axis);
+            auto p2 = project(t2v, 3, axis);
+            if (p1.second < p2.first - EPS || p2.second < p1.first - EPS) {
+                return false; // separation found
+            }
+        }
+
+        // Optionally: check if a vertex of one triangle is inside the other
+        // Not strictly necessary with SAT for triangles, but safe:
+        auto isPointInsideTriangle = [](const Triangle& tri, const Vector2& p) {
+            auto sign = [](const Vector2& a, const Vector2& b, const Vector2& c) {
+                return (a.x - c.x)*(b.y - c.y) - (b.x - c.x)*(a.y - c.y);
+            };
+            float d1 = sign(p, tri.p1, tri.p2);
+            float d2 = sign(p, tri.p2, tri.p3);
+            float d3 = sign(p, tri.p3, tri.p1);
+            bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+            bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+            return !(has_neg && has_pos);
+        };
+
+        if (isPointInsideTriangle(t1, t2.p1) || isPointInsideTriangle(t1, t2.p2) || isPointInsideTriangle(t1, t2.p3))
+            return true;
+        if (isPointInsideTriangle(t2, t1.p1) || isPointInsideTriangle(t2, t1.p2) || isPointInsideTriangle(t2, t1.p3))
+            return true;
+
+        return true; // triangles overlap
+    }
+
+    bool Shape::collision(const Line& l1, const Line& l2) {
+        auto cross = [](const Vector2& a, const Vector2& b) {
+            return a.x * b.y - a.y * b.x;
+        };
+
+        Vector2 r = l1.end - l1.start;
+        Vector2 s = l2.end - l2.start;
+        Vector2 diff = l2.start - l1.start;
+
+        float rxs = cross(r, s);
+        float qpxr = cross(diff, r);
+
+        if (std::abs(rxs) < 1e-6f) {
+            // Lines are parallel
+            if (std::abs(qpxr) < 1e-6f) {
+                // Lines are collinear, check for overlap
+                float t0 = ((l2.start - l1.start).dot(r)) / (r.dot(r));
+                float t1 = ((l2.end   - l1.start).dot(r)) / (r.dot(r));
+                if ((t0 >= 0 && t0 <= 1) || (t1 >= 0 && t1 <= 1) || 
+                    (t0 < 0 && t1 > 1) || (t1 < 0 && t0 > 1)) {
+                    return true; // overlapping segments
+                }
+                return false;
+            }
+            return false; // parallel but not collinear
+        }
+
+        float t = cross(diff, s) / rxs;
+        float u = cross(diff, r) / rxs;
+
+        return t >= 0 && t <= 1 && u >= 0 && u <= 1;
     }
 
     bool Shape::collision(const Vector2& p, const Quad& q) {
@@ -194,6 +310,57 @@ namespace Amara {
         if (isPointInside(quad, center)) return true;
         return false;
     }
+
+    bool Shape::collision(const Quad& q, const Triangle& t) {
+        auto project = [](const Vector2* vertices, int num_vertices, const Vector2& axis) {
+            float min = vertices[0].dot(axis);
+            float max = min;
+            for (int i = 1; i < num_vertices; i++) {
+                float p = vertices[i].dot(axis);
+                if (p < min) min = p;
+                else if (p > max) max = p;
+            }
+            return std::make_pair(min, max);
+        };
+
+        auto getAxes = [](const Vector2* vertices, int num_vertices) {
+            std::vector<Vector2> axes;
+            for (int i = 0; i < num_vertices; i++) {
+                Vector2 edge = vertices[(i + 1) % num_vertices] - vertices[i];
+                Vector2 axis(-edge.y, edge.x);  // Perpendicular
+                float len = std::hypot(axis.x, axis.y);
+                if (len > 1e-6f) {
+                    axis.x /= len;
+                    axis.y /= len;
+                    axes.push_back(axis);
+                }
+            }
+            return axes;
+        };
+
+        Vector2 q_vertices[] = { q.p1, q.p2, q.p3, q.p4 };
+        Vector2 t_vertices[] = { t.p1, t.p2, t.p3 };
+
+        std::vector<Vector2> axes = getAxes(q_vertices, 4);
+        std::vector<Vector2> triAxes = getAxes(t_vertices, 3);
+        axes.insert(axes.end(), triAxes.begin(), triAxes.end());
+
+        const float EPS = 1e-6f;
+        for (const auto& axis : axes) {
+            auto q_proj = project(q_vertices, 4, axis);
+            auto t_proj = project(t_vertices, 3, axis);
+            if (q_proj.second < t_proj.first - EPS || t_proj.second < q_proj.first - EPS) {
+                return false;  // Found separating axis
+            }
+        }
+
+        // Check if any vertex of one shape is inside the other
+        for (const auto& v : t_vertices) if (isPointInside(q, v)) return true;
+        for (const auto& v : q_vertices) if (isPointInside(t, v)) return true;
+
+        return true;  // No separating axis, collision confirmed
+    }
+
 
     Vector2 stringToPosition(std::string str) {
         if (String::equal(str, "top")) return { 0.5, 0 };

@@ -25,8 +25,8 @@ namespace Amara {
             set_base_node_id("Collider");
         }
         
-        virtual void prepare() override {
-            Amara::Action::prepare();
+        virtual void create() override {
+            Amara::Action::create();
             if (actor) {
                 if (actor->collider && actor->collider != this) {
                     actor->collider->destroy();
@@ -107,16 +107,16 @@ namespace Amara {
         bool hasCollided() {
             for (Amara::Node* target: collisionTargets) {
                 if (target->destroyed || target->paused) continue;
-                if (target->collidesWith(this)) return true;
+                if (collidesWith(target)) return true;
             }
             return false;
         }
         
         bool hasCollided(Amara::Node* other) {
             if (other == nullptr || other->destroyed || other == this || other == actor) return false;
-            return other->collidesWith(this);
+            return collidesWith(other);
         }
-
+        
         bool hasCollided(Amara::Direction _dir) {
             return  (collisionDirections & (int)_dir) != 0;
         }

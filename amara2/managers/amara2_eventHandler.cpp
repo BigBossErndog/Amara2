@@ -295,7 +295,7 @@ namespace Amara {
         
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             inputDef = *it;
-            if (inputDef.shape.collidesWith(pos) && Shape::collision(inputDef.viewport, pos)) {
+            if (inputDef.shape.collidesWith(pos) && Shape::checkCollision(inputDef.viewport, pos)) {
                 any_hovered = true;
                 gameProps->current_cursor = inputDef.input->cursor;
                 return true;
@@ -351,7 +351,7 @@ namespace Amara {
             inputDef = *it;
             input = inputDef.input;
 
-            if (inputDef.shape.collidesWith(pos) && Shape::collision(inputDef.viewport, pos)) {
+            if (inputDef.shape.collidesWith(pos) && Shape::checkCollision(inputDef.viewport, pos)) {
                 inputDef.lastPointer = &mouse;
                 input->lastInteraction = inputDef;
                 
@@ -384,7 +384,7 @@ namespace Amara {
             inputDef = *it;
             input = inputDef.input;
 
-            if (inputDef.shape.collidesWith(point) && Shape::collision(inputDef.viewport, point)) {
+            if (inputDef.shape.collidesWith(point) && Shape::checkCollision(inputDef.viewport, point)) {
                 inputDef.lastPointer = &mouse;
                 input->lastInteraction = inputDef;
 
@@ -420,7 +420,7 @@ namespace Amara {
             inputDef = *it;
             input = inputDef.input;
 
-            if (inputDef.shape.collidesWith(point) && Shape::collision(inputDef.viewport, point)) {
+            if (inputDef.shape.collidesWith(point) && Shape::checkCollision(inputDef.viewport, point)) {
                 inputDef.lastPointer = &mouse;
                 input->lastInteraction = inputDef;
                 
@@ -447,12 +447,12 @@ namespace Amara {
         
         Amara::NodeInput* input;
         Amara::InputDef inputDef;
-
+        
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             inputDef = *it;
             input = inputDef.input;
 
-            if (inputDef.shape.collidesWith(pos) && Shape::collision(inputDef.viewport, pos)) {
+            if (inputDef.shape.collidesWith(pos) && Shape::checkCollision(inputDef.viewport, pos)) {
                 inputDef.lastPointer = finger;
                 input->lastInteraction = inputDef;
 

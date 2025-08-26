@@ -414,7 +414,7 @@ namespace Amara {
             srcRect = getSrcRect();
 
             float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
-            if (!Shape::collision(
+            if (!Shape::checkCollision(
                 Rectangle(destRect), Rectangle(
                     -diag_distance, -diag_distance,
                     v.w + diag_distance*2, v.h + diag_distance*2
