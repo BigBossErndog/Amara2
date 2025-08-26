@@ -149,14 +149,41 @@ namespace Amara {
                 {"p4", p4.toJSON()}
             });
         }
+
+        Quad& operator= (const nlohmann::json& config) {
+            if (config.is_array()) {
+                if (config.size() == 4) {
+                    p1 = config[0];
+                    p2 = config[1];
+                    p3 = config[2];
+                    p4 = config[3];
+                }
+                else if (config.size() == 8) {
+                    p1 = Vector2(config[0], config[1]);
+                    p2 = Vector2(config[2], config[3]);
+                    p3 = Vector2(config[4], config[5]);
+                    p4 = Vector2(config[6], config[7]);
+                }
+            }
+            else if (config.is_object()) {
+                if (json_has(config, "p1")) p1 = config["p1"];
+                if (json_has(config, "p2")) p2 = config["p2"];
+                if (json_has(config, "p3")) p3 = config["p3"];
+                if (json_has(config, "p4")) p4 = config["p4"];
+            }
+            return *this;
+        }
     };
 
     struct Circle: public Vector2 {
-        Circle() = default;
-        Circle(float x_, float y_, float r_) : Vector2(x_, y_), radius(r_) {}
         float radius = 0;
 
+        Circle() = default;
+        Circle(float r_) : radius(r_) {}
+        Circle(float x_, float y_, float r_) : Vector2(x_, y_), radius(r_) {}
+
         Circle(const Vector2& v) : Vector2(v.x, v.y), radius(0) {}
+        Circle(const Vector2& v, float r) : Vector2(v.x, v.y), radius(r) {}
         Circle(const SDL_FPoint& p) : Vector2(p.x, p.y), radius(0) {}
         Circle(const SDL_Point& p) : Vector2(p.x, p.y), radius(0) {}
         Circle(nlohmann::json config) {
@@ -458,7 +485,7 @@ namespace Amara {
                 Vector3 v3 = as<Vector3>();
                 v3.x += v.x;
                 v3.y += v.y;
-                
+
                 return v;
             }
             else if (is<Vector2>()) {
@@ -493,7 +520,11 @@ namespace Amara {
 
         static bool collision(const Vector2& p, const Quad& q);
         static bool collision(const Vector2& p, const Rectangle& r);
+
         static bool collision(const Rectangle& rect, const Quad& quad);
+        static bool collision(const Rectangle& rect, const Circle& circle);
+        // static bool collision(const Rectangle& rect, const Triangle& triangle);
+
         static bool collision(const Quad& q, const Circle& r);
         static bool collision(const Quad& q, const Triangle& t);
 
@@ -516,7 +547,12 @@ namespace Amara {
                         shape = Vector2(config);
                     }
                     else if (config[0].is_object() || config[0].is_array()) {
-                        shape = Line(config);
+                        if (config[1].is_number()) {
+                            shape = Circle(config);
+                        }
+                        else {
+                            shape = Line(config);
+                        }
                     }
                 }
                 else if (config.size() == 3) {
@@ -531,6 +567,9 @@ namespace Amara {
                     if (config[0].is_number()) {
                         shape = Rectangle(config);
                     }
+                    else {
+                        shape = Quad(config);
+                    }
                 }
             }
             else if (config.is_object()) {
@@ -539,6 +578,12 @@ namespace Amara {
                 }
                 else if (json_has(config, "x", "y", "z")) {
                     shape = Vector3(config["x"], config["y"], config["z"]);
+                }
+                else if (json_has(config, "x", "y", "r")) {
+                    shape = Circle(config);
+                }
+                else if (json_has(config, "x", "y", "radius")) {
+                    shape = Circle(config);
                 }
                 else if (json_has(config, "x", "y")) {
                     shape = Vector2(config["x"], config["y"]);
@@ -551,9 +596,6 @@ namespace Amara {
                 }
                 else if (json_has(config, "p1", "p2")) {
                     shape = Line(config);
-                }
-                else if (json_has(config, "x", "y", "r")) {
-                    shape = Circle(config);
                 }
                 else if (json_has(config, "start", "end")) {
                     shape = Line(config);
@@ -749,7 +791,7 @@ namespace Amara {
         );
 
         lua.new_usertype<Circle>("Circle",
-            sol::constructors<Circle(), Circle(float, float, float), Circle(Vector2)>(),
+            sol::constructors<Circle(), Circle(float), Circle(float, float, float), Circle(Vector2), Circle(Vector2, float)>(),
             sol::base_classes, sol::bases<Vector2>(),
             "radius", &Circle::radius
         );

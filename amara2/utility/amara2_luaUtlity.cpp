@@ -136,6 +136,9 @@ namespace Amara {
         }
 
         if (obj.is<Rectangle>()) return std::string(obj.as<Rectangle>());
+        if (obj.is<Circle>()) return std::string(obj.as<Circle>());
+        if (obj.is<Triangle>()) return std::string(obj.as<Triangle>());
+        if (obj.is<Line>()) return std::string(obj.as<Line>());
         if (obj.is<Vector3>()) return std::string(obj.as<Vector3>());
         if (obj.is<Vector2>()) return std::string(obj.as<Vector2>());
 

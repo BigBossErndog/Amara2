@@ -72,6 +72,7 @@ Nodes:define("WebBuildOptions", "UIWindow", {
 
     startBuilding = function(self)
         self.func:closeWindow(function(self)
+            self.props.includeFolders.func:confirmOptions()
             System:writeFile(System:join(self.props.projectPath, "project.json"), self.props.projectData)
             
             local buildNode = self.world.props.windows:createChild("WebBuildNode", {

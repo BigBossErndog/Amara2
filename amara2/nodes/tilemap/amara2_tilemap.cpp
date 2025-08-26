@@ -155,6 +155,11 @@ namespace Amara {
                         
                         config["name"] = object.name;
                         config["type"] = object.type;
+
+                        for (auto it = object.properties.begin(); it != object.properties.end(); ++it) {
+                            TMXProperty prop = it->second;
+                            config[prop.name] = nlohmann::json::parse(prop.value);
+                        }
                         
                         try {
                             sol::protected_function_result result = func(json_to_lua(gameProps->lua, config));
@@ -327,6 +332,11 @@ namespace Amara {
                         
                         config["name"] = object.name;
                         config["type"] = object.type;
+
+                        for (auto it = object.properties.begin(); it != object.properties.end(); ++it) {
+                            TMXProperty prop = it->second;
+                            config[prop.name] = nlohmann::json::parse(prop.value);
+                        }
 
                         objectLayer[objectLayer.size() + 1] = json_to_lua(gameProps->lua, config);
                     }

@@ -296,7 +296,6 @@ namespace Amara {
                 ),
                 "selfCorrect", &Collider::selfCorrect,
                 "addCollisionTarget", &Collider::addCollisionTarget,
-                "cleanCollisionTargets", &Collider::cleanCollisionTargets,
                 "target", sol::property(
                     [](Collider& t) -> sol::object {
                         if (t.collisionTargets.size() > 0) return t.collisionTargets[0]->get_lua_object();

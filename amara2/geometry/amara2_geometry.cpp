@@ -110,20 +110,20 @@ namespace Amara {
     }
 
     bool isPointInside(const Quad& quad, const Vector2& p) {
-        if (quad.p1 == quad.p2 && quad.p1 == quad.p3 && quad.p1 == quad.p4) {
-            return quad.p1 == p;
+        Vector2 verts[4] = {quad.p1, quad.p2, quad.p3, quad.p4};
+        bool inside = false;
+
+        for (int i = 0, j = 3; i < 4; j = i++) {
+            const Vector2& a = verts[i];
+            const Vector2& b = verts[j];
+
+            bool crossesY = ((a.y > p.y) != (b.y > p.y));
+            if (crossesY) {
+                float xAtPy = a.x + (b.x - a.x) * (p.y - a.y) / ((b.y - a.y) + 1e-6f);
+                if (p.x < xAtPy) inside = !inside;
+            }
         }
-
-        auto sign = [](const Vector2& a, const Vector2& b, const Vector2& c) {
-            return (b - a).cross(c - a);
-        };
-
-        bool b1 = sign(quad.p1, quad.p2, p) < 0.0f;
-        bool b2 = sign(quad.p2, quad.p3, p) < 0.0f;
-        bool b3 = sign(quad.p3, quad.p4, p) < 0.0f;
-        bool b4 = sign(quad.p4, quad.p1, p) < 0.0f;
-
-        return b1 == b2 && b2 == b3 && b3 == b4;
+        return inside;
     }
 
     bool isPointInside(const Triangle& triangle, const Vector2& p) {
@@ -142,6 +142,10 @@ namespace Amara {
         has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
         return !(has_neg && has_pos);
+    }
+
+    bool isPointInside(const Circle& circle, const Vector2& p) {
+        return distanceBetween(circle, p) <= circle.radius;
     }
 
     bool Shape::collision(const Quad& q1, const Quad& q2) {
@@ -213,8 +217,6 @@ namespace Amara {
             }
         }
 
-        // Optionally: check if a vertex of one triangle is inside the other
-        // Not strictly necessary with SAT for triangles, but safe:
         auto isPointInsideTriangle = [](const Triangle& tri, const Vector2& p) {
             auto sign = [](const Vector2& a, const Vector2& b, const Vector2& c) {
                 return (a.x - c.x)*(b.y - c.y) - (b.x - c.x)*(a.y - c.y);
@@ -282,32 +284,49 @@ namespace Amara {
         return Shape::collision(quad, Quad(rect));
     }
 
+    bool Shape::collision(const Rectangle& rect, const Circle& circle) {
+        float closestX = std::max(rect.x, std::min(circle.x, rect.x + rect.w));
+        float closestY = std::max(rect.y, std::min(circle.y, rect.y + rect.h));
+
+        float dx = circle.x - closestX;
+        float dy = circle.y - closestY;
+
+        return (dx * dx + dy * dy) <= (circle.radius * circle.radius);
+    }
+
     bool Shape::collision(const Quad& quad, const Circle& circle) {
         auto closestPointOnSegment = [](const Vector2& A, const Vector2& B, const Vector2& P) -> Vector2 {
             Vector2 AB = B - A;
             float ab2 = AB.x * AB.x + AB.y * AB.y;
-            if (ab2 == 0) return A;
+            if (ab2 < 1e-6f) return A; // A and B are the same point
             Vector2 AP = P - A;
             float t = (AP.x * AB.x + AP.y * AB.y) / ab2;
             t = fmax(0.0f, fmin(1.0f, t));
             return A + AB * t;
         };
 
-        Vector2 center(circle.x, circle.y);
-        float minDist2 = (std::numeric_limits<float>::max)();
-        Vector2 verts[4] = {quad.p1, quad.p2, quad.p3, quad.p4};
-        for (int i = 0; i < 4; ++i) {
-            Vector2 a = verts[i];
-            Vector2 b = verts[(i+1)%4];
-            Vector2 closest = closestPointOnSegment(a, b, center);
-            float dx = closest.x - center.x;
-            float dy = closest.y - center.y;
-            float dist2 = dx*dx + dy*dy;
-            if (dist2 < minDist2) minDist2 = dist2;
+        Vector2 C{circle.x, circle.y};
+        Vector2 v[4] = { quad.p1, quad.p2, quad.p3, quad.p4 };
+
+        if (isPointInside(quad, C)) {
+            return true;
         }
-        if (minDist2 <= circle.radius * circle.radius) return true;
-        
-        if (isPointInside(quad, center)) return true;
+
+        for (int i = 0; i < 4; ++i) {
+            Vector2 a = v[i];
+            Vector2 b = v[(i + 1) % 4];
+            Vector2 q = closestPointOnSegment(a, b, C);
+            if (distanceBetween(q, C) <= circle.radius) {
+                return true;
+            }
+        }
+
+        for (int i = 0; i < 4; ++i) {
+            if (distanceBetween(v[i], C) <= circle.radius) {
+                return true;
+            }
+        }
+
         return false;
     }
 
