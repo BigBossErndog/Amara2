@@ -69,7 +69,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
 
         -- AMARA_PATH
         table.insert(args, "-Iamara2")
-
+        
         if (config.installPlugins) then
             self.props.installPlugins = config.installPlugins
         end

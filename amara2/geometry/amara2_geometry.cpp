@@ -328,7 +328,7 @@ namespace Amara {
             for (int i = 0; i < num_vertices; i++) {
                 Vector2 edge = vertices[(i + 1) % num_vertices] - vertices[i];
                 Vector2 axis(-edge.y, edge.x);  // Perpendicular
-                float len = std::hypot(axis.x, axis.y);
+                float len = std::sqrt(axis.x * axis.x + axis.y * axis.y);
                 if (len > 1e-6f) {
                     axis.x /= len;
                     axis.y /= len;

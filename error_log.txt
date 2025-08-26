@@ -1,15 +1,9 @@
-[string "scenes/Circus.lua"]:48: attempt to perform arithmetic on a nil value (field 'left')
+Error: Filesystem exception while deleting "C:\Users\ernes\Documents\Creations\amara2\projects\Mortality Circus\build\windows": remove_all: The process cannot access the file because it is being used by another process.: "C:\Users\ernes\Documents\Creations\amara2\projects\Mortality Circus\build\windows"
 stack traceback:
-	[string "scenes/Circus.lua"]:48: in function <[string "scenes/Circus.lua"]:11>
+	[C]: in method 'remove'
+	[string "building/windows/WindowsBuildNode.lua"]:65: in function <[string "building/windows/WindowsBuildNode.lua"]:4>
 	[C]: in method 'createChild'
-	[string "index.lua"]:35: in function <[string "index.lua"]:28>
-	[C]: in method 'createWorld'
-	[string "index.lua"]:7: in main chunk
+	[string "building/windows/WindowsBuildOptions.lua"]:360: in function <[string "building/windows/WindowsBuildOptions.lua"]:357>
 stack traceback:
 	[C]: in method 'createChild'
-	[string "index.lua"]:35: in function <[string "index.lua"]:28>
-	[C]: in method 'createWorld'
-	[string "index.lua"]:7: in main chunk
-stack traceback:
-	[C]: in method 'createWorld'
-	[string "index.lua"]:7: in main chunk
+	[string "building/windows/WindowsBuildOptions.lua"]:360: in function <[string "building/windows/WindowsBuildOptions.lua"]:357>

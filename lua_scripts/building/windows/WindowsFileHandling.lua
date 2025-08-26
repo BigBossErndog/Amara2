@@ -29,23 +29,23 @@ function Copy_Travel(srcDir, targetDir, dirPath, shouldEncrypt)
     for i, v in ipairs(contents) do
         if System:isDirectory(v) then
             Copy_Travel(srcDir, targetDir, System:join(dirPath, System:getFileName(v)), shouldEncrypt)
-            return
-        end
-        local srcPath = System:join(srcDir, dirPath, System:getFileName(v))
-        local targetPath = System:join(targetDir, dirPath, System:getFileName(v))
-        
-        local hasCompiled = false
-        if string.ends_with(v, ".lua") and shouldCompile then
-            targetPath = System:removeFileExtension(targetPath) .. ".luac"
-            System:compileScript(srcPath, targetPath)
-            srcPath = targetPath
-            hasCompiled = true
-        end
+        else
+            local srcPath = System:join(srcDir, dirPath, System:getFileName(v))
+            local targetPath = System:join(targetDir, dirPath, System:getFileName(v))
+            
+            local hasCompiled = false
+            if string.ends_with(v, ".lua") and shouldCompile then
+                targetPath = System:removeFileExtension(targetPath) .. ".luac"
+                System:compileScript(srcPath, targetPath)
+                srcPath = targetPath
+                hasCompiled = true
+            end
 
-        if shouldEncrypt and encryption then
-            System:encryptFile(srcPath, targetPath, encryption.key)
-        elseif not hasCompiled then
-            System:copy(srcPath, targetPath)
+            if shouldEncrypt and encryption then
+                System:encryptFile(srcPath, targetPath, encryption.key)
+            elseif not hasCompiled then
+                System:copy(srcPath, targetPath)
+            end
         end
     end
 end

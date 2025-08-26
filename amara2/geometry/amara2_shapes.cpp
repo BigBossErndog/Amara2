@@ -455,17 +455,16 @@ namespace Amara {
                 return l;
             }
             else if (is<Vector3>()) {
-                Vector3 v = as<Vector3>();
-                v.x += v.x;
-                v.y += v.y;
-                v.z += v.z;
-
+                Vector3 v3 = as<Vector3>();
+                v3.x += v.x;
+                v3.y += v.y;
+                
                 return v;
             }
             else if (is<Vector2>()) {
-                Vector2 v = as<Vector2>();
-                v.x += v.x;
-                v.y += v.y;
+                Vector2 v2 = as<Vector2>();
+                v2.x += v.x;
+                v2.y += v.y;
 
                 return v;
             }
@@ -475,31 +474,7 @@ namespace Amara {
         template <typename T1, typename T2>
         static bool checkCollision(const T1& s1, const T2& s2);
         
-        bool collidesWith(const Shape& other) const {
-            if (is<std::vector<Shape>>()) {
-                return collision(as<std::vector<Shape>>(), other);
-            }
-            if (other.is<std::vector<Shape>>()) {
-                return collision(other.as<std::vector<Shape>>(), *this);
-            }
-            if (is<CustomShape>()) {
-                const CustomShape& custom = as<CustomShape>();
-                if (custom.collider) {
-                    return custom.collider->collidesWithShape(other);
-                }
-                return false;
-            }
-            if (other.is<CustomShape>()) {
-                const CustomShape& custom = other.as<CustomShape>();
-                if (custom.collider) {
-                    return custom.collider->collidesWithShape(*this);
-                }
-                return false;
-            }
-            return std::visit([](const auto& s1, const auto& s2) -> bool {
-                return checkCollision(s1, s2);
-            }, shape, other.shape);
-        }
+        bool collidesWith(const Shape& other) const;
 
         static bool collision(const Rectangle& r1, const Rectangle& r2) {
             if (r1.x + r1.w <= r2.x || r2.x + r2.w <= r1.x) {
@@ -537,13 +512,25 @@ namespace Amara {
         Shape& operator= (const nlohmann::json& config) {
             if (config.is_array()) {
                 if (config.size() == 2) {
-                    shape = Vector2(config[0], config[1]);
+                    if (config[0].is_number()) {
+                        shape = Vector2(config);
+                    }
+                    else if (config[0].is_object() || config[0].is_array()) {
+                        shape = Line(config);
+                    }
                 }
                 else if (config.size() == 3) {
-                    shape = Vector3(config[0], config[1], config[2]);
+                    if (config[0].is_number()) {
+                        shape = Vector3(config);
+                    }
+                    else if (config[0].is_object() || config[0].is_array()) {
+                        shape = Triangle(config);
+                    }
                 }
                 else if (config.size() == 4) {
-                    shape = Rectangle(config);
+                    if (config[0].is_number()) {
+                        shape = Rectangle(config);
+                    }
                 }
             }
             else if (config.is_object()) {
@@ -674,21 +661,54 @@ namespace Amara {
     template <typename T1, typename T2>
     struct has_collision_overload<
         T1, T2,
-        std::void_t<decltype(Shape::collision(std::declval<T1>(), std::declval<T2>()))>
-    > : std::true_type {};
+        std::void_t<decltype(Shape::collision(std::declval<T1>(), std::declval<T2>()))>>
+        : std::true_type {};
 
     template <typename T1, typename T2>
     constexpr bool has_collision_overload_v = has_collision_overload<T1, T2>::value;
-    
+
+    namespace detail {
+        template <typename T1, typename T2>
+        bool do_collision(const T1& s1, const T2& s2) {
+            return Shape::collision(s1, s2);
+        }
+    }
+
     template <typename T1, typename T2>
     bool Shape::checkCollision(const T1& s1, const T2& s2) {
         if constexpr (has_collision_overload_v<T1, T2>) {
-            return collision(s1, s2);
+            return detail::do_collision(s1, s2);
+        } else if constexpr (has_collision_overload_v<T2, T1>) {
+            return detail::do_collision(s2, s1);
+        } else {
+            return false;
         }
-        else if constexpr (has_collision_overload_v<T2, T1>) {
-            return collision(s2, s1);
+    }
+
+    bool Shape::collidesWith(const Shape& other) const {
+        if (is<std::vector<Shape>>()) {
+            return collision(as<std::vector<Shape>>(), other);
         }
-        else return false;
+        if (other.is<std::vector<Shape>>()) {
+            return collision(other.as<std::vector<Shape>>(), *this);
+        }
+        if (is<CustomShape>()) {
+            const CustomShape& custom = as<CustomShape>();
+            if (custom.collider) {
+                return custom.collider->collidesWithShape(other);
+            }
+            return false;
+        }
+        if (other.is<CustomShape>()) {
+            const CustomShape& custom = other.as<CustomShape>();
+            if (custom.collider) {
+                return custom.collider->collidesWithShape(*this);
+            }
+            return false;
+        }
+        return std::visit([](const auto& s1, const auto& s2) -> bool {
+            return checkCollision(s1, s2);
+        }, shape, other.shape);
     }
 
     void bind_lua_Shapes(sol::state& lua) {
