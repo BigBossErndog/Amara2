@@ -149,24 +149,44 @@ namespace Amara {
     }
 
     bool Shape::collision(const Quad& q1, const Quad& q2) {
-        if (doIntersect(q1.p1, q1.p2, q2.p1, q2.p2) || doIntersect(q1.p1, q1.p2, q2.p2, q2.p3) ||
-            doIntersect(q1.p1, q1.p2, q2.p3, q2.p4) || doIntersect(q1.p1, q1.p2, q2.p4, q2.p1) ||
-            doIntersect(q1.p2, q1.p3, q2.p1, q2.p2) || doIntersect(q1.p2, q1.p3, q2.p2, q2.p3) ||
-            doIntersect(q1.p2, q1.p3, q2.p3, q2.p4) || doIntersect(q1.p2, q1.p3, q2.p4, q2.p1) ||
-            doIntersect(q1.p3, q1.p4, q2.p1, q2.p2) || doIntersect(q1.p3, q1.p4, q2.p2, q2.p3) ||
-            doIntersect(q1.p3, q1.p4, q2.p3, q2.p4) || doIntersect(q1.p3, q1.p4, q2.p4, q2.p1) ||
-            doIntersect(q1.p4, q1.p1, q2.p1, q2.p2) || doIntersect(q1.p4, q1.p1, q2.p2, q2.p3) ||
-            doIntersect(q1.p4, q1.p1, q2.p3, q2.p4) || doIntersect(q1.p4, q1.p1, q2.p4, q2.p1)) {
-            return true;
-        }
-        if (isPointInside(q2, q1.p1) || isPointInside(q2, q1.p2) || isPointInside(q2, q1.p3) || isPointInside(q2, q1.p4)) {
-            return true;
-        }
-        if (isPointInside(q1, q2.p1) || isPointInside(q1, q2.p2) || isPointInside(q1, q2.p3) || isPointInside(q1, q2.p4)) {
-            return true;
-        }
+        auto edgeNormal = [](const Vector2& a, const Vector2& b) {
+            Vector2 edge = { b.x - a.x, b.y - a.y };
+            return Vector2{ -edge.y, edge.x }; // perpendicular
+        };
 
-        return false;
+        auto project = [&](const Quad& q, const Vector2& axis, float& min, float& max) {
+            min = max = q.p1.dot(axis);
+            float d2 = q.p2.dot(axis);
+            float d3 = q.p3.dot(axis);
+            float d4 = q.p4.dot(axis);
+            min = std::min({min, d2, d3, d4});
+            max = std::max({max, d2, d3, d4});
+        };
+
+        auto overlapOnAxis = [&](const Vector2& axis) {
+            float min1, max1, min2, max2;
+            project(q1, axis, min1, max1);
+            project(q2, axis, min2, max2);
+            return !(max1 < min2 || max2 < min1);
+        };
+
+        Vector2 axes[8] = {
+            edgeNormal(q1.p1, q1.p2),
+            edgeNormal(q1.p2, q1.p3),
+            edgeNormal(q1.p3, q1.p4),
+            edgeNormal(q1.p4, q1.p1),
+            edgeNormal(q2.p1, q2.p2),
+            edgeNormal(q2.p2, q2.p3),
+            edgeNormal(q2.p3, q2.p4),
+            edgeNormal(q2.p4, q2.p1)
+        };
+
+        for (const Vector2& axis : axes) {
+            if (!overlapOnAxis(axis)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     bool Shape::collision(const Circle& c1, const Circle& c2) {

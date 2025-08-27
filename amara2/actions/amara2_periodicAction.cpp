@@ -32,7 +32,7 @@ namespace Amara {
                 counter += deltaTime;
                 if (counter >= period) {
                     counter -= period;
-                    if (funcs.hasFunction("onAct")) funcs.callFunction(actor, "onAct", deltaTime);
+                    if (funcs.hasFunction("onAct")) funcs.callFunction(actor, "onAct", get_lua_object(), deltaTime);
                 }
             }
         }

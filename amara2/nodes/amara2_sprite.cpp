@@ -391,10 +391,22 @@ namespace Amara {
                 "textureHeight", sol::readonly(&Sprite::textureHeight),
                 "frameWidth", sol::readonly(&Sprite::frameWidth),
                 "frameHeight", sol::readonly(&Sprite::frameHeight),
-                "cropLeft", &Sprite::cropLeft,
-                "cropRight", &Sprite::cropRight,
-                "cropTop", &Sprite::cropTop,
-                "cropBottom", &Sprite::cropBottom,
+                "cropLeft", sol::property([](Amara::Sprite& t) -> int { return t.cropLeft; }, [](Amara::Sprite& t, sol::object v) {
+                    if (v.is<int>()) t.cropLeft = v.as<int>();
+                    else if (v.is<double>()) t.cropLeft = static_cast<int>(round(v.as<double>()));
+                }),
+                "cropRight", sol::property([](Amara::Sprite& t) -> int { return t.cropRight; }, [](Amara::Sprite& t, sol::object v) {
+                    if (v.is<int>()) t.cropRight = v.as<int>();
+                    else if (v.is<double>()) t.cropRight = static_cast<int>(round(v.as<double>()));
+                }),
+                "cropTop", sol::property([](Amara::Sprite& t) -> int { return t.cropTop; }, [](Amara::Sprite& t, sol::object v) {
+                    if (v.is<int>()) t.cropTop = v.as<int>();
+                    else if (v.is<double>()) t.cropTop = static_cast<int>(round(v.as<double>()));
+                }),
+                "cropBottom", sol::property([](Amara::Sprite& t) -> int { return t.cropBottom; }, [](Amara::Sprite& t, sol::object v) {
+                    if (v.is<int>()) t.cropBottom = v.as<int>();
+                    else if (v.is<double>()) t.cropBottom = static_cast<int>(round(v.as<double>()));
+                }),
                 "origin", sol::property([](Amara::Sprite& t) -> Vector2& { return t.origin; }, [](Amara::Sprite& t, sol::object v) { t.origin = v; }),
                 "originX", sol::property([](Amara::Sprite& t) -> float { return t.origin.x; }, [](Amara::Sprite& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::Sprite& t) -> float { return t.origin.y; }, [](Amara::Sprite& t, float v) { t.origin.y = v; }),

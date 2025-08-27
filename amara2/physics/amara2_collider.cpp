@@ -104,6 +104,19 @@ namespace Amara {
             }
         }
 
+        void removeCollisionTarget(Amara::Node* other) {
+            for (auto it = collisionTargets.begin(); it != collisionTargets.end();) {
+                Amara::Node* target = *it;
+                
+                if (other == target || other->collider == target) {
+                    it = collisionTargets.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
+        }
+
         bool hasCollided() {
             for (Amara::Node* target: collisionTargets) {
                 if (target->destroyed || target->paused) continue;
@@ -296,6 +309,7 @@ namespace Amara {
                 ),
                 "selfCorrect", &Collider::selfCorrect,
                 "addCollisionTarget", &Collider::addCollisionTarget,
+                "removeCollisionTarget", &Collider::removeCollisionTarget,
                 "target", sol::property(
                     [](Collider& t) -> sol::object {
                         if (t.collisionTargets.size() > 0) return t.collisionTargets[0]->get_lua_object();

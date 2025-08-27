@@ -1,9 +1,9 @@
-Error: Filesystem exception while deleting "C:\Users\ernes\Documents\Creations\amara2\projects\Mortality Circus\build\windows": remove_all: The process cannot access the file because it is being used by another process.: "C:\Users\ernes\Documents\Creations\amara2\projects\Mortality Circus\build\windows"
+Error: File does not exist "C:\Users\ernes\Documents\Creations\amara2\nil\project.json"
 stack traceback:
-	[C]: in method 'remove'
-	[string "building/windows/WindowsBuildNode.lua"]:65: in function <[string "building/windows/WindowsBuildNode.lua"]:4>
+	[C]: in method 'readJSON'
+	[string "windows/ProjectWindow.lua"]:14: in function <[string "windows/ProjectWindow.lua"]:11>
 	[C]: in method 'createChild'
-	[string "building/windows/WindowsBuildOptions.lua"]:360: in function <[string "building/windows/WindowsBuildOptions.lua"]:357>
+	[string "windows/MainWindow.lua"]:71: in function <[string "windows/MainWindow.lua"]:70>
 stack traceback:
 	[C]: in method 'createChild'
-	[string "building/windows/WindowsBuildOptions.lua"]:360: in function <[string "building/windows/WindowsBuildOptions.lua"]:357>
+	[string "windows/MainWindow.lua"]:71: in function <[string "windows/MainWindow.lua"]:70>

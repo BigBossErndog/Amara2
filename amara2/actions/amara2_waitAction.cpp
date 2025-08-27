@@ -29,9 +29,17 @@ namespace Amara {
                 "duration", sol::readonly(&WaitAction::duration)
             );
             sol::usertype<Amara::Node> node_type = lua["Node"];
-            node_type["wait"] = [](Amara::Node& e, float duration) -> sol::object {
+            node_type["wait"] = [](Amara::Node& e, float duration, sol::object v) -> sol::object {
                 Amara::WaitAction* action = e.createChild("WaitAction")->as<Amara::WaitAction*>();
-                action->duration = duration;
+                if (action) {
+                    action->duration = duration;
+                    if (v.is<sol::table>()) {
+                        action->luaConfigure(v);
+                    }
+                    else if (v.is<sol::function>()) {
+                        action->whenDone(v.as<sol::function>());
+                    }
+                }
                 return action->get_lua_object();
             };
         }

@@ -40,6 +40,9 @@ namespace Amara {
             if (json_has(config, "blendMode")) blendMode = json_extract(config, "blendMode");
             if (json_has(config, "fadeIn")) fadeIn = json_extract(config, "fadeIn");
             if (json_has(config, "fadeOut")) fadeOut = json_extract(config, "fadeOut");
+            if (json_has(config, "fade")) {
+                fadeIn = fadeOut = json_extract(config, "fade");
+            }
             return Amara::Transition::configure(config);
         }
 

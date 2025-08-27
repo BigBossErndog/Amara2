@@ -660,7 +660,7 @@ namespace Amara {
 
                 if (!loadResult.valid()) {
                     sol::error err = loadResult;
-                    debug_log(err.what());
+                    fatal_error(err.what());
                     gameProps->lua_exception_thrown = true;
                     gameProps->breakWorld();
                     return sol::nil;

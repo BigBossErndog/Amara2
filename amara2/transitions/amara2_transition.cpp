@@ -3,6 +3,7 @@ namespace Amara {
     public:
         std::string next_key;
         Amara::Node* next_node = nullptr;
+        sol::object next_config = sol::nil;
 
         bool destroy_past = true;
         bool just_deactivate = false;
@@ -18,9 +19,6 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "next")) {
-                if (config["next"].is_string()) next_key = json_extract(config, "next");
-            }
             if (json_has(config, "deactivate")) {
                 just_deactivate = json_extract(config, "deactivate");
                 destroy_past = !just_deactivate;
@@ -28,22 +26,43 @@ namespace Amara {
             if (json_has(config, "interim")) {
                 interim = json_extract(config, "interim");
             }
+            if (json_has(config, "next")) {
+                if (config["next"].is_string()) {
+                    next_key = json_extract(config, "next");
+                }
+            }
             return Amara::Action::configure(config);
         }
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
-            if (val.is<Amara::Node>()) {
-                if (String::equal(key, "next")) next_node = val.as<Amara::Node*>();
+            if (String::equal(key, "next")) {
+                if (val.is<sol::table>()) {
+                    sol::table t = val.as<sol::table>();
+                    if (t["node"].valid()) {
+                        sol::object node = t["node"];
+                        if (node.is<std::string>()) {
+                            next_key = node.as<std::string>();
+                            t["node"] = sol::nil;
+                        }
+                    }
+                    next_config = t;
+                }
+                else if (val.is<Amara::Node>()) {
+                    next_node = val.as<Amara::Node*>();
+                }
             }
             return Amara::Action::luaConfigure(key, val);
         }
         
         virtual void doTransition() {
             Amara::Node* prev_parent = parent;
-
+            
             if (!next_key.empty()) {
                 if (parent && parent->parent) {
-                    next_node = parent->parent->createChild(next_key);
-                    next_node->deactivate();
+                    sol::object lua_node = parent->parent->luaCreateChild(next_key, next_config);
+                    if (lua_node.is<Amara::Node>()) {
+                        next_node = lua_node.as<Amara::Node*>();
+                        next_node->deactivate();
+                    }
                 }
             }
 

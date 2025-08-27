@@ -241,6 +241,8 @@ namespace Amara {
 
             if (config.is<sol::table>()) {
                 sol::table tbl = config.as<sol::table>();
+                std::vector<std::string> remove_keys;
+
                 for (const auto& it: tbl) {
                     sol::object val = it.second;
                     if (val.is<sol::function>()) {
@@ -248,9 +250,12 @@ namespace Amara {
                         sol::function func = val.as<sol::function>();
                         
                         funcs.setFunction(nodeID, key, func);
+                        remove_keys.push_back(key);
                     }
                     else if (val.is<sol::userdata>()) {
-                        luaConfigure(it.first.as<std::string>(), val);
+                        std::string key = it.first.as<std::string>();
+                        luaConfigure(key, val);
+                        remove_keys.push_back(key);
                     }
                     else if (val.is<sol::table>()) {
                         std::string key = it.first.as<std::string>();
@@ -263,7 +268,7 @@ namespace Amara {
                         else if (String::equal(key, "input")) {
                             input.configure(val);
                         }
-                        else if (String::equal("collider", key)) {
+                        else if (String::equal(key, "collider")) {
                             if (collider) {
                                 collider->luaConfigure(val);
                             }
@@ -271,8 +276,24 @@ namespace Amara {
                                 collider = luaCreateChild("Collider", val).as<Amara::Node*>();
                             }
                         }
+                        else {
+                            luaConfigure(key, val);
+                            debug_log("luaConfigure: ", key);
+                        }
+                        remove_keys.push_back(key);
                     }
                 }
+
+                nlohmann::json json_config = lua_to_json(tbl);
+
+                for (std::string& key: remove_keys) {
+                    json_erase(json_config, key);
+                }
+
+                configure(json_config);
+                if (funcs.hasFunction("onConfigure")) funcs.callFunction("onConfigure", config);
+                
+                return get_lua_object();
             }
 
             if (config.is<std::string>()) {
@@ -301,7 +322,6 @@ namespace Amara {
             }
 
             configure(lua_to_json(config));
-
             if (funcs.hasFunction("onConfigure")) funcs.callFunction("onConfigure", config);
             
             return get_lua_object();
@@ -903,6 +923,7 @@ namespace Amara {
                 "paused", &Node::paused,
                 "speed", sol::property([](Node& e, sol::object val) { e.setSpeed(val); }, [](Node& e) { return e.speed; }),
                 "visible", &Node::visible,
+                "lifeTime", sol::readonly(&Node::lifeTime),
                 "string", [](Amara::Node* e) {
                     return std::string(*e);
                 },
