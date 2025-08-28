@@ -150,7 +150,7 @@ namespace Amara {
         }
         
         sol::object setBounds(sol::object _bounds) {
-            if (!_bounds.is<sol::nil_t>()) {
+            if (_bounds.valid()) {
                 hasBounds = true;
                 bounds = _bounds;
             }

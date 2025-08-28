@@ -83,6 +83,8 @@ namespace Amara {
 
             config["originX"] = origin.x;
             config["originY"] = origin.y;
+            
+            config["progress"] = progress;
 
             return config;
         }
@@ -162,6 +164,8 @@ namespace Amara {
             if (json_has(config, "originX")) origin.x = config["originX"];
             if (json_has(config, "originY")) origin.y = config["originY"];
             if (json_has(config, "origin")) origin = config["origin"];
+
+            if (json_has(config, "progress")) progress = config["progress"];
 
             if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
 
@@ -455,7 +459,7 @@ namespace Amara {
 
             in_drawing = false;
         }
-
+        
         int length() {
             return converted_text.size();
         }

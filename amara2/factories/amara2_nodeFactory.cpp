@@ -180,7 +180,7 @@ namespace Amara {
             Amara::Node* node = create(key);
             if (!node) return sol::nil;
 
-            if (!config.is<sol::nil_t>()) {
+            if (config.valid()) {
                 node->luaConfigure(config);
             }
 
@@ -383,7 +383,7 @@ namespace Amara {
     sol::object Node::luaCreateChild(std::string key, sol::object config) {
         Amara::Node* node = gameProps->factory->create(key);
         if (node) {
-            if (!config.is<sol::nil_t>()) {
+            if (config.valid()) {
                 node->luaConfigure(config);
             }
             addChild(node);

@@ -106,7 +106,7 @@ namespace Amara {
                 "scripts", &Demiurge::scripts,
                 "createWorld", [](Amara::Demiurge& d, sol::object key) -> sol::object {
                     World* world = nullptr;
-                    if (!key.is<sol::nil_t>()) {
+                    if (key.valid()) {
                         world = d.createWorld(key);
                     }
                     else world = d.createWorld();

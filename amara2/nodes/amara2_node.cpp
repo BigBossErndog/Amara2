@@ -222,6 +222,8 @@ namespace Amara {
             if (json_has(config, "sortable")) sortable = config["sortable"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
 
+            if (json_has(config, "speed")) setSpeed(json_to_lua(config["speed"]));
+
             #ifdef AMARA_OPENGL
             if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
             #endif
@@ -278,7 +280,6 @@ namespace Amara {
                         }
                         else {
                             luaConfigure(key, val);
-                            debug_log("luaConfigure: ", key);
                         }
                         remove_keys.push_back(key);
                     }
@@ -779,7 +780,7 @@ namespace Amara {
             else if (v.is<double>()) {
                 speed = v.as<double>();
             }
-            else if (v.is<sol::nil_t>()) {
+            else if (!v.valid()) {
                 speed = 1;
             }
         }

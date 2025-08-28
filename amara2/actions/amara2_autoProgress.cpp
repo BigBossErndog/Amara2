@@ -83,7 +83,7 @@ namespace Amara {
         nlohmann::json config = lua_to_json(sol_config);
 
         if (json_has(config, "start")) progress = config["start"];
-        else progress = 0;
+        else if (!json_is(config, "keepProgress")) progress = 0;
         
         for (Amara::Node* node: children) {
             if (node->is_autoprogress && !node->destroyed) {
