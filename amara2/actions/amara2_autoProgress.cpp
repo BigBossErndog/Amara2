@@ -15,7 +15,7 @@ namespace Amara {
         }
 
         Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "speed")) speed = config["speed"];
+            if (json_has(config, "rate")) speed = config["rate"];
             if (json_has(config, "start")) startIndex = config["start"];
             if (json_has(config, "progressUntil")) until = config["progressUntil"];
 
@@ -99,7 +99,7 @@ namespace Amara {
     }
     sol::object Amara::Text::autoProgress(double speed) { // speed = characters per second
         nlohmann::json config = nlohmann::json::object();
-        config["speed"] = speed;
+        config["rate"] = speed;
 
         return autoProgress(json_to_lua(gameProps->lua, config));
     }

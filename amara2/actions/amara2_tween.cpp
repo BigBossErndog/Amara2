@@ -127,7 +127,31 @@ namespace Amara {
                 target_data["rect"] = rect.toJSON();
                 lua_data["rect"] = sol::nil;
             }
-
+            if (lua_data["pos"].valid()) {
+                sol::object obj = lua_data["pos"];
+                Amara::Vector2 pos = obj;
+                target_data["pos"] = pos.toJSON();
+                lua_data["pos"] = sol::nil;
+            }
+            if (lua_data["scroll"].valid()) {
+                sol::object obj = lua_data["scroll"];
+                Amara::Vector2 scroll = obj;
+                target_data["scroll"] = scroll.toJSON();
+                lua_data["scroll"] = sol::nil;
+            }
+            if (lua_data["scale"].valid()) {
+                sol::object obj = lua_data["scale"];
+                Amara::Vector2 scale = obj;
+                target_data["scale"] = scale.toJSON();
+                lua_data["scale"] = sol::nil;
+            }
+            if (lua_data["origin"].valid()) {
+                sol::object obj = lua_data["origin"];
+                Amara::Vector2 origin = obj;
+                target_data["origin"] = origin.toJSON();
+                lua_data["origin"] = sol::nil;
+            }
+            
             nlohmann::json data = lua_to_json(lua_data);
             
             for (auto it = data.begin(); it != data.end(); ++it) {
@@ -199,22 +223,10 @@ namespace Amara {
 
         void completeProperties() {
             if (lua_actor_table.valid()) {
-                nlohmann::json end_data = (yoyo) ? start_data : target_data;
-                for (auto it = end_data.begin(); it != end_data.end(); ++it) {
-                    if (it.value().is_number()) {
-                        lua_actor_table.set(it.key(), (double)end_data[it.key()]);
-                    }
-                    else if (String::equal(it.key(), "rect")) {
-                        Amara::Rectangle target_rect = end_data[it.key()];
-                        lua_actor_table.set(it.key(), target_rect);
-                    }
-                    else if (String::equal(it.key(), "color") || String::equal(it.key(), "tint") || String::equal(it.key(), "fill") || String::equal(it.key(), "backgroundColor")) {
-                        Amara::Color target_color = end_data[it.key()];
-                        lua_actor_table.set(it.key(), target_color);
-                    }
-                    else if (it.value().is_boolean()) {
-                        lua_actor_table.set(it.key(), (bool)end_data[it.key()]);
-                    }
+                double end_progress = (yoyo) ? 0 : 1;
+
+                for (auto it = target_data.begin(); it != target_data.end(); ++it) {
+                    tweenValue(lua_actor_table, it.key(), start_data[it.key()], target_data[it.key()], end_progress);
                 }
             }
         }
@@ -228,6 +240,14 @@ namespace Amara {
                     for (auto it = val1.begin(); it != val1.end(); ++it) {
                         tweenValue(target["props"], it.key(), val1[it.key()], val2[it.key()], progress);
                     }
+                }
+                else if (String::equal(key, "pos") || String::equal(key, "scroll") || String::equal(key, "scale") || String::equal(key, "origin")) {
+                    Amara::Vector2 start_vec = val1;
+                    Amara::Vector2 target_vec = val2;
+                    target.set(key, Vector2(
+                        ease(start_vec.x, target_vec.x, progress, easing),
+                        ease(start_vec.y, target_vec.y, progress, easing)
+                    ));
                 }
                 else if (String::equal(key, "rect")) {
                     Amara::Rectangle start_rect = val1;

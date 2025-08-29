@@ -41,7 +41,7 @@ namespace Amara {
         bool update_canvas = false;
 
         bool clearOnDraw = true;
-
+        
         Vector2 origin = { 0.5, 0.5 };
 
         Rectangle container_viewport;

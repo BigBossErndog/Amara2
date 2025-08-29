@@ -96,6 +96,11 @@ namespace Amara {
             update_bounds();
         }
 
+        virtual void create() override {
+            Amara::Node::create();
+            update_bounds();
+        }
+
         virtual void run(double deltaTime) override {
             Amara::Node::run(deltaTime);
 
@@ -346,7 +351,7 @@ namespace Amara {
                     [] (Camera& cam, sol::object _s) { cam.scroll = _s; }
                 ),
                 "scrollX", sol::property([](Camera& cam) { return cam.scroll.x; }, [](Camera& cam, float val) { cam.scroll.x = val; }),
-                "scrollY", sol::property([](Camera& cam) { return cam.scroll.x; }, [](Camera& cam, float val) { cam.scroll.y = val; }),
+                "scrollY", sol::property([](Camera& cam) { return cam.scroll.y; }, [](Camera& cam, float val) { cam.scroll.y = val; }),
                 "changeScroll", sol::overload(
                     sol::resolve<sol::object(float, float)>(&Camera::changeScroll),
                     sol::resolve<sol::object(float)>(&Camera::changeScroll)

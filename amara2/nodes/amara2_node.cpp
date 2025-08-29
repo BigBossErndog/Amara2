@@ -222,8 +222,15 @@ namespace Amara {
             if (json_has(config, "sortable")) sortable = config["sortable"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
 
-            if (json_has(config, "speed")) setSpeed(json_to_lua(config["speed"]));
-
+            if (json_has(config, "speed")) {
+                if (config["speed"].is_number()) {
+                    speed = config["speed"];
+                }
+                else if (config["speed"].is_null()) {
+                    speed = 1;
+                }
+            }
+            
             #ifdef AMARA_OPENGL
             if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
             #endif
