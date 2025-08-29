@@ -155,6 +155,14 @@ namespace Amara {
             if (image) {
                 SDL_FRect srcRect, destRect;
                 SDL_FPoint dorigin = { tileWidth/2.0f, tileHeight/2.0f };
+
+                if (image->texture && gameProps->renderer) {
+                    // 2D Rendering
+                    SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
+                    SDL_SetTextureColorMod(image->texture, 255, 255, 255);
+                    SDL_SetTextureAlphaMod(image->texture, 255);
+                    Apply_SDL_BlendMode(gameProps, image->texture, BlendMode::Alpha);
+                }
                 
                 int frame = 0;
                 for (int x = 0; x < mapWidth; ++x) {
@@ -182,8 +190,6 @@ namespace Amara {
 
                         if (image->texture && gameProps->renderer) {
                             // 2D Rendering
-                            SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
-            
                             SDL_RenderTextureRotated(
                                 gameProps->renderer, 
                                 image->texture,
@@ -224,7 +230,7 @@ namespace Amara {
                             gameProps->renderBatch->pushQuad(
                                 gameProps->currentShaderProgram,
                                 image->glTextureID,
-                                vertices, 1, tint,
+                                vertices, 1, Amara::Color(255, 255, 255),
                                 v, true,
                                 Amara::BlendMode::Alpha
                             );

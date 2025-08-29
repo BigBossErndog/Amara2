@@ -67,8 +67,10 @@ Creator:createWorld({
     end,
 
     onCreate = function(world)
-        local props = world.props;
+        math.randomseed(os.time())
 
+        local props = world.props;
+        
         props.windowShadows = world:createChild("TextureContainer", {
             alpha = 0.5,
             tint = Colors.Black,
