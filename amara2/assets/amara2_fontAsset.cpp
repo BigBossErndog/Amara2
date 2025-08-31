@@ -290,8 +290,14 @@ namespace Amara {
 
             std::string config_str;
             std::string contents_str;
+
+            bool key_value = true;
+
             while (i < str.size()) {
                 config_str += str[i];
+                if (str[i] == U'=') {
+                    key_value = false;
+                }
                 if (str[i] == U'}') {
                     break;
                 }
@@ -300,11 +306,20 @@ namespace Amara {
                 }
                 i += 1;
             }
-            
-            sol::object sol_config = string_to_lua_object(gameProps->lua, config_str);
-            nlohmann::json config = lua_to_json(sol_config);
-            if (!config.is_null()) return config;
-            else return contents_str;
+
+            if (key_value) {
+                return contents_str;
+            }
+
+            try {
+                sol::object sol_config = string_to_lua_object(gameProps->lua, config_str);
+                nlohmann::json config = lua_to_json(sol_config);
+                if (!config.is_null() && !(config.is_array() && config.size() == 0)) return config;
+            }
+            catch(...) {
+                debug_log("Warning: Invalid text config: ", config_str);
+            }
+            return contents_str;
         }
 
         TextLayout generateLayout(const std::u32string& str, double wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing) {
@@ -399,7 +414,7 @@ namespace Amara {
                         
                         glyph.config = getTextConfig(i, str);
 
-                        line->glyphs.push_back(glyph);
+                        word.glyphs.push_back(glyph);
                         continue;
                     }
 
