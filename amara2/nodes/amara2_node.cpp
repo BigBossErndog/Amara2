@@ -442,7 +442,7 @@ namespace Amara {
 
         bool finishedLoading();
 
-        void runChildren(double deltaTime) {
+        virtual void runChildren(double deltaTime) {
             if (children.size() == 0) return;
 
             children_copy_list = children;

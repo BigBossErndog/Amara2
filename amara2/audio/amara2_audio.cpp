@@ -4,6 +4,7 @@ namespace Amara {
         Amara::AudioAsset* audio = nullptr;
 
         float volume = 1;
+        float masterVolume = 1;
         float panning = 0;
 
         bool playing = false;
@@ -37,6 +38,7 @@ namespace Amara {
             if (json_has(config, "loop")) loop = config["loop"];
             if (json_has(config, "audio")) setAudio(config["audio"]);
             if (json_has(config, "volume")) setVolume(config["volume"]);
+            if (json_has(config, "masterVolume")) setMasterVolume(config["masterVolume"]);
             if (json_has(config, "panning")) setPanning(config["panning"]);
             if (json_has(config, "position")) setPosition(config["position"]);
             
@@ -46,7 +48,7 @@ namespace Amara {
         }
 
         virtual void update(double deltaTime) override {
-            gameProps->audioData.volume = gameProps->audioData.volume * volume;
+            gameProps->audioData.volume = gameProps->audioData.volume * volume * masterVolume;
             if (gameProps->audioData.panning != 0 && panning != 0) {
                 gameProps->audioData.panning = (gameProps->audioData.panning + panning)/2.0f;
             }
@@ -97,7 +99,7 @@ namespace Amara {
                         }
                         else {
                             for (float& sample: stream_chunk) {
-                                sample *= volume;
+                                sample *= audioData.volume;
                             }
                         }
                         
@@ -163,6 +165,37 @@ namespace Amara {
         }
 
         void update_group();
+
+        virtual void runChildren(double deltaTime) override {
+            if (children.size() == 0) return;
+
+            AudioData rec_audio_data = gameProps->audioData;
+
+            children_copy_list = children;
+
+            Amara::Node* child;
+			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
+				if (destroyed) break;
+                update_properties();
+
+                child = *it;
+				if (child == nullptr || child->destroyed || child->parent != this || child->paused) {
+					++it;
+					continue;
+				}
+                if (child->pauseOnce) {
+                    child->pauseOnce = false;
+                    ++it;
+                    continue;
+                }
+                child->run(deltaTime * child->speed);
+
+                gameProps->audioData = rec_audio_data;
+
+				++it;
+				if (destroyed) break;
+			}
+        }
 
         void createAudioStream() {
             destroyAudioStream();
@@ -253,6 +286,9 @@ namespace Amara {
         void setVolume(float _volume) {
             volume = std::clamp(_volume, 0.0f, 1.0f);
         }
+        void setMasterVolume(float _mvolume) {
+            masterVolume = std::clamp(_mvolume, 0.0f, 1.0f);
+        }
         void setPanning(float _pan) { 
             panning = std::clamp(_pan, -1.0f, 1.0f); 
         }
@@ -266,6 +302,7 @@ namespace Amara {
             lua.new_usertype<Audio>("Audio",
                 sol::base_classes, sol::bases<Amara::Node>(),
                 "volume", sol::property([] (Audio& a) -> float { return a.volume; }, [](Audio& a, float v) { a.setVolume(v); }),
+                "masterVolume", sol::property([] (Audio& a) -> float { return a.masterVolume; }, [](Audio& a, float v) { a.setMasterVolume(v); }),
                 "panning", sol::property([] (Audio& a) -> float { return a.panning; }, [](Audio& a, float v) { a.setPanning(v); }),
                 "playing", sol::readonly(&Audio::playing),
                 "loop", &Audio::loop,

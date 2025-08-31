@@ -960,6 +960,8 @@ namespace Amara {
         }
 
         virtual void create() override {
+            gameProps->audio = audio = createChild("AudioMaster")->as<Amara::AudioMaster*>();
+
             if (!created_entry_scenes) {
                 for (std::string key: entryScenes) {
                     createChild(key);
@@ -968,8 +970,6 @@ namespace Amara {
             }
 
             Amara::Node::create();
-
-            audio = createChild("AudioMaster")->as<Amara::AudioMaster*>();
         }
 
         virtual void run(double deltaTime) override {

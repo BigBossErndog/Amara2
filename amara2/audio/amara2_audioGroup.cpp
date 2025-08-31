@@ -24,7 +24,19 @@ namespace Amara {
                     return;
                 }
             }
-            debug_log("Error: Audio child \"", gid, "\" of group \"", id, "\" not found.");
+            fatal_error("Error: Audio child \"", gid, "\" of group \"", id, "\" not found.");
+        }
+        void playAll() {
+            paused = false;
+            for (Amara::Node* child : children) {
+                if (child == nullptr || child->destroyed || child->parent != this) continue;
+                
+                Amara::Audio* audio = child->as<Amara::Audio*>();
+                if (audio) {
+                    audio->play();
+                }
+            }
+            playing = true;
         }
 
         void pause() {
@@ -63,7 +75,7 @@ namespace Amara {
                 Amara::Audio* audio = child->as<Amara::Audio*>();
                 if (audio) {
                     audio->stop();
-                    return;
+                    if (currentlyPlaying == audio) currentlyPlaying = nullptr;
                 }
             }
         }
@@ -73,6 +85,7 @@ namespace Amara {
                 Amara::Audio* audio = node->as<Amara::Audio*>();
                 if (audio) {
                     audio->stop();
+                    if (currentlyPlaying == audio) currentlyPlaying = nullptr;
                     return;
                 }
             }
@@ -114,7 +127,11 @@ namespace Amara {
                 "restart", sol::overload(
                     sol::resolve<void()>(&AudioGroup::restart),
                     sol::resolve<void(std::string)>(&AudioGroup::restart)
-                )
+                ),
+                "currentlyPlaying", sol::property([](const AudioGroup& ag) -> sol::object { 
+                    if (ag.currentlyPlaying) return ag.currentlyPlaying->get_lua_object();
+                    return sol::nil; 
+                })
             );
         }
     };

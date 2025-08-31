@@ -4,8 +4,7 @@ namespace Amara {
         float volume = 1;
 
         SDL_AudioDeviceID device = 0;
-
-        std::vector<Amara::AudioData> audioQueue;
+        
         std::vector<float> buffer;
 
         AudioMaster(): Amara::AudioGroup() {
@@ -33,10 +32,7 @@ namespace Amara {
         virtual void run(double deltaTime) {
             gameProps->audioData.reset();
 
-            Amara::Node::run(deltaTime);
-
-            audioQueue = gameProps->audio_buffer;
-            gameProps->audio_buffer.clear();
+            Amara::AudioGroup::run(deltaTime);
         }
 
         virtual void destroy() {

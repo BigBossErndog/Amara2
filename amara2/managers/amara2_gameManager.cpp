@@ -64,7 +64,7 @@ namespace Amara {
         int get_lua_stack_size() {
             return lua_gettop(gameProps->lua.lua_state());
         }
-
+        
         Uint32 getDisplayIDForPoint(Vector2 p) {
             SDL_Point sp = { static_cast<int>(p.x), static_cast<int>(p.y) };
             return SDL_GetDisplayForPoint(&sp);

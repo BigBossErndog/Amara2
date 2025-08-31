@@ -47,6 +47,9 @@ namespace Amara {
             AudioData new_data;
             new_data.device = device;
 
+            volume = 1;
+            panning = 0;
+            
             *this = new_data;
         }
     };
@@ -98,7 +101,6 @@ namespace Amara {
 
         PassOnProps passOn;
         AudioData audioData;
-        std::vector<AudioData> audio_buffer;
 
         GraphicsEnum graphics = Amara::GraphicsEnum::None;
         

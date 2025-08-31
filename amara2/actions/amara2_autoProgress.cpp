@@ -48,16 +48,23 @@ namespace Amara {
 
             if (has_started) {
                 timer += deltaTime * speed;
-                while (timer > 1.0) {
-                    timer -= 1.0;
-                    if (text->progressText(1) || text->progress >= until) {
-                        complete();
-                        break;
-                    }
-                }
                 if (!completed && funcs.hasFunction("skipCondition")) {
                     if (funcs.callFunction(actor, "skipCondition").as<bool>()) {
                         skip();
+                    }
+                }
+                if (!completed) {
+                    if (timer > 1.0) {
+                        if (funcs.hasFunction("onCharacter")) {
+                            funcs.callFunction(actor, "onCharacter");
+                        }
+                    }
+                    while (timer > 1.0) {
+                        timer -= 1.0;
+                        if (text->progressText(1) || text->progress >= until) {
+                            complete();
+                            break;
+                        }
                     }
                 }
             }
