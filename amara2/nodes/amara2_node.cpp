@@ -192,6 +192,8 @@ namespace Amara {
             }
 
             if (json_has(config, "id")) id = config["id"];
+
+            if (json_has(config, "pos")) pos = config["pos"];
             if (json_has(config, "x")) pos.x = config["x"];
             if (json_has(config, "y")) pos.y = config["y"];
             if (json_has(config, "z")) pos.z = config["z"];
@@ -339,6 +341,7 @@ namespace Amara {
             nlohmann::json config = nlohmann::json::object();
             config[key] = lua_to_json(val);
             configure(config);
+            
             return get_lua_object();
         }
 

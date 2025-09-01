@@ -27,9 +27,14 @@ namespace Amara {
             return nullptr;
         }
 
-        sol::object lua_grab() {
+        sol::object lua_grab(sol::object config) {
             Amara::Node* grabbed = grab();
-            if (grabbed) return grabbed->get_lua_object();
+            if (grabbed) {
+                if (config.valid()) {
+                    grabbed->luaConfigure(config);
+                }
+                return grabbed->get_lua_object();
+            }
             return sol::nil;
         }
 

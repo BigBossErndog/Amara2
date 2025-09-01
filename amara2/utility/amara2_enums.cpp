@@ -10,18 +10,19 @@ namespace Amara {
     };
 
     enum class ScreenModeEnum {
-        Windowed,
-        BorderlessWindowed,
-        Fullscreen,
-        BorderlessFullscreen
+        Invalid = 1,
+        Windowed = 2,
+        BorderlessWindowed = 3,
+        Fullscreen = 4,
+        BorderlessFullscreen = 5
     };
 
     enum class InputMode {
-        None,
-        Keyboard,
-        Gamepad,
-        Mouse,
-        Touch
+        None = 1,
+        Keyboard = 2,
+        Gamepad = 3,
+        Mouse = 4,
+        Touch = 5
     };
 
     enum class AssetEnum {
@@ -46,23 +47,25 @@ namespace Amara {
     };
 
     enum class AlignmentEnum {
-        Left = 0,
-        Center = 1,
-        Right = 2,
-        Top = 3,
-        Middle = 4,
-        Bottom = 5
+        Invalid = 1,
+        Left = 2,
+        Center = 3,
+        Right = 4,
+        Top = 5,
+        Middle = 6,
+        Bottom = 7
     };
 
     enum class WrapModeEnum {
-        ByCharacter,
-        ByWord
+        Inavlid = 1,
+        ByCharacter = 2,
+        ByWord = 3
     };
 
     enum class TextInputEnum {
-        None,
-        Text,
-        Backspace
+        None = 1,
+        Text = 2,
+        Backspace = 3
     };
 
     enum class Direction {
@@ -82,18 +85,18 @@ namespace Amara {
     std::vector<Amara::Direction> OrdinalDirections = { Direction::DownLeft, Direction::UpLeft, Direction::UpRight, Direction::DownRight };
 
     enum class ShapeEnum {
-        None = 0,
-        Rectangle = 1,
-        Circle = 2,
-        Quad = 3,
-        Triangle = 4,
-        Polygon = 5,
-        Line = 6
+        None = 1,
+        Rectangle = 2,
+        Circle = 3,
+        Quad = 4,
+        Triangle = 6,
+        Polygon = 7,
+        Line = 8
     };
 
     enum class CursorEnum {
-        Default,
-        Pointer
+        Default = 1,
+        Pointer = 2
     };
 
     void bind_lua_Enums(sol::state& lua) {
@@ -108,6 +111,7 @@ namespace Amara {
         );
 
         lua.new_enum("ScreenMode",
+            "Invalid", Amara::ScreenModeEnum::Invalid,
             "Windowed", Amara::ScreenModeEnum::Windowed,
             "BorderlessWindowed", Amara::ScreenModeEnum::BorderlessWindowed,
             "Fullscreen", Amara::ScreenModeEnum::Fullscreen,
