@@ -165,6 +165,16 @@ namespace Amara {
             if (json_has(config, "originY")) origin.y = config["originY"];
             if (json_has(config, "origin")) origin = config["origin"];
 
+            if (json_has(config, "originPosition")) {
+                origin = Vector2(config["originPosition"]) / Vector2(textWidth, textHeight);
+            }
+            if (json_has(config, "originPositionX")) {
+                origin.x = config["originPositionX"].get<float>() / textWidth;
+            }
+            if (json_has(config, "originPositionY")) {
+                origin.y = config["originPositionY"].get<float>() / textHeight;
+            }
+
             if (json_has(config, "progress")) progress = config["progress"];
 
             if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
@@ -630,6 +640,21 @@ namespace Amara {
                 "origin", sol::property([](Amara::Text& t) -> Vector2& { return t.origin; }, [](Amara::Text& t, Vector2 v) { t.origin = v; }),
                 "originX", sol::property([](Amara::Text& t) -> float { return t.origin.x; }, [](Amara::Text& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::Text& t) -> float { return t.origin.y; }, [](Amara::Text& t, float v) { t.origin.y = v; }),
+                "originPosition", sol::property([](Amara::Text& t) -> Vector2 { return t.origin * Vector2(t.textWidth, t.textHeight); }, [](Amara::Text& t, sol::object v) { 
+                    if (t.textWidth != 0 && t.textHeight != 0) {
+                        t.origin = Vector2(v) / Vector2(t.textWidth, t.textHeight); 
+                    }
+                }),
+                "originPositionX", sol::property([](Amara::Text& t) -> float { return t.origin.x * t.textWidth; }, [](Amara::Text& t, float v) { 
+                    if (t.textWidth != 0) {
+                        t.origin.x = v / t.textWidth; 
+                    }
+                }),
+                "originPositionY", sol::property([](Amara::Text& t) -> float { return t.origin.y * t.textHeight; }, [](Amara::Text& t, float v) { 
+                    if (t.textHeight != 0) {
+                        t.origin.y = v / t.textHeight; 
+                    }
+                }),
                 "alignment", sol::property([](Amara::Text& t) -> int { return static_cast<int>(t.alignment); }, [](Amara::Text& t, int v) { t.align(static_cast<Amara::AlignmentEnum>(v)); }),
                 "lineSpacing", sol::property([](Amara::Text& t) -> int { return t.lineSpacing; }, [](Amara::Text& t, sol::object v) { 
                     if (v.is<int>()) t.setLineSpacing(v.as<int>());

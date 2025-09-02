@@ -118,6 +118,19 @@ namespace Amara {
             if (json_has(config, "originY")) origin.y = config["originY"];
             if (json_has(config, "origin")) origin = config["origin"];
 
+            if (json_has(config, "originPosition")) {
+                origin = Vector2(config["originPosition"]) / Vector2(
+                    (spritesheet ? frameWidth : textureWidth), 
+                    (spritesheet ? frameHeight : textureHeight)
+                );
+            }
+            if (json_has(config, "originPositionX")) {
+                origin.x = config["originPositionX"].get<float>() / (spritesheet ? frameWidth : textureWidth);
+            }
+            if (json_has(config, "originPositionY")) {
+                origin.y = config["originPositionY"].get<float>() / (spritesheet ? frameHeight : textureHeight);
+            }
+
             if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
             if (json_has(config, "cropRight")) cropRight = config["cropRight"];
             if (json_has(config, "cropTop")) cropTop = config["cropTop"];
@@ -410,6 +423,33 @@ namespace Amara {
                 "origin", sol::property([](Amara::Sprite& t) -> Vector2& { return t.origin; }, [](Amara::Sprite& t, sol::object v) { t.origin = v; }),
                 "originX", sol::property([](Amara::Sprite& t) -> float { return t.origin.x; }, [](Amara::Sprite& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::Sprite& t) -> float { return t.origin.y; }, [](Amara::Sprite& t, float v) { t.origin.y = v; }),
+                "originPosition", sol::property(
+                    [](Amara::Sprite& t) -> Vector2 { return Vector2(
+                        (t.spritesheet ? t.frameWidth : t.textureWidth) * t.origin.x,
+                        (t.spritesheet ? t.frameHeight : t.textureHeight) * t.origin.y
+                    ); },
+                    [](Amara::Sprite& t, sol::object v) {
+                        Vector2 vec = v;
+                        t.origin = vec / Vector2(
+                            (t.spritesheet ? t.frameWidth : t.textureWidth),
+                            (t.spritesheet ? t.frameHeight : t.textureHeight)
+                        );
+                    }
+                ),
+                "originPositionX", sol::property(
+                    [](Amara::Sprite& t) -> float { return (t.spritesheet ? t.frameWidth : t.textureWidth) * t.origin.x; },
+                    [](Amara::Sprite& t, float v) {
+                        float w = (t.spritesheet ? t.frameWidth : t.textureWidth);
+                        if (w != 0) t.origin.x = v / w;
+                    }
+                ),
+                "originPositionY", sol::property(
+                    [](Amara::Sprite& t) -> float { return (t.spritesheet ? t.frameHeight : t.textureHeight) * t.origin.y; },
+                    [](Amara::Sprite& t, float v) {
+                        float h = (t.spritesheet ? t.frameHeight : t.textureHeight);
+                        if (h != 0) t.origin.y = v / h;
+                    }
+                ),
                 "w", sol::property(&Sprite::getWidth),
                 "h", sol::property(&Sprite::getHeight),
                 "width", sol::property(&Sprite::getWidth, &Sprite::setWidth),

@@ -90,6 +90,16 @@ namespace Amara {
             if (json_has(config, "originY")) origin.y = config["originY"];
             if (json_has(config, "origin")) origin = config["origin"];
 
+            if (json_has(config, "originPosition")) {
+                origin = Vector2(config["originPosition"]) / Vector2(width, height);
+            }
+            if (json_has(config, "originPositionX")) {
+                origin.x = config["originPositionX"].get<float>() / width;
+            }
+            if (json_has(config, "originPositionY")) {
+                origin.y = config["originPositionY"].get<float>() / height;
+            }
+
             if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
             if (json_has(config, "cropRight")) cropRight = config["cropRight"];
             if (json_has(config, "cropTop")) cropTop = config["cropTop"];
@@ -598,6 +608,20 @@ namespace Amara {
                 "origin", sol::property([](Amara::TextureContainer& t) -> Vector2& { return t.origin; }, [](Amara::TextureContainer& t, sol::object v) { t.origin = v; }),
                 "originX", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.x; }, [](Amara::TextureContainer& t, float v) { t.origin.x = v; }),
                 "originY", sol::property([](Amara::TextureContainer& t) -> float { return t.origin.y; }, [](Amara::TextureContainer& t, float v) { t.origin.y = v; }),
+                "originPosition", sol::property(
+                    [](Amara::TextureContainer& t) -> Vector2 { return Vector2(t.origin.x * t.width, t.origin.y * t.height); },
+                    [](Amara::TextureContainer& t, sol::object v) {
+                        t.origin = Vector2(v) / Vector2(t.width, t.height);
+                    }
+                ),
+                "originPositionX", sol::property(
+                    [](Amara::TextureContainer& t) -> float { return t.origin.x * t.width; },
+                    [](Amara::TextureContainer& t, float v) { t.origin.x = v / t.width; }
+                ),
+                "originPositionY", sol::property(
+                    [](Amara::TextureContainer& t) -> float { return t.origin.y * t.height; },
+                    [](Amara::TextureContainer& t, float v) { t.origin.y = v / t.height; }
+                ),
                 "canvasLocked", &TextureContainer::canvasLocked,
                 "drawOnce", &TextureContainer::drawOnce,
                 "clearOnDraw", &TextureContainer::clearOnDraw,
