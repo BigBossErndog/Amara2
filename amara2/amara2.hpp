@@ -231,6 +231,7 @@
     #include "actions/amara2_autoProgress.cpp"
     
     #include "nodes/amara2_sprite.cpp"
+    #include "nodes/amara2_repeatSprite.cpp"
     #include "actions/amara2_animation.cpp"
 
     #include "nodes/amara2_fillRect.cpp"

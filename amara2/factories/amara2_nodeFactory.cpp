@@ -246,6 +246,7 @@ namespace Amara {
             registerNode<Amara::AutoProgress>("AutoProgress");
 
             registerNode<Amara::Sprite>("Sprite");
+            registerNode<Amara::RepeatSprite>("RepeatSprite");
             registerNode<Amara::Animation>("Animation");
 
             registerNode<Amara::FillRect>("FillRect");
@@ -313,6 +314,7 @@ namespace Amara {
             Amara::AutoProgress::bind_lua(lua);
 
             Amara::Sprite::bind_lua(lua);
+            Amara::RepeatSprite::bind_lua(lua);
             Amara::Animation::bind_lua(lua);
 
             Amara::FillRect::bind_lua(lua);
