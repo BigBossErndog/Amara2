@@ -191,7 +191,9 @@ namespace Amara {
             SDL_FRect srcRect, destRect;
 
             if (spritesheet) {
-                int fixedFrame = (frame - 1) % (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
+                int maxFrames = (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
+                int fixedFrame = ((frame - 1) % maxFrames);
+                while (fixedFrame < 0) fixedFrame += maxFrames;
                 srcRect.x = static_cast<float>((fixedFrame % (textureWidth / frameWidth)) * frameWidth + cropLeft);
                 srcRect.y = static_cast<float>(floor(fixedFrame / (textureWidth / frameWidth)) * frameHeight + cropTop);
                 srcRect.w = static_cast<float>(frameWidth - cropLeft - cropRight);

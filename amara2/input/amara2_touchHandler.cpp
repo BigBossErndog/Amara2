@@ -19,6 +19,7 @@ namespace Amara {
                 if (!p->active) {
                     p->id = fingerID;
                     p->active = true;
+                    p->state.press();
                     count++;
                     return p;
                 }
@@ -43,6 +44,7 @@ namespace Amara {
                 p = *it;
                 if (p->id == fingerID) {
                     p->active = false;
+                    p->state.release();
                     count--;
                     return;
                 }
@@ -53,11 +55,33 @@ namespace Amara {
             for (auto& p: pointers) {
                 p->update(deltaTime);
             }
-        } 
+        }
+
+        bool isDown() {
+            for (auto& p: pointers) {
+                if (p->state.isDown) return true;
+            }
+            return false;
+        }
+        bool justPressed() {
+            for (auto& p: pointers) {
+                if (p->state.justPressed) return true;
+            }
+            return false;
+        }
+        bool justReleased() {
+            for (auto& p: pointers) {
+                if (p->state.justReleased) return true;
+            }
+            return false;
+        }
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<TouchHandler>("TouchHandler",
-                "count", sol::readonly(&TouchHandler::count)
+                "count", sol::readonly(&TouchHandler::count),
+                "isDown", sol::property(&TouchHandler::isDown),
+                "justPressed", sol::property(&TouchHandler::justPressed),
+                "justReleased", sol::property(&TouchHandler::justReleased)
             );
         }
     };

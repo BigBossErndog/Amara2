@@ -65,7 +65,6 @@ namespace Amara {
                     }
                     else {
                         fatal_error("Error: Node ", *sprite, " does not have a valid texture for animation.");
-                        gameProps->breakWorld();
                         animKey.clear();
                         return;
                     }

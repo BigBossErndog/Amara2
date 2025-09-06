@@ -1057,6 +1057,7 @@ namespace Amara {
             );
 
             node_type["children"] = sol::readonly(&Node::children);
+            node_type["child"] = sol::readonly(&Node::children);
         }
     };
 

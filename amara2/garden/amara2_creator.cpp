@@ -282,6 +282,7 @@ namespace Amara {
                     }
                     catch(std::exception& e) {
                         debug_log(e.what());
+                        gameProps.breakWorld();
                         return gameProps.error_code;
                     }
                 }
@@ -292,6 +293,7 @@ namespace Amara {
                 }
                 catch(std::exception& e) {
                     debug_log(e.what());
+                    gameProps.breakWorld();
                     return gameProps.error_code;
                 }
             }

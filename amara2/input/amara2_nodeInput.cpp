@@ -129,7 +129,19 @@ namespace Amara {
                 "draggable", &NodeInput::draggable,
                 "configure", sol::resolve<void(sol::object)>(&NodeInput::configure),
                 "cursor", &NodeInput::cursor,
-                "drag", sol::readonly(&NodeInput::drag)
+                "drag", sol::readonly(&NodeInput::drag),
+                "isDown", sol::property([](Amara::NodeInput& n) {
+                    InputManager* input = n.gameProps->inputManager;
+                    return input->mouse.left.isDown || input->touch.isDown();
+                }),
+                "justPressed", sol::property([](Amara::NodeInput& n) {
+                    InputManager* input = n.gameProps->inputManager;
+                    return input->mouse.left.justPressed || input->touch.justPressed();
+                }),
+                "justReleased", sol::property([](Amara::NodeInput& n) {
+                    InputManager* input = n.gameProps->inputManager;
+                    return input->mouse.left.justReleased || input->touch.justReleased();
+                })
             );
         }
     };

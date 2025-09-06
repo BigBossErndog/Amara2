@@ -17,7 +17,7 @@ namespace Amara {
         std::ostringstream ss;
         (ss << ... << args);
         std::string errorMessage = ss.str();
-
+        
         // Write to error_log.txt
         std::ofstream errorLogFile("error_log.txt");
         if (errorLogFile.is_open()) {

@@ -25,17 +25,26 @@ namespace Amara {
         float marginBottom = -1;
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "width")) drawWidth = json_extract(config, "width");
-            if (json_has(config, "height")) drawHeight = json_extract(config, "height");
+            if (json_has(config, "maxWidth")) {
+                width = json_extract(config, "maxWidth");
+                drawWidth = width;
+            }
+            if (json_has(config, "maxHeight")) {
+                height = json_extract(config, "maxHeight");
+                drawHeight = height;
+            }
+
+            if (json_has(config, "width")) {
+                drawWidth = json_extract(config, "width");
+                if (width < drawWidth) width = drawWidth;
+            }
+            if (json_has(config, "height")) {
+                drawHeight = json_extract(config, "height");
+                if (height < drawHeight) height = drawHeight;
+            }
 
             if (drawWidth < 0) drawWidth = 0;
             if (drawHeight < 0) drawHeight = 0;
-
-            if (json_has(config, "maxWidth")) width = json_extract(config, "maxWidth");
-            if (json_has(config, "maxHeight")) height = json_extract(config, "maxHeight");
-
-            if (width < drawWidth) width = drawWidth;
-            if (height < drawHeight) height = drawHeight;
 
             if (json_has(config, "texture")) setTexture(config["texture"]);
             if (json_has(config, "frame")) frame = config["frame"];
