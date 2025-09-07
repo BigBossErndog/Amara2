@@ -173,17 +173,6 @@ namespace Amara {
             update_canvas = true;
         }
 
-        Rectangle getCanvasSize() {
-            return Rectangle(0, 0, static_cast<float>(width), static_cast<float>(height));
-        }
-
-        void setCanvasSize(const Rectangle& rect) {
-            width = rect.w;
-            height = rect.h;
-            pos.x = rect.x + width*origin.x;
-            pos.y = rect.y + height*origin.y;
-        }
-
         virtual void update_size() {
             left = -width/2.0;
             right = width/2.0;
@@ -496,6 +485,7 @@ namespace Amara {
             pos.y = rect.y + rect.h*origin.y;
             width = rect.w;
             height = rect.h;
+            update_size();
             return getRectangle();
         }
         
@@ -557,13 +547,6 @@ namespace Amara {
                 "h", sol::property([](Amara::TextureContainer& t) -> int { return t.height; }, [](Amara::TextureContainer& t, double v) { t.setHeight(v); }),
                 "width", sol::property([](Amara::TextureContainer& t) -> int { return t.width; }, [](Amara::TextureContainer& t, double v) { t.setWidth(v); }),
                 "height", sol::property([](Amara::TextureContainer& t) -> int { return t.height; }, [](Amara::TextureContainer& t, double v) { t.setHeight(v); }),
-                "canvas", sol::property(
-                    &TextureContainer::getCanvasSize,
-                    [](Amara::TextureContainer& t, sol::object v) {
-                        Rectangle r = v;
-                        t.setCanvasSize(r);
-                    }
-                ),
                 "rect", sol::property(
                     &TextureContainer::getRectangle, 
                     [](Amara::TextureContainer& t, sol::object v) {
@@ -572,7 +555,7 @@ namespace Amara {
                     }
                 ),
                 "size", sol::property(
-                    [](Amara::TextureContainer& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.width, t.height); },
+                    [](Amara::TextureContainer& t) -> Rectangle { return Rectangle(t.pos.x - t.width*t.origin.x, t.pos.y- t.height*t.origin.y, t.width, t.height); },
                     [](Amara::TextureContainer& t, sol::object v) {
                         Rectangle r = v;
                         t.resize(r);
