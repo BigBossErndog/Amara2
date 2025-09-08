@@ -1,6 +1,7 @@
 # Amara2
-A 2D game engine with Lua scripting.
-Built in C++ using SDL3.
+A free and open-source 2D game engine with Lua scripting for people like me who are overwhelmed by game engine UI. Amara2 exists in a space between a game engine and an easy-to-use game framework.
+
+Built in C++ using SDL3, with exports to Windows and Web.
 
 *Note: Amara2 is currently available for Windows only.*
 
