@@ -354,7 +354,7 @@ namespace Amara {
             if (spawning) {
                 spawn_counter -= deltaTime;
                 while (spawn_counter <= 0) {
-                    spawn_counter += spawnRate;
+                    spawn_counter += 1/spawnRate;
                     Particle* p = grabParticle();
                     if (p == nullptr) continue;
                     p->in_use = true;
