@@ -376,6 +376,7 @@ namespace Amara {
         *(gameProps->globalPointer) = mouse;
 
         mouse.state.press();
+        mouse.moved = true;
 
         InputDef inputDef;
         NodeInput* input;

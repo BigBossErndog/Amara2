@@ -7,6 +7,7 @@ namespace Amara {
 
         Amara::Vector2 wheel;
 
+        bool moved = false;
         
         Mouse() = default;
 
@@ -14,8 +15,9 @@ namespace Amara {
             left.update(deltaTime);
             right.update(deltaTime);
             middle.update(deltaTime);
-
+            
             wheel = Vector2(0, 0);
+            moved = false;
             
             Amara::Pointer::update(deltaTime);
         }
@@ -26,7 +28,8 @@ namespace Amara {
                 "left", sol::readonly(&Mouse::left),
                 "right", sol::readonly(&Mouse::right),
                 "middle", sol::readonly(&Mouse::middle),
-                "wheel", sol::readonly(&Mouse::wheel)
+                "wheel", sol::readonly(&Mouse::wheel),
+                "moved", sol::readonly(&Mouse::moved)
             );
         }
     };

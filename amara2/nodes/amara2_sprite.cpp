@@ -89,7 +89,7 @@ namespace Amara {
                 data["texture"] = image->key;
             }
             data["frame"] = frame;
-
+            
             data["tint"] = tint.toJSON();
             data["blendMode"] = static_cast<int>(blendMode);
             

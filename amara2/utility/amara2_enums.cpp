@@ -57,7 +57,7 @@ namespace Amara {
     };
 
     enum class WrapModeEnum {
-        Inavlid = 1,
+        Invalid = 1,
         ByCharacter = 2,
         ByWord = 3
     };

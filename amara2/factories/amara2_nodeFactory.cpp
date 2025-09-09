@@ -247,6 +247,7 @@ namespace Amara {
 
             registerNode<Amara::Sprite>("Sprite");
             registerNode<Amara::RepeatSprite>("RepeatSprite");
+            registerNode<Amara::ParticleEmitter>("ParticleEmitter");
             registerNode<Amara::Animation>("Animation");
 
             registerNode<Amara::FillRect>("FillRect");
@@ -315,6 +316,7 @@ namespace Amara {
 
             Amara::Sprite::bind_lua(lua);
             Amara::RepeatSprite::bind_lua(lua);
+            Amara::ParticleEmitter::bind_lua(lua);
             Amara::Animation::bind_lua(lua);
 
             Amara::FillRect::bind_lua(lua);

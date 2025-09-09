@@ -1,6 +1,7 @@
 namespace Amara {    
     struct Vector2 {
         Vector2() = default;
+        Vector2(float _g) : x(_g), y(_g) {}
         Vector2(float x_, float y_) : x(x_), y(y_) {}
         Vector2(const SDL_FPoint& p): Vector2(p.x, p.y) {}
         Vector2(nlohmann::json config) {
@@ -129,7 +130,9 @@ namespace Amara {
 
     struct Vector3: public Vector2 {
         Vector3() = default;
+        Vector3(float _g) : Vector2(_g, _g) {}
         Vector3(float _x, float _y, float _z) : Vector2(_x, _y), z(_z) {}
+        Vector3(const Vector2& v2) : Vector2(v2) {}
         Vector3(const Vector2& v2, float _z): Vector2(v2.x, v2.y), z(_z) {}
         Vector3(nlohmann::json config) {
             *this = config;

@@ -35,7 +35,7 @@ namespace Amara {
         int textHeight = 0;
 
         double wrapWidth = -1;
-        Amara::WrapModeEnum wrapMode = Amara::WrapModeEnum::ByCharacter;
+        Amara::WrapModeEnum wrapMode = Amara::WrapModeEnum::ByWord;
 
         int lineSpacing = 0;
 
@@ -251,6 +251,9 @@ namespace Amara {
         }
         sol::object setWrapMode(Amara::WrapModeEnum _mode) {
             wrapMode = _mode;
+            if (wrapMode == Amara::WrapModeEnum::Invalid) {
+                fatal_error("Error: Invalid wrap mode given.");
+            }
             updateText();
             return get_lua_object();
         }

@@ -148,6 +148,18 @@ namespace Amara {
         bool hasFunction(std::string funcName) {
             return hasFunction(lastClass, funcName);
         }
+        sol::function getFunction(std::string className, std::string funcName) {
+            if (funcMap.find(className) != funcMap.end()) {
+                return funcMap[className].getFunction(funcName);
+            }
+            if (inheritance_map.find(className) != inheritance_map.end()) {
+                return getFunction(inheritance_map[className], funcName);
+            }
+            return sol::nil;
+        }
+        sol::function getFunction(std::string funcName) {
+            return getFunction(lastClass, funcName);
+        }
 
         template<typename... CallArgs>
         sol::object callFunction(std::string className, std::string funcName, CallArgs&&... args) {

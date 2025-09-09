@@ -5,6 +5,8 @@ namespace Amara {
 
         int count = 0;
 
+        Pointer* lastFinger = nullptr;
+
         Pointer* getFinger(SDL_FingerID fingerID) {
             for (auto p: pointers) {
                 if (p->id == fingerID) return p;
@@ -21,6 +23,7 @@ namespace Amara {
                     p->active = true;
                     p->state.press();
                     count++;
+                    lastFinger = p;
                     return p;
                 }
             }
@@ -28,6 +31,7 @@ namespace Amara {
             p = pointers.back();
             p->id = fingerID;
             p->active = true;
+            lastFinger = p;
             count++;
             return p;
         }
@@ -36,7 +40,7 @@ namespace Amara {
             Pointer* p = getFinger(fingerID);
             if (p) return p;
             return getNewFinger(fingerID);
-        } 
+        }
 
         void deactivateFinger(SDL_FingerID fingerID) {
             Pointer* p;
@@ -59,19 +63,19 @@ namespace Amara {
 
         bool isDown() {
             for (auto& p: pointers) {
-                if (p->state.isDown) return true;
+                if (p->active && p->state.isDown) return true;
             }
             return false;
         }
         bool justPressed() {
             for (auto& p: pointers) {
-                if (p->state.justPressed) return true;
+                if (p->active && p->state.justPressed) return true;
             }
             return false;
         }
         bool justReleased() {
             for (auto& p: pointers) {
-                if (p->state.justReleased) return true;
+                if (p->active && p->state.justReleased) return true;
             }
             return false;
         }

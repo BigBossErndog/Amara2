@@ -22,8 +22,8 @@ namespace Amara {
             float imgw = (spritesheet ? frameWidth : textureWidth);
             float imgh = (spritesheet ? frameHeight : textureHeight);
 
-            Vector2 render_pos = (renderPixelPerfect) ? pos.round() : pos;
-            render_pos += gOffset;
+            Vector2 render_pos = pos + gOffset;
+            if (renderPixelPerfect) render_pos = render_pos.round();
 
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(

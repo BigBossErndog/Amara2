@@ -983,6 +983,8 @@ namespace Amara {
                 else audio = nullptr;
             }
 
+            inputManager.pre_update(deltaTime);
+
             Amara::Node::run(deltaTime * speed);
             
             inputManager.update(deltaTime);

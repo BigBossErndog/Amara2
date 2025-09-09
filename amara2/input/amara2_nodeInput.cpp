@@ -17,8 +17,11 @@ namespace Amara {
         Vector2 rec_interact_pos;
 
         CursorEnum cursor = CursorEnum::Default;
+        GeneralPointer pointer;
 
         InputDef lastInteraction;
+
+        NodeInput() = default;
 
         void configure(nlohmann::json config) {
             if (config.is_boolean()) {
@@ -120,6 +123,8 @@ namespace Amara {
         }
 
         static void bind_lua(sol::state& lua) {
+            Amara::GeneralPointer::bind_lua(lua);
+
             lua.new_usertype<NodeInput>("NodeInput",
                 sol::base_classes, sol::bases<Amara::MessageBox>(),
                 "mouse", sol::property([](Amara::NodeInput& n) { return n.gameProps->inputManager->mouse; }),
@@ -130,17 +135,8 @@ namespace Amara {
                 "configure", sol::resolve<void(sol::object)>(&NodeInput::configure),
                 "cursor", &NodeInput::cursor,
                 "drag", sol::readonly(&NodeInput::drag),
-                "isDown", sol::property([](Amara::NodeInput& n) {
-                    InputManager* input = n.gameProps->inputManager;
-                    return input->mouse.left.isDown || input->touch.isDown();
-                }),
-                "justPressed", sol::property([](Amara::NodeInput& n) {
-                    InputManager* input = n.gameProps->inputManager;
-                    return input->mouse.left.justPressed || input->touch.justPressed();
-                }),
-                "justReleased", sol::property([](Amara::NodeInput& n) {
-                    InputManager* input = n.gameProps->inputManager;
-                    return input->mouse.left.justReleased || input->touch.justReleased();
+                "pointer", sol::property([](Amara::NodeInput& n) {
+                    return n.gameProps->inputManager->generalPointer;
                 })
             );
         }

@@ -86,7 +86,8 @@ namespace Amara {
             }
     
             if (isArray) {
-                return json;
+                if (json.size() > 0) return json;
+                return nlohmann::json::object();
             }
             else {
                 json = nlohmann::json::object();
@@ -306,6 +307,13 @@ namespace Amara {
         if (obj.is<Amara::Color>()) *this = obj.as<Amara::Color>();
         else *this = lua_to_json(obj);
         return *this; 
+    }
+
+    double lua_random(sol::state& lua) {
+        return lua["math"]["random"]();
+    }
+    double lua_random(sol::state& lua, double min, double max) {
+        return min + (max - min) * lua_random(lua);
     }
 
     void bind_lua_LuaUtilityFunctions(sol::state& lua) {

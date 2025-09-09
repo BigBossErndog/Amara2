@@ -43,6 +43,15 @@ namespace Amara {
             return *this; 
         }
         Amara::Color& operator= (sol::object config);
+
+        Amara::Color operator* (const Amara::Color& other) const {
+            return Amara::Color(
+                (r + other.r) / 2.0,
+                (g + other.g) / 2.0,
+                (b + other.b) / 2.0,
+                (a + other.a) / 2.0
+            );
+        }
         
         explicit operator std::string() const {
             return "Color(" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + ", " + std::to_string(a) + ")";
