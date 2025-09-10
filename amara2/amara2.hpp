@@ -221,7 +221,7 @@
     #include "actions/amara2_tween.cpp"
     #include "actions/amara2_stateMachine.cpp"
     #include "actions/amara2_delayNode.cpp"
-    #include "actions/amara2_periodicAction.cpp"
+    #include "actions/amara2_repeatAction.cpp"
     #include "actions/amara2_processNode.cpp"
 
     #include "actions/amara2_textInput.cpp"

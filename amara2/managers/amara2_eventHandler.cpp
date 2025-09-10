@@ -6,7 +6,7 @@ namespace Amara {
 
         KeyboardManager keyboard;
         GamepadManager gamepads;
-
+        
         Amara::GameProps* gameProps = nullptr;
 
         Amara::Pointer globalPointer;
@@ -344,6 +344,8 @@ namespace Amara {
         InputDef inputDef;
         NodeInput* input;
 
+        mouse.moved = true;
+
         any_hovered = false;
         gameProps->current_cursor = CursorEnum::Default;
 
@@ -376,7 +378,6 @@ namespace Amara {
         *(gameProps->globalPointer) = mouse;
 
         mouse.state.press();
-        mouse.moved = true;
 
         InputDef inputDef;
         NodeInput* input;

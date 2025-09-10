@@ -55,9 +55,9 @@ namespace Amara {
 
         Ease easing = Ease::Linear;
 
-        int poolSize = 32;
-        double spawnRate = 1;
-        double spawn_counter = 0;
+        int poolSize = 128;
+        double spawnRate = 0;
+        double spawn_timer = 0;
 
         bool spawning = false;
 
@@ -301,24 +301,10 @@ namespace Amara {
             particle.startAlpha = particle.alpha;
         }
 
-        void createParticle() {
-            particles.push_back(Particle());  
-        }
-
-        Particle* grabParticle() {
-            for (auto& particle : particles) {
-                if (!particle.in_use) {
-                    particle.in_use = true;
-                    return &particle;
-                }
-            }
-            return nullptr;
-        }
-
         virtual void create() override {
             Amara::Sprite::create();
             for (int i = 0; i < poolSize; i++) {
-                createParticle();
+                particles.push_back(Particle());
             }
         }
 
@@ -331,19 +317,23 @@ namespace Amara {
             }
 
             amount = floor(amount);
-            for (int i = 0; i < amount; i++) {
-                Particle* p = grabParticle();
-                if (p == nullptr) continue;
-                p->in_use = true;
-                initParticle(*p, new_config);
-                if (onSpawn.valid()) {
-                    try {
-                        onSpawn(sol::make_object(gameProps->lua, p));
+            for (Particle& particle: particles) {
+                if (!particle.in_use) {
+                    particle.in_use = true;
+                    initParticle(particle, new_config);
+                    if (onSpawn.valid()) {
+                        try {
+                            onSpawn(sol::make_object(gameProps->lua, &particle));
+                        }
+                        catch (const std::exception& e) {
+                            fatal_error(e.what());
+                            gameProps->breakWorld();
+                        }
                     }
-                    catch (const std::exception& e) {
-                        fatal_error(e.what());
-                        gameProps->breakWorld();
-                    }
+                    amount -=1;
+                    if (amount <= -0) {
+                        break;
+                    }   
                 }
             }
         }
@@ -351,28 +341,43 @@ namespace Amara {
         virtual void update(double deltaTime) override {
             Amara::Sprite::update(deltaTime);
 
-            if (spawning) {
-                spawn_counter -= deltaTime;
-                while (spawn_counter <= 0) {
-                    spawn_counter += 1/spawnRate;
-                    Particle* p = grabParticle();
-                    if (p == nullptr) continue;
-                    p->in_use = true;
-                    initParticle(*p, particle_config);
+            int spawn_count = 0;
+            if (spawning && spawnRate > 0) {
+                spawn_timer -= deltaTime;
+                while (spawn_timer <= 0) {
+                    spawn_timer += 1/spawnRate;
+                    spawn_count += 1;
                 }
             }
             else {
-                spawn_counter = 0;
+                spawn_timer = 0;
             }
 
+            sol::function onSpawn = funcs.getFunction("onParticleSpawn");
             bool onUpdate_defined = funcs.hasFunction("onParticleUpdate");
 
             for (auto it = particles.begin(); it != particles.end();) {
                 Particle& particle = *it;
 
                 if (!particle.in_use) {
-                    it++;
-                    continue;
+                    if (spawn_count == 0) {
+                        it++;
+                        continue;
+                    }
+                    else {
+                        spawn_count -= 1;
+                        particle.in_use = true;
+                        initParticle(particle, particle_config);
+                        if (onSpawn.valid()) {
+                            try {
+                                onSpawn(sol::make_object(gameProps->lua, &particle));
+                            }
+                            catch (const std::exception& e) {
+                                fatal_error(e.what());
+                                gameProps->breakWorld();
+                            }
+                        }
+                    }
                 }
 
                 it++;

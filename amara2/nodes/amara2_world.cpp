@@ -494,14 +494,14 @@ namespace Amara {
         void setVsync(int _vsync) {
             vsync = _vsync;
             if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
-                if (SDL_SetRenderVSync(renderer, vsync) < 0) {
+                if (!SDL_SetRenderVSync(renderer, vsync)) {
                     debug_log("Warning: Failed to set VSync for SDL_Renderer: ", SDL_GetError());
                 }
             }
             #ifdef AMARA_OPENGL
             else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                 SDL_GL_MakeCurrent(window, glContext);
-                if (SDL_GL_SetSwapInterval(vsync) < 0) {
+                if (!SDL_GL_SetSwapInterval(vsync)) {
                     debug_log("Warning: Failed to set VSync mode ", vsync, " for OpenGL: ", SDL_GetError());
                 }
             }
@@ -790,9 +790,15 @@ namespace Amara {
                             continue;
                         }
 
+                        #if defined(__EMSCRIPTEN__)
+                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+                        #else
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+                        #endif
                         
                         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
                         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);

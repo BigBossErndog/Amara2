@@ -355,6 +355,12 @@ namespace Amara {
         table_metatable.set_function("shallow_copy", [&lua](sol::table tbl) -> sol::table {
             return lua_shallow_copy(lua, tbl);
         });
+        table_metatable.set_function("merge", [](sol::table t1, sol::table t2) {
+            for (auto& it: t2) {
+                t1[it.first] = it.second;
+            }
+            return t1;
+        });
         lua["fatal_error"] = [](sol::variadic_args args) {
             fatal_error(lua_string_concat(args));
         };
