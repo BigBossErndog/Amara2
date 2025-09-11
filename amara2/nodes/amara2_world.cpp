@@ -607,8 +607,23 @@ namespace Amara {
                             
                             update_mouse = true;
                         }
+                        else {
+                            inputManager.force_release_pointer = true;
+                        }
                     }
                     else {
+                        if (inputManager.generalPointer.isDown()) {
+                            if (mx != inputManager.mouse.real_pos.x || my != inputManager.mouse.real_pos.y) {
+                                handleMouseMovement(
+                                    Vector2(mx, my),
+                                    Vector2(
+                                        mx - inputManager.mouse.real_pos.x,
+                                        my - inputManager.mouse.real_pos.y
+                                    )
+                                );
+                            }
+                        }
+                        inputManager.force_release_pointer = true;
                         setClickThroughState(true);
                     }
                 }

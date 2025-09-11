@@ -420,6 +420,7 @@ namespace Amara {
                     if (input.isListening("onDrag")) {
                         input.handleMessage({ nullptr, "onDrag" });
                     }
+                    input.dragging = true;
                 }
             }
 

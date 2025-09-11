@@ -75,6 +75,7 @@ namespace Amara {
                                     if (mouseFlags & SDL_BUTTON_LMASK) {
                                         w->inputManager.mouse.left.press();
                                         any_pressed = true;
+                                        debug_log("press1");
                                     }
                                     if (mouseFlags & SDL_BUTTON_RMASK) {
                                         w->inputManager.mouse.right.press();
@@ -94,8 +95,8 @@ namespace Amara {
                                         if (w->inputManager.mouse.left.justPressed) {
                                             w->inputManager.mouse.rec_position();
                                         }
-                                        w->inputManager.force_release_pointer = true;
                                     }
+                                    w->inputManager.force_release_pointer = true;
                                 }
                                 w->update_mouse = false;
                             }
@@ -315,24 +316,24 @@ namespace Amara {
             mousePos.x = static_cast<float>(mx) - static_cast<float>(wx);
             mousePos.y = static_cast<float>(my) - static_cast<float>(wy);
 
-            bool all_released = true;
+            bool any_released = false;
             if ((mouseFlags & SDL_BUTTON_LMASK) == 0) {
                 mouse.left.release();
+                if (mouse.left.justReleased) any_released = true;
             }
-            else all_released = false;
             if ((mouseFlags & SDL_BUTTON_RMASK) == 0) {
                 mouse.right.release();
+                if (mouse.right.justReleased) any_released = true;
             }
-            else all_released = false;
             if ((mouseFlags & SDL_BUTTON_MMASK) == 0) {
                 mouse.middle.release();
+                if (mouse.middle.justReleased) any_released = true;
             }
-            else all_released = false;
             
-            if (all_released) {
+            if (any_released) {
                 handleMouseUp(mousePos);
-                force_release_pointer = false;
             }
+            force_release_pointer = false;
         }
     }
 
@@ -394,7 +395,7 @@ namespace Amara {
                 if (mouse.left.justPressed) {
                     input->held = true;
                     input->handleMessage({ nullptr, "onLeftMouseDown", mouse.get_lua_object(gameProps) });
-                    input->handleMessage({ nullptr, "onPointerDown", mouse.get_lua_object(gameProps) });
+                    input->handleMessage({ nullptr, "onPointerDofwn", mouse.get_lua_object(gameProps) });
 
                     input->rec_interact_pos = input->node->pos;
                 }
@@ -413,7 +414,9 @@ namespace Amara {
 
         *(gameProps->globalPointer) = mouse;
 
-        mouse.state.release();
+        if (!(mouse.left.isDown || mouse.right.isDown || mouse.middle.isDown)) {
+            mouse.state.release();
+        }
 
         Amara::InputDef inputDef;
         Amara::NodeInput* input;

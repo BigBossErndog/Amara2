@@ -15,11 +15,16 @@ namespace Amara {
         Amara::GameProps* gameProps = nullptr;
         
         Vector2 pos;
+        Vector2 real_pos;
 
         GeneralPointer() = default;
         GeneralPointer(Amara::GameProps* _gameProps) {
             gameProps = _gameProps;
         }
+
+        bool isDown();
+        bool justPressed();
+        bool justReleased();
 
         static void bind_lua(sol::state& lua);
     };
@@ -63,9 +68,11 @@ namespace Amara {
         void pre_update(double deltaTime) {
             if (mouse.moved) {
                 generalPointer.pos = mouse;
+                generalPointer.real_pos = mouse.real_pos;
             }
             else if (touch.isDown()) {
                 generalPointer.pos = *touch.lastFinger;
+                generalPointer.real_pos = touch.lastFinger->real_pos;
             }
         }
 
@@ -87,19 +94,31 @@ namespace Amara {
         void handleFingerEvent(const Amara::Vector2& pos, Pointer* finger, SDL_EventType eventType);
     };
 
+    bool GeneralPointer::isDown() {
+        InputManager* input = gameProps->inputManager;
+        return input->mouse.left.isDown || input->touch.isDown();
+    }
+
+    bool GeneralPointer::justPressed() {
+        InputManager* input = gameProps->inputManager;
+        return input->mouse.left.justPressed || input->touch.justPressed();
+    }
+
+    bool GeneralPointer::justReleased() {
+        InputManager* input = gameProps->inputManager;
+        return input->mouse.left.justReleased || input->touch.justReleased();
+    }
+
     void GeneralPointer::bind_lua(sol::state& lua) {
         lua.new_usertype<GeneralPointer>("GeneralPointer",
             "isDown", sol::property([](Amara::GeneralPointer& p) {
-                InputManager* input = p.gameProps->inputManager;
-                return input->mouse.left.isDown || input->touch.isDown();
+                return p.isDown();
             }),
             "justPressed", sol::property([](Amara::GeneralPointer& p) {
-                InputManager* input = p.gameProps->inputManager;
-                return input->mouse.left.justPressed || input->touch.justPressed();
+                return p.justPressed();
             }),
             "justReleased", sol::property([](Amara::GeneralPointer& p) {
-                InputManager* input = p.gameProps->inputManager;
-                return input->mouse.left.justReleased || input->touch.justReleased();
+                return p.justReleased();
             }),
             "x", sol::property([](Amara::GeneralPointer& p) {
                 return p.pos.x;

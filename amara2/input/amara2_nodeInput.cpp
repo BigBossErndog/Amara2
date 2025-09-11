@@ -11,6 +11,7 @@ namespace Amara {
         bool held = false;
         double timeHeld = false;
         bool draggable = false;
+        bool dragging = false;
 
         Vector2 drag = Vector2(0, 0);
 
@@ -89,9 +90,9 @@ namespace Amara {
 
             Amara::Pointer* lastPointer = lastInteraction.lastPointer;
             if (hover.isDown) {
-                if (lastPointer == nullptr || !lastPointer->active || !lastInteraction.shape.collidesWith(lastPointer->real_pos)) {
+                if (!dragging && (lastPointer == nullptr || !lastPointer->active || !lastInteraction.shape.collidesWith(lastPointer->real_pos))) {
                     hover.release();
-
+                    
                     if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", sol::nil });
                     handleMessage({ nullptr, "onPointerExit", sol::nil });
                     held = false;
@@ -112,6 +113,8 @@ namespace Amara {
                     held = false;
                 }
             }
+
+            dragging = false;
         }
 
         virtual void deactivate() override {
