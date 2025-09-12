@@ -19,7 +19,6 @@ Built in C++ using SDL3, with exports to Windows and Web.
 <img width="1920" height="1080" alt="Screenshot 2025-07-15 141959" src="https://github.com/user-attachments/assets/98571dfa-3573-4019-bfe9-5382c862b4e7" />
 
 ## What I'm Currently Working On
-- Automated web export via emscripten
 - Android export via Android Studio
 
 ## Community
@@ -53,8 +52,8 @@ I'm committed to using this to create all my games from now on (1st July 2025).
 - Tiled .tmx file support.
 
 ## Supported Platform Exports
-- Windows
-- Web (HTML)
+- Windows (.exe)
+- Web (.html)
   
 *More will be supported along the way.*
 
