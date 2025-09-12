@@ -257,31 +257,46 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
     setHotkeys = function(self)
         self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftShift, Key.A },
+            config = {
+                left = { Key.LeftCtrl, Key.LeftShift, Key.A },
+                right = { Key.RightCtrl, Key.RightShift, Key.A }
+            },
             onPress = function()
                 self.props.playButton.func:forcePress()
             end
         })
         self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftShift, Key.E },
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.X },
+                { Key.RightAlt, Key.RightShift, Key.X }
+            },
             onPress = function()
                 self.props.codeEditorButton.func:forcePress()
-            end
+            end--[[  ]]
         })
         self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftShift, Key.P },
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.P },
+                { Key.RightAlt, Key.RightShift, Key.P }
+            },
             onPress = function()
                 self.props.openDirectoryButton.func:forcePress()
             end
         })
         self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftShift, Key.B },
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.B },
+                { Key.RightAlt, Key.RightShift, Key.B }
+            },
             onPress = function()
                 self.props.buildButton.func:forcePress()
             end
         })
         self:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftShift, Key.M },
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.M },
+                { Key.RightAlt, Key.RightShift, Key.M }
+            },
             onPress = function()
                 self.props.printLogButton.func:forcePress()
             end

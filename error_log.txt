@@ -1,9 +1,0 @@
-caught (...) exception
-stack traceback:
-	[C]: in field 'spritesheet'
-	[string "index.lua"]:21: in function <[string "index.lua"]:17>
-	[C]: in method 'createWorld'
-	[string "index.lua"]:3: in main chunk
-stack traceback:
-	[C]: in method 'createWorld'
-	[string "index.lua"]:3: in main chunk

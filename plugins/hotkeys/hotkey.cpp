@@ -27,7 +27,7 @@ public:
             return VK_NUMPAD0 + (sdlKey - SDLK_KP_0);
         }
 
-        switch (sdlKey) {
+    switch (sdlKey) {
             case SDLK_LCTRL: return VK_LCONTROL;
             case SDLK_RCTRL: return VK_RCONTROL;
             case SDLK_LSHIFT: return VK_LSHIFT;
@@ -283,19 +283,42 @@ public:
             else {
                 new_config.keys.push_back((SDL_Keycode)keys_json.get<int>());
             }
-            config.clear();
+            configs.clear();
             configs.push_back(new_config);
         }
         else if (Amara::json_has(config, "config")) {
-            nlohmann::json configs = config["config"];
-            if (configs.is_object()) {
-                
+            configs.clear();
+            nlohmann::json json_configs = config["config"];
+
+            if (json_configs.is_object()) {
+                for (auto it = json_configs.begin(); it != json_configs.end(); it++) {
+                    HotkeyConfig new_config;
+                    if (it.value().is_array()) {
+                        nlohmann::json keys_json = it.value();
+                        for (int i = 0; i < keys_json.size(); i++) {
+                            new_config.keys.push_back((SDL_Keycode)keys_json[i].get<int>());
+                        }
+                    }
+                    configs.push_back(new_config);
+                }
+            }
+            else if (json_configs.is_array()) {
+                for (int i = 0; i < json_configs.size(); i++) {
+                    nlohmann::json it = json_configs[i];
+                    if (it.is_array()) {
+                        HotkeyConfig new_config;
+                        for (int j = 0; j < it.size(); j++) {
+                            new_config.keys.push_back((SDL_Keycode)(it[j].get<int>()));
+                        }
+                        configs.push_back(new_config);
+                    }
+                }
             }
         }
         else if (Amara::json_has(config, "key")) {
             HotkeyConfig new_config;
             new_config.keys.push_back((SDL_Keycode)config["key"].get<int>());
-            config.clear();
+            configs.clear();
             configs.push_back(new_config);
         }
 
@@ -304,17 +327,19 @@ public:
 
     virtual void act(double deltaTime) {
         rec_pressed = pressed;
-        pressed = true;
+        pressed = false;
 
         justPressed = false;
         justReleased = false;
 
         if (configs.size() > 0) {
             for (HotkeyConfig& config: configs) {
-                if (!config.pressed()) pressed = false;
+                if (config.pressed()) {
+                    pressed = true;
+                    break;
+                }
             }
         }
-        else pressed = false;
 
         if (pressed) {
             timeHeld += deltaTime;
