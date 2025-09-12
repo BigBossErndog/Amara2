@@ -52,8 +52,8 @@ I'm committed to using this to create all my games from now on (1st July 2025).
 - Tiled .tmx file support.
 
 ## Supported Platform Exports
-- Windows
-- Web (HTML)
+- Windows (.exe)
+- Web (.html)
   
 *More will be supported along the way.*
 
