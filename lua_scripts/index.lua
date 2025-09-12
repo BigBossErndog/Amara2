@@ -136,12 +136,14 @@ Creator:createWorld({
                 elseif world.input.mouse.wheel.y > 0 then
                     switchDisplay = world.displayID + 1
                 end
-
+                
                 if world.displayID ~= switchDisplay then
                     world:fitToDisplay(switchDisplay)
                 end
             end
         })
+
+        Game.targetFPS = 0
     end,
 
     getSettings = function(self, forceLoad)
