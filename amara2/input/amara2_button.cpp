@@ -16,19 +16,23 @@ namespace Amara {
             timeHeld = 0;
         }
 
-        void press() {
+        bool press() {
             if (!isDown) {
                 isDown = true;
                 timeHeld = 0;
                 justPressed = true;
+                return true;
             }
+            return false;
         }
 
-        void release() {
+        bool release() {
             if (isDown) {
                 isDown = false;
                 justReleased = true;
+                return true;
             }
+            return false;
         }
 
         void update(double deltaTime) {

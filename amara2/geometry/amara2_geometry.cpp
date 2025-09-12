@@ -29,6 +29,19 @@ namespace Amara {
         return angleBetween(p1.x, p1.y, p2.x, p2.y);
     }
 
+    float closestEquivalentAngle(float angle1, float angle2) {
+        angle2 = std::remainder(angle2, 2.0 * M_PI);
+        float baseAngle = floor(angle1/(2.0*M_PI))*(2.0*M_PI);
+        float check1 = baseAngle + angle2;
+        float check2 = check1 + ((check1 < angle1) ? (2.0*M_PI) : (-2.0*M_PI));
+
+        return (fabs(check1 - angle1) < fabs(check2 - angle1)) ? check1 : check2;
+    }
+
+    float angleDifference(float angle1, float angle2) {
+        
+    }
+
     Vector2 rotateAroundAnchor(const Vector2& v1, const Vector2& v2, float rotation) {
         // Rotate v2 around v1
 

@@ -73,21 +73,13 @@ namespace Amara {
 
                                     bool any_pressed = false;
                                     if (mouseFlags & SDL_BUTTON_LMASK) {
-                                        w->inputManager.mouse.left.press();
-                                        any_pressed = true;
-                                        debug_log("press1");
+                                        if (w->inputManager.mouse.left.press()) any_pressed = true;
                                     }
                                     if (mouseFlags & SDL_BUTTON_RMASK) {
-                                        w->inputManager.mouse.right.press();
-                                        any_pressed = true;
+                                        if (w->inputManager.mouse.right.press()) any_pressed = true;
                                     }
                                     if (mouseFlags & SDL_BUTTON_MMASK) {
-                                        w->inputManager.mouse.middle.press();
-                                        any_pressed = true;
-                                    }
-                                    if (w->inputManager.pointerMode == Amara::InputMode::Touch) {
-                                        w->inputManager.mouse.left.press();
-                                        any_pressed = true;
+                                        if (w->inputManager.mouse.middle.press()) any_pressed = true;
                                     }
                                     if (any_pressed) {
                                         w->inputManager.handleMouseDown(mousePos);
@@ -144,20 +136,23 @@ namespace Amara {
                                 continue;
                             }
                             if (w->window != nullptr && w->windowID == e.button.windowID) {
+                                bool any_pressed = false;
                                 switch (e.button.button) {
                                     case SDL_BUTTON_LEFT:
-                                        w->inputManager.mouse.left.press();
+                                        if (w->inputManager.mouse.left.press()) any_pressed = true;
                                         break;
                                     case SDL_BUTTON_RIGHT:
-                                        w->inputManager.mouse.right.press();
+                                        if (w->inputManager.mouse.right.press()) any_pressed = true;
                                         break;
                                     case SDL_BUTTON_MIDDLE:
-                                        w->inputManager.mouse.middle.press();
+                                        if (w->inputManager.mouse.middle.press()) any_pressed = true;
                                         break;
                                 }
-                                w->inputManager.handleMouseDown(Vector2(e.button.x, e.button.y));
-                                if (w->inputManager.mouse.left.justPressed) {
-                                    w->inputManager.mouse.rec_position();
+                                if (any_pressed) {
+                                    w->inputManager.handleMouseDown(Vector2(e.button.x, e.button.y));
+                                    if (w->inputManager.mouse.left.justPressed) {
+                                        w->inputManager.mouse.rec_position();
+                                    }
                                 }
                             }
                         }
@@ -169,18 +164,19 @@ namespace Amara {
                                 continue;
                             }
                             if (w->window != nullptr && w->windowID == e.button.windowID) {
+                                bool any_released = false;
                                 switch (e.button.button) {
                                     case SDL_BUTTON_LEFT:
-                                        w->inputManager.mouse.left.release();
+                                        if (w->inputManager.mouse.left.release()) any_released = true;
                                         break;
                                     case SDL_BUTTON_RIGHT:
-                                        w->inputManager.mouse.right.release();
+                                        if (w->inputManager.mouse.right.release()) any_released = true;
                                         break;
                                     case SDL_BUTTON_MIDDLE:
-                                        w->inputManager.mouse.middle.release();
+                                        if (w->inputManager.mouse.middle.release()) any_released = true;
                                         break;
                                 }
-                                w->inputManager.handleMouseUp(Vector2(e.button.x, e.button.y));
+                                if (any_released) w->inputManager.handleMouseUp(Vector2(e.button.x, e.button.y));
                             }
                         }
                         break;
@@ -318,16 +314,13 @@ namespace Amara {
 
             bool any_released = false;
             if ((mouseFlags & SDL_BUTTON_LMASK) == 0) {
-                mouse.left.release();
-                if (mouse.left.justReleased) any_released = true;
+                if (mouse.left.release()) any_released = true;
             }
             if ((mouseFlags & SDL_BUTTON_RMASK) == 0) {
-                mouse.right.release();
-                if (mouse.right.justReleased) any_released = true;
+                if (mouse.right.release()) any_released = true;
             }
             if ((mouseFlags & SDL_BUTTON_MMASK) == 0) {
-                mouse.middle.release();
-                if (mouse.middle.justReleased) any_released = true;
+                if (mouse.middle.release()) any_released = true;
             }
             
             if (any_released) {
@@ -395,7 +388,7 @@ namespace Amara {
                 if (mouse.left.justPressed) {
                     input->held = true;
                     input->handleMessage({ nullptr, "onLeftMouseDown", mouse.get_lua_object(gameProps) });
-                    input->handleMessage({ nullptr, "onPointerDofwn", mouse.get_lua_object(gameProps) });
+                    input->handleMessage({ nullptr, "onPointerDown", mouse.get_lua_object(gameProps) });
 
                     input->rec_interact_pos = input->node->pos;
                 }
