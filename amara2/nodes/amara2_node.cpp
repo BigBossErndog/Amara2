@@ -45,8 +45,6 @@ namespace Amara {
         float alpha = 1;
         
         float depth = 0.0f;
-        bool yDepthLocked = false;
-        bool zDepthLocked = false;
 
         bool sortable = true;
         bool depthSortChildrenEnabled = true;
@@ -125,8 +123,6 @@ namespace Amara {
                 { "scaleX", scale.x },
                 { "scaleY", scale.y },
                 { "fixedToCamera", fixedToCamera },
-                { "yDepthLocked", yDepthLocked },
-                { "zDepthLocked", zDepthLocked },
                 { "paused", paused },
                 { "visible", visible },
                 { "sortable", sortable },
@@ -218,9 +214,6 @@ namespace Amara {
 
             if (json_has(config, "fixedToCamera")) fixedToCamera = config["fixedToCamera"];
 
-            if (json_has(config, "yDepthLocked")) yDepthLocked = config["yDepthLocked"];
-            if (json_has(config, "zDepthLocked")) zDepthLocked = config["zDepthLocked"];
-
             if (json_has(config, "sortable")) sortable = config["sortable"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
 
@@ -265,7 +258,12 @@ namespace Amara {
                     }
                     else if (val.is<sol::userdata>()) {
                         std::string key = it.first.as<std::string>();
-                        luaConfigure(key, val);
+                        if (String::equal(key, "parent")) {
+                            get_lua_object().as<sol::table>()["parent"] = val;
+                        }
+                        else {
+                            luaConfigure(key, val);
+                        }
                         remove_keys.push_back(key);
                     }
                     else if (val.is<sol::table>()) {
@@ -433,9 +431,6 @@ namespace Amara {
                     funcs.callFunction("onUpdate", deltaTime);
                 }
             }
-
-            if (yDepthLocked) depth = pos.y;
-            else if (zDepthLocked) depth = pos.z;
 
             if (!destroyed) runChildren(deltaTime);
             clean_node_list(children);
@@ -906,8 +901,6 @@ namespace Amara {
                 "toData", &Node::toData,
                 "alpha", &Node::alpha,
                 "depth", &Node::depth,
-                "yDepthLocked", &Node::yDepthLocked,
-                "zDepthLocked", &Node::zDepthLocked,
                 "fixedToCamera", &Node::fixedToCamera,
                 "createChild", &Node::luaCreateChild,
                 "addChild", &Node::addChild,

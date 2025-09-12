@@ -1,44 +1,21 @@
-class Hotkey: public Amara::Action {
+class HotkeyConfig {
 public:
-    bool pressed = false;
-    bool rec_pressed = false;
-
-    bool justPressed = false;
-    bool justReleased = false;
-
-    double timeHeld = 0;
-
+    std::string name;
     std::vector<SDL_Keycode> keys;
 
-    Hotkey(): Amara::Action() {
-        set_base_node_id("Hotkey");
-    }
-
-    virtual Amara::Node* configure(nlohmann::json config) {
-        if (Amara::json_has(config, "keys")) {
-            nlohmann::json keys_json = config["keys"];
-            if (keys_json.is_array()) {
-                for (int i = 0; i < keys_json.size(); i++) {
-                    keys.push_back((SDL_Keycode)keys_json[i].get<int>());
-                }
-            }
-            else {
-                keys.push_back((SDL_Keycode)keys_json.get<int>());
-            }
+    bool pressed() {
+        for (SDL_Keycode k: keys) {
+            if (!keyPressed(k)) return false;
         }
-        else if (Amara::json_has(config, "key")) {
-            keys.push_back((SDL_Keycode)config["key"].get<int>());
-        }
-
-        return Amara::Action::configure(config);
+        return true;
     }
-
+    
     #ifdef _WIN32
-    bool is_key_pressed(int val) {
+    static bool is_key_pressed(int val) {
         return (GetAsyncKeyState(val) & 0x8000) != 0;
     }
 
-    int SDLKeyToWindowsVK(SDL_Keycode sdlKey) {
+    static int SDLKeyToWindowsVK(SDL_Keycode sdlKey) {
         if (sdlKey >= SDLK_A && sdlKey <= SDLK_Z) {
             return 'A' + (sdlKey - SDLK_A);
         }
@@ -135,7 +112,7 @@ public:
         }
     }
 
-    bool keyPressed(SDL_Keycode _k) {
+    static bool keyPressed(SDL_Keycode _k) {
         #ifdef _WIN32
         return is_key_pressed(SDLKeyToWindowsVK(_k));
         #elif __APPLE__
@@ -143,11 +120,11 @@ public:
         #endif
     }
     #elif __APPLE__
-    bool is_key_pressed(CGKeyCode val) {
+    static bool is_key_pressed(CGKeyCode val) {
         return CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, val);
     }
 
-    CGKeyCode SDLKeyToMacKeyCode(SDL_Keycode sdlKey) {
+    static CGKeyCode SDLKeyToMacKeyCode(SDL_Keycode sdlKey) {
         switch (sdlKey) {
             case SDLK_A: return kVK_ANSI_A;
             case SDLK_B: return kVK_ANSI_B;
@@ -272,10 +249,58 @@ public:
         }
     }
 
-    bool keyPressed(SDL_Keycode _k) {
+    static bool keyPressed(SDL_Keycode _k) {
         return is_key_pressed(SDLKeyToMacKeyCode(_k));
     }
     #endif 
+};
+
+class Hotkey: public Amara::Action {
+public:
+    bool pressed = false;
+    bool rec_pressed = false;
+
+    bool justPressed = false;
+    bool justReleased = false;
+
+    double timeHeld = 0;
+
+    std::vector<HotkeyConfig> configs;
+
+    Hotkey(): Amara::Action() {
+        set_base_node_id("Hotkey");
+    }
+
+    virtual Amara::Node* configure(nlohmann::json config) {
+        if (Amara::json_has(config, "keys")) {
+            HotkeyConfig new_config;
+            nlohmann::json keys_json = config["keys"];
+            if (keys_json.is_array()) {
+                for (int i = 0; i < keys_json.size(); i++) {
+                    new_config.keys.push_back((SDL_Keycode)keys_json[i].get<int>());
+                }
+            }
+            else {
+                new_config.keys.push_back((SDL_Keycode)keys_json.get<int>());
+            }
+            config.clear();
+            configs.push_back(new_config);
+        }
+        else if (Amara::json_has(config, "config")) {
+            nlohmann::json configs = config["config"];
+            if (configs.is_object()) {
+                
+            }
+        }
+        else if (Amara::json_has(config, "key")) {
+            HotkeyConfig new_config;
+            new_config.keys.push_back((SDL_Keycode)config["key"].get<int>());
+            config.clear();
+            configs.push_back(new_config);
+        }
+
+        return Amara::Action::configure(config);
+    }
 
     virtual void act(double deltaTime) {
         rec_pressed = pressed;
@@ -284,11 +309,9 @@ public:
         justPressed = false;
         justReleased = false;
 
-        if (keys.size() > 0) {
-            for (int i = 0; i < keys.size(); i++) {
-                if (!is_key_pressed(SDLKeyToWindowsVK(keys[i]))) {
-                    pressed = false;
-                }
+        if (configs.size() > 0) {
+            for (HotkeyConfig& config: configs) {
+                if (!config.pressed()) pressed = false;
             }
         }
         else pressed = false;
@@ -310,7 +333,7 @@ public:
     static void bind_lua(sol::state& lua) {
         lua.new_usertype<Hotkey>("Hotkey",
             "pressed", sol::readonly(&Hotkey::pressed),
-            "isDown", &Hotkey::keyPressed,
+            "isDown", sol::readonly(&Hotkey::pressed),
             "justPressed", sol::readonly(&Hotkey::justPressed),
             "justReleased", sol::readonly(&Hotkey::justReleased),
             "timeHeld", sol::readonly(&Hotkey::timeHeld)

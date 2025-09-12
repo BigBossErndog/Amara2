@@ -76,81 +76,6 @@ namespace Amara {
             if (lua_data["repeats"].valid()) {
                 repeats = lua_data["repeats"].get<int>();
             }
-
-            if (lua_data["zoom"].valid()) {
-                sol::object config = lua_data["zoom"];
-                if (config.is<double>()) {
-                    double zoom = config.as<double>();
-                    target_data["zoomX"] = zoom;
-                    target_data["zoomY"] = zoom;
-                }
-                else if (config.is<sol::table>()) {
-                    nlohmann::json jconfig = lua_to_json(config);
-                    if (jconfig.is_array()) {
-                        target_data["zoomX"] = jconfig[0];
-                        target_data["zoomY"] = jconfig[1];
-                    }
-                    else if (json_has(jconfig, "x", "y")) {
-                        target_data["zoomX"] = jconfig["x"];
-                        target_data["zoomY"] = jconfig["y"];
-                    }
-                }
-                lua_data["zoom"] = sol::nil;
-            }
-
-            if (lua_data["color"].valid()) {
-                sol::object color_obj = lua_data["color"];
-                Amara::Color color = color_obj;
-                target_data["color"] = color.toJSON();
-                lua_data["color"] = sol::nil;
-            }
-            if (lua_data["tint"].valid()) {
-                sol::object color_obj = lua_data["tint"];
-                Amara::Color color = color_obj;
-                target_data["tint"] = color.toJSON();
-                lua_data["tint"] = sol::nil;
-            }
-            if (lua_data["fill"].valid()) {
-                sol::object color_obj = lua_data["fill"];
-                Amara::Color color = color_obj;
-                target_data["fill"] = color.toJSON();
-                lua_data["fill"] = sol::nil;
-            }
-            if (lua_data["backgroundColor"].valid()) {
-                sol::object color_obj = lua_data["backgroundColor"];
-                Amara::Color color = color_obj;
-                target_data["backgroundColor"] = color.toJSON();
-                lua_data["backgroundColor"] = sol::nil;
-            }
-            if (lua_data["rect"].valid()) {
-                Amara::Rectangle rect = lua_data["rect"];
-                target_data["rect"] = rect.toJSON();
-                lua_data["rect"] = sol::nil;
-            }
-            if (lua_data["pos"].valid()) {
-                sol::object obj = lua_data["pos"];
-                Amara::Vector2 pos = obj;
-                target_data["pos"] = pos.toJSON();
-                lua_data["pos"] = sol::nil;
-            }
-            if (lua_data["scroll"].valid()) {
-                sol::object obj = lua_data["scroll"];
-                Amara::Vector2 scroll = obj;
-                target_data["scroll"] = scroll.toJSON();
-                lua_data["scroll"] = sol::nil;
-            }
-            if (lua_data["scale"].valid()) {
-                sol::object obj = lua_data["scale"];
-                Amara::Vector2 scale = obj;
-                target_data["scale"] = scale.toJSON();
-                lua_data["scale"] = sol::nil;
-            }
-            if (lua_data["origin"].valid()) {
-                sol::object obj = lua_data["origin"];
-                Amara::Vector2 origin = obj;
-                target_data["origin"] = origin.toJSON();
-                lua_data["origin"] = sol::nil;
-            }
             
             nlohmann::json data = lua_to_json(lua_data);
             
@@ -232,37 +157,35 @@ namespace Amara {
         }
 
         void tweenValue(sol::table target, const std::string& key,  const nlohmann::json& val1, const nlohmann::json& val2, double progress) {
-            if (val1.is_number() && val2.is_number()) {
+            if (target[key].get_type() == sol::type::number) {
                 target.set(key, ease((double)val1, (double)val2, progress, easing));
             }
-            else if (val1.is_object() && val2.is_object()) {
-                if (String::equal(key, "props")) {
-                    for (auto it = val1.begin(); it != val1.end(); ++it) {
-                        tweenValue(target["props"], it.key(), val1[it.key()], val2[it.key()], progress);
-                    }
-                }
-                else if (String::equal(key, "pos") || String::equal(key, "scroll") || String::equal(key, "scale") || String::equal(key, "origin")) {
-                    Amara::Vector2 start_vec = val1;
-                    Amara::Vector2 target_vec = val2;
-                    target.set(key, Vector2(
-                        ease(start_vec.x, target_vec.x, progress, easing),
-                        ease(start_vec.y, target_vec.y, progress, easing)
-                    ));
-                }
-                else if (String::equal(key, "rect")) {
-                    Amara::Rectangle start_rect = val1;
-                    Amara::Rectangle target_rect = val2;
-                    target.set(key, Rectangle(
-                        ease(start_rect.x, target_rect.x, progress, easing),
-                        ease(start_rect.y, target_rect.y, progress, easing),
-                        ease(start_rect.w, target_rect.w, progress, easing),
-                        ease(start_rect.h, target_rect.h, progress, easing)
-                    ));
-                }
-                else if (String::equal(key, "color") || String::equal(key, "tint") || String::equal(key, "fill") || String::equal(key, "backgroundColor")) {
-                    Amara::Color start_color = val1;
-                    Amara::Color target_color = val2;
-                    target.set(key, ease(start_color, target_color, progress, easing));
+            else if (target[key].is<Amara::Vector2>()) {
+                Amara::Vector2 start_vec = val1;
+                Amara::Vector2 target_vec = val2;
+                target.set(key, Vector2(
+                    ease(start_vec.x, target_vec.x, progress, easing),
+                    ease(start_vec.y, target_vec.y, progress, easing)
+                ));
+            }
+            else if (target[key].is<Amara::Rectangle>()) {
+                Amara::Rectangle start_rect = val1;
+                Amara::Rectangle target_rect = val2;
+                target.set(key, Rectangle(
+                    ease(start_rect.x, target_rect.x, progress, easing),
+                    ease(start_rect.y, target_rect.y, progress, easing),
+                    ease(start_rect.w, target_rect.w, progress, easing),
+                    ease(start_rect.h, target_rect.h, progress, easing)
+                ));
+            }
+            else if (target[key].is<Amara::Color>()) {
+                Amara::Color start_color = val1;
+                Amara::Color target_color = val2;
+                target.set(key, ease(start_color, target_color, progress, easing));
+            }
+            else if (String::equal(key, "props") && target[key].is<sol::table>()) {
+                for (auto it = val1.begin(); it != val1.end(); ++it) {
+                    tweenValue(target["props"], it.key(), val1[it.key()], val2[it.key()], progress);
                 }
             }
         }

@@ -365,6 +365,12 @@ namespace Amara {
             }
             return new_table;
         });
+        table_metatable.set_function("update", [](sol::table t1, sol::table t2) {
+            for (auto& it: t2) {
+                t1[it.first] = it.second;
+            }
+            return t1;
+        });
         lua["fatal_error"] = [](sol::variadic_args args) {
             fatal_error(lua_string_concat(args));
         };
