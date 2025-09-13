@@ -88,7 +88,10 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::MessageBox>("MessageBox",
-                "active", sol::readonly(&Amara::MessageBox::active),
+                "active", sol::property(
+                    [](Amara::MessageBox& m) { return m.active; },
+                    [](Amara::MessageBox& m, bool val) { if (val) m.activate(); else m.deactivate(); }
+                ),
                 "listen", &Amara::MessageBox::listen,
                 "send", &Amara::MessageBox::send,
                 "isListening", &Amara::MessageBox::isListening,
