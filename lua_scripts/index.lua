@@ -121,13 +121,13 @@ Creator:createWorld({
             end,
             whilePressed = function()
                 local switchDisplay = 0
-                if hotkey:isDown(Key.One) then
+                if hotkey:pressing(Key.One) then
                     switchDisplay = 1
-                elseif hotkey:isDown(Key.Two) then
+                elseif hotkey:pressing(Key.Two) then
                     switchDisplay = 2
-                elseif hotkey:isDown(Key.Three) then
+                elseif hotkey:pressing(Key.Three) then
                     switchDisplay = 3
-                elseif hotkey:isDown(Key.Four) then
+                elseif hotkey:pressing(Key.Four) then
                     switchDisplay = 4
                 end
 
@@ -137,7 +137,7 @@ Creator:createWorld({
                     switchDisplay = world.displayID + 1
                 end
                 
-                if world.displayID ~= switchDisplay then
+                if world.displayID ~= switchDisplay and switchDisplay ~= 0 then
                     world:fitToDisplay(switchDisplay)
                 end
             end

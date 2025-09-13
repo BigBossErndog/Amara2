@@ -354,10 +354,14 @@ public:
             if (funcs.hasFunction("onRelease")) funcs.callFunction(actor, "onRelease");
         }
     }
+
+    bool keyPressed(SDL_Keycode _k) {
+        return HotkeyConfig::keyPressed(_k);
+    }
     
     static void bind_lua(sol::state& lua) {
         lua.new_usertype<Hotkey>("Hotkey",
-            "pressed", sol::readonly(&Hotkey::pressed),
+            "pressing", &Hotkey::keyPressed,
             "isDown", sol::readonly(&Hotkey::pressed),
             "justPressed", sol::readonly(&Hotkey::justPressed),
             "justReleased", sol::readonly(&Hotkey::justReleased),
