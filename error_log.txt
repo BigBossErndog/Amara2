@@ -1,3 +1,16 @@
-[string "index.lua"]:124: attempt to call a boolean value (method 'isDown')
+equivalent: The system cannot find the file specified.: "C:\Users\ernes\Documents\Creations\amara2\projects\Super Date Fight", "C:\Users\ernes\Documents\Creations\amara2\projects\SuperDateFight"
 stack traceback:
-	[string "index.lua"]:124: in function <[string "index.lua"]:122>
+	[C]: in method 'equivalent'
+	[string "windows/ProjectSettingsWindow.lua"]:169: in function <[string "windows/ProjectSettingsWindow.lua"]:164>
+	[C]: in method 'checkPath'
+	[string "windows/ProjectSettingsWindow.lua"]:42: in function <[string "windows/ProjectSettingsWindow.lua"]:41>
+	[C]: in method 'onEnter'
+	[string "ui/TextField.lua"]:153: in function <[string "ui/TextField.lua"]:138>
+stack traceback:
+	[C]: in method 'checkPath'
+	[string "windows/ProjectSettingsWindow.lua"]:42: in function <[string "windows/ProjectSettingsWindow.lua"]:41>
+	[C]: in method 'onEnter'
+	[string "ui/TextField.lua"]:153: in function <[string "ui/TextField.lua"]:138>
+stack traceback:
+	[C]: in method 'onEnter'
+	[string "ui/TextField.lua"]:153: in function <[string "ui/TextField.lua"]:138>

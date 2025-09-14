@@ -21,7 +21,7 @@ Nodes:load("windows/MainWindow")
 Nodes:load("windows/NewProjectWindow")
 Nodes:load("windows/ProjectWindow")
 Nodes:load("windows/TerminalWindow")
-Nodes:load("windows/CopyProjectWindow")
+Nodes:load("windows/ProjectSettingsWindow")
 
 Nodes:load("building/BuildPlatformMenu")
 Nodes:load("building/IncludeFolders")

@@ -1,6 +1,6 @@
-Nodes:define("CopyProjectWindow", "UIWindow", {
+Nodes:define("ProjectSettingsWindow", "UIWindow", {
     width = 256,
-    height = 120,
+    height = 140,
 
     onConfigure = function(self, config)
         if config.projectPath then
@@ -10,23 +10,31 @@ Nodes:define("CopyProjectWindow", "UIWindow", {
 
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
+        local projectData = System:readJSON(System:join(self.props.oldProjectPath, "project.json"))
 
-        self.props.folderPath = System:getRelativePath("projects")
+        self.props.folderPath = System:getDirectoryOf(self.props.oldProjectPath)
         self.props.projectPath = ""
 
         local title = self.props.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
-            text = Localize:get("title_copyProject"),
+            text = Localize:get("title_projectSettings"),
             color = "#f0f6ff",
             origin = 0,
             input = true
         })
 
+        self.props.content:createChild("Text", {
+            x = 10, y = 28,
+            origin = 0,
+            font = "defaultFont",
+            text = Localize:get("label_projectName")
+        })
+
         self.props.nameField = self.props.content:createChild("TextField", {
-            x = 8, y = 28,
+            x = 8, y = 42,
             width = self.props.targetWidth - 16,
-            defaultText = Localize:get("label_renameProject"),
+            defaultText = Localize:get("label_projectName"),
             onChange = function(textField, txt)
                 self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
             end,
@@ -38,9 +46,17 @@ Nodes:define("CopyProjectWindow", "UIWindow", {
                 end
             end
         })
+        self.props.nameField.func:setText(projectData["project-name"])
+
+        self.props.content:createChild("Text", {
+            x = 10, y = 64,
+            origin = 0,
+            font = "defaultFont",
+            text = Localize:get("label_projectLocation")
+        })
 
         self.props.folderField = self.props.content:createChild("TextField", {
-            x = 8, y = 28 + 22,
+            x = 8, y = 78,
             width = self.props.targetWidth - 34,
             inputEnabled = false
         })
@@ -126,20 +142,20 @@ Nodes:define("CopyProjectWindow", "UIWindow", {
             origin = 0,
             color = Colors.Red,
             visible = false,
-            x = 10, y = 72
+            x = 10, y = 98
         })
 
-        local createButton = self.props.content:createChild("UIButton", {
-            id = "createProjectButton",
-            text = "label_copyProject",
+        local saveButton = self.props.content:createChild("UIButton", {
+            id = "saveButton",
+            text = "label_saveSettings",
             onPress = function()
                 if self.func:checkPath() then
                     self.func:createProject()
                 end
             end
         })
-        createButton.x = self.props.targetWidth - createButton.width - 8
-        createButton.y = 96
+        saveButton.x = self.props.targetWidth - saveButton.width - 8
+        saveButton.y = 116
 
         local txt = self.props.nameField.props.finalText
         self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
@@ -149,6 +165,8 @@ Nodes:define("CopyProjectWindow", "UIWindow", {
         if string.len(self.props.nameField.props.finalText) == 0 then
             self.props.errorMessage.text = Localize:get("error_emptyProjectName")
             self.props.errorMessage.visible = true
+        elseif System:equivalent(self.props.projectPath, self.props.oldProjectPath) then
+            return false
         elseif System:isDirectory(self.props.projectPath) then
             self.props.errorMessage.text = Localize:get("error_directoryAlreadyExists")
             self.props.errorMessage.visible = true
@@ -183,11 +201,13 @@ Nodes:define("CopyProjectWindow", "UIWindow", {
     end,
 
     createProject = function(self)
-        System:createDirectory(self.props.projectPath)
-        System:copy(
-            self.props.oldProjectPath,
-            self.props.projectPath
-        )
+        if self.props.oldProjectPath ~= self.props.projectPath then
+            System:createDirectory(self.props.projectPath)
+            System:copy(
+                self.props.oldProjectPath,
+                self.props.projectPath
+            )
+        end
 
         local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
         projectData["project-name"] = self.props.nameField.props.finalText

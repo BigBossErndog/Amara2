@@ -183,7 +183,7 @@ namespace Amara {
                 particle.endY = parseValue(particle_config["endY"]);
             }
 
-            particle.frame = 1;
+            particle.frame = frame;
             if (json_has(particle_config, "frame")) {
                 particle.frame = parseInteger(particle_config["frame"]);
             }

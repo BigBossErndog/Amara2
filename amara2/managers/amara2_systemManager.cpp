@@ -352,6 +352,12 @@ namespace Amara {
             return false;
         }
 
+        bool equivalent(std::string path1, std::string path2) {
+            std::filesystem::path p1 = getRelativePath(path1);
+            std::filesystem::path p2 = getRelativePath(path2);
+            return p1.lexically_normal() == p2.lexically_normal();
+        }
+
         std::string getBasePath() {
             if (basePath.empty()) {
                 const char* c_basePath = SDL_GetBasePath();
@@ -1297,6 +1303,7 @@ namespace Amara {
                 "getDirectoryContents", &SystemManager::luaGetDirectoryContents,
                 "getFilesInDirectory", &SystemManager::luaGetFilesInDirectory,
                 "getSubDirectories", &SystemManager::luaGetSubDirectories,
+                "equivalent", &SystemManager::equivalent,
                 "getBasePath", &SystemManager::getBasePath,
                 "setBasePath", &SystemManager::setBasePath,
                 "resetBasePath", &SystemManager::resetBasePath,

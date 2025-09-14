@@ -10,6 +10,7 @@
     "title_executableIcon": "Executable Icon (optional)",
     "title_choosePlatform": "Select Target Platform",
     "title_encryptionOptions": "Encryption Options",
+    "title_projectSettings": "Project Settings",
 
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit (Ctrl + Shift + F4)",
@@ -47,7 +48,7 @@
     "toolTip_openInLiteXL": "Open In Lite XL (Ctrl + Shift + E)",
     
     "toolTip_openPrintLog": "Open Print Log (Ctrl + Shift + M)",
-    "toolTip_copyProject": "Copy Project To New Location",
+    "toolTip_projectSettings": "Project Settings",
     "toolTip_toggleBGOpacity": "Toggle Background Opacity",
 
     "label_empty": "--",
@@ -70,6 +71,8 @@
     "label_selectIcon": "32 x 32 px PNG, JPG, JPEG or BMP",
     "label_performingInitialSetup": "Performing Initial Setup...",
     "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
+    "label_saveSettings": "Save Settings",
+    "label_projectLocation": "Project Location",
 
     "label_downloadModule": "Download Module",
     "label_installVSBuildTools": "Install VS Build Tools",

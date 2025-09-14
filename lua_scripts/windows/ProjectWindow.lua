@@ -164,11 +164,23 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
         buttonPos.x = buttonPos.x + buttonSpacing
         self.props.content:createChild("UIButton", {
-            id = "copyProjectButton",
-            toolTip = "toolTip_copyProject",
+            id = "openDocsButton",
+            toolTip = "toolTip_openDocs",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 12,
+            icon = 19,
+            onPress = function()
+                System:openWebsite("https://github.com/BigBossErndog/Amara2/wiki")
+            end
+        })
+
+        buttonPos.x = buttonPos.x + buttonSpacing
+        self.props.content:createChild("UIButton", {
+            id = "projectSettingsButton",
+            toolTip = "toolTip_projectSettings",
+            x = buttonPos.x,
+            y = buttonPos.y,
+            icon = 23,
             onPress = function()
                 if self.props.gameProcess then
                     self.func:stopGame()
@@ -181,25 +193,13 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 self.func:closeWindow(function(button)
                     button.props.enabled = false
                     
-                    local newWindow = self.parent:createChild("CopyProjectWindow", {
+                    local newWindow = self.parent:createChild("ProjectSettingsWindow", {
                         projectPath = self.props.projectPath
                     })
                     newWindow.func:openWindow()
                     
                     self:destroy()
                 end)
-            end
-        })
-
-        buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.content:createChild("UIButton", {
-            id = "openDocsButton",
-            toolTip = "toolTip_openDocs",
-            x = buttonPos.x,
-            y = buttonPos.y,
-            icon = 19,
-            onPress = function()
-                System:openWebsite("https://github.com/BigBossErndog/Amara2/wiki")
             end
         })
 
