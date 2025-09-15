@@ -21,9 +21,8 @@ Nodes:define("NewProjectWindow", "UIWindow", {
             font = "defaultFont",
             text = Localize:get("title_newProject"),
             color = "#f0f6ff",
-            origin = 0,
             input = true
-        }) 
+        })
 
         self.props.nameField = self.props.content:createChild("TextField", {
             x = 8, y = 28,

@@ -119,6 +119,8 @@
     "error_invalidFileGiven": "Error: Invalid file given.",
     "error_enterAnEncryptionKey": "Error: Please enter an encryption key.",
     "error_expectedAmara2BuildModule": "Error: Expected \"amara2_windows_build_module.zip\".",
+    "error_failedToMoveProject": "Error: Failed to move project. (Make sure all relevant programs are closed, e.g. code editor.)",
+
     "codeEditor_VSCode": "Visual Studio Code",
     "codeEditor_CodeOSS": "Code OSS",
     "codeEditor_VSCodeInsiders": "Visual Studio Code Insiders",

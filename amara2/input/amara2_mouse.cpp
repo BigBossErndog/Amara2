@@ -8,8 +8,11 @@ namespace Amara {
         Amara::Vector2 wheel;
 
         bool moved = false;
+
+        GameProps* gameProps = nullptr;
         
         Mouse() = default;
+        Mouse(GameProps* _gameProps): gameProps(_gameProps) {}
 
         void update(double deltaTime) {
             left.update(deltaTime);
@@ -21,6 +24,20 @@ namespace Amara {
             
             Amara::Pointer::update(deltaTime);
         }
+
+        void show() {
+            SDL_ShowCursor();
+        }
+        void hide() {
+            SDL_HideCursor();
+        }
+
+        void lock() {
+            SDL_SetWindowRelativeMouseMode(gameProps->current_window, true);
+        }
+        void unlock() {
+            SDL_SetWindowRelativeMouseMode(gameProps->current_window, false);
+        }
         
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Mouse>("MouseHandler",
@@ -29,7 +46,17 @@ namespace Amara {
                 "right", sol::readonly(&Mouse::right),
                 "middle", sol::readonly(&Mouse::middle),
                 "wheel", sol::readonly(&Mouse::wheel),
-                "moved", sol::readonly(&Mouse::moved)
+                "moved", sol::readonly(&Mouse::moved),
+                "show", &Mouse::show,
+                "hide", &Mouse::hide,
+                "visible", sol::property([](Amara::Mouse& m) {
+                    return SDL_CursorVisible();
+                }),
+                "lock", &Mouse::lock,
+                "unlock", &Mouse::unlock,
+                "locked", sol::property([](Amara::Mouse& m) {
+                    return SDL_GetWindowRelativeMouseMode(m.gameProps->current_window);
+                })
             );
         }
     };

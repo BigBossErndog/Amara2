@@ -106,7 +106,7 @@ namespace Amara {
                 }
             }
         }
-
+        
         void logOutput(std::string msg) {
             output.push_back(msg);
             Amara::debug_log("Received: ", msg);

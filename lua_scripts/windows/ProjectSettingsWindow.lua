@@ -89,35 +89,7 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
 
         local buttonPos = self.props.targetWidth - 22
         local buttonSpacing = 20
-
-        self.props.content:createChild("UIButton", {
-            id = "exitButton",
-            toolTip = "toolTip_exit",
-            x = buttonPos,
-            y = 4,
-            icon = 1,
-            onPress = function(button)
-                self.world.props.windows.func:closeAll(function(self)
-                    self.world:destroy()
-                end)
-                button.props.enabled = false
-            end
-        })
-
-        buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
-            id = "newProjectButton",
-            toolTip = "toolTip_minimize",
-            x = buttonPos,
-            y = 4,
-            icon = 4,
-            onPress = function(button)
-                self.world:minimizeWindow()
-                button.props.enabled = false
-            end
-        })
-
-        buttonPos = buttonPos - buttonSpacing
+        
         self.props.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
@@ -137,6 +109,19 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
             end
         })
 
+        buttonPos = buttonPos - buttonSpacing
+        self.props.content:createChild("UIButton", {
+            id = "newProjectButton",
+            toolTip = "toolTip_minimize",
+            x = buttonPos,
+            y = 4,
+            icon = 4,
+            onPress = function(button)
+                self.world:minimizeWindow()
+                button.props.enabled = false
+            end
+        })
+
         self.props.errorMessage = self.props.content:createChild("Text", {
             font = "defaultFont",
             origin = 0,
@@ -148,8 +133,9 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
         local saveButton = self.props.content:createChild("UIButton", {
             id = "saveButton",
             text = "label_saveSettings",
-            onPress = function()
+            onPress = function(btn)
                 if self.func:checkPath() then
+                    btn.props.enabled = false
                     self.func:createProject()
                 end
             end
@@ -166,6 +152,7 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
             self.props.errorMessage.text = Localize:get("error_emptyProjectName")
             self.props.errorMessage.visible = true
         elseif System:equivalent(self.props.projectPath, self.props.oldProjectPath) then
+            self.props.errorMessage.visible = false
             return false
         elseif System:isDirectory(self.props.projectPath) then
             self.props.errorMessage.text = Localize:get("error_directoryAlreadyExists")
@@ -201,31 +188,57 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
     end,
 
     createProject = function(self)
-        if self.props.oldProjectPath ~= self.props.projectPath then
-            System:createDirectory(self.props.projectPath)
-            System:copy(
-                self.props.oldProjectPath,
-                self.props.projectPath
-            )
+        local projectName = self.props.nameField.props.finalText
+
+        local oldProjectDirectory = self.props.oldProjectPath
+        local newProjectDirectory = self.props.projectPath
+        local parent = self.parent
+        local returnWindow = function()
+            local newWindow = parent:createChild("ProjectWindow", {
+                projectPath = newProjectDirectory
+            })
+            newWindow.func:openDefault()
+            newWindow.func:openWindow()
         end
-
-        local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
-        projectData["project-name"] = self.props.nameField.props.finalText
-        projectData["executable-name"] = self.props.nameField.props.finalText
-
-        projectData.uninitiated = true
-
-        System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
-
+        
         self.func:closeWindow(function()
             self.func:closeWindow(function()
-                self.props.enabled = false
-
-                local newWindow = self.parent:createChild("ProjectWindow", {
-                    projectPath = self.props.projectPath
-                })
-                newWindow.func:openDefault()
-                newWindow.func:openWindow()
+                if oldProjectDirectory ~= newProjectDirectory then
+                    local newProcess = parent:createChild("ProcessNode", {
+                        arguments = {
+                            Game.executable,
+                            "-script", System:getScriptPath("utility/MoveProject.lua"),
+                            "-oldProjectDirectory",
+                            oldProjectDirectory,
+                            "-newProjectDirectory",
+                            newProjectDirectory,
+                            "-projectName",
+                            projectName
+                        },
+                        onExit = function(process, exitCode)
+                            if exitCode == 0 then
+                                returnWindow()
+                            else
+                                if System:exists(newProjectDirectory) then
+                                    System:remove(newProjectDirectory)
+                                end
+                                newProjectDirectory = oldProjectDirectory
+                                local newTerminal = parent:createChild("TerminalWindow", {
+                                    allowMinimize = true,
+                                    disableSavePosition = true,
+                                    onExit = function(self)
+                                        returnWindow()
+                                    end
+                                })
+                                newTerminal.func:handleMessage(Localize:get("error_failedToMoveProject"))
+                                newTerminal.func:openWindow()
+                            end
+                        end
+                    })
+                else
+                    onSuccess()
+                    returnWindow()
+                end
                 
                 self:destroy()
             end)

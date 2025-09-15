@@ -7,7 +7,7 @@ namespace Amara {
         Amara::Vector2 movement;
 
         Amara::Vector2 rec_pos;
-
+        
         using Vector2::Vector2;
 
         bool active = false;

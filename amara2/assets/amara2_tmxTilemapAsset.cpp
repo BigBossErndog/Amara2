@@ -306,7 +306,7 @@ namespace Amara {
                 fatal_error(
                     "Error: External tilesets (TSX system) are not supported.",
                     "\n       Please embed the tileset directly into the TMX file.",
-                    "\n       ( In Tiled: Edit -> Preferences -> Plugins -> Tiled -> Embed tilesets, then File -> Export As... -> Select .tmx )"
+                    "\n       ( In Tiled: Select tileset -> Click the \"Embed Tileset\" button icon below it. )"
                 );
                 gameProps->breakWorld();
                 return false;

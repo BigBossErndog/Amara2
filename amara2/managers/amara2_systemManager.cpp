@@ -51,7 +51,7 @@ namespace Amara {
             if (!contents.empty() && nlohmann::json::accept(contents)) {
                 return nlohmann::json::parse(contents);
             }
-            debug_log("Warning: Invalid JSON file read from \"", getRelativePath(path), "\".");
+            fatal_error("Warning: Invalid JSON file read from \"", getRelativePath(path), "\".");
             return nullptr;
         }
         sol::object luaReadJSON(std::string path) {
@@ -310,22 +310,6 @@ namespace Amara {
         }
         sol::table luaGetSubDirectories(std::string path) {
             return vector_to_lua(gameProps->lua, getSubDirectories(path));
-        }
-
-        bool deleteDirectory(const std::string& path) {
-            std::filesystem::path dirPath = getRelativePath(path);
-            try {
-                if (std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath)) {
-                    std::filesystem::remove_all(dirPath);  // Deletes the directory and all its contents
-                    return true;
-                } else {
-                    fatal_error("Error: Path does not exist or is not a directory \"", dirPath.string(), "\".");
-                }
-            } 
-            catch (const std::filesystem::filesystem_error& e) {
-                fatal_error("Error: Failed to delete directory \"", dirPath.string(), "\".");
-            }
-            return false;
         }
 
         bool clearDirectory(std::string path) {

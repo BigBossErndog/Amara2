@@ -51,6 +51,7 @@ namespace Amara {
             gameProps = _gameProps;
             world = _world;
             
+            mouse = Amara::Mouse(gameProps);
             mouse.active = true;
             mouse.id = 0;
 
