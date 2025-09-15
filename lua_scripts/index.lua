@@ -50,7 +50,6 @@ Creator:createWorld({
     },
     
     onPreload = function(world)
-        world:fitToDisplay()
         world:restoreWindow()
         
         world.load:image("uiBox", "ui/amara2_uiBox.png")
@@ -110,7 +109,10 @@ Creator:createWorld({
 
         local hotkey
         hotkey = world:createChild("Hotkey", {
-            keys = { Key.LeftCtrl, Key.LeftAlt },
+            config = {
+                { Key.LeftCtrl, Key.LeftAlt },
+                { Key.RightCtrl, Key.RightAlt }
+            },
             onPress = function()
                 if not world.forcedClickThrough then
                    world.clickThrough = false
@@ -219,69 +221,33 @@ Creator:createWorld({
         self.func:saveSettings()
     end,
 
-    loadCodeEditors = function(self)
-        local settings = self.func:getSettings()
-        
-        local editors = {}
-
-        if System:programInstalled("code") then
-            table.insert(editors, "codeEditor_VSCode")
-        end
-        if System:programInstalled("code-insiders") then
-            table.insert(editors, "codeEditor_VSCodeInsiders")
-        end
-        if System:programInstalled("code-oss") then
-            table.insert(editors, "codeEditor_CodeOSS")
-        end
-        if System:programInstalled("atom") then
-            table.insert(editors, "codeEditor_Atom")
-        end
-        if System:programInstalled("sublime_text") then
-            table.insert(editors, "codeEditor_Sublime-Text")
-        end
-        if System:programInstalled("subl") then
-            table.insert(editors, "codeEditor_Sublime")
-        end
-        if System:programInstalled("notepad") then
-            table.insert(editors, "codeEditor_Notepad")
-        end
-        if System:programInstalled("clion") then
-            table.insert(editors, "codeEditor_CLion")
-        end
-        if System:programInstalled("cursor") then
-            table.insert(editors, "codeEditor_Cursor")
-        end
-        if System:programInstalled("zed") then
-            table.insert(editors, "codeEditor_Zed")
-        end
-        if System:programInstalled("figma") then
-            table.insert(editors, "codeEditor_Figma")
-        end
-        if System:programInstalled("codium") then
-            table.insert(editors, "codeEditor_VSCodium")
-        end
-        
-        if #editors > 0 then
-            if not settings.codeEditor then
-                settings.codeEditor = editors[1]
+    loadCodeEditors = function(self, onGet)
+        self:createChild("ProcessNode", {
+            arguments = {
+                Game.executable,
+                "-context",
+                System:getBasePath(),
+                "-script",
+                "initialSetup/ReloadCodeEditors"
+            },
+            onExit = function(process, exitCode, errorMessage)
+                local settings = self.func:getSettings(true)
+                if onGet then
+                    onGet(settings.codeEditorList)
+                end
             end
-        end
-
-        if #editors > 0 then
-            settings.codeEditorList = editors
-        else
-            settings.codeEditorList = {}
-        end
-
-        self.func:saveSettings()
+        })
     end,
 
-    getCodeEditors = function(self)
+    getCodeEditors = function(self, onGet)
         local settings = self.func:getSettings()
         if not settings.codeEditorList then
-            self.func:loadCodeEditors()
+            self.func:loadCodeEditors(onGet)
+        else
+            if onGet then
+                onGet(settings.codeEditorList)
+            end
         end
-        return settings.codeEditorList
     end,
 
     checkBuildTools = function(self)

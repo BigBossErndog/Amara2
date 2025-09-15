@@ -36,6 +36,15 @@ end
 if System:programInstalled("codium") then
     table.insert(editors, "codeEditor_VSCodium")
 end
+if System:programInstalled("geany") then
+    table.insert(editors, "codeEditor_Geany")
+end
+if System:programInstalled("windsurf") then
+    table.insert(editors, "codeEditor_Windsurf")
+end
+if System:programInstalled("lite-xl") then
+    table.insert(editors, "codeEditor_LiteXL")
+end
 
 if #editors > 0 then
     if not Settings.codeEditor then

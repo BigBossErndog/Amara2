@@ -7,7 +7,7 @@ if not Settings then
     Settings = {}
 end 
 
-Scripts:run("initialSetup/CheckCodeEditors.lua")
+Scripts:run("initialSetup/CheckCodeEditors")
 
 if System:VSBuildToolsInstalled() then
     Settings.vsBuildToolsInstalled = true

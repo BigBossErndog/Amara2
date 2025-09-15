@@ -10,7 +10,9 @@ local editorTooltips = {
     ["codeEditor_Cursor"] = "toolTip_openInCursor",
     ["codeEditor_Zed"] = "toolTip_openInZed",
     ["codeEditor_Figma"] = "toolTip_openInFigma",
-    ["codeEditor_VSCodium"] = "toolTip_openInVSCodium"
+    ["codeEditor_VSCodium"] = "toolTip_openInVSCodium",
+    ["codeEditor_Windsurf"] = "toolTip_openInWindsurf",
+    ["codeEditor_LiteXL"] = "toolTip_openInLiteXL"
 }
 
 Nodes:define("CodeEditorButton", "UIButton", {

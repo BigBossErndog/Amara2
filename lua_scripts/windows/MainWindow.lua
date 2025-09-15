@@ -308,13 +308,14 @@ Nodes:define("MainWindow", "UIWindow", {
     end,
 
     loadCodeEditors = function(self)
-        local settings = self.world.func:getSettings()
-        local editors = self.world.func:getCodeEditors()
+        self.world.func:getCodeEditors(function(codeEditors)
+            if not self.destroyed then
+                self.props.editorMenu.func:createOptions(codeEditors)
 
-        self.props.editorMenu.func:createOptions(editors)
-
-        if settings.codeEditor then
-            self.props.editorMenu.func:select(settings.codeEditor)
-        end
+                if codeEditors and #codeEditors > 0 then
+                    self.props.editorMenu.func:select(codeEditors[1])
+                end
+            end
+        end)
     end
 })
