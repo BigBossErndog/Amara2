@@ -25,7 +25,7 @@ Nodes:define("WebBuildOptions", "UIWindow", {
         local buttonSpacing = 20
 
         -- buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.props.backButton = self.props.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos,
@@ -41,6 +41,15 @@ Nodes:define("WebBuildOptions", "UIWindow", {
                     
                     self:destroy()
                 end)
+            end
+        })
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.Backspace },
+                { Key.RightAlt, Key.RightShift, Key.Backspace }
+            },
+            onPress = function()
+                self.props.backButton.func:forcePress()
             end
         })
 

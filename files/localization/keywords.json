@@ -17,7 +17,7 @@
     "toolTip_exitOnly": "Exit",
     "toolTip_cancel": "Cancel",
     "toolTip_minimize": "Minimize",
-    "toolTip_back": "Back",
+    "toolTip_back": "Back (Alt + Shift + Backspace)",
     "toolTip_browseDirectory": "Browse Directory",
     "toolTip_browseFile": "Browse File",
     "toolTip_openExistingProject": "Open Existing Project",

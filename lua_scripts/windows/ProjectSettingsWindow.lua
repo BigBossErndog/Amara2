@@ -90,7 +90,7 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
         local buttonPos = self.props.targetWidth - 22
         local buttonSpacing = 20
         
-        self.props.content:createChild("UIButton", {
+        self.props.backButton = self.props.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos,
@@ -106,6 +106,15 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
                     
                     self:destroy()
                 end)
+            end
+        })
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.Backspace },
+                { Key.RightAlt, Key.RightShift, Key.Backspace }
+            },
+            onPress = function()
+                self.props.backButton.func:forcePress()
             end
         })
 

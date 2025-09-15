@@ -56,6 +56,15 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 end)
             end
         })
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.Backspace },
+                { Key.RightAlt, Key.RightShift, Key.Backspace }
+            },
+            onPress = function()
+                backButton.func:forcePress()
+            end
+        })
     end,
 
     onCreatePage = function(self, pageIndex)
