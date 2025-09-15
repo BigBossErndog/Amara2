@@ -66,6 +66,7 @@ Creator:createWorld({
     end,
 
     onCreate = function(world)
+        world:fitToDisplay()
         math.randomseed(os.time())
 
         local props = world.props;

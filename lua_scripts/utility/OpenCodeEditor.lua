@@ -27,7 +27,9 @@ function OpenCodeEditor(settings, projectPath, filePath)
     local isUninitiated = projectData and projectData.uninitiated
 
     local fileToOpen = filePath
-    if not fileToOpen and isUninitiated then
+    if editorKey == "codeEditor_Notepad" then
+        fileToOpen = System:join(projectPath, "lua_scripts", "index.lua")
+    elseif not fileToOpen and isUninitiated then
         fileToOpen = System:join(projectPath, "lua_scripts", "index.lua")
     end
 

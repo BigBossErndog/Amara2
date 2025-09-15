@@ -114,6 +114,7 @@ Nodes:define("MainWindow", "UIWindow", {
             width = backer.width,
             defaultText = Localize:get("label_noCodeEditorAvailable"),
             onSelect = function(menu, opt)
+                local settings = self.world.func:getSettings()
                 settings.codeEditor = opt
                 self.world.func:saveSettings()
             end
@@ -145,6 +146,7 @@ Nodes:define("MainWindow", "UIWindow", {
                 active = true,
                 cursor = Cursor.Pointer,
                 onPointerDown = function()
+                    local settings = self.world.func:getSettings()
                     settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
                     tickBox.frame = settings.autoOpenCodeEditor and 2 or 1
                     self.world.func:saveSettings()
@@ -163,6 +165,7 @@ Nodes:define("MainWindow", "UIWindow", {
                 active = true,
                 cursor = Cursor.Pointer,
                 onPointerDown = function()
+                    local settings = self.world.func:getSettings()
                     settings.autoOpenCodeEditor = not settings.autoOpenCodeEditor
                     tickBox.frame = settings.autoOpenCodeEditor and 2 or 1
                     self.world.func:saveSettings()
@@ -313,7 +316,22 @@ Nodes:define("MainWindow", "UIWindow", {
                 self.props.editorMenu.func:createOptions(codeEditors)
 
                 if codeEditors and #codeEditors > 0 then
-                    self.props.editorMenu.func:select(codeEditors[1])
+                    local settings = self.world.func:getSettings()
+                    if settings.codeEditor then
+                        local found = false
+                        for i = 1, #codeEditors do
+                            if codeEditors[i] == settings.codeEditor then
+                                found = true
+                                self.props.editorMenu.func:select(codeEditors[i])
+                                break
+                            end
+                        end
+                        if not found then
+                            self.props.editorMenu.func:select(codeEditors[1])
+                        end
+                    else
+                        self.props.editorMenu.func:select(codeEditors[1])
+                    end
                 end
             end
         end)
