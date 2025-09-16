@@ -39,18 +39,25 @@ namespace Amara {
             loopEnd = 0;
 
             if (String::endsWith(path, ".wav")) {
+                std::string fileContents = gameProps->system->readFile(path);
+                if (fileContents.empty()) return false;
+
+                SDL_IOStream* io = SDL_IOFromMem((void*)fileContents.c_str(), fileContents.length());
+                if (!io) return false;
+
                 SDL_AudioSpec spec;
                 Uint8* buffer;
                 Uint32 length;
 
-                if (!SDL_LoadWAV_IO(SDL_IOFromFile(path.c_str(), "rb"), 1, &spec, &buffer, &length))
+                if (!SDL_LoadWAV_IO(io, 1, &spec, &buffer, &length)) {
                     return false;
-
+                }
+                
                 if (spec.format != SDL_AUDIO_S16) {
                     SDL_free(buffer);
                     return false;
                 }
-
+                
                 Sint16* src = (Sint16*)buffer;
                 int count = length / sizeof(Sint16);
                 samples.resize(count);
@@ -64,8 +71,10 @@ namespace Amara {
 
                 loopEnd = samples.size();
 
-                SDL_IOStream* rw = SDL_IOFromFile(path.c_str(), "rb");
-                if (!rw) return false;
+                SDL_IOStream* rw = SDL_IOFromMem((void*)fileContents.c_str(), fileContents.length());
+                if (!rw) {
+                    return false;
+                }
 
                 char chunk[5] = {};
                 while (SDL_ReadIO(rw, chunk, 4) == 4) {
@@ -111,17 +120,11 @@ namespace Amara {
             }
             else if (String::endsWith(path, ".ogg")) {
                 int error;
-                SDL_IOStream* io = SDL_IOFromFile(path.c_str(), "rb");
-                if (!io) {
-                    fatal_error("Error: Failed to open file: ", SDL_GetError());
-                    gameProps->breakWorld();
-                    return false;
-                }
-
-                size_t fileSize = SDL_GetIOSize(io);
-                std::vector<uint8_t> buffer(fileSize);
-                SDL_ReadIO(io, buffer.data(), fileSize);
-                SDL_CloseIO(io);
+                std::string contents = gameProps->system->readFile(path);
+                if (contents.empty()) return false;
+                
+                std::vector<uint8_t> buffer;
+                buffer.assign(contents.begin(), contents.end());
 
                 stb_vorbis* v = stb_vorbis_open_memory(buffer.data(), buffer.size(), &error, nullptr);
                 if (!v) {
@@ -152,8 +155,11 @@ namespace Amara {
                 return true;
             }
             else if (String::endsWith(path, ".mp3")) {
+                std::string fileContents = gameProps->system->readFile(path);
+                if (fileContents.empty()) return false;
+
                 mp3dec_ex_t dec;
-                if (mp3dec_ex_open(&dec, path.c_str(), MP3D_SEEK_TO_SAMPLE)) return false;
+                if (mp3dec_ex_open_buf(&dec, (const uint8_t*)fileContents.c_str(), fileContents.length(), MP3D_SEEK_TO_SAMPLE)) return false;
 
                 int count = dec.samples * dec.info.channels;
                 std::vector<short> temp(count);

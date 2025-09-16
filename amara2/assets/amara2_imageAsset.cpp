@@ -27,26 +27,10 @@ namespace Amara {
             
             clearTexture();
 
-            SDL_IOStream *rw = SDL_IOFromFile(path.c_str(), "rb");
-            if (!rw) {
-                fatal_error("Error: Failed to open file: ", SDL_GetError());
-                return false;
-            }
-
-            Sint64 fileSize = SDL_GetIOSize(rw);
-            unsigned char *buffer = (unsigned char*)SDL_malloc(fileSize);
-            if (fileSize > 0) {
-                SDL_ReadIO(rw, buffer, fileSize);
-            }
-            SDL_CloseIO(rw);
-
-            unsigned char* imageData = nullptr;
-
             std::string contents = gameProps->system->readFile(path);
             
             stbi_set_flip_vertically_on_load(0);
-            imageData = stbi_load_from_memory((const unsigned char*)contents.data(), contents.size(), &width, &height, &channels, 4);
-            SDL_free(buffer);
+            unsigned char* imageData = stbi_load_from_memory((const unsigned char*)contents.data(), contents.size(), &width, &height, &channels, 4);
 
             if (!imageData) {
                 fatal_error("Error: Failed to load image data: ", path);

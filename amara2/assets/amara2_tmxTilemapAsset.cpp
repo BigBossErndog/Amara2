@@ -233,35 +233,6 @@ namespace Amara {
             mapDir = path.substr(0, lastSlash + 1);
         }
 
-        SDL_IOStream* rw = SDL_IOFromFile(path.c_str(), "rb");
-        if (!rw) {
-            fatal_error("Error: Failed to open TMX file: ", path, " - ", SDL_GetError());
-            return false;
-        }
-
-        Sint64 fileSize_s64 = SDL_GetIOSize(rw);
-        if (fileSize_s64 <= 0) {
-             SDL_CloseIO(rw);
-             fatal_error("Error: Invalid or empty TMX file: ", path);
-             return false;
-        }
-
-        size_t fileSize = static_cast<size_t>(fileSize_s64);
-        std::unique_ptr<unsigned char[]> buffer(new (std::nothrow) unsigned char[fileSize]);
-        if (!buffer) {
-            SDL_CloseIO(rw);
-            fatal_error("Error: Failed to allocate memory for TMX file buffer: ", path);
-            return false;
-        }
-
-        size_t bytesRead = SDL_ReadIO(rw, buffer.get(), fileSize);
-        SDL_CloseIO(rw);
-
-        if (bytesRead != fileSize) {
-            fatal_error("Error: Failed to read entire TMX file: ", path);
-            return false;
-        }
-
         std::vector<char> tmxData;
 
         std::string contents = gameProps->system->readFile(path);
