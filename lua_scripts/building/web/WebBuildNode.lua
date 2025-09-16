@@ -34,11 +34,14 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         end
         System:createDirectory(buildDir)
 
+        local buildModule
+        
         local emscriptenPath
         local pythonPath
         if Game.platform == "windows" then
-            emscriptenPath = System:getRelativePath("build_modules/amara2_windows_build_module/emsdk/upstream/emscripten")
-            pythonPath = System:getRelativePath("build_modules/amara2_windows_build_module/emsdk/python/3.13.3_64bit/python.exe")
+            buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
+            emscriptenPath = System:join(buildModule, "emsdk/upstream/emscripten")
+            pythonPath = System:join(buildModule, "emsdk/python/3.13.3_64bit/python.exe")
         end
 
         -- Helper to quote paths with spaces
@@ -80,16 +83,16 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             table.insert(args, "-I" .. fix_path(System:join(self.props.projectPath, "plugins")))
         end
 
-        table.insert(args, "-Iresources/libs/nlohmann/include")
-        table.insert(args, "-Iresources/libs/murmurhash3")
-        table.insert(args, "-Iresources/libs/lua")
-        table.insert(args, "-Iresources/libs/sol2")
-        table.insert(args, "-Iresources/libs/stb")
-        table.insert(args, "-Iresources/libs/glm")
-        table.insert(args, "-Iresources/libs/minimp3")
-        table.insert(args, "-Iresources/libs/portable-file-dialogs")
-        table.insert(args, "-Iresources/libs/tinyxml2")
-        table.insert(args, "-Iresources/libs/easy-encryption")
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/nlohmann/include")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/murmurhash3")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/lua")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/sol2")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/stb")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/glm")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/minimp3")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/portable-file-dialogs")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/tinyxml2")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/easy-encryption")))
 
         -- EMSCRIPTEN_COMPILER_FLAGS (combine -s flags with their values)
         table.insert(args, "-w")
@@ -124,15 +127,6 @@ Nodes:define("WebBuildNode", "ProcessNode", {
                 end
             end
         end
-
-            -- table.insert(args, "--preload-file")
-            -- table.insert(args, fix_path(System:join(self.props.projectPath, "assets@/assets")))
-            
-            -- -- table.insert(args, "--preload-file")
-            -- if System:exists(System:join(self.props.projectPath, "files")) then
-            --     table.insert(args, "--preload-file")
-            --     table.insert(args, quote_if_needed(System:join(self.props.projectPath, "files@/files")))
-            -- end
 
         -- Shell
         table.insert(args, "--shell-file")

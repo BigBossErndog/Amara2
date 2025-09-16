@@ -45,20 +45,21 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local buildDir = System:join(self.props.projectPath, "build", "windows")
         self.props.buildDir = buildDir
 
-        local clangLLVMPath = System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm")
+        local buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
+        local clangLLVMPath = System:join(buildModule, "clang-llvm")
         self.props.clangLLVMPath = clangLLVMPath
         
-        local sdl3Path = System:getRelativePath("resources/libs/SDL3-3.2.16")
+        local sdl3Path = System:join(buildModule, "resources/libs/SDL3-3.2.16")
 
-        local nlohmannPath = System:getRelativePath("resources/libs/nlohmann/include")
-        local murmurhash3Path = System:getRelativePath("resources/libs/murmurhash3")
-        local luaPath = System:getRelativePath("resources/libs/lua")
-        local sol2Path = System:getRelativePath("resources/libs/sol2")
-        local stbPath = System:getRelativePath("resources/libs/stb")
-        local glmPath = System:getRelativePath("resources/libs/glm")
-        local minimp3Path = System:getRelativePath("resources/libs/minimp3")
-        local pfdPath = System:getRelativePath("resources/libs/portable-file-dialogs")
-        local tinyxml2Path = System:getRelativePath("resources/libs/tinyxml2")
+        local nlohmannPath = System:join(buildModule, "resources/libs/nlohmann/include")
+        local murmurhash3Path = System:join(buildModule, "resources/libs/murmurhash3")
+        local luaPath = System:join(buildModule, "resources/libs/lua")
+        local sol2Path = System:join(buildModule, "resources/libs/sol2")
+        local stbPath = System:join(buildModule, "resources/libs/stb")
+        local glmPath = System:join(buildModule, "resources/libs/glm")
+        local minimp3Path = System:join(buildModule, "resources/libs/minimp3")
+        local pfdPath = System:join(buildModule, "resources/libs/portable-file-dialogs")
+        local tinyxml2Path = System:join(buildModule, "resources/libs/tinyxml2")
         
         -- Clean and create build directory as per Makefile
         if System:exists(buildDir) then
@@ -66,7 +67,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
         System:createDirectory(buildDir)
         System:copy(
-            System:getRelativePath("resources/dlls/win64"),
+            System:join(buildModule, "resources/dlls/win64"),
             buildDir
         )
 

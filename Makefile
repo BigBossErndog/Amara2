@@ -22,8 +22,10 @@ WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -Wl,/NOIMPLIB -std=c++17
 
 LINUX_COMPILER_FLAGS = -w -Wall -m32 -std=c++17
 
-SDL_INCLUDE_PATHS_WIN64 = -Iresources/libs/SDL3-3.2.16/include
-SDL_LIBRARY_PATHS_WIN64 = -Lresources/libs/SDL3-3.2.16/lib/x64
+RESOURCES = $(WINDOWS_BUILDMODULE_PATH)/resources
+
+SDL_INCLUDE_PATHS_WIN64 = -I$(RESOURCES)/libs/SDL3-3.2.16/include
+SDL_LIBRARY_PATHS_WIN64 = -L$(RESOURCES)/libs/SDL3-3.2.16/lib/x64
 SDL_PATHS_WIN64 = $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64)
 SDL_LINKER_FLAGS_WIN64 = -lSDL3
 
@@ -39,7 +41,7 @@ LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthre
 LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl2-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
 
 OTHER_LIB_LINKS = 
-OTHER_LIB_PATHS = -Isrc -Iresources/libs/nlohmann/include -Iresources/libs/murmurhash3 -Iresources/libs/lua -Iresources/libs/sol2 -Iresources/libs/stb -Iresources/libs/glm -Iresources/libs/minimp3 -Iresources/libs/portable-file-dialogs -Iresources/libs/tinyxml2
+OTHER_LIB_PATHS = -Isrc -I$(RESOURCES)/libs/nlohmann/include -I$(RESOURCES)/libs/murmurhash3 -I$(RESOURCES)/libs/lua -I$(RESOURCES)/libs/sol2 -I$(RESOURCES)/libs/stb -I$(RESOURCES)/libs/glm -I$(RESOURCES)/libs/minimp3 -I$(RESOURCES)/libs/portable-file-dialogs -I$(RESOURCES)/libs/tinyxml2
 
 OTHER_LIB = $(OTHER_LIB_PATHS)
 
@@ -76,7 +78,7 @@ cpAssets_alt:
 	xcopy /s /e /i /y "assets\*.*" "build\assets"
 
 cpdll:
-	xcopy /s /e /i /y "resources\dlls\win64\*.*" "$(BUILD_PATH)\"
+	xcopy /s /e /i /y "$(RESOURCES)\dlls\win64\*.*" "$(BUILD_PATH)\"
 
 cpdirs:
 	if not exist $(BUILD_PATH) md $(BUILD_PATH)
@@ -102,8 +104,6 @@ win-test-copy:
 	make cpdirs
 	if not exist "$(BUILD_PATH)\amara2\" md "$(BUILD_PATH)\amara2\"
 	xcopy /s /e /i /y "amara2\*.*" "$(BUILD_PATH)\amara2"
-	if not exist "$(BUILD_PATH)\resources\" md "$(BUILD_PATH)\resources\"
-	xcopy /s /e /i /y "resources\*.*" "$(BUILD_PATH)\resources"
 
 win-test:
 	make win
@@ -116,8 +116,6 @@ win-release:
 	make cpdirs
 	if not exist "$(BUILD_PATH)\amara2\" md "$(BUILD_PATH)\amara2\"
 	xcopy /s /e /i /y "amara2\*.*" "$(BUILD_PATH)\amara2"
-	if not exist "$(BUILD_PATH)\resources\" md "$(BUILD_PATH)\resources\"
-	xcopy /s /e /i /y "resources\*.*" "$(BUILD_PATH)\resources"
 	if exist "$(BUILD_PATH)\files\settings.json" del "$(BUILD_PATH)\files\settings.json"
 
 linux:
@@ -136,7 +134,7 @@ EMSCRIPTEN_EXTRA_OPTIONS = -DAMARA_ENGINE_TOOLS
 web:
 	if exist $(BUILD_PATH) ( rmdir /s /q $(BUILD_PATH) )
 	if not exist $(BUILD_PATH) md $(BUILD_PATH)
-	set EMSDK_PYTHON=$(CURRENT_PATH)\build_modules\amara2_windows_build_module\emsdk\python\3.13.3_64bit\python.exe && \
+	set EMSDK_PYTHON=$(RESOURCES)\emsdk\python\3.13.3_64bit\python.exe && \
     $(EMSCRIPTEN_COMPILER) $(ENTRY_FILES) $(EMSCRIPTEN_SDL) $(AMARA_PATH) $(OTHER_LIB) $(EMSCRIPTEN_COMPILER_FLAGS) $(EMSCRIPTEN_EXTRA_OPTIONS) $(EMSCRIPTEN_PRELOADS) -o $(EMSCRIPTEN_BUILD_PATH)
 
 playweb:
