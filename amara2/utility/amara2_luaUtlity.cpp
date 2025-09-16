@@ -378,6 +378,10 @@ namespace Amara {
             }
             return t1;
         });
+        table_metatable.set_function("is_array", [](sol::object tbl) {
+            return lua_object_is_table_array(tbl);
+        });
+        
         lua["fatal_error"] = [](sol::variadic_args args) {
             fatal_error(lua_string_concat(args));
         };

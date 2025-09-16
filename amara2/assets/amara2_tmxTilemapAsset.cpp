@@ -352,7 +352,7 @@ namespace Amara {
         for (tinyxml2::XMLElement* element = mapRoot->FirstChildElement(); element != nullptr; element = element->NextSiblingElement()) {
             const char* elementName = element->Name();
             if (!elementName) continue;
-
+            
             if (String::equal(elementName, "layer")) {
                 TMXTileLayer currentLayer;
                 currentLayer.name = element->Attribute("name") ? element->Attribute("name") : "";

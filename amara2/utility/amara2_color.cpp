@@ -70,6 +70,9 @@ namespace Amara {
             if (String::equal(key, "magenta")) return true;
             if (String::equal(key, "cyan")) return true;
             if (String::equal(key, "transparent")) return true;
+            if (key[0] == '#') {
+                if (key.length() == 7 || key.length() == 9) return true;
+            }
             return false;
         }
 
