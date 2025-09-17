@@ -17,6 +17,11 @@ namespace Amara {
         virtual void init() override {
             Amara::Action::init();
         }
+        
+        virtual void create() override {
+            if (parent) parent->transition = this;
+            Amara::Action::create();
+        }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "deactivate")) {
@@ -55,6 +60,10 @@ namespace Amara {
         
         virtual void doTransition() {
             Amara::Node* prev_parent = parent;
+
+            if (prev_parent) {
+                prev_parent->transition = nullptr;
+            }
             
             if (!next_key.empty()) {
                 if (parent && parent->parent) {
@@ -67,12 +76,14 @@ namespace Amara {
             }
 
             if (next_node) {
+                next_node->transition = this;
                 if (interim == 0) {
                     next_node->activate();
                 }
                 else {
                     Amara::DelayNode* interimNode = parent->parent->createChild("DelayNode")->as<Amara::DelayNode*>();
                     interimNode->interim = interim;
+                    interimNode->transition = this;
                     interimNode->setNode(next_node);
                 }
                 switchParent(next_node);
@@ -84,12 +95,17 @@ namespace Amara {
             }
         }
 
+        
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::Transition>("Transition",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "doTransition", &Amara::Transition::doTransition,
                 "interim", &Amara::Transition::interim
             );
+
+            sol::usertype<Amara::Node> node_type = lua["Node"];
+            node_type["transition"] = sol::readonly(&Amara::Node::transition);
         }
     };
 }

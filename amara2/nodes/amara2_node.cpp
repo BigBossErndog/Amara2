@@ -3,6 +3,7 @@ namespace Amara {
     class World;
     class StateMachine;
     class Loader;
+    class Transition;
 
     class Node {
     public:
@@ -76,6 +77,8 @@ namespace Amara {
         Amara::Node* collider = nullptr;
         
         std::deque<std::string> inheritanceChain;
+
+        Transition* transition = nullptr;
 
         #ifdef AMARA_OPENGL
         ShaderProgram* shaderProgram = nullptr;
