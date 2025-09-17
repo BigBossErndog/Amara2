@@ -373,7 +373,13 @@ namespace Amara {
                     update_properties();
 
                     currentWorld->prepareRenderer();
-                    currentWorld->draw(gameProps.master_viewport);
+                    try {
+                        currentWorld->draw(gameProps.master_viewport);
+                    }
+                    catch(std::exception& e) {
+                        debug_log(e.what());
+                        gameProps.breakWorld();
+                    }
                     if (currentWorld->vsync != 0) vsync = true;
                 }
                 for (Amara::World* world: worlds) {

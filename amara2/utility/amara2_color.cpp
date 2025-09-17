@@ -61,6 +61,10 @@ namespace Amara {
         }
 
         static bool isColor(std::string key) {
+            if (key[0] == '#') {
+                if (key.length() == 7 || key.length() == 9) return true;
+                return false;
+            }
             if (String::equal(key, "white")) return true;
             if (String::equal(key, "black")) return true;
             if (String::equal(key, "red")) return true;
@@ -70,9 +74,6 @@ namespace Amara {
             if (String::equal(key, "magenta")) return true;
             if (String::equal(key, "cyan")) return true;
             if (String::equal(key, "transparent")) return true;
-            if (key[0] == '#') {
-                if (key.length() == 7 || key.length() == 9) return true;
-            }
             return false;
         }
 

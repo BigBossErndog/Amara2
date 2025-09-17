@@ -258,8 +258,8 @@ Nodes:define("ProjectWindow", "UIWindow", {
     setHotkeys = function(self)
         self:createChild("Hotkey", {
             config = {
-                left = { Key.LeftCtrl, Key.LeftShift, Key.A },
-                right = { Key.RightCtrl, Key.RightShift, Key.A }
+                left = { Key.LeftAlt, Key.LeftShift, Key.Enter },
+                right = { Key.RightAlt, Key.RightShift, Key.Enter }
             },
             onPress = function()
                 self.props.playButton.func:forcePress()
@@ -272,7 +272,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
             },
             onPress = function()
                 self.props.codeEditorButton.func:forcePress()
-            end--[[  ]]
+            end
         })
         self:createChild("Hotkey", {
             config = {
