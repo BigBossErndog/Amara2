@@ -176,6 +176,8 @@ namespace Amara {
         GamepadManager* gamepads = nullptr;
         ControlManager* controls = nullptr;
 
+        Amara::InputMode controlMode = Amara::InputMode::None;
+
         Pointer* globalPointer = nullptr;
 
         CursorEnum current_cursor = CursorEnum::Default;

@@ -120,6 +120,8 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_MOUSE_MOTION: {
+                        gameProps->controlMode = InputMode::Mouse;
+
                         for (auto w: worlds) {
                             if (e.motion.which == SDL_TOUCH_MOUSEID) {
                                 continue;
@@ -131,6 +133,8 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+                        gameProps->controlMode = InputMode::Mouse;
+
                         for (auto w: worlds) {
                             if (e.button.which == SDL_TOUCH_MOUSEID) {
                                 continue;
@@ -159,6 +163,8 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_MOUSE_BUTTON_UP: {
+                        gameProps->controlMode = InputMode::Mouse;
+
                         for (auto w: worlds) {
                             if (e.button.which == SDL_TOUCH_MOUSEID) {
                                 continue;
@@ -182,6 +188,8 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_MOUSE_WHEEL: {
+                        gameProps->controlMode = InputMode::Mouse;
+
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.wheel.windowID) {
                                 w->inputManager.mouse.wheel = Vector2(e.wheel.x, e.wheel.y);
@@ -189,6 +197,8 @@ namespace Amara {
                         }
                     }
                     case SDL_EVENT_FINGER_DOWN: {
+                        gameProps->controlMode = InputMode::Touch;
+
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.tfinger.windowID) {
                                 w->handleFingerEvent(Vector2(e.tfinger.x, e.tfinger.y), e.tfinger.fingerID, (SDL_EventType)e.type);
@@ -197,6 +207,8 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_FINGER_UP: {
+                        gameProps->controlMode = InputMode::Touch;
+
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.tfinger.windowID) {
                                 w->handleFingerEvent(Vector2(e.tfinger.x, e.tfinger.y), e.tfinger.fingerID, (SDL_EventType)e.type);
@@ -205,6 +217,8 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_FINGER_MOTION: {
+                        gameProps->controlMode = InputMode::Touch;
+
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.tfinger.windowID) {
                                 w->handleFingerEvent(Vector2(e.tfinger.x, e.tfinger.y), e.tfinger.fingerID, (SDL_EventType)e.type);
@@ -213,6 +227,8 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_KEY_DOWN:
+                        gameProps->controlMode = InputMode::Keyboard;
+
                         keyboard.press(e.key.key);
                         game.gameProps->messages->send(nullptr, "keyboarddown", sol::make_object(game.gameProps->lua, e.key.key));
                         
@@ -225,21 +241,29 @@ namespace Amara {
                         }
                         break;
                     case SDL_EVENT_KEY_UP:
+                        gameProps->controlMode = InputMode::Keyboard;
+
                         keyboard.release(e.key.key);
                         game.gameProps->messages->send(nullptr, "keyboardup", sol::make_object(game.gameProps->lua, e.key.key));
                         break;
                     case SDL_EVENT_GAMEPAD_ADDED:
+                        gameProps->controlMode = InputMode::Gamepad;
+
                         gamepads.connectGamepad(e.gdevice.which);
                         break;
                     case SDL_EVENT_GAMEPAD_REMOVED:
                         gamepads.disconnectGamepad(e.gdevice.which);
                         break;
                     case SDL_EVENT_GAMEPAD_BUTTON_DOWN: {
+                        gameProps->controlMode = InputMode::Gamepad;
+
                         Amara::Gamepad* gamepad = gamepads.getGamepadByID(e.gbutton.which);
                         if (gamepad) gamepad->activateSDLButton((SDL_GamepadButton)e.gbutton.button, true);
                         break;
                     }
                     case SDL_EVENT_GAMEPAD_BUTTON_UP: {
+                        gameProps->controlMode = InputMode::Gamepad;
+                        
                         Amara::Gamepad* gamepad = gamepads.getGamepadByID(e.gbutton.which);
                         if (gamepad) gamepad->activateSDLButton((SDL_GamepadButton)e.gbutton.button, false);
                         break;

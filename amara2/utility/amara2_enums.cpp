@@ -184,5 +184,13 @@ namespace Amara {
             "Default", Amara::CursorEnum::Default,
             "Pointer", Amara::CursorEnum::Pointer
         );
+
+        lua.new_enum("InputMode",
+            "None", Amara::InputMode::None,
+            "Keyboard", Amara::InputMode::Keyboard,
+            "Gamepad", Amara::InputMode::Gamepad,
+            "Mouse", Amara::InputMode::Mouse,
+            "Touch", Amara::InputMode::Touch
+        );
     }
 }

@@ -81,7 +81,10 @@ namespace Amara {
                 "isDown", &ControlManager::isDown,
                 "justPressed", &ControlManager::justPressed,
                 "justReleased", &ControlManager::justReleased,
-                "timeHeld", &ControlManager::timeHeld
+                "timeHeld", &ControlManager::timeHeld,
+                "mode", sol::property([](ControlManager& cm) {
+                    return cm.gameProps->controlMode;
+                })
             );
         }
     };
