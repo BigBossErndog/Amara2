@@ -94,6 +94,14 @@ namespace Amara {
                 if (json_has(particle_config, "depth")) {
                     depth = particle_config["depth"];
                 }
+
+                if (val.is<sol::table>()) {
+                    sol::table tbl = val.as<sol::table>();
+                    if (tbl["onParticleUpdate"].valid()) {
+                        sol::object func = tbl["onParticleUpdate"];
+                        funcs.setFunction(nodeID, "onParticleUpdate", func.as<sol::function>());
+                    }
+                }
             }
             return Amara::Sprite::luaConfigure(key, val);
         }

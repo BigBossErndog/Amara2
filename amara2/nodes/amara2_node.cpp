@@ -16,7 +16,7 @@ namespace Amara {
         Amara::World* world = nullptr;
         Amara::Node* parent = nullptr;
         Amara::Scene* scene = nullptr;
-
+        
         std::vector<Amara::Node*> children;
         std::vector<Amara::Node*> children_copy_list;
         
