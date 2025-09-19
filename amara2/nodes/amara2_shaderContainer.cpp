@@ -121,7 +121,7 @@ namespace Amara {
                 SDL_SetTextureScaleMode(stamp_texture, SDL_SCALEMODE_NEAREST);
                 SDL_SetTextureColorMod(stamp_texture, 255, 255, 255);
                 SDL_SetTextureAlphaMod(stamp_texture, 255);
-                Apply_SDL_BlendMode(gameProps, stamp_texture, Amara::BlendMode::Alpha);
+                Apply_SDL_BlendMode(gameProps, stamp_texture, Amara::BlendMode::None);
 
                 SDL_RenderTexture(gameProps->renderer, stamp_texture, NULL, NULL);
             }
@@ -165,7 +165,7 @@ namespace Amara {
                     stamp_canvas,
                     vertices, 1, Amara::Color::White,
                     container_viewport, true,
-                    blendMode
+                    (Amara::BlendMode)SDL_BLENDMODE_NONE
                 );
             }
             #endif
@@ -205,6 +205,8 @@ namespace Amara {
             SDL_Rect prevSDLViewport;
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = canvas1Texture;
+                SDL_SetTextureBlendMode(canvas1Texture, SDL_BLENDMODE_NONE);
+                SDL_SetTextureBlendMode(canvas2Texture, SDL_BLENDMODE_NONE);
                 SDL_GetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL

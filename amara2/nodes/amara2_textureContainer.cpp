@@ -199,6 +199,7 @@ namespace Amara {
                 
                 rec_target = SDL_GetRenderTarget(gameProps->renderer);
                 SDL_SetRenderTarget(gameProps->renderer, canvasTexture);
+                SDL_SetTextureBlendMode(canvasTexture, SDL_BLENDMODE_NONE);
                 SDL_SetRenderDrawColor(gameProps->renderer, 
                     fill.r, fill.g, fill.b, fill.a
                 );

@@ -37,13 +37,13 @@ namespace Amara {
     };
 
     enum class BlendMode {
-        None = 0,
-        Alpha = 1,
-        Additive = 2,
-        Multiply = 3,
-        PremultipliedAlpha = 4,
-        Mask = 5,
-        Erase = 6
+        None = 1,
+        Alpha = 2,
+        Additive = 3,
+        Multiply = 4,
+        PremultipliedAlpha = 5,
+        Mask = 6,
+        Erase = 7
     };
 
     enum class AlignmentEnum {
@@ -121,6 +121,7 @@ namespace Amara {
         lua.new_enum("BlendMode",
             "None", Amara::BlendMode::None,
             "Alpha", Amara::BlendMode::Alpha,
+            "Blend", Amara::BlendMode::Alpha,
             "Additive", Amara::BlendMode::Additive,
             "Multiply", Amara::BlendMode::Multiply,
             "PremultipliedAlpha", Amara::BlendMode::PremultipliedAlpha,
