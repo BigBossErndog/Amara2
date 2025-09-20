@@ -31,6 +31,9 @@ namespace Amara {
         float startAlpha = invalid;
         float endAlpha = invalid;
 
+        Vector2 endScale = Vector2(1);
+        bool end_scale_set = false;
+
         bool in_use = false;
 
         static void bind_lua(sol::state& lua) {
@@ -216,6 +219,19 @@ namespace Amara {
             }
             if (json_has(particle_config, "scaleY")) {
                 particle.scale.y = parseValue(particle_config["scaleY"]);
+            }
+
+            particle.endScale = Vector2(1);
+            particle.end_scale_set = false;
+            if (json_has(particle_config, "endScale")) {
+                particle.endScale = parseVector(particle_config["endScale"]);
+                particle.end_scale_set = true;
+            }
+            if (json_has(particle_config, "endScaleX")) {
+                particle.endScale.x = parseValue(particle_config["endScaleX"]);
+            }
+            if (json_has(particle_config, "endScaleY")) {
+                particle.endScale.y = parseValue(particle_config["endScaleY"]);
             }
 
             particle.velocity = Vector2(0);
@@ -404,9 +420,16 @@ namespace Amara {
                 if (particle.startY != invalid && particle.endY != invalid) {
                     particle.pos.y = ease(particle.startY, particle.endY, particle.lifeTime / particle.maxLifeTime, easing); 
                 }
-
+                
                 if (particle.startAlpha != invalid && particle.endAlpha != invalid) {
                     particle.alpha = ease(particle.startAlpha, particle.endAlpha, particle.lifeTime / particle.maxLifeTime, easing); 
+                }
+
+                if (particle.end_scale_set) {
+                    particle.scale = Vector2(
+                        ease(particle.scale.x, particle.endScale.x, particle.lifeTime / particle.maxLifeTime, easing),
+                        ease(particle.scale.y, particle.endScale.y, particle.lifeTime / particle.maxLifeTime, easing)
+                    );
                 }
 
                 particle.rotation += particle.angularVelocity * deltaTime;

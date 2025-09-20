@@ -426,7 +426,15 @@ namespace Amara {
                 });
                 tbl.raw_set(key, func);
             }
-            else tbl.raw_set(key, value);
+            else {
+                if (value.is<Amara::Node>() && key.is<std::string>()) {
+                    Amara::Node& node = value.as<Amara::Node&>();
+                    if (node.id.empty()) {
+                        node.id = key.as<std::string>();
+                    }
+                }
+                tbl.raw_set(key, value);
+            }
         };
         props[sol::metatable_key] = props_meta;
 

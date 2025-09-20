@@ -17,6 +17,17 @@ namespace Amara {
 
             return Amara::Sprite::configure(config);
         }
+        
+        virtual void init() override {
+            Amara::Sprite::init();
+
+            image = gameProps->assets->whitePixel;
+            textureWidth = image->width;
+            textureHeight = image->height;
+
+            setWidth(rectWidth);
+            setHeight(rectHeight);
+        }
 
         virtual void drawChildren(const Rectangle& v) override {
             if (children.size() == 0) return;
@@ -50,16 +61,6 @@ namespace Amara {
 				++it;
 			}
         }
-
-        virtual void create() override {
-            Amara::Sprite::create();
-            image = gameProps->assets->whitePixel;
-            textureWidth = image->width;
-            textureHeight = image->height;
-
-            setWidth(rectWidth);
-            setHeight(rectHeight);
-        }
         
         virtual bool setTexture(std::string key) override {
             bool success = Amara::Sprite::setTexture(key);
@@ -70,11 +71,11 @@ namespace Amara {
             return success;
         }
         
-        float setWidth(float _w) {
+        virtual float setWidth(float _w) override {
             rectWidth = _w;
             return Amara::Sprite::setWidth(_w);
         }
-        float setHeight(float _h) {
+        virtual float setHeight(float _h) override {
             rectHeight = _h;
             return Amara::Sprite::setHeight(_h);
         }

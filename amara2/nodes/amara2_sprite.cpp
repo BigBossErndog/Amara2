@@ -139,6 +139,8 @@ namespace Amara {
             if (json_has(config, "width")) setWidth(config["width"]);
             if (json_has(config, "height")) setHeight(config["height"]);
 
+            if (json_has(config, "rect")) stretchTo(config["rect"]);
+
             if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
 
             return Amara::Node::configure(config);
@@ -310,12 +312,12 @@ namespace Amara {
             if (image) return textureHeight*scale.y;
             return 0;
         }
-        float setWidth(float _w) {
+        virtual float setWidth(float _w) {
             float cw = (spritesheet ? frameWidth : textureWidth);
             if (cw == 0) return scale.x = 0;
             return scale.x = _w / cw;
         }
-        float setHeight(float _h) {
+        virtual float setHeight(float _h) {
             float ch = (spritesheet ? frameHeight : textureHeight);
             if (ch == 0) return scale.y = 0;
             return scale.y = _h / ch;
@@ -354,8 +356,8 @@ namespace Amara {
         Rectangle stretchTo(const Rectangle& rect) {
             pos.x = rect.x + rect.w*origin.x;
             pos.y = rect.y + rect.h*origin.y;
-            scale.x = rect.w / static_cast<float>(getWidth());
-            scale.y = rect.h / static_cast<float>(getHeight());
+            setWidth(rect.w);
+            setHeight(rect.h);
             return rect;
         }
 

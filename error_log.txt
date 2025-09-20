@@ -1,4 +1,3 @@
-Error: Filesystem exception while deleting "C:\Users\ernes\Documents\Creations\amara2\projects\examples\Platformer": remove_all: The process cannot access the file because it is being used by another process.: "C:\Users\ernes\Documents\Creations\amara2\projects\examples\Platformer"
+[string "scenes/DateBattle.lua"]:127: attempt to call a nil value (field 'changeValue')
 stack traceback:
-	[C]: in method 'remove'
-	[string "utility/MoveProject.lua"]:7: in main chunk
+	[string "scenes/DateBattle.lua"]:127: in function <[string "scenes/DateBattle.lua"]:102>

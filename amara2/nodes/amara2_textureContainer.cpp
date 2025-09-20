@@ -84,6 +84,7 @@ namespace Amara {
             if (json_has(config, "width")) width = config["width"];
             if (json_has(config, "height")) height = config["height"];
             if (json_has(config, "size")) resize(config["size"]);
+            if (json_has(config, "rect")) stretchTo(config["rect"]);
             if (json_has(config, "canvasLocked")) canvasLocked = config["canvasLocked"];
 
             if (json_has(config, "originX")) origin.x = config["originX"];

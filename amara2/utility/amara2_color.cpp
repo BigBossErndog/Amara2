@@ -52,12 +52,40 @@ namespace Amara {
                 (a + other.a) / 2.0
             );
         }
+        Amara::Color operator* (float other) const {
+            return Amara::Color(
+                r * other,
+                g * other,
+                b * other,
+                a * other
+            );
+        }
+
+        Amara::Color operator+ (const Amara::Color& other) const {
+            return Amara::Color(
+                r + other.r,
+                g + other.g,
+                b + other.b,
+                a + other.a
+            );
+        }
         
         explicit operator std::string() const {
             return "Color(" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + ", " + std::to_string(a) + ")";
         }
         friend std::ostream& operator<<(std::ostream& os, const Color& color) {
             return os << static_cast<std::string>(color);
+        }
+
+        std::string hex() {
+            std::ostringstream oss;
+            oss << "#";
+            oss << std::hex << std::uppercase << std::setfill('0');
+            oss << std::setw(2) << static_cast<int>(r)
+                << std::setw(2) << static_cast<int>(g)
+                << std::setw(2) << static_cast<int>(b)
+                << std::setw(2) << static_cast<int>(a);
+            return oss.str();
         }
 
         static bool isColor(std::string key) {
@@ -191,7 +219,13 @@ namespace Amara {
             "r", &Color::r,
             "g", &Color::g,
             "b", &Color::b,
-            "a", &Color::a
+            "a", &Color::a,
+            "hex", &Color::hex,
+            sol::meta_function::multiplication, sol::overload(
+                sol::resolve<Amara::Color(const Amara::Color&) const>(&Amara::Color::operator*),
+                sol::resolve<Amara::Color(float) const>(&Amara::Color::operator*)
+            ),
+            sol::meta_function::addition, &Amara::Color::operator+
         );
 
         lua.new_enum("Colors",

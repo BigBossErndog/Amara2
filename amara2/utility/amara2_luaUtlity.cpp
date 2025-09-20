@@ -200,11 +200,32 @@ namespace Amara {
     }
 
     sol::table lua_shallow_copy(sol::state& lua, sol::table tbl) {
+        if (tbl.is<sol::userdata>()) return tbl;
+        if (!tbl.is<sol::table>()) return tbl;
         sol::table copy = lua.create_table();
         for (auto& pair : tbl) {
             copy[pair.first] = pair.second;
         }
         return copy;
+    }
+
+    sol::table lua_deep_copy(sol::state& lua, sol::table src) {
+        if (src.is<sol::userdata>()) return src;
+        if (!src.is<sol::table>()) return src;
+
+        sol::table dst(lua, sol::create);
+
+        for (auto& kv : src) {
+            sol::object key = kv.first;
+            sol::object value = kv.second;
+
+            if (value.is<sol::table>() && !value.is<sol::userdata>()) {
+                dst[key] = lua_deep_copy(lua, value.as<sol::table>());
+            } else {
+                dst[key] = value;
+            }
+        }
+        return dst;
     }
 
     const char* lua_table_to_string = R"(
@@ -355,6 +376,9 @@ namespace Amara {
         table_metatable.set_function("shallow_copy", [&lua](sol::table tbl) -> sol::table {
             return lua_shallow_copy(lua, tbl);
         });
+        table_metatable.set_function("deep_copy", [&lua](sol::table tbl) -> sol::table {
+            return lua_deep_copy(lua, tbl);
+        });
         table_metatable.set_function("append", [](sol::table tbl1, sol::table tbl2) {
             int len = tbl1.size();
             for (auto& pair : tbl2) {
@@ -381,7 +405,16 @@ namespace Amara {
         table_metatable.set_function("is_array", [](sol::object tbl) {
             return lua_object_is_table_array(tbl);
         });
-        
+        table_metatable.set_function("contains", [](sol::table tbl, sol::object check) {
+            for (auto& kv : tbl) {
+                const sol::object& val = kv.second;
+                if (val == check) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
         lua["fatal_error"] = [](sol::variadic_args args) {
             fatal_error(lua_string_concat(args));
         };
