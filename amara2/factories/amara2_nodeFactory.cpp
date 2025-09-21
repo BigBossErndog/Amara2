@@ -138,7 +138,9 @@ namespace Amara {
                 
                 if (node) {
                     if (!desc.data.is_null()) node->configure(desc.data);
-                    if (desc.definition.valid()) node->luaConfigure(desc.definition);
+                    if (desc.definition.valid()) {
+                        node->luaConfigure(lua_deep_copy(gameProps->lua, desc.definition));
+                    }
 
                     return prepNode(node, key);
                 }
@@ -154,7 +156,7 @@ namespace Amara {
                         return prepNode(node, node->baseNodeID);
                     }
                 }
-                else if (String::endsWith(script_path, ".amara")) {
+                else if (String::endsWith(script_path, ".amara") || String::endsWith(script_path, ".json")) {
                     NodeDescriptor desc;
                     nlohmann::json data = gameProps->system->readJSON(script_path);
                     desc.data = data;
@@ -437,6 +439,35 @@ namespace Amara {
             }
         };
         props[sol::metatable_key] = props_meta;
+
+        proxy = gameProps->lua.create_table();
+        
+        sol::table proxy_meta = gameProps->lua.create_table();
+        
+        proxy_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+            if (key.is<std::string>() && value.is<sol::function>()) {
+                this->setFunction(key.as<std::string>(), value.as<sol::function>());
+            }
+            else {
+                this->props[key] = value;
+            }
+        };
+        proxy_meta["__index"] = [this](sol::table tbl, sol::object key) -> sol::object {
+            sol::object value = this->props[key];
+            if (value.valid()) {
+                return value;
+            }
+            if (key.is<std::string>()) {
+                std::string key_str = key.as<std::string>();
+                if (this->funcs.hasFunction(key_str)) {
+                    return this->funcs.getFunction(key_str);
+                }
+                Amara::Node* node = this->getChild(key.as<std::string>());
+                if (node) return node->get_lua_object();
+            }
+            return this->luaobject.as<sol::table>()[key];
+        };
+        proxy[sol::metatable_key] = proxy_meta;
 
         return luaobject;
     }

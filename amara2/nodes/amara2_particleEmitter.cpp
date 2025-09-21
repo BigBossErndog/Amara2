@@ -63,6 +63,8 @@ namespace Amara {
         double spawn_timer = 0;
 
         bool spawning = false;
+        int spawnedCount = 0;
+        int end_particle = -1;
 
         ParticleEmitter(): Amara::Sprite() {
             set_base_node_id("ParticleEmitter");
@@ -345,6 +347,7 @@ namespace Amara {
                 if (!particle.in_use) {
                     particle.in_use = true;
                     initParticle(particle, new_config);
+                    spawnedCount += 1;
                     if (onSpawn.valid()) {
                         try {
                             onSpawn(sol::make_object(gameProps->lua, &particle));
@@ -358,91 +361,6 @@ namespace Amara {
                     if (amount <= -0) {
                         break;
                     }   
-                }
-            }
-        }
-
-        virtual void update(double deltaTime) override {
-            Amara::Sprite::update(deltaTime);
-
-            int spawn_count = 0;
-            if (spawning && spawnRate > 0) {
-                spawn_timer -= deltaTime;
-                while (spawn_timer <= 0) {
-                    spawn_timer += 1/spawnRate;
-                    spawn_count += 1;
-                }
-            }
-            else {
-                spawn_timer = 0;
-            }
-
-            sol::function onSpawn = funcs.getFunction("onParticleSpawn");
-            bool onUpdate_defined = funcs.hasFunction("onParticleUpdate");
-
-            for (auto it = particles.begin(); it != particles.end();) {
-                Particle& particle = *it;
-
-                if (!particle.in_use) {
-                    if (spawn_count == 0) {
-                        it++;
-                        continue;
-                    }
-                    else {
-                        spawn_count -= 1;
-                        particle.in_use = true;
-                        initParticle(particle, particle_config);
-                        if (onSpawn.valid()) {
-                            try {
-                                onSpawn(sol::make_object(gameProps->lua, &particle));
-                            }
-                            catch (const std::exception& e) {
-                                fatal_error(e.what());
-                                gameProps->breakWorld();
-                            }
-                        }
-                    }
-                }
-
-                it++;
-                particle.lifeTime += deltaTime;
-                if (particle.lifeTime >= particle.maxLifeTime) {
-                    particle.in_use = false;
-                    continue;
-                }
-
-                particle.pos += particle.velocity * deltaTime + particle.acceleration * deltaTime * deltaTime * 0.5f;
-                particle.velocity += particle.acceleration * deltaTime;
-                
-                if (particle.startX != invalid && particle.endX != invalid) {
-                    particle.pos.x = ease(particle.startX, particle.endX, particle.lifeTime / particle.maxLifeTime, easing); 
-                }
-                if (particle.startY != invalid && particle.endY != invalid) {
-                    particle.pos.y = ease(particle.startY, particle.endY, particle.lifeTime / particle.maxLifeTime, easing); 
-                }
-                
-                if (particle.startAlpha != invalid && particle.endAlpha != invalid) {
-                    particle.alpha = ease(particle.startAlpha, particle.endAlpha, particle.lifeTime / particle.maxLifeTime, easing); 
-                }
-
-                if (particle.end_scale_set) {
-                    particle.scale = Vector2(
-                        ease(particle.scale.x, particle.endScale.x, particle.lifeTime / particle.maxLifeTime, easing),
-                        ease(particle.scale.y, particle.endScale.y, particle.lifeTime / particle.maxLifeTime, easing)
-                    );
-                }
-
-                particle.rotation += particle.angularVelocity * deltaTime;
-
-                if (onUpdate_defined) {
-                    sol::function func = funcs.getFunction("onParticleUpdate");
-                    try {
-                        func(sol::make_object(gameProps->lua, &particle), deltaTime);
-                    }
-                    catch (const std::exception& e) {
-                        fatal_error(e.what());
-                        gameProps->breakWorld();
-                    }
                 }
             }
         }
@@ -593,9 +511,106 @@ namespace Amara {
         virtual void drawSelf(const Rectangle& v) override {
             if (image == nullptr) return;
 
-            for (auto& particle : particles) {
-                if (particle.in_use) drawParticle(v, particle);
+            double deltaTime = gameProps->deltaTime;
+
+            int spawn_count = 0;
+            if (spawning && spawnRate > 0) {
+                spawn_timer -= deltaTime;
+                while (spawn_timer <= 0) {
+                    spawn_timer += 1/spawnRate;
+                    spawn_count += 1;
+                }
             }
+            else {
+                spawn_timer = 0;
+            }
+
+            sol::function onSpawn = funcs.getFunction("onParticleSpawn");
+            bool onUpdate_defined = funcs.hasFunction("onParticleUpdate");
+            
+            int last_particle = -1;
+            bool spawn_new = false;
+            for (int i = 0; i < particles.size(); i++) {
+                if (i > end_particle && spawn_count == 0) break;
+                
+                Particle& particle = particles[i];
+                
+                spawn_new = false;
+
+                if (!particle.in_use) {
+                    if (spawn_count == 0) continue;
+                    else spawn_new = true;
+                }
+                else {
+                    if (particle.lifeTime >= particle.maxLifeTime) {
+                        spawnedCount -= 1;
+                        if (spawn_count > 0) {
+                            spawn_new = true;
+                        }
+                        else {
+                            particle.in_use = false;
+                            continue;
+                        }
+                    }
+                }
+
+                if (spawn_new) {
+                    spawnedCount += 1;
+                    spawn_count -= 1;
+                    particle.in_use = true;
+                    initParticle(particle, particle_config);
+                    if (onSpawn.valid()) {
+                        try {
+                            onSpawn(sol::make_object(gameProps->lua, &particle));
+                        }
+                        catch (const std::exception& e) {
+                            fatal_error(e.what());
+                            gameProps->breakWorld();
+                        }
+                    }
+                }
+
+                particle.pos += particle.velocity * deltaTime + particle.acceleration * deltaTime * deltaTime * 0.5f;
+                particle.velocity += particle.acceleration * deltaTime;
+                
+                if (particle.startX != invalid && particle.endX != invalid) {
+                    particle.pos.x = ease(particle.startX, particle.endX, particle.lifeTime / particle.maxLifeTime, easing); 
+                }
+                if (particle.startY != invalid && particle.endY != invalid) {
+                    particle.pos.y = ease(particle.startY, particle.endY, particle.lifeTime / particle.maxLifeTime, easing); 
+                }
+                
+                if (particle.startAlpha != invalid && particle.endAlpha != invalid) {
+                    particle.alpha = ease(particle.startAlpha, particle.endAlpha, particle.lifeTime / particle.maxLifeTime, easing); 
+                }
+
+                if (particle.end_scale_set) {
+                    particle.scale = Vector2(
+                        ease(particle.scale.x, particle.endScale.x, particle.lifeTime / particle.maxLifeTime, easing),
+                        ease(particle.scale.y, particle.endScale.y, particle.lifeTime / particle.maxLifeTime, easing)
+                    );
+                }
+
+                particle.rotation += particle.angularVelocity * deltaTime;
+
+                if (onUpdate_defined) {
+                    sol::function func = funcs.getFunction("onParticleUpdate");
+                    try {
+                        func(sol::make_object(gameProps->lua, &particle), deltaTime);
+                    }
+                    catch (const std::exception& e) {
+                        fatal_error(e.what());
+                        gameProps->breakWorld();
+                    }
+                }
+
+                last_particle = i;
+
+                drawParticle(v, particle);
+
+                particle.lifeTime += deltaTime;
+            }
+            end_particle = last_particle;
         }
 
         static void bind_lua(sol::state& lua) {
@@ -606,7 +621,8 @@ namespace Amara {
                 "poolSize", sol::readonly(&Amara::ParticleEmitter::poolSize),
                 "spawnRate", &Amara::ParticleEmitter::spawnRate,
                 "spawning", &Amara::ParticleEmitter::spawning,
-                "burst", &Amara::ParticleEmitter::burst
+                "burst", &Amara::ParticleEmitter::burst,
+                "spawnedCount", sol::readonly(&Amara::ParticleEmitter::spawnedCount)
             );
         }
     };

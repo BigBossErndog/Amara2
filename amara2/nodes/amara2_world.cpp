@@ -86,6 +86,8 @@ namespace Amara {
         float right = 0;
         float top = 0;
         float bottom = 0;
+
+        bool errorCapturing = false;
         
         World(): Node() {
             set_base_node_id("World");
@@ -226,6 +228,8 @@ namespace Amara {
             window_data["graphics"] = graphics_to_string(graphics);
             window_data["backgroundColor"] = backgroundColor.toJSON();
 
+            window_data["errorCapturing"] = errorCapturing;
+
             data["basePath"] = base_dir_path;
             data["entryScenes"] = entryScenes;
 
@@ -359,6 +363,8 @@ namespace Amara {
             if (json_has(config, "x")) pos.x = config["x"];
             if (json_has(config, "y")) pos.y = config["y"];
             if (json_has(config, "pos")) pos = config["pos"];
+
+            if (json_has(config, "errorCapturing")) errorCapturing = config["errorCapturing"];
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
@@ -372,7 +378,7 @@ namespace Amara {
                 base_dir_path = config["basePath"];
                 gameProps->system->setBasePath(base_dir_path);
             }
-
+            
             if (json_has(config, "scene")) {
                 entryScenes.push_back(config["scene"]);
             }
@@ -386,6 +392,9 @@ namespace Amara {
             }
             if (json_has(config, "backgroundColor")) {
                 backgroundColor = config["backgroundColor"];
+            }
+            if (json_has(config, "errorCapturing")) {
+                errorCapturing = config["errorCapturing"];
             }
 
             return this;

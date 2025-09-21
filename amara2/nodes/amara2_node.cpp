@@ -80,6 +80,8 @@ namespace Amara {
 
         Transition* transition = nullptr;
 
+        sol::table proxy;
+
         #ifdef AMARA_OPENGL
         ShaderProgram* shaderProgram = nullptr;
         #endif
@@ -868,6 +870,8 @@ namespace Amara {
                     }
                 ),
                 "props", &Node::props,
+                "get", sol::readonly(&Amara::Node::proxy),
+                "set", sol::readonly(&Amara::Node::proxy),
                 "func", sol::property([](Node& e) {
                     return e.funcs.getClassTable(e.nodeID);
                 }),

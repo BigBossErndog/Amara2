@@ -322,7 +322,9 @@ namespace Amara {
                 "reset", &StateMachine::reset,
                 "resetEvent", &StateMachine::resetEvent,
                 "inState", &StateMachine::inState,
-                "state", &StateMachine::state
+                "state", &StateMachine::state,
+                "currentState", sol::readonly(&StateMachine::currentState),
+                "lastState", sol::readonly(&StateMachine::lastState)
             );
 
             sol::usertype<Node> node_type = lua["Node"];

@@ -130,7 +130,7 @@ namespace Amara {
             if (json_has(config, "originPositionY")) {
                 origin.y = config["originPositionY"].get<float>() / (spritesheet ? frameHeight : textureHeight);
             }
-
+            
             if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
             if (json_has(config, "cropRight")) cropRight = config["cropRight"];
             if (json_has(config, "cropTop")) cropTop = config["cropTop"];
