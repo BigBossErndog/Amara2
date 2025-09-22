@@ -117,6 +117,7 @@ namespace Amara {
                     }
                 }
                 new_class_tbl["func"] = last_class_tbl;
+                new_class_tbl["get"] = last_class_tbl;
             }
 
             lastClass = className;

@@ -871,7 +871,6 @@ namespace Amara {
                 ),
                 "props", &Node::props,
                 "get", sol::readonly(&Amara::Node::proxy),
-                "set", sol::readonly(&Amara::Node::proxy),
                 "func", sol::property([](Node& e) {
                     return e.funcs.getClassTable(e.nodeID);
                 }),

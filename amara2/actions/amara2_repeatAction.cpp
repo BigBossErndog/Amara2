@@ -17,6 +17,7 @@ namespace Amara {
                 nlohmann::json& delay = config["delay"];
                 if (delay.is_boolean()) {
                     if (delay.get<bool>()) counter = interim;
+                    else counter = 0;
                 }
                 else if (delay.is_number()) {
                     counter = delay.get<double>();
