@@ -343,7 +343,8 @@ namespace Amara {
             }
 
             amount = floor(amount);
-            for (Particle& particle: particles) {
+            for (int i = 0; i < amount; i++) {
+                Amara::Particle& particle = particles[i];
                 if (!particle.in_use) {
                     particle.in_use = true;
                     initParticle(particle, new_config);
@@ -358,7 +359,9 @@ namespace Amara {
                         }
                     }
                     amount -=1;
-                    if (amount <= -0) {
+                    if (i > end_particle) end_particle = i;
+
+                    if (amount <= 0) {
                         break;
                     }   
                 }

@@ -442,6 +442,9 @@ namespace Amara {
                 y = config[1];
             }
         }
+        else {
+            fatal_error("Error: Invalid Vector2 assignment.");
+        }
         return *this;
     }
 

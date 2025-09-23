@@ -208,6 +208,9 @@ namespace Amara {
                     x = config[0];
                     y = config[1];
                 }
+                else {
+                    fatal_error("Error: Invalid Vector3 assignment.");
+                }
             }
             else if (config.is_number()) {
                 x = y = z = config.get<float>();
@@ -216,6 +219,12 @@ namespace Amara {
                 if (json_has(config, "x")) x = config["x"];
                 if (json_has(config, "y")) y = config["y"];
                 if (json_has(config, "z")) z = config["z"];
+                if (!json_has_any(config, "x", "y", "z")) {
+                    fatal_error("Error: Invalid Vector3 assignment.");
+                }
+            }
+            else {
+                fatal_error("Error: Invalid Vector3 assignment.");
             }
             
             return *this;
@@ -311,6 +320,9 @@ namespace Amara {
                     x = config[0];
                     y = config[1];
                 }
+                else {
+                    fatal_error("Error: Invalid Vector4 assignment.");
+                }
             }
             else if (config.is_number()) {
                 x = y = z = w = config.get<float>();
@@ -320,6 +332,12 @@ namespace Amara {
                 if (json_has(config, "y")) y = config["y"];
                 if (json_has(config, "z")) z = config["z"];
                 if (json_has(config, "w")) w = config["w"];
+                if (!json_has_any(config, "x", "y", "z", "w")) {
+                    fatal_error("Error: Invalid Vector4 assignment.");
+                }
+            }
+            else {
+                fatal_error("Error: Invalid Vector4 assignment.");
             }
             return *this;
         }

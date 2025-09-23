@@ -49,10 +49,17 @@ namespace Amara {
             }
         }
 
+        void setInterim(double _interim) {
+            interim = _interim;
+            if (counter > interim) {
+                counter = interim;
+            }
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<RepeatAction>("RepeatAction",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
-                "interim", &RepeatAction::interim,
+                "interim", sol::property([](RepeatAction& ra) -> double { return ra.interim; }, [](RepeatAction& ra, double value) { ra.setInterim(value); }),
                 "repeats", &RepeatAction::repeats
             );
         }

@@ -455,7 +455,18 @@ namespace Amara {
         proxy_meta["__index"] = [this](sol::table tbl, sol::object key) -> sol::object {
             sol::object value = this->props[key];
             if (value.valid()) {
-                return value;
+                if (value.is<Amara::Node>()) {
+                    Amara::Node& node = value.as<Amara::Node&>();
+                    if (node.destroyed) {
+                        this->props[key] = sol::nil;
+                    }
+                    else {
+                        return value;
+                    }
+                }
+                else {
+                    return value;
+                }
             }
             if (key.is<std::string>()) {
                 std::string key_str = key.as<std::string>();
@@ -464,7 +475,7 @@ namespace Amara {
                     return class_table_obj.as<sol::table>()[key_str];
                 }
                 Amara::Node* node = this->getChild(key.as<std::string>());
-                if (node) return node->get_lua_object();
+                if (node && !node->destroyed) return node->get_lua_object();
             }
             return this->luaobject.as<sol::table>()[key];
         };

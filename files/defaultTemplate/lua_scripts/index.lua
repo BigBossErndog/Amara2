@@ -19,7 +19,7 @@ Creator:createWorld({
     end,
 
     onCreate = function(self)
-        self:createChild("Text", {
+        self.get.myText = self:createChild("Text", {
             font = "defaultFont",
             text = "Hello World!"
         })

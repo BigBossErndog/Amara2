@@ -8,6 +8,14 @@ namespace Amara {
         return json_has(data, first_key) && (json_has(data, other_keys) && ...);
     }
 
+    template<typename... Keys>
+    bool json_has_any(const nlohmann::json& data, const std::string& first_key, const Keys&... other_keys) {
+        if (json_has(data, first_key)) {
+            return true;
+        }
+        return (json_has(data, other_keys) || ...);
+    } 
+
     bool json_is(const nlohmann::json& data, std::string key) {
         return json_has(data, key) && data[key].is_boolean() && data[key];
     }

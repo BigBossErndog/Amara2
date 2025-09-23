@@ -82,6 +82,9 @@ namespace Amara {
                     x = config[0];
                     y = config[1];
                 }
+                else {
+                    fatal_error("Error: Invalid Rectangle assignment.");
+                }
             }
             else if (config.is_object()) {
                 if (json_has(config, "x")) x = config["x"];
@@ -92,6 +95,13 @@ namespace Amara {
                 
                 if (json_has(config, "h")) h = config["h"];
                 else if (json_has(config, "height")) h = config["height"];
+
+                if (!json_has_any(config, "w", "h", "width", "height")) {
+                    fatal_error("Error: Invalid Rectangle assignment.");
+                }
+            }
+            else {
+                fatal_error("Error: Invalid Rectangle assignment.");
             }
             return *this;
         }
@@ -164,12 +174,18 @@ namespace Amara {
                     p3 = Vector2(config[4], config[5]);
                     p4 = Vector2(config[6], config[7]);
                 }
+                else {
+                    fatal_error("Error: Invalid Quad assignment.");
+                }
             }
             else if (config.is_object()) {
                 if (json_has(config, "p1")) p1 = config["p1"];
                 if (json_has(config, "p2")) p2 = config["p2"];
                 if (json_has(config, "p3")) p3 = config["p3"];
                 if (json_has(config, "p4")) p4 = config["p4"];
+            }
+            else {
+                fatal_error("Error: Invalid Quad assignment.");
             }
             return *this;
         }
@@ -224,12 +240,18 @@ namespace Amara {
                     x = config[0];
                     y = config[1];
                 }
+                else {
+                    fatal_error("Error: Invalid Circle assignment.");
+                }
             }
             else if (config.is_object()) {
                 if (json_has(config, "x")) x = config["x"];
                 if (json_has(config, "y")) y = config["y"];
                 if (json_has(config, "r")) radius = config["r"];
                 else if (json_has(config, "radius")) radius = config["radius"];
+            }
+            else {
+                fatal_error("Error: Invalid Circle assignment.");
             }
             return *this;
         }
@@ -262,11 +284,21 @@ namespace Amara {
                     p2 = config[1];
                     p3 = config[2];
                 }
+                else {
+                    fatal_error("Error: Invalid Triangle assignment.");
+                }
             }
             else if (config.is_object()) {
                 if (json_has(config, "p1")) p1 = config["p1"];
                 if (json_has(config, "p2")) p2 = config["p2"];
                 if (json_has(config, "p3")) p3 = config["p3"];
+                if (!json_has_any(config, "p1", "p2", "p3")) {
+                    fatal_error("Error: Invalid Triangle assignment.");
+                }
+            }
+            else {
+                fatal_error("Error: Invalid Triangle assignment.");
+        
             }
             return *this;
         }

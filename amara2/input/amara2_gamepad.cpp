@@ -55,6 +55,8 @@ namespace Amara {
 
     class Gamepad {
     public:
+        int index = 0;
+
         SDL_Gamepad* gamepad = nullptr;
         SDL_JoystickID gamepadID = 0;
 
@@ -351,6 +353,11 @@ namespace Amara {
             );
             
             lua.new_usertype<Amara::Gamepad>("Gamepad",
+                "active", sol::readonly(&Amara::Gamepad::active),
+                "gamepadID", sol::readonly(&Amara::Gamepad::gamepadID),
+                "index", sol::property([](Amara::Gamepad& g) {
+                    return g.index + 1;
+                }),
                 "isDown", &Amara::Gamepad::isDown,
                 "justPressed", &Amara::Gamepad::justPressed,
                 "justReleased", &Amara::Gamepad::justReleased,
@@ -374,6 +381,13 @@ namespace Amara {
 
         int connectedGamepadsCount = 0;
 
+        sol::function onGamepadConnected;
+        sol::function onGamepadDisconnected;
+
+        GamepadManager() {
+            gamepads.resize(8);
+        }
+
         void connectGamepad(SDL_JoystickID _gamepadID) {
             for (int i = 0; i < gamepads.size(); i++) {
                 Amara::Gamepad& gamepad = gamepads[i];
@@ -383,6 +397,8 @@ namespace Amara {
                     if (gamepad.active) {
                         gamepadMap[_gamepadID] = i;
                         connectedGamepadsCount += 1;
+                        if (onGamepadConnected.valid()) onGamepadConnected(gamepad);
+                        debug_log("Note: Gamepad connected. (ID: ", _gamepadID, ")");
                     }
                     return;
                 }
@@ -396,17 +412,20 @@ namespace Amara {
                 gamepadMap[_gamepadID] = gamepads.size()-1;
                 connectedGamepadsCount += 1;
             }
+            if (onGamepadConnected.valid()) onGamepadConnected(gamepad);
+            debug_log("Note: Gamepad connected. (ID: ", _gamepadID, ")");
         }
 
         void disconnectGamepad(SDL_JoystickID _gamepadID) {
             for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
                 if (it->gamepadID == _gamepadID) {
                     it->active = false;
+                    connectedGamepadsCount -= 1;
+                    if (onGamepadDisconnected.valid()) onGamepadDisconnected(*it);
                     it->reset();
                     if (gamepadMap.find(_gamepadID) != gamepadMap.end()) {
                         gamepadMap.erase(_gamepadID);
                     }
-                    connectedGamepadsCount -= 1;
                     debug_log("Note: Gamepad disconnected. (ID: ", _gamepadID, ")");
                     return;
                 }
@@ -480,7 +499,11 @@ namespace Amara {
             Amara::Gamepad::bind_lua(lua);
             
             lua.new_usertype<Amara::GamepadManager>("GamepadManager",
-                "getGamepad", &Amara::GamepadManager::getGamepad,
+                "onGamepadConnected", &Amara::GamepadManager::onGamepadConnected,
+                "onGamepadDisconnected", &Amara::GamepadManager::onGamepadDisconnected,
+                "getGamepad", [](Amara::GamepadManager& manager, int index) {
+                    return manager.getGamepad(index - 1);
+                },
                 "count", sol::readonly(&Amara::GamepadManager::connectedGamepadsCount),
                 "isDown", &Amara::GamepadManager::isDown,
                 "justPressed", &Amara::GamepadManager::justPressed,

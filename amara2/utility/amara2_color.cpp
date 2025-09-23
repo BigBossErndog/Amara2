@@ -136,6 +136,9 @@ namespace Amara {
                         b = std::stoi(color_str.substr(4, 2), nullptr, 16);
                         a = std::stoi(color_str.substr(6, 2), nullptr, 16);
                     }
+                    else {
+                        fatal_error("Error: Invalid color format: " + color_str);
+                    }
                 }
                 else if (String::equal(color_str, "white")) {
                     r = 255; g = 255; b = 255; a = 255;
@@ -165,7 +168,7 @@ namespace Amara {
                     r = 0; g = 0; b = 0; a = 0;
                 }
                 else {
-                    r = 0; g = 0; b = 0; a = 255;
+                    fatal_error("Error: Invalid color: " + color_str);
                 }
             }
             else if (config.is_object()) {
@@ -177,6 +180,12 @@ namespace Amara {
                 else b = 0;
                 if (json_has(config, "a")) a = config["a"];
                 else a = 255;
+                if (!json_has_any(config, "r", "g", "b", "a")) {
+                    fatal_error("Error: Invalid Color assignment.");
+                }
+            }
+            else {
+                fatal_error("Error: Invalid Color assignment.");
             }
             return *this;
         }

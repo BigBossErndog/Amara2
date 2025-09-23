@@ -202,6 +202,7 @@ namespace Amara {
     sol::table lua_shallow_copy(sol::state& lua, sol::table tbl) {
         if (tbl.is<sol::userdata>()) return tbl;
         if (!tbl.is<sol::table>()) return tbl;
+        
         sol::table copy = lua.create_table();
         for (auto& pair : tbl) {
             copy[pair.first] = pair.second;
@@ -348,11 +349,17 @@ namespace Amara {
         lua.set_function("object_to_string", &Amara::lua_to_string);
         
         sol::table string_metatable = lua["string"];
-        string_metatable.set_function("starts_with", [](std::string self, std::string check) -> bool {
-            return String::startsWith(self, check);
+        string_metatable.set_function("starts_with", [](sol::object self, sol::object check) -> bool {
+            if (!self.is<std::string>() || !check.is<std::string>()) {
+                fatal_error("Error: string.starts_with() expected 2 string arguments.");
+            }
+            return String::startsWith(self.as<std::string>(), check.as<std::string>());
         });
-        string_metatable.set_function("ends_with", [](std::string self, std::string check) -> bool {
-            return String::endsWith(self, check);
+        string_metatable.set_function("ends_with", [](sol::object self, sol::object check) -> bool {
+            if (!self.is<std::string>() || !check.is<std::string>()) {
+                fatal_error("Error: string.ends_with() expected 2 string arguments.");
+            }
+            return String::endsWith(self.as<std::string>(), check.as<std::string>());
         });
         string_metatable.set_function("contains", [](std::string self, std::string check) -> bool {
             return String::contains(self, check);
@@ -364,10 +371,18 @@ namespace Amara {
         });
 
         sol::table math_metatable = lua["math"];
-        math_metatable.set_function("round", [](double num) -> int {
-            return std::round(num);
+        math_metatable.set_function("round", [](sol::object num) -> int {
+            if (!num.is<double>() && !num.is<int>()) {
+                fatal_error("Error: math.round() expected a number argument.");
+            }
+            return std::round(num.as<double>());
         });
-        math_metatable.set_function("hypotenuse", [](double a, double b) -> int {
+        math_metatable.set_function("hypotenuse", [](sol::object oa, sol::object ob) {
+            if ((!oa.is<double>() && !oa.is<int>()) || (!ob.is<double>() && !ob.is<int>())) {
+                fatal_error("Error: math.hypotenuse() expected 2 number arguments.");
+            }
+            double a = oa.as<double>();
+            double b = ob.as<double>();
             return std::sqrt(a * a + b * b);
         });
         
@@ -380,6 +395,9 @@ namespace Amara {
             return lua_deep_copy(lua, tbl);
         });
         table_metatable.set_function("append", [](sol::table tbl1, sol::table tbl2) {
+            if (!tbl1.is<sol::table>() || !tbl2.is<sol::table>()) {
+                fatal_error("Error: table.append() expected 2 table arguments.");
+            }
             int len = tbl1.size();
             for (auto& pair : tbl2) {
                 tbl1[len + 1] = pair.second;
@@ -387,6 +405,9 @@ namespace Amara {
             return tbl1;
         });
         table_metatable.set_function("merge", [&lua](sol::table t1, sol::table t2) {
+            if (!t1.is<sol::table>() || !t2.is<sol::table>()) {
+                fatal_error("Error: table.merge() expected 2 table arguments.");
+            }
             sol::table new_table = lua.create_table();
             for (auto& it: t1) {
                 new_table[it.first] = it.second;
@@ -397,6 +418,9 @@ namespace Amara {
             return new_table;
         });
         table_metatable.set_function("update", [](sol::table t1, sol::table t2) {
+            if (!t1.is<sol::table>() || !t2.is<sol::table>()) {
+                fatal_error("Error: table.update() expected 2 table arguments.");
+            }
             for (auto& it: t2) {
                 t1[it.first] = it.second;
             }
@@ -406,6 +430,10 @@ namespace Amara {
             return lua_object_is_table_array(tbl);
         });
         table_metatable.set_function("contains", [](sol::table tbl, sol::object check) {
+            if (!tbl.is<sol::table>()) {
+                fatal_error("Error: table.contains() expected a table argument.");
+            }
+
             for (auto& kv : tbl) {
                 const sol::object& val = kv.second;
                 if (val == check) {
@@ -413,6 +441,27 @@ namespace Amara {
                 }
             }
             return false;
+        });
+        table_metatable.set_function("shuffle", [&lua](sol::object obj) {
+            if (!obj.is<sol::table>()) {
+                fatal_error("Error: table.shuffle() expected a table argument.");
+            }
+            sol::table t = obj.as<sol::table>();
+
+            std::vector<sol::object> elems;
+            for (std::size_t i = 1; i <= t.size(); ++i) {
+                elems.push_back(t.get<sol::object>(i));
+            }
+
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::shuffle(elems.begin(), elems.end(), gen);
+
+            sol::table result = lua.create_table();
+            for (const auto& elem : elems) {
+                result[result.size() + 1] = elem;
+            }
+            return result;
         });
 
         lua["fatal_error"] = [](sol::variadic_args args) {
