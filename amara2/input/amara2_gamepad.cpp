@@ -431,7 +431,7 @@ namespace Amara {
                 }
             }
         }
-
+        
         Amara::Gamepad* getGamepad(int index) {
             if (index >= 0 && index < gamepads.size()) {
                 return &gamepads[index];
