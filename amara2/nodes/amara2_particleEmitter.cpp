@@ -85,7 +85,20 @@ namespace Amara {
                     easing = particle_config["ease"];
                 }
                 if (json_has(particle_config, "poolSize")) {
-                    poolSize = particle_config["poolSize"];
+                    int _poolSize = particle_config["poolSize"];
+                    if (_poolSize != poolSize) {
+                        if (poolSize > _poolSize) {
+                            for (int i = poolSize - 1; i >= _poolSize; i--) {
+                                Amara::Particle& particle = particles[i];
+                                if (particle.in_use) {
+                                    particle.in_use = false;
+                                    spawnedCount -= 1;
+                                }
+                            }
+                        }
+                        poolSize = _poolSize;
+                        particles.resize(poolSize);
+                    }
                 }
                 if (json_has(particle_config, "spawnRate")) {
                     spawnRate = particle_config["spawnRate"];
@@ -329,9 +342,7 @@ namespace Amara {
 
         virtual void create() override {
             Amara::Sprite::create();
-            for (int i = 0; i < poolSize; i++) {
-                particles.push_back(Particle());
-            }
+            particles.resize(poolSize);
         }
 
         void burst(double amount, sol::object lua_config) {

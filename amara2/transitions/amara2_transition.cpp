@@ -93,9 +93,12 @@ namespace Amara {
                 if (destroy_past) prev_parent->destroy();
                 else if (just_deactivate) prev_parent->deactivate();
             }
+            
+            if (funcs.hasFunction("onTransition")) {
+                if (next_node) funcs.callFunction(next_node, "onTransition", get_lua_object());
+                else funcs.callFunction(this, "onTransition", get_lua_object());
+            }
         }
-
-        
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::Transition>("Transition",
