@@ -117,8 +117,12 @@ namespace Amara {
             }
 
             if (sm.once()) doTransition();
+            if (sm.event()) {
+                if (transitionFinished()) {
+                    sm.nextEvent();
+                }
+            }
             if (sm.once()) bringToFront();
-            sm.wait(0.1);
 
             if (sm.event()) {
                 alpha -= deltaTime / fadeOut;

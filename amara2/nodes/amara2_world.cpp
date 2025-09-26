@@ -1363,6 +1363,10 @@ namespace Amara {
         }
     };
 
+    bool Amara::Transition::checkWorld(Amara::Node* node) {
+        return world == node;
+    }
+
     void GameProps::breakWorld() {
         if (world) world->destroy();
         if (error_code == 0) error_code = 1;

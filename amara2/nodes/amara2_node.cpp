@@ -916,6 +916,9 @@ namespace Amara {
                 "destroyChildren", &Node::destroyChildren,
                 "sortable", &Node::sortable,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
+                "forceSortChildren", [](Amara::Node& n) {
+                    n.sortChildren();
+                },
                 "bringToFront", &Node::bringToFront,
                 "sendToBack", &Node::sendToBack,
                 "switchParent", &Node::switchParent,
@@ -1073,10 +1076,15 @@ namespace Amara {
     
     struct sort_entities_by_depth {
 		inline bool operator() (Amara::Node* node1, Amara::Node* node2) {
-			if (node1 == nullptr) return false;
-			if (node2 == nullptr) return false;
-            if (node1->destroyed || !node1->sortable) return false;
-			if (node2->destroyed || !node2->sortable) return false;
+			if (node1 == nullptr || node1->destroyed) return false;
+			if (node2 == nullptr || node2->destroyed) return true;
+
+			if (node1->sortable != node2->sortable) {
+				return node1->sortable;
+			}
+
+			if (!node1->sortable) return false;
+
             return (node1->depth < node2->depth);
 		}
 	};

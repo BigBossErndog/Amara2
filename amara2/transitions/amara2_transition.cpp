@@ -57,13 +57,11 @@ namespace Amara {
             }
             return Amara::Action::luaConfigure(key, val);
         }
+
+        bool checkWorld(Amara::Node* node);
         
         virtual void doTransition() {
             Amara::Node* prev_parent = parent;
-
-            if (prev_parent) {
-                prev_parent->transition = nullptr;
-            }
             
             if (!next_key.empty()) {
                 if (parent && parent->parent) {
@@ -79,32 +77,51 @@ namespace Amara {
                 next_node->transition = this;
                 if (interim == 0) {
                     next_node->activate();
+                    switchParent(next_node);
                 }
                 else {
                     Amara::DelayNode* interimNode = parent->parent->createChild("DelayNode")->as<Amara::DelayNode*>();
+                    interimNode->actor = this;
                     interimNode->interim = interim;
                     interimNode->transition = this;
+                    interimNode->passChildren = true;
                     interimNode->setNode(next_node);
+                    switchParent(interimNode);
+
+                    if (funcs.hasFunction("onTransition")) {
+                        interimNode->whenDone(funcs.getFunction("onTransition"));
+                    }
                 }
-                switchParent(next_node);
             }
 
-            if (next_node != prev_parent) {
-                if (destroy_past) prev_parent->destroy();
-                else if (just_deactivate) prev_parent->deactivate();
+            if (prev_parent && next_node != prev_parent) {
+                prev_parent->transition = nullptr;
+                if (!checkWorld(prev_parent)) {
+                    if (destroy_past) prev_parent->destroy();
+                    else if (just_deactivate) prev_parent->deactivate();
+                }
             }
-            
-            if (funcs.hasFunction("onTransition")) {
-                if (next_node) funcs.callFunction(next_node, "onTransition", get_lua_object());
-                else funcs.callFunction(this, "onTransition", get_lua_object());
+        }
+
+        bool transitionFinished() {
+            return parent == next_node;
+        }
+
+        virtual sol::object complete() override {
+            if (completed) return get_lua_object();
+            if (next_node) {
+                next_node->transition = nullptr;
             }
+            return Amara::Action::complete();
         }
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::Transition>("Transition",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "doTransition", &Amara::Transition::doTransition,
-                "interim", &Amara::Transition::interim
+                "transitionFinished", &Amara::Transition::transitionFinished,
+                "interim", &Amara::Transition::interim,
+                "complete", &Amara::Transition::complete
             );
 
             sol::usertype<Amara::Node> node_type = lua["Node"];

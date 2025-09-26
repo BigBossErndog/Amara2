@@ -151,7 +151,10 @@ namespace Amara {
         }
         sol::function getFunction(std::string className, std::string funcName) {
             if (funcMap.find(className) != funcMap.end()) {
-                return funcMap[className].getFunction(funcName);
+                FunctionMap& found_map = funcMap[className];
+                if (found_map.hasFunction(funcName)) {
+                    return found_map.getFunction(funcName);
+                }
             }
             if (inheritance_map.find(className) != inheritance_map.end()) {
                 return getFunction(inheritance_map[className], funcName);

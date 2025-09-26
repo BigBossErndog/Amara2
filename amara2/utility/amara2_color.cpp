@@ -69,6 +69,14 @@ namespace Amara {
                 a + other.a
             );
         }
+        Amara::Color operator- (const Amara::Color& other) const {
+            return Amara::Color(
+                r - other.r,
+                g - other.g,
+                b - other.b,
+                a - other.a
+            );
+        }
         
         explicit operator std::string() const {
             return "Color(" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + ", " + std::to_string(a) + ")";
@@ -224,7 +232,7 @@ namespace Amara {
 
     void Color::bind_lua(sol::state& lua) {
         sol::usertype<Color> color_type = lua.new_usertype<Color>("Color",
-            sol::constructors<Color(Uint8, Uint8, Uint8, Uint8), Color(Uint8, Uint8, Uint8)>(),
+            sol::constructors<Color(Uint8, Uint8, Uint8, Uint8), Color(Uint8, Uint8, Uint8), Color(sol::object)>(),
             "r", &Color::r,
             "g", &Color::g,
             "b", &Color::b,
@@ -234,7 +242,8 @@ namespace Amara {
                 sol::resolve<Amara::Color(const Amara::Color&) const>(&Amara::Color::operator*),
                 sol::resolve<Amara::Color(float) const>(&Amara::Color::operator*)
             ),
-            sol::meta_function::addition, &Amara::Color::operator+
+            sol::meta_function::addition, &Amara::Color::operator+,
+            sol::meta_function::subtraction, &Amara::Color::operator-
         );
 
         lua.new_enum("Colors",

@@ -28,6 +28,19 @@ namespace Amara {
         float w = 0;
         float h = 0;
 
+        float diagonal() {
+            return sqrt(w*w + h*h);
+        }
+        float area() {
+            return w * h;
+        }
+        float aspectRatio() {
+            return w / h;
+        }
+        float perimeter() {
+            return 2 * (w + h);
+        }
+
         bool operator==(const Rectangle& other) const {
             return x == other.x && y == other.y && w == other.w && h == other.h;
         }
@@ -796,7 +809,10 @@ namespace Amara {
             "string", [](const Rectangle& r) {
                 return std::string(r);
             },
-            "center", sol::property(&Rectangle::getCenter)
+            "center", sol::property(&Rectangle::getCenter),
+            "diagonal", sol::property(&Rectangle::diagonal),
+            "area", sol::property(&Rectangle::area),
+            "perimeter", sol::property(&Rectangle::perimeter)
         );
 
         lua.new_usertype<Quad>("Quad",

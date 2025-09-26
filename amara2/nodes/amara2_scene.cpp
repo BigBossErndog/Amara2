@@ -106,13 +106,13 @@ namespace Amara {
                 cameras.push_back(cam);
 
                 if (!node->actuated) {
-                node->preload();
-                if (!node->destroyed && node->finishedLoading()) {
-                    node->create();
-                    node->actuated = true;
+                    node->preload();
+                    if (!node->destroyed && node->finishedLoading()) {
+                        node->create();
+                        node->actuated = true;
+                    }
+                    return node;
                 }
-                return node;
-            }
             }
             return Amara::Node::addChild(node);
         }

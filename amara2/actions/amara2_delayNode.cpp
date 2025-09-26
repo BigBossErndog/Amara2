@@ -3,6 +3,7 @@ namespace Amara {
     public:
         double interim = 0;
         double progress = 0;
+        bool passChildren = false;
 
         Amara::Node* next_node = nullptr;
 
@@ -40,6 +41,11 @@ namespace Amara {
             Amara::Action::act(deltaTime);
             progress += deltaTime/interim;
             if (progress >= 1) {
+                if (passChildren) {
+                    for (Amara::Node* child: children) {
+                        child->switchParent(next_node);
+                    }
+                }
                 next_node->activate();
                 complete();
             }
