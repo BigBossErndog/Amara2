@@ -16,6 +16,7 @@ namespace Amara {
 
         int loopStart = 0;
         int loopEnd = 0;
+        int totalFrames = 0;
 
         AudioAsset(Amara::GameProps* _gameProps): Amara::Asset(_gameProps) {
             type = AssetEnum::Audio;
@@ -69,7 +70,7 @@ namespace Amara {
                 channels = spec.channels;
                 SDL_free(buffer);
 
-                loopEnd = samples.size();
+                loopEnd = (samples.size() / channels) - 1;
 
                 SDL_IOStream* rw = SDL_IOFromMem((void*)fileContents.c_str(), fileContents.length());
                 if (!rw) {
@@ -89,7 +90,7 @@ namespace Amara {
                         Uint32 data_offset = 28;
                         if (size >= data_offset + 8) {
                             SDL_SeekIO(rw, data_offset, SDL_IO_SEEK_CUR);
-
+                            
                             Uint32 start = 0, end = 0;
                             if (SDL_ReadIO(rw, &start, 4) != 4 || SDL_ReadIO(rw, &end, 4) != 4) {
                                 debug_log("Error: Failed to read loop start/end values.");
@@ -136,18 +137,24 @@ namespace Amara {
                 stb_vorbis_info info = stb_vorbis_get_info(v);
                 sampleRate = info.sample_rate;
                 channels = info.channels;
-                int count = stb_vorbis_stream_length_in_samples(v) * channels;
-                samples.resize(count);
-                stb_vorbis_get_samples_float_interleaved(v, channels, samples.data(), count);
-
-                loopEnd = samples.size();
 
                 stb_vorbis_comment comments = stb_vorbis_get_comment(v);
                 for (int i = 0; i < comments.comment_list_length; ++i) {
-                    std::string c = comments.comment_list[i];
+                    std::string c = String::toUpper(comments.comment_list[i]);
                     if (String::startsWith(c, "LOOPSTART=")) loopStart = std::stoi(c.substr(10));
                     if (String::startsWith(c, "LOOPEND=")) loopEnd = std::stoi(c.substr(8));
                 }
+
+                int startSample = 0;
+                stb_vorbis_seek_start(v);
+
+                totalFrames = stb_vorbis_stream_length_in_samples(v);
+                samples.resize(totalFrames * channels);
+                int actual_frames = stb_vorbis_get_samples_float_interleaved(v, channels, samples.data(), totalFrames * channels);
+                samples.resize(actual_frames * channels);
+                totalFrames = actual_frames;
+                
+                if (loopEnd == 0) loopEnd = (samples.size() / channels);
 
                 stb_vorbis_close(v);
 
@@ -161,19 +168,19 @@ namespace Amara {
                 mp3dec_ex_t dec;
                 if (mp3dec_ex_open_buf(&dec, (const uint8_t*)fileContents.c_str(), fileContents.length(), MP3D_SEEK_TO_SAMPLE)) return false;
 
-                int count = dec.samples * dec.info.channels;
+                int count = dec.samples;
                 std::vector<short> temp(count);
-                mp3dec_ex_read(&dec, temp.data(), count);
+                size_t samples_read = mp3dec_ex_read(&dec, temp.data(), count);
 
-                samples.resize(count);
-                for (int i = 0; i < count; ++i)
+                samples.resize(samples_read);
+                for (size_t i = 0; i < samples_read; ++i)
                     samples[i] = temp[i] / 32768.0f;
 
                 sampleRate = dec.info.hz;
                 channels = dec.info.channels;
                 mp3dec_ex_close(&dec);
 
-                loopEnd = samples.size();
+                loopEnd = samples.size() / channels;
 
                 audioType = AudioFileType::MP3;
                 return true;

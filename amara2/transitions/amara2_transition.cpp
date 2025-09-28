@@ -87,10 +87,6 @@ namespace Amara {
                     interimNode->passChildren = true;
                     interimNode->setNode(next_node);
                     switchParent(interimNode);
-
-                    if (funcs.hasFunction("onTransition")) {
-                        interimNode->whenDone(funcs.getFunction("onTransition"));
-                    }
                 }
             }
 
@@ -104,7 +100,7 @@ namespace Amara {
         }
 
         bool transitionFinished() {
-            return parent == next_node;
+            return parent == next_node && (next_node == nullptr || next_node->actuated);
         }
 
         virtual sol::object complete() override {

@@ -16,7 +16,7 @@ namespace Amara {
         std::vector<float> stream_chunk;
         SDL_AudioSpec spec;
 
-        const int chunk_frames = 4096;
+        const int chunk_frames = 1024;
         int chunk_samples = 0;
         int chunk_bytes = 0;
 
@@ -25,6 +25,10 @@ namespace Amara {
 
         const float stream_expiry_time = 60;
         float stream_expiry_counter = 0;
+
+        int loopStart = 0;
+        int loopEnd = 0;
+        int totalFrames = 0;
 
         Audio(): Amara::Node() {
             set_base_node_id("Audio");
@@ -69,69 +73,50 @@ namespace Amara {
             stream_expiry_counter = 0;
 
             const auto& samples = audio->samples;
-            int endPoint = (int)samples.size();
-            if (loop && audio->loopEnd * audio->channels < endPoint) endPoint = audio->loopEnd * audio->channels;
+            int total_samples = (int)samples.size();
+            int loop_start_sample = loopStart * audio->channels;
+            int loop_end_sample = (loop && loopEnd > loopStart && (loopEnd + 1) * audio->channels <= total_samples)
+                ? (loopEnd + 1) * audio->channels
+                : total_samples;
+            
+            int samples_remaining = chunk_samples;
+            while (samples_remaining > 0 && playing) {
+                int endPoint = loop ? loop_end_sample : total_samples;
+                int samples_to_end = endPoint - position;
+                int samples_to_write = std::min(samples_remaining, samples_to_end);
 
-            size_t remaining_samples = endPoint - position;
-            size_t samples_to_write = std::min(remaining_samples, (size_t)chunk_samples);
+                if (samples_to_write > 0) {
+                    float leftGain  = (1.0f - panning) * 0.5f * gameProps->audioData.volume;
+                    float rightGain = (1.0f + panning) * 0.5f * gameProps->audioData.volume;
 
-            if (samples_to_write == 0) {
-                playing = false;
-                return;
-            }
+                    if (audio->channels == 1) {
+                        for (int i = 0; i < samples_to_write; ++i) {
+                            stream_chunk[i] = samples[position + i] * gameProps->audioData.volume;
+                        }
+                    } else if (audio->channels == 2) {
+                        int frames_to_write = samples_to_write / 2;
+                        for (int f = 0; f < frames_to_write; ++f) {
+                            int idx = position + f * 2;
+                            stream_chunk[f*2]   = samples[idx]     * leftGain;
+                            stream_chunk[f*2+1] = samples[idx + 1] * rightGain;
+                        }
+                    }
 
-            float leftGain  = (1.0f - panning) * 0.5f * gameProps->audioData.volume;
-            float rightGain = (1.0f + panning) * 0.5f * gameProps->audioData.volume;
-
-            // Mono processing (unrolled)
-            if (audio->channels == 1) {
-                size_t i = 0;
-                size_t limit = samples_to_write - samples_to_write % 4;
-                for (; i < limit; i += 4) {
-                    size_t idx = position + i;
-                    stream_chunk[i]     = samples[idx]     * gameProps->audioData.volume;
-                    stream_chunk[i + 1] = samples[idx + 1] * gameProps->audioData.volume;
-                    stream_chunk[i + 2] = samples[idx + 2] * gameProps->audioData.volume;
-                    stream_chunk[i + 3] = samples[idx + 3] * gameProps->audioData.volume;
+                    SDL_PutAudioStreamData(stream, stream_chunk.data(), samples_to_write * sizeof(float));
+                    position += samples_to_write;
+                    samples_remaining -= samples_to_write;
                 }
-                for (; i < samples_to_write; ++i) {
-                    stream_chunk[i] = samples[position + i] * gameProps->audioData.volume;
-                }
-            }
-            // Stereo processing (unrolled)
-            else if (audio->channels == 2) {
-                size_t frames_to_write = samples_to_write / 2;
-                size_t f = 0;
-                size_t limit = frames_to_write - frames_to_write % 4;
-                for (; f < limit; f += 4) {
-                    size_t idx = position + f * 2;
-                    stream_chunk[f*2]     = samples[idx]     * leftGain;
-                    stream_chunk[f*2 + 1] = samples[idx + 1] * rightGain;
-                    stream_chunk[f*2 + 2] = samples[idx + 2] * leftGain;
-                    stream_chunk[f*2 + 3] = samples[idx + 3] * rightGain;
-                    stream_chunk[f*2 + 4] = samples[idx + 4] * leftGain;
-                    stream_chunk[f*2 + 5] = samples[idx + 5] * rightGain;
-                    stream_chunk[f*2 + 6] = samples[idx + 6] * leftGain;
-                    stream_chunk[f*2 + 7] = samples[idx + 7] * rightGain;
-                }
-                for (; f < frames_to_write; ++f) {
-                    size_t idx = position + f * 2;
-                    stream_chunk[f*2]   = samples[idx]     * leftGain;
-                    stream_chunk[f*2+1] = samples[idx + 1] * rightGain;
-                }
-            }
 
-            SDL_PutAudioStreamData(stream, stream_chunk.data(), samples_to_write * sizeof(float));
-            position += (int)samples_to_write;
-
-            if (position >= endPoint) {
-                if (loop) {
-                    setPosition(audio->loopStart);
+                if (loop && position >= loop_end_sample) {
+                    int overshoot = position - loop_end_sample;
+                    position = loop_start_sample + overshoot;
                     if (funcs.hasFunction("onLoop")) funcs.callFunction("onLoop");
-                } else {
+                }
+                else if (!loop && position >= total_samples) {
                     setPosition(0);
                     playing = false;
                     if (funcs.hasFunction("onComplete")) funcs.callFunction("onComplete");
+                    break;
                 }
             }
         }
@@ -152,11 +137,15 @@ namespace Amara {
                 return false;
             }
 
-            chunk_samples = chunk_frames * std::max(2, audio->channels);
+            chunk_samples = chunk_frames * audio->channels;
             chunk_bytes   = chunk_samples * sizeof(float);
             stream_chunk.resize(chunk_samples);
-
+            
             duration = audio->samples.size() / (float)(audio->sampleRate * audio->channels);
+            loopStart = std::max(0, audio->loopStart);
+            loopEnd = std::min((int)audio->samples.size() / audio->channels, audio->loopEnd);
+            totalFrames = audio->totalFrames;
+
             if (id.empty()) id = audio->key;
 
             return true;
@@ -273,11 +262,12 @@ namespace Amara {
                 position = 0;
                 return;
             }
-            if (loop) {
-                position = (_position * audio->channels) % audio->samples.size();
-            } else {
-                position = std::min((_position * audio->channels), (int)audio->samples.size());
+            if (stream) {
+                SDL_ClearAudioStream(stream);
             }
+            int max_position = audio->samples.size() / audio->channels;
+            _position = std::clamp(_position, 0, max_position);
+            position = _position * audio->channels;
         }
 
         void setVolume(float _volume) { volume = std::clamp(_volume, 0.0f, 1.0f); }
@@ -297,6 +287,9 @@ namespace Amara {
                 "panning", sol::property([] (Audio& a) -> float { return a.panning; }, [](Audio& a, float v) { a.setPanning(v); }),
                 "playing", sol::readonly(&Audio::playing),
                 "loop", &Audio::loop,
+                "loopStart", &Audio::loopStart,
+                "loopEnd", &Audio::loopEnd,
+                "totalFrames", sol::readonly(&Audio::totalFrames),
                 "duration", sol::readonly(&Audio::duration),
                 "position", sol::property([] (Audio& a) -> int { return a.position; }, [](Audio& a, int v) { a.setPosition(v); }),
                 "audio", sol::property([] (Audio& a) -> std::string { if (a.audio) return a.audio->key; else return ""; }, [](Audio& a, std::string key) { a.setAudio(key); }),
