@@ -13,7 +13,7 @@ Nodes:define("DropDownMenu", "FillRect", {
         active = true,
         cursor = Cursor.Pointer,
         onPointerDown = function(self, pointer)
-            if self.props.inputEnabled then
+            if self.get.inputEnabled then
                 self.func:openMenu()
             end
         end
@@ -21,41 +21,41 @@ Nodes:define("DropDownMenu", "FillRect", {
 
     onConfigure = function(self, config)
         if config.options then
-            self.props.options = config.options
+            self.get.options = config.options
         end
 
         if config.defaultText then
-            self.props.defaultText = config.defaultText
+            self.get.defaultText = config.defaultText
         end
 
         if config.inputEnabled ~= nil then
-            self.props.inputEnabled = config.inputEnabled
+            self.get.inputEnabled = config.inputEnabled
         end
     end,
 
     onCreate = function(self)   
-        self.props.txt = self:createChild("Text", {
+        self.get.txt = self:createChild("Text", {
             font = "defaultFont",
             origin = 0,
             x = 10, y = 1,
             color = "#a8bee0",
-            text = self.props.defaultText
+            text = self.get.defaultText
         })
 
-        if self.props.options then
-            self.func:createOptions(self.props.options)
+        if self.get.options then
+            self.func:createOptions(self.get.options)
         end
     end,
 
     createOptions = function(self, options)
-        self.props.menuOptions = {}
-        if self.props.menu then
-            self.props.menu:destroy()
-            self.props.menu = nil
+        self.get.menuOptions = {}
+        if self.get.menu then
+            self.get.menu:destroy()
+            self.get.menu = nil
         end
 
         if options and #options > 0 then
-            self.props.menu = self:createChild("Group", {
+            self.get.menu = self:createChild("Group", {
                 y = self.height + 2,
                 visible = false
             })
@@ -65,7 +65,7 @@ Nodes:define("DropDownMenu", "FillRect", {
             for i = 1, #options do
                 local str = options[i]
                 
-                local backer = self.props.menu:createChild("FillRect", {
+                local backer = self.get.menu:createChild("FillRect", {
                     width = self.width,
                     height = optHeight,
                     y = (i - 1) * optHeight,
@@ -88,9 +88,9 @@ Nodes:define("DropDownMenu", "FillRect", {
                 else
                     txt.text = str
                 end
-                backer.props.txt = txt
+                backer.get.txt = txt
 
-                backer.props.opt = str
+                backer.get.opt = str
 
                 backer.input:listen("onPointerHover", function()
                     backer.color = "#333e4d"
@@ -99,17 +99,17 @@ Nodes:define("DropDownMenu", "FillRect", {
                     backer.color = self.color
                 end)
                 backer.input:listen("onPointerUp", function()
-                    self.props.menu.visible = false
-                    self.func:select(backer.props.opt)
+                    self.get.menu.visible = false
+                    self.func:select(backer.get.opt)
 
-                    self.props.dropIcon.frame = 9
+                    self.get.dropIcon.frame = 9
                 end)
 
-                table.insert(self.props.menuOptions, txt)
+                table.insert(self.get.menuOptions, txt)
             end
 
             if options and #options > 0 then
-                if not self.props.dropIcon then
+                if not self.get.dropIcon then
                     local dropIcon = self:createChild("Sprite", {
                         texture = "uiIcons",
                         origin = 0.5
@@ -117,25 +117,25 @@ Nodes:define("DropDownMenu", "FillRect", {
                     dropIcon.x = self.width - dropIcon.width/2.0 - 4
                     dropIcon.y = self.height/2.0
                     
-                    self.props.dropIcon = dropIcon
+                    self.get.dropIcon = dropIcon
                 end
-                self.props.dropIcon.frame = 9
+                self.get.dropIcon.frame = 9
             else
-                if self.props.dropIcon then
-                    self.props.dropIcon.visible = false
+                if self.get.dropIcon then
+                    self.get.dropIcon.visible = false
                 end
             end
         end
     end,
 
     openMenu = function(self)
-        if self.props.menu then
-            self.props.menu.visible = not self.props.menu.visible
-            if self.props.dropIcon then
-                if self.props.menu.visible then
-                    self.props.dropIcon.frame = 10
+        if self.get.menu then
+            self.get.menu.visible = not self.get.menu.visible
+            if self.get.dropIcon then
+                if self.get.menu.visible then
+                    self.get.dropIcon.frame = 10
                 else
-                    self.props.dropIcon.frame = 9
+                    self.get.dropIcon.frame = 9
                 end
             end
         end
@@ -143,12 +143,12 @@ Nodes:define("DropDownMenu", "FillRect", {
 
     select = function(self, str)
         if Localize:has(str) then
-            self.props.txt.text = Localize:get(str)
+            self.get.txt.text = Localize:get(str)
         else
-            self.props.txt.text = str
+            self.get.txt.text = str
         end
 
-        self.props.selected = str
+        self.get.selected = str
 
         if self.func.onSelect then
             self.func:onSelect(str)

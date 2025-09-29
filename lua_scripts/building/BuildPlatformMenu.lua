@@ -4,14 +4,14 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
 
     onConfigure = function(self, config)
         if config.projectPath then
-            self.props.projectPath = config.projectPath
+            self.get.projectPath = config.projectPath
         end
     end,
 
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
-        local title = self.props.content:createChild("Text", {
+        local title = self.get.content:createChild("Text", {
             x = 10, y = 6,
             font = "defaultFont",
             text = Localize:get("title_choosePlatform"),
@@ -19,30 +19,30 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
             origin = 0
         })
 
-        local buildButton = self.props.content:createChild("UIButton", {
+        local buildButton = self.get.content:createChild("UIButton", {
             id = "buildProjectButton",
             text = "label_continue",
             onPress = function()
                 self.func:continueBuilding()
             end
         })
-        buildButton.x = self.props.targetWidth - buildButton.width - 8
-        buildButton.y = self.props.targetHeight - buildButton.height - 6
+        buildButton.x = self.get.targetWidth - buildButton.width - 8
+        buildButton.y = self.get.targetHeight - buildButton.height - 6
 
-        local buttonPos = self.props.targetWidth - 22
+        local buttonPos = self.get.targetWidth - 22
         local buttonSpacing = 20
 
-        self.props.backButton = self.props.content:createChild("UIButton", {
+        self.get.backButton = self.get.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos,
             y = 4,
             icon = 5,
             onPress = function(button)
-                button.props.enabled = false
+                button.get.enabled = false
                 self.func:closeWindow(function(b)
                     local newWindow = self.parent:createChild("ProjectWindow", {
-                        projectPath = self.props.projectPath
+                        projectPath = self.get.projectPath
                     })
                     newWindow.func:openWindow()
                     
@@ -56,16 +56,16 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
                 { Key.RightAlt, Key.RightShift, Key.Backspace }
             },
             onPress = function()
-                self.props.backButton.func:forcePress()
+                self.get.backButton.func:forcePress()
             end
         })
 
-        local platformMenu = self.props.content:createChild("DropDownMenu", {
+        local platformMenu = self.get.content:createChild("DropDownMenu", {
             x = title.x,
             y = title.y + title.height + 10,
-            width = self.props.targetWidth - title.x*2
+            width = self.get.targetWidth - title.x*2
         })
-        self.props.platformMenu = platformMenu
+        self.get.platformMenu = platformMenu
         self.func:loadPlatforms()
     end,
 
@@ -83,12 +83,12 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
             table.insert(platforms, "label_platform_mac")
         end
         
-        self.props.platformMenu.func:createOptions(platforms)
+        self.get.platformMenu.func:createOptions(platforms)
         
         if settings and settings.lastBuildPlatform then
-            self.props.platformMenu.func:select(settings.lastBuildPlatform)
+            self.get.platformMenu.func:select(settings.lastBuildPlatform)
         else
-            self.props.platformMenu.func:select(platforms[1])
+            self.get.platformMenu.func:select(platforms[1])
         end
     end,
 
@@ -97,26 +97,26 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
             local settings = self.world.func:getSettings()
             local newWindow
 
-            local platform = self.props.platformMenu.props.selected
+            local platform = self.get.platformMenu.get.selected
 
             if platform == "label_platform_windows" then
                 if (not settings.vsBuildToolsInstalled) and (not System:VSBuildToolsInstalled()) then
-                    newWindow = self.world.props.windows:createChild("VSBuildToolsInstaller", {
-                        projectPath = self.props.projectPath
+                    newWindow = self.world.get.windows:createChild("VSBuildToolsInstaller", {
+                        projectPath = self.get.projectPath
                     })
                     newWindow.func:openWindow()
                 else
                     if not settings.vsBuildToolsInstalled then
                         settings.vsBuildToolsInstalled = true
                     end
-                    newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
-                        projectPath = self.props.projectPath
+                    newWindow = self.world.get.windows:createChild("WindowsBuildOptions", {
+                        projectPath = self.get.projectPath
                     })
                     newWindow.func:openWindow()
                 end
             elseif platform == "label_platform_web" then
-                newWindow = self.world.props.windows:createChild("WebBuildOptions", {
-                    projectPath = self.props.projectPath
+                newWindow = self.world.get.windows:createChild("WebBuildOptions", {
+                    projectPath = self.get.projectPath
                 })
                 newWindow.func:openWindow()
             end

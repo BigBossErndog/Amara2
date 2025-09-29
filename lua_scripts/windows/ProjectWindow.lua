@@ -4,36 +4,36 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
     onConfigure = function(self, config)
         if config.projectPath then
-            self.props.projectPath = config.projectPath
+            self.get.projectPath = config.projectPath
         end
     end,
     
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
-        local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
+        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
         local projectName = projectData["project-name"]
 
-        local title = self.props.content:createChild("Text", {
+        local title = self.get.content:createChild("Text", {
             y = 4,
             font = "defaultFont",
             text = projectName,
             color = Colors.White,
             origin = { 0, 0 }
         })
-        title.x = math.floor(self.props.targetWidth/2.0 - title.width/2.0)
+        title.x = math.floor(self.get.targetWidth/2.0 - title.width/2.0)
 
         local buttonPos = Vector2.new(6, 18)
         local buttonSpacing = 20
 
-        self.props.playButton = self.props.content:createChild("UIButton", {
+        self.get.playButton = self.get.content:createChild("UIButton", {
             id = "playButton",
             toolTip = "toolTip_runGame",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 3,
             onPress = function()
-                if not self.props.gameProcess then
+                if not self.get.gameProcess then
                     self.func:runGame()
                 else 
                     self.func:stopGame()
@@ -41,14 +41,14 @@ Nodes:define("ProjectWindow", "UIWindow", {
             end,
             input = {
                 onRightMouseDown = function(button)
-                    button.props.clicked = true
-                    if button.props.enabled then
+                    button.get.clicked = true
+                    if button.get.enabled then
                         button.frame = 2
                     end
                 end,
                 onRightMouseUp = function(button)
                     button.frame = 1
-                    if not self.props.gameProcess then
+                    if not self.get.gameProcess then
                         self.func:runGame()
                     else 
                         self.func:stopGame()
@@ -59,7 +59,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.codeEditorButton = self.props.content:createChild("CodeEditorButton", {
+        self.get.codeEditorButton = self.get.content:createChild("CodeEditorButton", {
             id = "openCodeEditorButton",
             toolTip = "toolTip_openCodeEditor",
             x = buttonPos.x,
@@ -68,37 +68,37 @@ Nodes:define("ProjectWindow", "UIWindow", {
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.openDirectoryButton = self.props.content:createChild("UIButton", {
+        self.get.openDirectoryButton = self.get.content:createChild("UIButton", {
             id = "openDirectoryButton",
             toolTip = "toolTip_openProjectDirectory",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 6,
             onPress = function()
-                System:openDirectory(self.props.projectPath)
+                System:openDirectory(self.get.projectPath)
             end
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.backButton = self.props.content:createChild("UIButton", {
+        self.get.backButton = self.get.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 5,
             onPress = function()
-                if self.props.gameProcess then
+                if self.get.gameProcess then
                     self.func:stopGame()
                 end
-                if self.props.printLog then
-                    self.props.printLog.func:unbindGameProcess()
-                    self.props.printLog.func:closeWindow(function(self)
+                if self.get.printLog then
+                    self.get.printLog.func:unbindGameProcess()
+                    self.get.printLog.func:closeWindow(function(self)
                         self:destroy()
                     end)
-                    self.props.printLog = nil
+                    self.get.printLog = nil
                 end
                 self.func:closeWindow(function(button)
-                    button.props.enabled = false
+                    button.get.enabled = false
                     
                     local newWindow = self.parent:createChild("MainWindow")
                     newWindow.func:openWindow()
@@ -109,61 +109,61 @@ Nodes:define("ProjectWindow", "UIWindow", {
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "exitButton",
             toolTip = "toolTip_exit",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 1,
             onPress = function(button)
-                self.world.props.windows.func:closeAll(function(self)
+                self.world.get.windows.func:closeAll(function(self)
                     self.world:destroy()
                 end)
-                button.props.enabled = false
+                button.get.enabled = false
             end
         })
 
         buttonPos.x = 6
         buttonPos.y = buttonPos.y + buttonSpacing
         
-        self.props.buildButton = self.props.content:createChild("UIButton", {
+        self.get.buildButton = self.get.content:createChild("UIButton", {
             id = "buildButton",
             toolTip = "toolTip_buildGame",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 8,
             onPress = function(button)
-                button.props.enabled = false
+                button.get.enabled = false
                 self.func:buildGame()
             end
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.printLogButton = self.props.content:createChild("UIButton", {
+        self.get.printLogButton = self.get.content:createChild("UIButton", {
             id = "printLogButton",
             toolTip = "toolTip_openPrintLog",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 11,
             onPress = function()
-                if not self.props.printLog then
-                    self.props.printLog = self.parent:createChild("TerminalWindow", {
-                        projectPath = self.props.projectPath,
-                        gameProcess = self.props.gameProcess,
+                if not self.get.printLog then
+                    self.get.printLog = self.parent:createChild("TerminalWindow", {
+                        projectPath = self.get.projectPath,
+                        gameProcess = self.get.gameProcess,
                         onExit = function()
-                            self.props.printLog = nil
-                            self.props.printLogButton.func:setIcon(11)
+                            self.get.printLog = nil
+                            self.get.printLogButton.func:setIcon(11)
                         end
                     })
-                    self.props.printLog.func:openWindow()
+                    self.get.printLog.func:openWindow()
                 else
-                    self.props.printLog.props.exitButton.func:forcePress()
+                    self.get.printLog.get.exitButton.func:forcePress()
                 end
             end
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "openDocsButton",
             toolTip = "toolTip_openDocs",
             x = buttonPos.x,
@@ -175,26 +175,26 @@ Nodes:define("ProjectWindow", "UIWindow", {
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "projectSettingsButton",
             toolTip = "toolTip_projectSettings",
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 23,
             onPress = function()
-                if self.props.gameProcess then
+                if self.get.gameProcess then
                     self.func:stopGame()
                 end
-                if self.props.printLog then
-                    self.props.printLog.func:unbindGameProcess()
-                    self.props.printLog.func:closeWindow()
-                    self.props.printLog = nil
+                if self.get.printLog then
+                    self.get.printLog.func:unbindGameProcess()
+                    self.get.printLog.func:closeWindow()
+                    self.get.printLog = nil
                 end
                 self.func:closeWindow(function(button)
-                    button.props.enabled = false
+                    button.get.enabled = false
                     
                     local newWindow = self.parent:createChild("ProjectSettingsWindow", {
-                        projectPath = self.props.projectPath
+                        projectPath = self.get.projectPath
                     })
                     newWindow.func:openWindow()
                     
@@ -204,7 +204,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "moreToolsButton",
             toolTip = "toolTip_moreTools",
             x = buttonPos.x,
@@ -217,14 +217,14 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
         local projectWindowData = self.world.func:getSettings().projectWindowData
 
-        if self.props.resumePosition and projectWindowData then
+        if self.get.resumePosition and projectWindowData then
             self:goTo(
                 projectWindowData.x,
                 projectWindowData.y
             )
         end
         self.func:openWindow(function(self)
-            if not self.props.resumePosition then
+            if not self.get.resumePosition then
                 if projectWindowData then
                     self.tween:to({
                         x = projectWindowData.x,
@@ -252,7 +252,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
             self.func:savePosition()
         end)
 
-        self.world.func:registerProject(self.props.projectPath)
+        self.world.func:registerProject(self.get.projectPath)
     end,
 
     setHotkeys = function(self)
@@ -262,7 +262,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 right = { Key.RightAlt, Key.RightShift, Key.Enter }
             },
             onPress = function()
-                self.props.playButton.func:forcePress()
+                self.get.playButton.func:forcePress()
             end
         })
         self:createChild("Hotkey", {
@@ -271,7 +271,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 { Key.RightAlt, Key.RightShift, Key.X }
             },
             onPress = function()
-                self.props.codeEditorButton.func:forcePress()
+                self.get.codeEditorButton.func:forcePress()
             end
         })
         self:createChild("Hotkey", {
@@ -280,7 +280,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 { Key.RightAlt, Key.RightShift, Key.P }
             },
             onPress = function()
-                self.props.openDirectoryButton.func:forcePress()
+                self.get.openDirectoryButton.func:forcePress()
             end
         })
         self:createChild("Hotkey", {
@@ -289,7 +289,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 { Key.RightAlt, Key.RightShift, Key.B }
             },
             onPress = function()
-                self.props.buildButton.func:forcePress()
+                self.get.buildButton.func:forcePress()
             end
         })
         self:createChild("Hotkey", {
@@ -298,7 +298,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 { Key.RightAlt, Key.RightShift, Key.M }
             },
             onPress = function()
-                self.props.printLogButton.func:forcePress()
+                self.get.printLogButton.func:forcePress()
             end
         })
         self:createChild("Hotkey", {
@@ -307,7 +307,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 { Key.RightAlt, Key.RightShift, Key.Backspace }
             },
             onPress = function()
-                self.props.backButton.func:forcePress()
+                self.get.backButton.func:forcePress()
             end
         })
     end,
@@ -324,11 +324,11 @@ Nodes:define("ProjectWindow", "UIWindow", {
     end,
     
     openDirectory = function(self)
-        System:openDirectory(self.props.projectPath)
+        System:openDirectory(self.get.projectPath)
     end,
     
     openCodeEditor = function(self)
-        self.props.codeEditorButton.func:onPress()
+        self.get.codeEditorButton.func:onPress()
     end,
 
     openDefault = function(self)
@@ -348,63 +348,63 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
         local exe = Game.executable
         if Game.platform == "windows" then
-            local testBuild = System:join(self.props.projectPath, "build", "test", "Amara2.exe")
+            local testBuild = System:join(self.get.projectPath, "build", "test", "Amara2.exe")
             if System:exists(testBuild) then
                 exe = testBuild
             end
         end
 
-        self.props.gameProcess = self:createChild("ProcessNode", {
+        self.get.gameProcess = self:createChild("ProcessNode", {
             arguments = {
                 exe,
-                "-context", self.props.projectPath,
+                "-context", self.get.projectPath,
                 "-debugging",
                 "-script", "index.lua",
                 "-script", System:getScriptPath("utility/BringGameToFront.lua")
             },
             onOutput = function(process, msg)
-                if self.props.printLog then
-                    self.props.printLog.func:handleMessage(msg)
+                if self.get.printLog then
+                    self.get.printLog.func:handleMessage(msg)
                 end
             end,
             onExit = function(process, exitCode, errorMessage)
-                if self.props.printLog then
-                    self.props.printLog.func:unbindGameProcess()
+                if self.get.printLog then
+                    self.get.printLog.func:unbindGameProcess()
                 elseif exitCode ~= 0 then
-                    self.props.printLogButton.func:forcePress()
+                    self.get.printLogButton.func:forcePress()
                 end
 
                 if exitCode == -1 then
-                    self.props.printLog.func:handleMessage(Localize:get("error_failedToRunGame"))
+                    self.get.printLog.func:handleMessage(Localize:get("error_failedToRunGame"))
                 end
                 if errorMessage then
-                    self.props.printLog.func:handleMessage(errorMessage)
+                    self.get.printLog.func:handleMessage(errorMessage)
                 end
                 if exitCode ~= 0 then
-                    self.props.printLog.func:handleMessage("Program aborted unexpectedly.")
+                    self.get.printLog.func:handleMessage("Program aborted unexpectedly.")
                 end
 
-                self.props.gameProcess = nil
-                self.props.playButton.func:setIcon(3)
+                self.get.gameProcess = nil
+                self.get.playButton.func:setIcon(3)
             end
         })
 
-        self.props.playButton.func:setIcon(13)
+        self.get.playButton.func:setIcon(13)
     end,
 
     stopGame = function(self)
-        if self.props.gameProcess then
-            self.props.gameProcess:destroy()
-            self.props.gameProcess = nil
+        if self.get.gameProcess then
+            self.get.gameProcess:destroy()
+            self.get.gameProcess = nil
         end
 
-        self.props.playButton.func:setIcon(3)
+        self.get.playButton.func:setIcon(3)
     end,
 
     buildGame = function(self)
         self.func:stopGame()
         
-        self.world.props.windows.func:closeAll(function(window)
+        self.world.get.windows.func:closeAll(function(window)
             window:destroy()
         end)
 
@@ -412,13 +412,13 @@ Nodes:define("ProjectWindow", "UIWindow", {
             local settings = self.world.func:getSettings()
             
             if not System:exists(System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm/bin/clang.exe")) then
-                local newWindow = self.world.props.windows:createChild("WindowsBuildInstaller", {
-                    projectPath = self.props.projectPath
+                local newWindow = self.world.get.windows:createChild("WindowsBuildInstaller", {
+                    projectPath = self.get.projectPath
                 })
                 newWindow.func:openWindow()
             else
-                local newWindow = self.world.props.windows:createChild("BuildPlatformMenu", {
-                    projectPath = self.props.projectPath
+                local newWindow = self.world.get.windows:createChild("BuildPlatformMenu", {
+                    projectPath = self.get.projectPath
                 })
                 newWindow.func:openWindow()
             end

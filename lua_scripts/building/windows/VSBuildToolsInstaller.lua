@@ -4,14 +4,14 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
 
     onConfigure = function(self, config)
         if config.projectPath then
-            self.props.projectPath = config.projectPath
+            self.get.projectPath = config.projectPath
         end
     end,
 
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
-        self.props.title = self.props.content:createChild("Text", {
+        self.get.title = self.get.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
             text = Localize:get("label_windowsBuilderNotFound"),
@@ -20,7 +20,7 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
             input = true
         })
 
-        local buildButton = self.props.content:createChild("UIButton", {
+        local buildButton = self.get.content:createChild("UIButton", {
             id = "buildProjectButton",
             text = "label_continue",
             onPress = function()
@@ -29,10 +29,10 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
                 end
             end
         })
-        buildButton.x = self.props.targetWidth - buildButton.width - 8
-        buildButton.y = self.props.targetHeight - buildButton.height - 6
+        buildButton.x = self.get.targetWidth - buildButton.width - 8
+        buildButton.y = self.get.targetHeight - buildButton.height - 6
 
-        local downloadButton = self.props.content:createChild("UIButton", {
+        local downloadButton = self.get.content:createChild("UIButton", {
             id = "downloadButton",
             text = "label_downloadVSBuildTools",
             onPress = function()
@@ -44,8 +44,8 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
     end,
 
     continueBuilding = function(self)
-        local newWindow = self.world.props.windows:createChild("WindowsBuildOptions", {
-            projectPath = self.props.projectPath
+        local newWindow = self.world.get.windows:createChild("WindowsBuildOptions", {
+            projectPath = self.get.projectPath
         })
         newWindow.func:openWindow()
     end,

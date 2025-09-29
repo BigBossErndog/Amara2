@@ -7,7 +7,7 @@ Nodes:define("MainWindow", "UIWindow", {
 
         local settings = self.world.func:getSettings()
 
-        local title = self.props.content:createChild("Text", {
+        local title = self.get.content:createChild("Text", {
             x = 10, y = 6,
             font = "defaultFont",
             text = Localize:get("title_windowTitle") .. " v" .. version_string,
@@ -15,7 +15,7 @@ Nodes:define("MainWindow", "UIWindow", {
             origin = 0
         })
 
-        local recentProjectsTitle = self.props.content:createChild("Text", {
+        local recentProjectsTitle = self.get.content:createChild("Text", {
             x = 10, y = 22,
             font = "defaultFont",
             text = Localize:get("title_recentProjects"),
@@ -23,9 +23,9 @@ Nodes:define("MainWindow", "UIWindow", {
             origin = 0
         })
 
-       local backer = self.props.content:createChild("FillRect", {
+       local backer = self.get.content:createChild("FillRect", {
             x = 6, y = recentProjectsTitle.y + 16,
-            width = self.props.targetWidth - 12,
+            width = self.get.targetWidth - 12,
             height = 72,
             color = "#111d27",
             origin = 0
@@ -37,16 +37,18 @@ Nodes:define("MainWindow", "UIWindow", {
 
         local failedProjects = 0
 
+        self.get.projectButtons = {}
+
         if settings.projects and #settings.projects > 0 then
             local window = self
-            
+
             for i = 1, #settings.projects do
                 local projectPath = settings.projects[i]
                 if System:exists(projectPath) and System:exists(System:join(projectPath, "project.json")) then
                     local projectData = System:readJSON(System:join(projectPath, "project.json"))
                     local projectName = projectData["project-name"]
 
-                    local optBacker = self.props.content:createChild("FillRect", {
+                    local optBacker = self.get.content:createChild("FillRect", {
                         x = backer.x + 6,
                         y = backer.y + 6 + (i - 1 - failedProjects) * spacing,
                         width = backer.width - 12,
@@ -66,21 +68,25 @@ Nodes:define("MainWindow", "UIWindow", {
                                 self.color = "#111d27"
                             end,
                             onPointerUp = function(self, pointer)
-                                self.input:deactivate()
-                                window.func:closeWindow(function()
-                                    local newWindow = window.parent:createChild("ProjectWindow", {
-                                        projectPath = self.props.projectPath
-                                    })
-                                    newWindow.func:openWindow()
-                                    newWindow.func:openDefault()
-                                    
-                                    window:destroy()
-                                end)
+                                self.func:forcePress()
                             end
-                        }
+                        },
+                        forcePress = function(self)
+                            self.input:deactivate()
+                            window.func:closeWindow(function()
+                                local newWindow = window.parent:createChild("ProjectWindow", {
+                                    projectPath = self.get.projectPath
+                                })
+                                newWindow.func:openWindow()
+                                newWindow.func:openDefault()
+                                
+                                window:destroy()
+                            end)
+                        end
                     })
+                    self.get.projectButtons[i] = optBacker
 
-                    local txt = self.props.content:createChild("Text", {
+                    local txt = self.get.content:createChild("Text", {
                         text = projectName,
                         font = "defaultFont",
                         color = "#a8bee0",
@@ -99,7 +105,7 @@ Nodes:define("MainWindow", "UIWindow", {
             end
         end
 
-        local editorTitle = self.props.content:createChild("Text", {
+        local editorTitle = self.get.content:createChild("Text", {
             x = recentProjectsTitle.x,
             y = backer.y + backer.height + 6,
             origin = 0,
@@ -108,7 +114,7 @@ Nodes:define("MainWindow", "UIWindow", {
             text = Localize:get("title_codeEditor")
         })
 
-        local editorMenu = self.props.content:createChild("DropDownMenu", {
+        local editorMenu = self.get.content:createChild("DropDownMenu", {
             x = backer.x,
             y = editorTitle.y + editorTitle.height + 6,
             width = backer.width,
@@ -119,10 +125,10 @@ Nodes:define("MainWindow", "UIWindow", {
                 self.world.func:saveSettings()
             end
         })
-        self.props.editorMenu = editorMenu
+        self.get.editorMenu = editorMenu
         self.func:loadCodeEditors()
         
-        local refreshButton = self.props.content:createChild("UIButton", {
+        local refreshButton = self.get.content:createChild("UIButton", {
             id = "refreshEditorsButton",
             toolTip = "toolTip_refreshCodeEditors",
             x = editorTitle.x + editorTitle.width + 4,
@@ -136,7 +142,7 @@ Nodes:define("MainWindow", "UIWindow", {
         refreshButton.y = editorMenu.y - refreshButton.height - 2
 
         local tickBox
-        tickBox = self.props.content:createChild("Sprite", {
+        tickBox = self.get.content:createChild("Sprite", {
             origin = { 1, 0 },
             x = backer.x + backer.width,
             y = editorTitle.y + 2,
@@ -154,7 +160,7 @@ Nodes:define("MainWindow", "UIWindow", {
             }
         })
 
-        local autoOpenTitle = self.props.content:createChild("Text", {
+        local autoOpenTitle = self.get.content:createChild("Text", {
             x = tickBox.x - tickBox.width - 2,
             y = editorTitle.y,
             origin = { 1, 0 },
@@ -173,25 +179,25 @@ Nodes:define("MainWindow", "UIWindow", {
             }
         })
 
-        local buttonPos = self.props.targetWidth - 22
+        local buttonPos = self.get.targetWidth - 22
         local buttonSpacing = 20
 
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "exitButton",
             toolTip = "toolTip_exit",
             x = buttonPos,
             y = 4,
             icon = 1,
             onPress = function()
-                self.world.props.windows.func:closeAll(function(self)
+                self.world.get.windows.func:closeAll(function(self)
                     self.world:destroy()
                 end)
-                self.props.enabled = false
+                self.get.enabled = false
             end
         })
 
         buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "minimizeButton",
             toolTip = "toolTip_minimize",
             x = buttonPos,
@@ -203,7 +209,7 @@ Nodes:define("MainWindow", "UIWindow", {
         })
 
         buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "openDocsButton",
             toolTip = "toolTip_openDocs",
             x = buttonPos,
@@ -215,7 +221,7 @@ Nodes:define("MainWindow", "UIWindow", {
         })
 
         buttonPos = buttonPos - buttonSpacing
-        local examplesButton = self.props.content:createChild("UIButton", {
+        local examplesButton = self.get.content:createChild("UIButton", {
             id = "openExamplesButton",
             toolTip = "toolTip_openExamples",
             x = buttonPos,
@@ -227,14 +233,14 @@ Nodes:define("MainWindow", "UIWindow", {
         })
 
         buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "openDirectoryButton",
             toolTip = "toolTip_openExistingProject",
             x = buttonPos,
             y = 4,
             icon = 6,
             onPress = function(button)
-                self.props.enabled = false
+                self.get.enabled = false
                 self.world:hideWindow()
 
                 self:wait(0.2):next(function()
@@ -278,7 +284,7 @@ Nodes:define("MainWindow", "UIWindow", {
         })
 
         buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "newProjectButton",
             toolTip = "toolTip_newProject",
             x = buttonPos,
@@ -286,7 +292,7 @@ Nodes:define("MainWindow", "UIWindow", {
             icon = 2,
             onPress = function()
                 self.func:closeWindow(function()
-                    self.props.enabled = false
+                    self.get.enabled = false
 
                     local newWindow = self.parent:createChild("NewProjectWindow", {
                         x = self.x, y = self.y
@@ -299,7 +305,7 @@ Nodes:define("MainWindow", "UIWindow", {
         })
 
         if not settings.projects or failedProjects >= #settings.projects then
-            self.props.content:createChild("Text", {
+            self.get.content:createChild("Text", {
                 text = Localize:get("label_noProjectsFound"),
                 font = "defaultFont",
                 color = "#a8bee0",
@@ -308,12 +314,79 @@ Nodes:define("MainWindow", "UIWindow", {
                 y = backer.y + 6
             })
         end
+
+        self.func:setHotkeys()
+    end,
+
+    setHotkeys = function(self)
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.N },
+                { Key.RightAlt, Key.RightShift, Key.N }
+            },
+            onPress = function()
+                self.get.newProjectButton.func:forcePress()
+            end
+        })
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.O },
+                { Key.RightAlt, Key.RightShift, Key.O }
+            },
+            onPress = function()
+                self.get.openDirectoryButton.func:forcePress()
+            end
+        })
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.One },
+                { Key.RightAlt, Key.RightShift, Key.One }
+            },
+            onPress = function()
+                if self.get.projectButtons[1] then
+                    self.get.projectButtons[1].func:forcePress()
+                end
+            end
+        })
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.Two },
+                { Key.RightAlt, Key.RightShift, Key.Two }
+            },
+            onPress = function()
+                if self.get.projectButtons[2] then
+                    self.get.projectButtons[2].func:forcePress()
+                end
+            end
+        })
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.Three },
+                { Key.RightAlt, Key.RightShift, Key.Three }
+            },
+            onPress = function()
+                if self.get.projectButtons[3] then
+                    self.get.projectButtons[3].func:forcePress()
+                end
+            end
+        })
+        self:createChild("Hotkey", {
+            config = {
+                { Key.LeftAlt, Key.LeftShift, Key.Four },
+                { Key.RightAlt, Key.RightShift, Key.Four }
+            },
+            onPress = function()
+                if self.get.projectButtons[4] then
+                    self.get.projectButtons[4].func:forcePress()
+                end
+            end
+        })
     end,
 
     loadCodeEditors = function(self)
         self.world.func:getCodeEditors(function(codeEditors)
             if not self.destroyed then
-                self.props.editorMenu.func:createOptions(codeEditors)
+                self.get.editorMenu.func:createOptions(codeEditors)
 
                 if codeEditors and #codeEditors > 0 then
                     local settings = self.world.func:getSettings()
@@ -322,15 +395,15 @@ Nodes:define("MainWindow", "UIWindow", {
                         for i = 1, #codeEditors do
                             if codeEditors[i] == settings.codeEditor then
                                 found = true
-                                self.props.editorMenu.func:select(codeEditors[i])
+                                self.get.editorMenu.func:select(codeEditors[i])
                                 break
                             end
                         end
                         if not found then
-                            self.props.editorMenu.func:select(codeEditors[1])
+                            self.get.editorMenu.func:select(codeEditors[1])
                         end
                     else
-                        self.props.editorMenu.func:select(codeEditors[1])
+                        self.get.editorMenu.func:select(codeEditors[1])
                     end
                 end
             end

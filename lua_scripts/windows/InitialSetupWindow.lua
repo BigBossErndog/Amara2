@@ -5,19 +5,19 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
-        local txt = self.props.content:createChild("Text", {
+        local txt = self.get.content:createChild("Text", {
             text = Localize:get("label_performingInitialSetup"),
             font = "defaultFont",
             color = Colors.White,
             origin = 0
         })
-        txt.x = math.floor(self.props.targetWidth/2.0 - txt.width/2.0)
-        txt.y = math.floor(self.props.targetHeight/2.0 - txt.height/2.0)
+        txt.x = math.floor(self.get.targetWidth/2.0 - txt.width/2.0)
+        txt.y = math.floor(self.get.targetHeight/2.0 - txt.height/2.0)
         
-        self.props.loadingBar = self.props.content:createChild("LoadingBar", {
+        self.get.loadingBar = self.get.content:createChild("LoadingBar", {
             alpha = 0.3,
-            x = 2, y = self.props.targetHeight - 4,
-            width = self.props.targetWidth - 4
+            x = 2, y = self.get.targetHeight - 4,
+            width = self.get.targetWidth - 4
         })
 
         local exe = Game.executable

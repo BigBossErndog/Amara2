@@ -7,26 +7,26 @@ Nodes:define("PagedWindow", "UIWindow", {
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
-        self.props.leftButton = self.props.content:createChild("UIButton", {
-            x = 8, y = self.props.targetHeight - 16 - 8,
+        self.get.leftButton = self.get.content:createChild("UIButton", {
+            x = 8, y = self.get.targetHeight - 16 - 8,
             icon = 21,
             onPress = function()
                 self.func:changePage(-1)
             end
         })
 
-        self.props.rightButton = self.props.content:createChild("UIButton", {
-            x = self.props.targetWidth - 16 - 8, y = self.props.targetHeight - 16 - 8,
+        self.get.rightButton = self.get.content:createChild("UIButton", {
+            x = self.get.targetWidth - 16 - 8, y = self.get.targetHeight - 16 - 8,
             icon = 22,
             onPress = function()
                 self.func:changePage(1)
             end
         })
 
-        self.props.pageText = self.props.content:createChild("Text", {
-            x = self.props.targetWidth / 2.0, y = self.props.targetHeight - 16,
+        self.get.pageText = self.get.content:createChild("Text", {
+            x = self.get.targetWidth / 2.0, y = self.get.targetHeight - 16,
             font = "defaultFont",
-            text = "Page " .. self.props.pageIndex .. " / " .. self.props.pageCount,
+            text = "Page " .. self.get.pageIndex .. " / " .. self.get.pageCount,
             color = Colors.White,
             origin = 0.5
         })
@@ -35,12 +35,12 @@ Nodes:define("PagedWindow", "UIWindow", {
     end,
 
     changePage = function(self, dir)
-        local nextIndex = self.props.pageIndex + dir
+        local nextIndex = self.get.pageIndex + dir
         if nextIndex < 1 then
             nextIndex = 1
             return
-        elseif nextIndex > self.props.pageCount then
-            nextIndex = self.props.pageCount
+        elseif nextIndex > self.get.pageCount then
+            nextIndex = self.get.pageCount
             return
         end
         
@@ -48,26 +48,26 @@ Nodes:define("PagedWindow", "UIWindow", {
     end,
 
     setPage = function(self, pageIndex)
-        if pageIndex < 1 or pageIndex > self.props.pageCount then
+        if pageIndex < 1 or pageIndex > self.get.pageCount then
             return false
         end
-        self.props.pageIndex = pageIndex
+        self.get.pageIndex = pageIndex
 
-        self.props.leftButton.visible = pageIndex > 1
-        self.props.rightButton.visible = pageIndex < self.props.pageCount
+        self.get.leftButton.visible = pageIndex > 1
+        self.get.rightButton.visible = pageIndex < self.get.pageCount
 
-        if self.props.pageContent then
-            self.props.pageContent:destroy()
+        if self.get.pageContent then
+            self.get.pageContent:destroy()
         end
-        self.props.pageContent = self.props.content:createChild("Group", {
+        self.get.pageContent = self.get.content:createChild("Group", {
             x = 0, y = 0
         })
         
         if self.func.onCreatePage then
-            self.func:onCreatePage(self.props.pageIndex)
+            self.func:onCreatePage(self.get.pageIndex)
         end
 
-        self.props.pageText.text = "Page " .. self.props.pageIndex .. " / " .. self.props.pageCount
+        self.get.pageText.text = "Page " .. self.get.pageIndex .. " / " .. self.get.pageCount
     
         return true
     end,

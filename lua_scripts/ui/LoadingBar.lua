@@ -4,20 +4,20 @@ Nodes:define("LoadingBar", "FillRect", {
     height = 2,
 
     onCreate = function(self)
-        self.props.x = self.x
-        self.props.y = self.y
+        self.get.x = self.x
+        self.get.y = self.y
 
-        self.props.fullWidth = self.width
-        self.props.fullHeight = self.height
+        self.get.fullWidth = self.width
+        self.get.fullHeight = self.height
 
         self.width = 0
         self.func:tweenIn()
     end,
 
     tweenIn = function(self)
-        self.x = self.props.x
+        self.x = self.get.x
         self.tween:to({
-            width = self.props.fullWidth,
+            width = self.get.fullWidth,
             duration = 0.25,
             ease = Ease.SineInOut,
             onComplete = function(self)
@@ -30,7 +30,7 @@ Nodes:define("LoadingBar", "FillRect", {
 
     tweenOut = function(self)
         self.tween:to({
-            x = self.props.x + self.props.fullWidth,
+            x = self.get.x + self.get.fullWidth,
             width = 0,
             duration = 0.25,
             ease = Ease.SineInOut,

@@ -137,6 +137,8 @@ namespace Amara {
                 gameProps->breakWorld();
                 return false;
             }
+            
+            channels = audio->channels;
 
             chunk_samples = chunk_frames * channels;
             chunk_bytes   = chunk_samples * sizeof(float);
@@ -147,7 +149,6 @@ namespace Amara {
             loopEnd = std::min((int)audio->samples.size() / channels, audio->loopEnd);
             totalFrames = audio->totalFrames;
             sampleRate = audio->sampleRate;
-            channels = audio->channels;
             
             if (id.empty()) id = audio->key;
 

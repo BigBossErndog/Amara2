@@ -12,22 +12,22 @@ Nodes:define("TextField", "FillRect", {
 
     onConfigure = function(self, config)
         if config.defaultText then
-            self.props.defaultText = config.defaultText
+            self.get.defaultText = config.defaultText
         end
         if config.inputEnabled ~= nil then
-            self.props.inputEnabled = config.inputEnabled
+            self.get.inputEnabled = config.inputEnabled
         end
     end,
 
     onCreate = function(self)
-        self.props.selected = false
-        self.props.finalText = ""
+        self.get.selected = false
+        self.get.finalText = ""
 
-        if not self.props.maxTextWidth then
-            self.props.maxTextWidth = self.width - 16
+        if not self.get.maxTextWidth then
+            self.get.maxTextWidth = self.width - 16
         end
         
-        self.props.txt = self:createChild("Text",{
+        self.get.txt = self:createChild("Text",{
             x = 8, y = 2,
             font = "defaultFont",
             origin = 0,
@@ -37,7 +37,7 @@ Nodes:define("TextField", "FillRect", {
             }
         })
 
-        self.props.cursor = self.props.txt:createChild("FillRect", {
+        self.get.cursor = self.get.txt:createChild("FillRect", {
             width = 1, height = 10,
             y = 2,
             color = Colors.White,
@@ -46,34 +46,34 @@ Nodes:define("TextField", "FillRect", {
                 self.func:hide()
             end,
             onUpdate = function(self, deltaTime)
-                if self.props.showing then
+                if self.get.showing then
                     self.x  = self.parent.width
-                    self.props.counter = self.props.counter + deltaTime
-                    if self.props.counter >= 0.5 then
-                        self.props.counter = self.props.counter - 0.5
+                    self.get.counter = self.get.counter + deltaTime
+                    if self.get.counter >= 0.5 then
+                        self.get.counter = self.get.counter - 0.5
                         self.visible = not self.visible
                     end
                 end
             end,
             show = function(self)
                 self.visible = true
-                self.props.showing = true
-                self.props.counter = 0
+                self.get.showing = true
+                self.get.counter = 0
             end,
             hide = function(self)
                 self.visible = false
-                self.props.showing = false
-                self.props.counter = 0
+                self.get.showing = false
+                self.get.counter = 0
             end
         })
 
-        self.props.textInput = self.props.txt:createChild("TextInput", {
+        self.get.textInput = self.get.txt:createChild("TextInput", {
             onInput = function(textInput, txt)
                 self.func:setText(txt)
-                self.props.cursor.func:show()
+                self.get.cursor.func:show()
 
                 if self.func.onChange then
-                    self.func:onChange(self.props.finalText)
+                    self.func:onChange(self.get.finalText)
                 end
             end
         })
@@ -86,38 +86,38 @@ Nodes:define("TextField", "FillRect", {
     end,
     
     focusField = function(self)
-        if self.props.inputEnabled then
-            self.props.selected = true
-            self.props.cursor.func:show()
-            self.func:setText(self.props.finalText)
-            self.props.textInput:startInput()
+        if self.get.inputEnabled then
+            self.get.selected = true
+            self.get.cursor.func:show()
+            self.func:setText(self.get.finalText)
+            self.get.textInput:startInput()
 
             if self.func.onFocus then
-                self.func:onFocus(self.props.finalText)
+                self.func:onFocus(self.get.finalText)
             end
         end
     end,
 
     setText = function(self, txt)
-        self.props.finalText = txt
+        self.get.finalText = txt
 
         if string.len(txt) <= 0 then
-            if self.props.selected then
-                self.props.txt.text = txt
-                self.props.txt.color = Colors.White
+            if self.get.selected then
+                self.get.txt.text = txt
+                self.get.txt.color = Colors.White
             else
-                self.props.txt.text = self.props.defaultText
-                self.props.txt.color = "#515f73"
+                self.get.txt.text = self.get.defaultText
+                self.get.txt.color = "#515f73"
             end
         else
-            self.props.txt.text = txt
-            self.props.txt.color = Colors.White
+            self.get.txt.text = txt
+            self.get.txt.color = Colors.White
 
-            self.props.textInput.text = txt
-            while self.props.txt.width > self.props.maxTextWidth do
-                self.props.textInput:backspace()
-                self.props.txt.text = self.props.textInput.text
-                self.props.finalText = self.props.textInput.text
+            self.get.textInput.text = txt
+            while self.get.txt.width > self.get.maxTextWidth do
+                self.get.textInput:backspace()
+                self.get.txt.text = self.get.textInput.text
+                self.get.finalText = self.get.textInput.text
             end
         end
     end,
@@ -136,17 +136,17 @@ Nodes:define("TextField", "FillRect", {
     end,
 
     onUpdate = function(self)
-        if self.props.selected then
+        if self.get.selected then
             if self.func:deselect() then
-                self.props.selected = false
-                self.props.cursor.func:hide()
-                self.props.textInput:stopInput()
+                self.get.selected = false
+                self.get.cursor.func:hide()
+                self.get.textInput:stopInput()
 
                 if self.func.onUnfocus then
-                    self.func:onUnfocus(self.props.finalText)
+                    self.func:onUnfocus(self.get.finalText)
                 end
 
-                self.func:setText(self.props.finalText)
+                self.func:setText(self.get.finalText)
 
                 if Keyboard:justPressed(Key.Enter) then
                     if self.func.onEnter then

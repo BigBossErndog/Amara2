@@ -10,11 +10,11 @@ Nodes:define("UIWindow", "NineSlice", {
     },
     
     onCreate = function(self)
-        self.props.defWidth = self.width
-        self.props.defHeight = self.height
+        self.get.defWidth = self.width
+        self.get.defHeight = self.height
         
-        self.props.targetWidth = self.width
-        self.props.targetHeight = self.height
+        self.get.targetWidth = self.width
+        self.get.targetHeight = self.height
 
         self.input:activate()
         self.input.draggable = true
@@ -23,12 +23,12 @@ Nodes:define("UIWindow", "NineSlice", {
             self:bringToFront()
         end)
 
-        self.props.contentRoot = self:createChild("Group", {
+        self.get.contentRoot = self:createChild("Group", {
             x = 0, y = 0,
             scale = 0
         })
         
-        self.props.content = self.props.contentRoot:createChild("Group", {
+        self.get.content = self.get.contentRoot:createChild("Group", {
             x = self.left,
             y = self.top
         })
@@ -45,9 +45,9 @@ Nodes:define("UIWindow", "NineSlice", {
         self.func:closeInstantly()
     end,
     onUpdate = function(self, deltaTime)
-        self.props.content:goTo(
-            -self.props.targetWidth / 2.0,
-            -self.props.targetHeight / 2.0
+        self.get.content:goTo(
+            -self.get.targetWidth / 2.0,
+            -self.get.targetHeight / 2.0
         )
 
         if self.x < self.world.left + self.width/2 then
@@ -62,10 +62,10 @@ Nodes:define("UIWindow", "NineSlice", {
         end
     end,
     showContent = function(self)
-        self.props.content.visible = true
+        self.get.content.visible = true
     end,
     hideContent = function(self)
-        self.props.content.visible = false
+        self.get.content.visible = false
     end,
     closeInstantly = function(self)
         self.width = 0
@@ -76,35 +76,35 @@ Nodes:define("UIWindow", "NineSlice", {
     end,
     setTarget = function(self, _width, _height)
         if _width then
-            self.props.targetWidth = _width
+            self.get.targetWidth = _width
         end
         if _height then
-            self.props.targetHeight = _height
+            self.get.targetHeight = _height
         end
         return self
     end,
     openWindow = function(self, _onEnd)
         self.visible = true
-        self.props.isOpen = true
+        self.get.isOpen = true
         
-        if not self.props.content.visible then
-            self.props.content.visible = true
-            self.props.contentRoot.scale = 0
+        if not self.get.content.visible then
+            self.get.content.visible = true
+            self.get.contentRoot.scale = 0
         end
 
-        self.props.contentRoot.tween:to({
+        self.get.contentRoot.tween:to({
             scaleX = 1,
             scaleY = 1,
             ease = Ease.SineOut,
-            duration = self.props.speed,
+            duration = self.get.speed,
             onUpdate = function(self, progress)
                 print(self.scale)
             end
         })
         self.tween:to({
-            width = self.props.targetWidth,
-            height = self.props.targetHeight,
-            duration = self.props.speed,
+            width = self.get.targetWidth,
+            height = self.get.targetHeight,
+            duration = self.get.speed,
             ease = Ease.SineOut,
             onComplete = _onEnd
         })
@@ -116,19 +116,19 @@ Nodes:define("UIWindow", "NineSlice", {
             end
         end
 
-        self.props.contentRoot.tween:to({
+        self.get.contentRoot.tween:to({
             scaleX = 0,
             scaleY = 0,
             ease = Ease.SineIn,
-            duration = self.props.speed
+            duration = self.get.speed
         })
 
-        self.props.isOpen = false
+        self.get.isOpen = false
 
         self.tween:to({
             width = 0,
             height = 0,
-            duration = self.props.speed,
+            duration = self.get.speed,
             ease = Ease.SineIn,
             onComplete = _onEnd
         })

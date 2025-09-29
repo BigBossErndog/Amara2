@@ -3,7 +3,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
     onConfigure = function(self, config)
         if config.projectPath then
-            self.props.projectPath = config.projectPath
+            self.get.projectPath = config.projectPath
         else
             return
         end
@@ -21,33 +21,33 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         if config.installPlugins then
-            self.props.installPlugins = config.installPlugins
+            self.get.installPlugins = config.installPlugins
         end
 
-        local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
+        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
         if projectData then
             if projectData["executable-name"] then
-                self.props.executableName = projectData["executable-name"]
+                self.get.executableName = projectData["executable-name"]
             end
         end
-        self.props.projectData = projectData
+        self.get.projectData = projectData
 
-        if (not self.props.executableName) and projectData["project-name"] then
-            self.props.executableName = projectData["project-name"]
+        if (not self.get.executableName) and projectData["project-name"] then
+            self.get.executableName = projectData["project-name"]
         end
 
         if config.printLog then
-            self.props.printLog = config.printLog
+            self.get.printLog = config.printLog
         end
 
         local args = {}
 
-        local buildDir = System:join(self.props.projectPath, "build", "windows")
-        self.props.buildDir = buildDir
+        local buildDir = System:join(self.get.projectPath, "build", "windows")
+        self.get.buildDir = buildDir
 
         local buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
         local clangLLVMPath = System:join(buildModule, "clang-llvm")
-        self.props.clangLLVMPath = clangLLVMPath
+        self.get.clangLLVMPath = clangLLVMPath
         
         local sdl3Path = System:join(buildModule, "resources/libs/SDL3-3.2.16")
 
@@ -79,10 +79,10 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         if config.iconPath then
-            self.props.iconPath = config.iconPath
-            self.props.iconDest = System:join(buildDir, "icon.ico")
-            self.props.resFile = System:join(buildDir, "icon.rc")
-            self.props.resOutputFile = System:join(buildDir, "icon.res")
+            self.get.iconPath = config.iconPath
+            self.get.iconDest = System:join(buildDir, "icon.ico")
+            self.get.resFile = System:join(buildDir, "icon.rc")
+            self.get.resOutputFile = System:join(buildDir, "icon.res")
         end
 
         local compilerPath = fix_path(System:join(clangLLVMPath, "bin/clang.exe"))
@@ -90,14 +90,14 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         -- table.insert(args, compilerPath)
         table.insert(args, fix_path(System:getRelativePath("amara2/main/main.cpp")))
 
-        if self.props.resOutputFile then
-            table.insert(args, fix_path(self.props.resOutputFile))
+        if self.get.resOutputFile then
+            table.insert(args, fix_path(self.get.resOutputFile))
         end
 
         -- AMARA_PATH
         table.insert(args, "-Iamara2")
-        if self.props.installPlugins then
-            table.insert(args, "-I", fix_path(System:join(self.props.projectPath, "plugins")))
+        if self.get.installPlugins then
+            table.insert(args, "-I", fix_path(System:join(self.get.projectPath, "plugins")))
         end
 
         -- OTHER_LIB_PATHS
@@ -133,14 +133,14 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         -- table.insert(args, "-DAMARA_DEBUG_BUILD")
 
         -- EXTRA_OPTIONS
-        if self.props.installPlugins then
+        if self.get.installPlugins then
             table.insert(args, "-DAMARA_PLUGINS")
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
-        if self.props.projectData.encryption then
-            table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.props.projectData.encryption["key"]))
-            if self.props.projectData.encryption["encrypt-write-output"] then
+        if self.get.projectData.encryption then
+            table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.get.projectData.encryption["key"]))
+            if self.get.projectData.encryption["encrypt-write-output"] then
                 table.insert(args, "-DAMARA_ENCRYPT_OUTPUT")
             end
         end
@@ -165,14 +165,14 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         -- Output file
         table.insert(args, "-o")
-        table.insert(args, fix_path(System:join(buildDir, self.props.executableName .. ".exe")))
+        table.insert(args, fix_path(System:join(buildDir, self.get.executableName .. ".exe")))
 
         local argsFile = System:join(buildDir, "build_args.txt")
         System:writeFile(argsFile, string.sep_concat(" ", table.unpack(args)))
         local buildCommand = quote_if_needed(compilerPath) .. " @" .. quote_if_needed(argsFile)
         
         local batchFilePath = System:join(buildDir, "build_windows.bat")
-        self.props.batchFilePath = batchFilePath
+        self.get.batchFilePath = batchFilePath
         local batchFileContent = buildCommand .. " && exit"
 
         System:writeFile(batchFilePath, batchFileContent)
@@ -197,64 +197,64 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         self.world:hideWindow()
 
-        if self.props.iconPath then
-            System:WriteICO(self.props.iconPath, self.props.iconDest)
-            System:writeFile(self.props.resFile, "1 ICON \"" .. self.props.iconDest .. "\"\n")
+        if self.get.iconPath then
+            System:WriteICO(self.get.iconPath, self.get.iconDest)
+            System:writeFile(self.get.resFile, "1 ICON \"" .. self.get.iconDest .. "\"\n")
             
-            local command = string.format("%s \"%s\"", System:join(self.props.clangLLVMPath, "bin/llvm-rc"), self.props.resFile)
+            local command = string.format("%s \"%s\"", System:join(self.get.clangLLVMPath, "bin/llvm-rc"), self.get.resFile)
             System:execute(command)
         end
 
-        if not self.props.printLog then
-            self.props.printLog = self.world.props.windows:createChild("TerminalWindow", {
+        if not self.get.printLog then
+            self.get.printLog = self.world.get.windows:createChild("TerminalWindow", {
                 gameProcess = self,
                 props = {
-                    projectPath = self.props.projectPath
+                    projectPath = self.get.projectPath
                 },
                 allowMinimize = true,
                 disableSavePosition = true,
                 onExit = function(self)
-                    if self.props.gameProcess then
-                        System:remove(self.props.gameProcess.props.batchFilePath)
-                        System:remove(System:join(self.props.gameProcess.props.buildDir, "build_args.txt"))
+                    if self.get.gameProcess then
+                        System:remove(self.get.gameProcess.get.batchFilePath)
+                        System:remove(System:join(self.get.gameProcess.get.buildDir, "build_args.txt"))
                     end
 
-                    local newWindow = self.world.props.windows:createChild("ProjectWindow", {
-                        projectPath = self.props.projectPath
+                    local newWindow = self.world.get.windows:createChild("ProjectWindow", {
+                        projectPath = self.get.projectPath
                     })
                     newWindow.func:openWindow()
                     
-                    if self.props.gameProcess then
-                        self.props.gameProcess:destroy()
-                        self.props.gameProcess = nil
+                    if self.get.gameProcess then
+                        self.get.gameProcess:destroy()
+                        self.get.gameProcess = nil
                         
-                        System:remove(System:join(self.props.projectPath, "build", "windows"))
+                        System:remove(System:join(self.get.projectPath, "build", "windows"))
                     end
                 end
             })
-            self.props.printLog.func:openWindow()
+            self.get.printLog.func:openWindow()
 
             self.world:showWindow()
         end
 
-        self.props.printLog.func:startLoading()
+        self.get.printLog.func:startLoading()
 
-        self.props.printLog.func:handleMessage(Localize:get("label_building"))
-        self.props.printLog.func:handleMessage(Localize:get("label_doNotCloseCommandPrompt"))
+        self.get.printLog.func:handleMessage(Localize:get("label_building"))
+        self.get.printLog.func:handleMessage(Localize:get("label_doNotCloseCommandPrompt"))
     end,
 
     -- onOutput = function(self, msg)
-    --     if self.props.printLog then
-    --         self.props.printLog.func:handleMessage(msg)
+    --     if self.get.printLog then
+    --         self.get.printLog.func:handleMessage(msg)
     --     end
     -- end,
 
     onExit = function(self, exitCode)
-        System:remove(self.props.batchFilePath)
-        System:remove(System:join(self.props.buildDir, "build_args.txt"))
+        System:remove(self.get.batchFilePath)
+        System:remove(System:join(self.get.buildDir, "build_args.txt"))
         
-        if self.props.printLog then
-            self.props.printLog.func:unbindGameProcess()
+        if self.get.printLog then
+            self.get.printLog.func:unbindGameProcess()
         end
 
         self.world.forcedClickThrough = true
@@ -263,8 +263,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         if exitCode == 0 then
             local newProcess = self.parent:createChild("ProcessNode", {
                 props = {
-                    projectPath = self.props.projectPath,
-                    printLog = self.props.printLog
+                    projectPath = self.get.projectPath,
+                    printLog = self.get.printLog
                 },
                 arguments = {
                     Game.executable,
@@ -273,31 +273,31 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                     "-props", self.props
                 },
                 onOutput = function(self, msg)
-                    self.props.printLog.func:handleMessage(msg)
+                    self.get.printLog.func:handleMessage(msg)
                 end,
                 onExit = function(self, exitCode)
-                    if self.props.printLog then
-                        self.props.printLog.func:unbindGameProcess()
-                        self.props.printLog.func:stopLoading()
+                    if self.get.printLog then
+                        self.get.printLog.func:unbindGameProcess()
+                        self.get.printLog.func:stopLoading()
                     end
                     
                     if exitCode == 0 then
-                        System:openDirectory(System:join(self.props.projectPath, "build", "windows"))
-                        self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
+                        System:openDirectory(System:join(self.get.projectPath, "build", "windows"))
+                        self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
                     else
-                        System:remove(System:join(self.props.projectPath, "build", "windows"))
-                        self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
+                        System:remove(System:join(self.get.projectPath, "build", "windows"))
+                        self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
                     end
                 end
             })
-            self.props.printLog.props.gameProcess = newProcess
+            self.get.printLog.get.gameProcess = newProcess
         else
-            self.props.printLog.func:stopLoading()
-            -- System:remove(System:join(self.props.projectPath, "build", "windows"))
+            self.get.printLog.func:stopLoading()
+            -- System:remove(System:join(self.get.projectPath, "build", "windows"))
             
-            self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
+            self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
             if not System:VSBuildToolsInstalled() then
-                self.props.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
+                self.get.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
             end
         end
 

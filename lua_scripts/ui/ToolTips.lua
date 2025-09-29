@@ -23,29 +23,29 @@ Nodes:define("ToolTips", "NineSlice", {
     end,
 
     showToolTip = function(self, str, deltaTime)
-        if str ~= self.props.check then
-            self.props.check = str
-            self.props.attempt = 0
+        if str ~= self.get.check then
+            self.get.check = str
+            self.get.attempt = 0
             return
         end
 
-        self.props.attempt = self.props.attempt + deltaTime
-        if self.props.attempt < 0.6 then
+        self.get.attempt = self.get.attempt + deltaTime
+        if self.get.attempt < 0.6 then
             return
         end
 
         if Localize:has(str) then
-            self.props.txt.text = Localize:get(str)
+            self.get.txt.text = Localize:get(str)
         else
-            self.props.txt.text = str
+            self.get.txt.text = str
         end
         
-        self.width = self.props.txt.width + 8
-        self.height = self.props.txt.height + 4
+        self.width = self.get.txt.width + 8
+        self.height = self.get.txt.height + 4
 
-        self.props.txt:goTo(
-            math.ceil(-self.props.txt.width/2.0),
-            math.floor(-self.props.txt.height/2.0)
+        self.get.txt:goTo(
+            math.ceil(-self.get.txt.width/2.0),
+            math.floor(-self.get.txt.height/2.0)
         )
         
         self.func:followMouse()
@@ -53,7 +53,7 @@ Nodes:define("ToolTips", "NineSlice", {
         self:bringToFront()
         
         self.visible = true
-        self.props.justShown = true
+        self.get.justShown = true
     end,
 
     followMouse = function(self)
@@ -78,15 +78,15 @@ Nodes:define("ToolTips", "NineSlice", {
         if self.visible then
             self.func:followMouse()
         end
-        if self.props.justShown then
+        if self.get.justShown then
             self.alpha = self.alpha + deltaTime/0.16
             if self.alpha >= 1 then
                 self.alpha = 1
             end
-            self.props.justShown = false
+            self.get.justShown = false
         elseif self.visible and self.alpha > 0 then
-            self.props.attempt = 0
-            self.props.check = nil
+            self.get.attempt = 0
+            self.get.check = nil
             self.alpha = self.alpha - deltaTime/0.16
             if self.alpha <= 0 then
                 self.alpha = 0

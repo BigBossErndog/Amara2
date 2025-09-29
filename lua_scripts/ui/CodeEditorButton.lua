@@ -20,9 +20,9 @@ Nodes:define("CodeEditorButton", "UIButton", {
         local settings = self.world.func:getSettings()
         
         if settings.codeEditor and editorTooltips[settings.codeEditor] then
-            self.props.toolTip = editorTooltips[settings.codeEditor]
+            self.get.toolTip = editorTooltips[settings.codeEditor]
         else
-            self.props.toolTip = "toolTip_noCodeEditor"
+            self.get.toolTip = "toolTip_noCodeEditor"
         end
 
         self.classes.UIButton.func:onCreate()
@@ -30,7 +30,7 @@ Nodes:define("CodeEditorButton", "UIButton", {
 
     onPress = function(self)
         local settings = self.world.func:getSettings()
-        local projectPath = self.parent.parent.parent.props.projectPath
+        local projectPath = self.parent.parent.parent.get.projectPath
 
         OpenCodeEditor(settings, projectPath)
     end

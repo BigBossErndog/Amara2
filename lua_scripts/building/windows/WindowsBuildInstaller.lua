@@ -4,14 +4,14 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
 
     onConfigure = function(self, config)
         if config.projectPath then
-            self.props.projectPath = config.projectPath
+            self.get.projectPath = config.projectPath
         end
     end,
 
     onCreate = function(self)
         self.classes.UIWindow.func:onCreate()
 
-        self.props.title = self.props.content:createChild("Text", {
+        self.get.title = self.get.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
             text = Localize:get("label_windowsBuilderNotFound"),
@@ -20,7 +20,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
             input = true
         })
 
-        self.props.msgTxt = self.props.content:createChild("Text", {
+        self.get.msgTxt = self.get.content:createChild("Text", {
             x = 10, y = 24,
             font = "defaultFont",
             text = Localize:get("label_windowsBuilderNotice"),
@@ -29,21 +29,21 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
             input = true
         })
         
-        local buttonPos = self.props.targetWidth - 22
+        local buttonPos = self.get.targetWidth - 22
         local buttonSpacing = 20
 
         -- buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos,
             y = 4,
             icon = 5,
             onPress = function(button)
-                button.props.enabled = false
+                button.get.enabled = false
                 self.func:closeWindow(function()
                     local newWindow = self.parent:createChild("ProjectWindow", {
-                        projectPath = self.props.projectPath
+                        projectPath = self.get.projectPath
                     })
                     newWindow.func:openWindow()
                     
@@ -52,27 +52,27 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
             end
         })
 
-        self.props.pathField = self.props.content:createChild("TextField", {
+        self.get.pathField = self.get.content:createChild("TextField", {
             x = 8,
-            y = self.props.msgTxt.y + self.props.msgTxt.height + 6,
-            width = self.props.targetWidth - 16 - 18,
+            y = self.get.msgTxt.y + self.get.msgTxt.height + 6,
+            width = self.get.targetWidth - 16 - 18,
             inputEnabled = false,
             defaultText = Localize:get("label_windowsModuleFile")
         })
 
-        self.props.browseButton = self.props.content:createChild("UIButton", {
+        self.get.browseButton = self.get.content:createChild("UIButton", {
             id = "browseButton",
             toolTip = "toolTip_browseFile",
-            x = self.props.pathField.x + self.props.pathField.width + 4,
-            y = self.props.pathField.y,
+            x = self.get.pathField.x + self.get.pathField.width + 4,
+            y = self.get.pathField.y,
             icon = 6,
             onPress = function()
                 self.world:hideWindow()
 
                 self:wait(0.2):next(function()
-                    self.props.modulePath = nil
+                    self.get.modulePath = nil
 
-                    local path = System:browseFile(self.props.projectPath)
+                    local path = System:browseFile(self.get.projectPath)
 
                     self.world:showWindow()
                     
@@ -80,16 +80,16 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                         return
                     end
 
-                    self.props.pathField.func:setText("")
+                    self.get.pathField.func:setText("")
                     if self.func:checkModule(path) then
-                        self.props.modulePath = path
-                        self.props.pathField.func:setText(self.func:truncatePath(path))
+                        self.get.modulePath = path
+                        self.get.pathField.func:setText(self.func:truncatePath(path))
                     end
                 end)
             end
         })
 
-        self.props.errorMessage = self.props.content:createChild("Text", {
+        self.get.errorMessage = self.get.content:createChild("Text", {
             font = "defaultFont",
             origin = 0,
             color = Colors.Red,
@@ -97,19 +97,19 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
             x = 10, y = 72
         })
 
-        local buildButton = self.props.content:createChild("UIButton", {
+        local buildButton = self.get.content:createChild("UIButton", {
             id = "buildProjectButton",
             text = "label_continue",
             onPress = function()
-                if self.func:checkModule(self.props.modulePath) then
+                if self.func:checkModule(self.get.modulePath) then
                     self.func:continueBuilding()
                 end
             end
         })
-        buildButton.x = self.props.targetWidth - buildButton.width - 8
-        buildButton.y = self.props.targetHeight - buildButton.height - 6
+        buildButton.x = self.get.targetWidth - buildButton.width - 8
+        buildButton.y = self.get.targetHeight - buildButton.height - 6
 
-        local downloadButton = self.props.content:createChild("UIButton", {
+        local downloadButton = self.get.content:createChild("UIButton", {
             id = "downloadButton",
             text = "label_downloadModule",
             onPress = function()
@@ -122,32 +122,32 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
 
     checkModule = function(self, path)
         if not path then
-            self.props.errorMessage:setText(Localize:get("error_expectedAmara2BuildModule"))
-            self.props.errorMessage.visible = true
+            self.get.errorMessage:setText(Localize:get("error_expectedAmara2BuildModule"))
+            self.get.errorMessage.visible = true
             return false
         end
         if not System:exists(path) then
-            self.props.errorMessage:setText(Localize:get("error_windowsModuleNotFound"))
-            self.props.errorMessage.visible = true
+            self.get.errorMessage:setText(Localize:get("error_windowsModuleNotFound"))
+            self.get.errorMessage.visible = true
             return false
         end
         if not (System:getFileName(path) == "amara2_windows_build_module.zip") then
-            self.props.errorMessage:setText(Localize:get("error_expectedAmara2BuildModule"))
-            self.props.errorMessage.visible = true
+            self.get.errorMessage:setText(Localize:get("error_expectedAmara2BuildModule"))
+            self.get.errorMessage.visible = true
             return false
         end
-        self.props.errorMessage.visible = false
+        self.get.errorMessage.visible = false
         return true
     end,
 
     truncatePath = function(self, _path)
-        local txt = self.props.pathField.props.txt
+        local txt = self.get.pathField.get.txt
         local str = _path
         local path = str
 
         local edited = false
         txt.text = str
-        while txt.width > self.props.pathField.width - 16 do
+        while txt.width > self.get.pathField.width - 16 do
             str = string.sub(str, 2)
             txt.text = string.concat("...", str)
         end
@@ -161,9 +161,9 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     continueBuilding = function(self)
         local installerNode = self
         self.func:closeWindow(function(win)
-            local printLog = self.world.props.windows:createChild("TerminalWindow", {
+            local printLog = self.world.get.windows:createChild("TerminalWindow", {
                 props = {
-                    projectPath = self.props.projectPath
+                    projectPath = self.get.projectPath
                 },
                 allowMinimize = true,
                 disableSavePosition = true,
@@ -172,12 +172,12 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                     self.classes.TerminalWindow.func:onCreate()
                     self.func:startLoading()
 
-                    self.props.gameProcess = self:createChild("ProcessNode", {
+                    self.get.gameProcess = self:createChild("ProcessNode", {
                         arguments = {
                             Game.executable,
                             "-context", System:getBasePath(),
                             "-script", System:getScriptPath("building/windows/WindowsBuildExtractor"),
-                            "-buildmodule", installerNode.props.modulePath
+                            "-buildmodule", installerNode.get.modulePath
                         },
                         onOutput = function(process, msg)
                             self.func:handleMessage(msg)
@@ -185,7 +185,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                         onExit = function(process, exitCode)
                             self.func:stopLoading()
                             if exitCode == 0 and System:exists(System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm/bin/clang.exe")) then
-                                self.props.success = true                          
+                                self.get.success = true                          
                             end
 
                             self.func:unbindGameProcess()
@@ -194,18 +194,18 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                 end,
 
                 onExit = function(self)
-                    if self.props.gameProcess then
-                        self.props.gameProcess:destroy()
-                        self.props.gameProcess = nil
+                    if self.get.gameProcess then
+                        self.get.gameProcess:destroy()
+                        self.get.gameProcess = nil
                     end
-                    if not self.props.success then
-                        local newWindow = self.world.props.windows:createChild("ProjectWindow", {
-                            projectPath = self.props.projectPath
+                    if not self.get.success then
+                        local newWindow = self.world.get.windows:createChild("ProjectWindow", {
+                            projectPath = self.get.projectPath
                         })
                         newWindow.func:openWindow()
                     else
-                        local newWindow = self.world.props.windows:createChild("BuildPlatformMenu", {
-                            projectPath = self.props.projectPath
+                        local newWindow = self.world.get.windows:createChild("BuildPlatformMenu", {
+                            projectPath = self.get.projectPath
                         })
                         newWindow.func:openWindow()
                     end

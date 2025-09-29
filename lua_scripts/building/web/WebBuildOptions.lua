@@ -4,16 +4,16 @@ Nodes:define("WebBuildOptions", "UIWindow", {
 
     onConfigure = function(self, config)
         if config.projectPath then
-            self.props.projectPath = config.projectPath
+            self.get.projectPath = config.projectPath
         end
     end,
 
     onCreate = function(self)
-        self.props.projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
+        self.get.projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
 
         self.classes.UIWindow.func:onCreate()
 
-        local title = self.props.content:createChild("Text", {
+        local title = self.get.content:createChild("Text", {
             x = 10, y = 6,
             font = "defaultFont",
             text = Localize:get("title_buildOptions"),
@@ -21,21 +21,21 @@ Nodes:define("WebBuildOptions", "UIWindow", {
             origin = 0
         })
 
-        local buttonPos = self.props.targetWidth - 22
+        local buttonPos = self.get.targetWidth - 22
         local buttonSpacing = 20
 
         -- buttonPos = buttonPos - buttonSpacing
-        self.props.backButton = self.props.content:createChild("UIButton", {
+        self.get.backButton = self.get.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos,
             y = 4,
             icon = 5,
             onPress = function(button)
-                button.props.enabled = false
+                button.get.enabled = false
                 self.func:closeWindow(function(b)
                     local newWindow = self.parent:createChild("ProjectWindow", {
-                        projectPath = self.props.projectPath
+                        projectPath = self.get.projectPath
                     })
                     newWindow.func:openWindow()
                     
@@ -49,43 +49,43 @@ Nodes:define("WebBuildOptions", "UIWindow", {
                 { Key.RightAlt, Key.RightShift, Key.Backspace }
             },
             onPress = function()
-                self.props.backButton.func:forcePress()
+                self.get.backButton.func:forcePress()
             end
         })
 
-        local txt = self.props.content:createChild("Text", {
+        local txt = self.get.content:createChild("Text", {
             x = 10, y = 24,
             origin = 0,
             text = Localize:get("label_includeFoldersDesc"),
             font = "defaultFont",
             color = Colors.White,
         })
-        self.props.includeFolders = self.props.content:createChild("IncludeFolders", {
-            projectPath = self.props.projectPath,
-            projectData = self.props.projectData,
+        self.get.includeFolders = self.get.content:createChild("IncludeFolders", {
+            projectPath = self.get.projectPath,
+            projectData = self.get.projectData,
             x = 10, y = 40,
-            width = self.props.targetWidth - 20,
-            height= self.props.targetHeight - 40 - 28
+            width = self.get.targetWidth - 20,
+            height= self.get.targetHeight - 40 - 28
         })
 
-        local buildButton = self.props.content:createChild("UIButton", {
+        local buildButton = self.get.content:createChild("UIButton", {
             id = "buildProjectButton",
             text = "label_buildProject",
             onPress = function()
                 self.func:startBuilding()
             end
         })
-        buildButton.x = self.props.targetWidth - buildButton.width - 8
-        buildButton.y = self.props.targetHeight - buildButton.height - 6
+        buildButton.x = self.get.targetWidth - buildButton.width - 8
+        buildButton.y = self.get.targetHeight - buildButton.height - 6
     end,
 
     startBuilding = function(self)
         self.func:closeWindow(function(self)
-            self.props.includeFolders.func:confirmOptions()
-            System:writeFile(System:join(self.props.projectPath, "project.json"), self.props.projectData)
+            self.get.includeFolders.func:confirmOptions()
+            System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
             
-            local buildNode = self.world.props.windows:createChild("WebBuildNode", {
-                projectPath = self.props.projectPath
+            local buildNode = self.world.get.windows:createChild("WebBuildNode", {
+                projectPath = self.get.projectPath
             })
             self:destroy()
         end)

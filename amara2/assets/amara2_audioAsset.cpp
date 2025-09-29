@@ -145,18 +145,16 @@ namespace Amara {
                     if (String::startsWith(c, "LOOPEND=")) loopEnd = std::stoi(c.substr(8));
                 }
 
+                int startSample = 0;
                 stb_vorbis_seek_start(v);
 
-                samples.clear();
-                float decode_buffer[4096];
-                int num_samples_decoded;
-                while ((num_samples_decoded = stb_vorbis_get_samples_float_interleaved(v, channels, decode_buffer, 4096)) > 0) {
-                    samples.insert(samples.end(), decode_buffer, decode_buffer + num_samples_decoded * channels);
-                }
+                totalFrames = stb_vorbis_stream_length_in_samples(v);
+                samples.resize(totalFrames * channels);
+                int actual_frames = stb_vorbis_get_samples_float_interleaved(v, channels, samples.data(), totalFrames * channels);
+                samples.resize(actual_frames * channels);
+                totalFrames = actual_frames;
                 
-                totalFrames = samples.size() / channels;
-                
-                if (loopEnd == 0) loopEnd = totalFrames;
+                if (loopEnd == 0) loopEnd = (samples.size() / channels);
 
                 stb_vorbis_close(v);
 

@@ -7,14 +7,14 @@ Nodes:define("UIButton", "NineSlice", {
         active = true,
         cursor = Cursor.Pointer,
         onPointerDown = function(self, pointer)
-            self.props.clicked = true
-            if self.props.enabled then
+            self.get.clicked = true
+            if self.get.enabled then
                 self.frame = 2
             end
         end,
         onPointerUp = function(self, pointer)
             self.frame = 1
-            if self.props.enabled and self.func.onPress then
+            if self.get.enabled and self.func.onPress then
                 self.func:onPress()
             end
         end,
@@ -24,13 +24,13 @@ Nodes:define("UIButton", "NineSlice", {
     },
 
     onCreate = function(self)
-        self.props.enabled = true
+        self.get.enabled = true
     end,
     
     onConfigure = function(self, config)
         if config.icon then
-            if not self.props.icon then
-                self.props.icon = self:createChild("Sprite", {
+            if not self.get.icon then
+                self.get.icon = self:createChild("Sprite", {
                     texture = "uiIcons",
                     x = self.width / 2.0,
                     y = self.height / 2.0,
@@ -38,71 +38,71 @@ Nodes:define("UIButton", "NineSlice", {
                     visible = false
                 })
             end
-            self.props.icon.frame = config.icon
-            self.props.icon.visible = true
+            self.get.icon.frame = config.icon
+            self.get.icon.visible = true
         end
 
         if config.text then
-            if not self.props.txt then
-                self.props.txt = self:createChild("Text", {
+            if not self.get.txt then
+                self.get.txt = self:createChild("Text", {
                     font = "defaultFont",
                     origin = 0
                 })
             end
 
             if Localize:has(config.text) then
-                self.props.txt.text = Localize:get(config.text)
+                self.get.txt.text = Localize:get(config.text)
             else
-                self.props.txt.text = config.text
+                self.get.txt.text = config.text
             end
 
-            self.width = self.props.txt.width + 16
+            self.width = self.get.txt.width + 16
 
-            self.props.txt.pos = {
-                math.floor(self.width/2.0 - self.props.txt.width/2.0),
-                math.floor(self.height/2.0 - self.props.txt.height/2.0) - 2
+            self.get.txt.pos = {
+                math.floor(self.width/2.0 - self.get.txt.width/2.0),
+                math.floor(self.height/2.0 - self.get.txt.height/2.0) - 2
             }
         end
 
         if config.toolTip then
-            self.props.toolTip = config.toolTip
+            self.get.toolTip = config.toolTip
         end
     end,
 
     onUpdate = function(self, deltaTime)
         if self.frame == 1 then
-            if self.props.icon then
-                self.props.icon.y = self.height / 2.0
+            if self.get.icon then
+                self.get.icon.y = self.height / 2.0
             end
-            if self.props.txt then
-                self.props.txt.y = math.floor(self.height/2.0 - self.props.txt.height/2.0) - 2
+            if self.get.txt then
+                self.get.txt.y = math.floor(self.height/2.0 - self.get.txt.height/2.0) - 2
             end
         else
-            if self.props.icon then
-                self.props.icon.y = self.height / 2.0 + 1
+            if self.get.icon then
+                self.get.icon.y = self.height / 2.0 + 1
             end
-            if self.props.txt then
-                self.props.txt.y = math.floor(self.height/2.0 - self.props.txt.height/2.0) - 2 + 1 
+            if self.get.txt then
+                self.get.txt.y = math.floor(self.height/2.0 - self.get.txt.height/2.0) - 2 + 1 
             end
         end
-        if self.props.toolTip and self.props.enabled and self.input.hovered then
-            if not self.props.clicked then
-                self.world.props.toolTips.func:showToolTip(self.props.toolTip, deltaTime)
+        if self.get.toolTip and self.get.enabled and self.input.hovered then
+            if not self.get.clicked then
+                self.world.get.toolTips.func:showToolTip(self.get.toolTip, deltaTime)
             end
         else
-            self.props.clicked = nil
+            self.get.clicked = nil
         end
     end,
 
     setIcon = function(self, frame)
-        if self.props.icon then
-            self.props.icon.frame = frame
+        if self.get.icon then
+            self.get.icon.frame = frame
         end
     end,
 
     forcePress = function(self)
         self.frame = 2
-        if self.props.enabled and self.func.onPress then
+        if self.get.enabled and self.func.onPress then
             self.func:onPress()
         end
         self:wait(0.1):next(function()

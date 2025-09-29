@@ -150,15 +150,15 @@ Creator:createWorld({
     end,
 
     getSettings = function(self, forceLoad)
-        if forceLoad or not self.props.settings then
+        if forceLoad or not self.get.settings then
             if System:exists("files/settings.json") then
-                self.props.settings = System:readJSON("files/settings.json")
+                self.get.settings = System:readJSON("files/settings.json")
             end
         end
-        if not self.props.settings then
-            self.props.settings = {}
+        if not self.get.settings then
+            self.get.settings = {}
         end
-        return self.props.settings
+        return self.get.settings
     end,
 
     fixSettings = function(self)

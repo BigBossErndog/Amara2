@@ -3,30 +3,30 @@ Nodes:define("WebBuildNode", "ProcessNode", {
 
     onConfigure = function(self, config)
         if config.projectPath then
-            self.props.projectPath = config.projectPath
+            self.get.projectPath = config.projectPath
         else
             return
         end
 
-        local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
+        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
         if projectData then
             if projectData["html-name"] then
-                self.props.htmlName = projectData["html-name"]
+                self.get.htmlName = projectData["html-name"]
             end
         end
 
-        if (not self.props.htmlName) and projectData["project-name"] then
-            self.props.htmlName = projectData["project-name"]
+        if (not self.get.htmlName) and projectData["project-name"] then
+            self.get.htmlName = projectData["project-name"]
         end
 
         if config.printLog then
-            self.props.printLog = config.printLog
+            self.get.printLog = config.printLog
         end
 
         local args = {}
 
-        local buildDir = System:join(self.props.projectPath, "build", "web")
-        self.props.buildDir = buildDir
+        local buildDir = System:join(self.get.projectPath, "build", "web")
+        self.get.buildDir = buildDir
 
         -- Clean and create build directory as per Makefile
         if System:exists(buildDir) then
@@ -58,8 +58,8 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         end
 
         local compilerPath = System:join(emscriptenPath, "em++")
-        local buildPath = System:join(buildDir, self.props.htmlName .. ".html")
-        self.props.htmlPath = buildPath
+        local buildPath = System:join(buildDir, self.get.htmlName .. ".html")
+        self.get.htmlPath = buildPath
 
         local sdlLibPath = System:join(emscriptenPath, "SDL3", "lib", "libSDL3.a")
         local sdlIncludePath = System:join(emscriptenPath, "SDL3", "include")
@@ -74,13 +74,13 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "-Iamara2")
         
         if (config.installPlugins) then
-            self.props.installPlugins = config.installPlugins
+            self.get.installPlugins = config.installPlugins
         end
 
         table.insert(args, "-Isrc")
 
-        if self.props.installPlugins then
-            table.insert(args, "-I" .. fix_path(System:join(self.props.projectPath, "plugins")))
+        if self.get.installPlugins then
+            table.insert(args, "-I" .. fix_path(System:join(self.get.projectPath, "plugins")))
         end
 
         table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/nlohmann/include")))
@@ -107,23 +107,23 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "EXCEPTION_CATCHING_ALLOWED='[\"std::exception\"]'")
 
         -- EMSCRIPTEN_EXTRA_OPTIONS
-        if self.props.installPlugins then
+        if self.get.installPlugins then
             table.insert(args, "-DAMARA_PLUGINS")
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
 
         -- EMSCRIPTEN_PRELOADS
-        if System:exists(System:join(self.props.projectPath, "lua_scripts")) then
+        if System:exists(System:join(self.get.projectPath, "lua_scripts")) then
             table.insert(args, "--preload-file")
-            table.insert(args, fix_path(System:join(self.props.projectPath, "lua_scripts@/lua_scripts")))
+            table.insert(args, fix_path(System:join(self.get.projectPath, "lua_scripts@/lua_scripts")))
         end
 
         if projectData["build-directories"] then
             for i, dir in ipairs(projectData["build-directories"]) do
-                if System:exists(System:join(self.props.projectPath, dir)) then
+                if System:exists(System:join(self.get.projectPath, dir)) then
                     table.insert(args, "--preload-file")
-                    table.insert(args, fix_path(System:join(self.props.projectPath, dir .. "@/" .. dir)))
+                    table.insert(args, fix_path(System:join(self.get.projectPath, dir .. "@/" .. dir)))
                 end
             end
         end
@@ -144,7 +144,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         local buildCommand = quote_if_needed(compilerPath) .. " @" .. quote_if_needed(argsFile)
         
         local batchFilePath = System:join(buildDir, "build_web.bat")
-        self.props.batchFilePath = batchFilePath
+        self.get.batchFilePath = batchFilePath
         local batchFileContent = pythonCommand .. " && " .. buildCommand .. " && exit"
 
         System:writeFile(batchFilePath, batchFileContent)
@@ -168,65 +168,65 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         
         self.world:hideWindow()
 
-        if not self.props.printLog then
-            self.props.printLog = self.world.props.windows:createChild("TerminalWindow", {
+        if not self.get.printLog then
+            self.get.printLog = self.world.get.windows:createChild("TerminalWindow", {
                 gameProcess = self,
                 props = {
-                    projectPath = self.props.projectPath
+                    projectPath = self.get.projectPath
                 },
                 allowMinimize = true,
                 disableSavePosition = true,
                 onExit = function(self)
-                    local newWindow = self.world.props.windows:createChild("ProjectWindow", {
-                        projectPath = self.props.projectPath
+                    local newWindow = self.world.get.windows:createChild("ProjectWindow", {
+                        projectPath = self.get.projectPath
                     })
                     newWindow.func:openWindow()
                     
-                    if self.props.gameProcess then
-                        System:remove(self.props.gameProcess.props.batchFilePath)
-                        System:remove(System:join(self.props.gameProcess.props.buildDir, "build_args.txt"))
-                        self.props.gameProcess:destroy()
-                        self.props.gameProcess = nil
+                    if self.get.gameProcess then
+                        System:remove(self.get.gameProcess.get.batchFilePath)
+                        System:remove(System:join(self.get.gameProcess.get.buildDir, "build_args.txt"))
+                        self.get.gameProcess:destroy()
+                        self.get.gameProcess = nil
                     end
                 end
             })
-            self.props.printLog.func:openWindow()
+            self.get.printLog.func:openWindow()
 
-            self.props.printLog.func:handleMessage(Localize:get("label_building"))
-            self.props.printLog.func:handleMessage(Localize:get("label_doNotCloseCommandPrompt"))
+            self.get.printLog.func:handleMessage(Localize:get("label_building"))
+            self.get.printLog.func:handleMessage(Localize:get("label_doNotCloseCommandPrompt"))
 
-            self.props.printLog.func:startLoading()
+            self.get.printLog.func:startLoading()
 
             self.world:showWindow()
         end
     end,
 
     -- onOutput = function(self, msg)
-    --     if self.props.printLog then
-    --         self.props.printLog.func:handleMessage(msg)
+    --     if self.get.printLog then
+    --         self.get.printLog.func:handleMessage(msg)
     --     end
     -- end,
 
     onExit = function(self, exitCode)
-        System:remove(self.props.batchFilePath)
-        System:remove(System:join(self.props.buildDir, "build_args.txt"))
+        System:remove(self.get.batchFilePath)
+        System:remove(System:join(self.get.buildDir, "build_args.txt"))
 
-        if self.props.printLog then
-            self.props.printLog.func:stopLoading()
-            self.props.printLog.func:unbindGameProcess()
+        if self.get.printLog then
+            self.get.printLog.func:stopLoading()
+            self.get.printLog.func:unbindGameProcess()
         end
 
         self.world.forcedClickThrough = true
         self.world:hideWindow()
 
         if exitCode == 0 then
-            System:rename(self.props.htmlPath, "index")
+            System:rename(self.get.htmlPath, "index")
             -- Notify success
-            self.props.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
-            System:openDirectory(System:join(self.props.projectPath, "build", "web"))
+            self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
+            System:openDirectory(System:join(self.get.projectPath, "build", "web"))
         else
             -- Notify failure
-            self.props.printLog.func:handleMessage(Localize:get("label_buildFailed"))
+            self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
         end
 
         self.world.forcedClickThrough = false

@@ -7,16 +7,16 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
     onConfigure = function(self, config)
         if config.gameProcess then
-            self.props.gameProcess = config.gameProcess
+            self.get.gameProcess = config.gameProcess
         end
         if config.disableSavePosition then
-            self.props.disableSavePosition = config.disableSavePosition
+            self.get.disableSavePosition = config.disableSavePosition
         end
         if config.allowMinimize then
-            self.props.allowMinimize = config.allowMinimize
+            self.get.allowMinimize = config.allowMinimize
         end
         if config.projectPath then
-            self.props.projectPath = config.projectPath
+            self.get.projectPath = config.projectPath
         end
     end,
 
@@ -24,7 +24,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         local settings = self.world.func:getSettings()
         local terminalWindowData = settings.terminalWindowData
         
-        if not self.props.disableSavePosition then
+        if not self.get.disableSavePosition then
             if terminalWindowData then
                 if terminalWindowData.x and terminalWindowData.y then
                     self:goTo(
@@ -33,8 +33,8 @@ Nodes:define("TerminalWindow", "UIWindow", {
                     )
                 end
                 if terminalWindowData.width and terminalWindowData.height then
-                    self.props.targetWidth = terminalWindowData.width
-                    self.props.targetHeight = terminalWindowData.height
+                    self.get.targetWidth = terminalWindowData.width
+                    self.get.targetHeight = terminalWindowData.height
                 end
             else
                 settings.terminalWindowData = {
@@ -52,32 +52,32 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
         self.classes.UIWindow.func:onCreate(self, config)
         
-        self.props.paddingLeft = 8
-        self.props.paddingRight = 8
-        self.props.paddingTop = 22
-        self.props.paddingBottom = 8
+        self.get.paddingLeft = 8
+        self.get.paddingRight = 8
+        self.get.paddingTop = 22
+        self.get.paddingBottom = 8
 
-        self.props.marginLeft = 2
-        self.props.marginRight = 2
-        self.props.marginTop = 2
-        self.props.marginBottom = 2
+        self.get.marginLeft = 2
+        self.get.marginRight = 2
+        self.get.marginTop = 2
+        self.get.marginBottom = 2
 
-        self.props.bottomLocked = true
+        self.get.bottomLocked = true
 
-        if not self.props.poolSize then
-            self.props.poolSize = 32
+        if not self.get.poolSize then
+            self.get.poolSize = 32
         end
 
-        if self.props.gameProcess then
-            self.props.messages = self.props.gameProcess.output
+        if self.get.gameProcess then
+            self.get.messages = self.get.gameProcess.output
         end
-        if not self.props.messages then
-            self.props.messages = {}
+        if not self.get.messages then
+            self.get.messages = {}
         end
 
-        self.props.lineSpacing = 2
+        self.get.lineSpacing = 2
 
-        self.props.content:createChild("Text", {
+        self.get.content:createChild("Text", {
             font = "defaultFont",
             text = Localize:get("title_printLog"),
             color = "#b1d7e9",
@@ -85,25 +85,25 @@ Nodes:define("TerminalWindow", "UIWindow", {
             x = 10, y = 6
         })
 
-        self.props.cont = self.props.content:createChild("Container", {
-            x = self.props.paddingLeft,
-            y = self.props.paddingTop,
-            width = self.props.targetWidth - self.props.paddingLeft - self.props.paddingRight,
-            height = self.props.targetHeight - self.props.paddingTop - self.props.paddingBottom,
+        self.get.cont = self.get.content:createChild("Container", {
+            x = self.get.paddingLeft,
+            y = self.get.paddingTop,
+            width = self.get.targetWidth - self.get.paddingLeft - self.get.paddingRight,
+            height = self.get.targetHeight - self.get.paddingTop - self.get.paddingBottom,
             origin = 0
         })
 
-        self.props.pool = self.props.cont:createChild("NodePool", {
-            x = self.props.cont.left + self.props.marginLeft,
-            y = self.props.cont.top + self.props.marginTop,
+        self.get.pool = self.get.cont:createChild("NodePool", {
+            x = self.get.cont.left + self.get.marginLeft,
+            y = self.get.cont.top + self.get.marginTop,
         })
-        self.props.activePool = {}
+        self.get.activePool = {}
         
-        self.props.wallHeight = 0;
-        local wrapWidth = self.props.cont.width - self.props.marginLeft - self.props.marginRight
+        self.get.wallHeight = 0;
+        local wrapWidth = self.get.cont.width - self.get.marginLeft - self.get.marginRight
 
-        for i = 1, self.props.poolSize do
-            local item = self.props.pool:createChild("Text", {
+        for i = 1, self.get.poolSize do
+            local item = self.get.pool:createChild("Text", {
                 font = "defaultFont",
                 color = Colors.White,
                 origin = 0,
@@ -111,9 +111,9 @@ Nodes:define("TerminalWindow", "UIWindow", {
             })
         end
 
-        if self.props.messages and #self.props.messages > 0 then
-            for i = 1, #self.props.messages do
-                local msg = self.props.messages[i]
+        if self.get.messages and #self.get.messages > 0 then
+            for i = 1, #self.get.messages do
+                local msg = self.get.messages[i]
                 self.func:pipeMessage(msg)
             end
         end
@@ -121,7 +121,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         local buttonPosX = 0
         local buttonSpacing = 20
 
-        self.props.exitButton = self.props.content:createChild("UIButton", {
+        self.get.exitButton = self.get.content:createChild("UIButton", {
             id = "exitButton",
             toolTip = "toolTip_exitOnly",
             y = 4,
@@ -132,7 +132,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
             onUpdate = function(button, deltaTime)
                 button.classes.UIButton.func:onUpdate(deltaTime)
 
-                button.x = self.props.targetWidth - button.width - 4 - button.props.buttonPosX
+                button.x = self.get.targetWidth - button.width - 4 - button.get.buttonPosX
             end,
             onPress = function()
                 self.func:closeWindow(function(self)
@@ -141,13 +141,13 @@ Nodes:define("TerminalWindow", "UIWindow", {
                     end
                     self:destroy()
                 end)
-                self.props.enabled = false
+                self.get.enabled = false
             end
         })
 
-        if self.props.allowMinimize then
+        if self.get.allowMinimize then
             buttonPosX = buttonPosX + buttonSpacing
-            self.props.content:createChild("UIButton", {
+            self.get.content:createChild("UIButton", {
                 id = "minimizeButton",
                 toolTip = "toolTip_minimize",
                 y = 4,
@@ -158,7 +158,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
                 onUpdate = function(button, deltaTime)
                     button.classes.UIButton.func:onUpdate(deltaTime)
 
-                    button.x = self.props.targetWidth - button.width - 4 - button.props.buttonPosX
+                    button.x = self.get.targetWidth - button.width - 4 - button.get.buttonPosX
                 end,
                 onPress = function(self)
                     self.world:minimizeWindow()
@@ -169,7 +169,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         buttonPosX = buttonPosX + buttonSpacing
 
         self.frame = terminalWindowData.darkened and 2 or 1
-        self.props.darkenButton = self.props.content:createChild("UIButton", {
+        self.get.darkenButton = self.get.content:createChild("UIButton", {
             id = "darkenButton",
             toolTip = "toolTip_toggleBGOpacity",
             y = 4,
@@ -180,11 +180,11 @@ Nodes:define("TerminalWindow", "UIWindow", {
             onUpdate = function(button, deltaTime)
                 button.classes.UIButton.func:onUpdate(deltaTime)
 
-                button.x = self.props.targetWidth - button.width - 4 - button.props.buttonPosX
+                button.x = self.get.targetWidth - button.width - 4 - button.get.buttonPosX
             end,
             onPress = function()
                 terminalWindowData.darkened = not terminalWindowData.darkened
-                self.props.darkenButton.func:setIcon(terminalWindowData.darkened and 15 or 14)
+                self.get.darkenButton.func:setIcon(terminalWindowData.darkened and 15 or 14)
 
                 self.frame = terminalWindowData.darkened and 2 or 1
 
@@ -193,14 +193,14 @@ Nodes:define("TerminalWindow", "UIWindow", {
         })
 
         
-        self.props.scrollBar = self.props.content:createChild("FillRect", {
+        self.get.scrollBar = self.get.content:createChild("FillRect", {
             color = { 80, 80, 80 },
             width = 2,
             origin = 0,
             visible = false,
             
             onCreate = function(scrollBar)
-                scrollBar.props.pos = scrollBar:createChild("FillRect", {
+                scrollBar.get.pos = scrollBar:createChild("FillRect", {
                     color = { 200, 200, 200 },
                     width = 2,
                     height = 1,
@@ -211,18 +211,18 @@ Nodes:define("TerminalWindow", "UIWindow", {
             manageScrollPosition = function(scrollBar)
                 scrollBar.visible = true
 
-                scrollBar.x = self.props.cont.x + self.props.cont.width + scrollBar.width - 1
-                scrollBar.y = self.props.cont.y + 2
+                scrollBar.x = self.get.cont.x + self.get.cont.width + scrollBar.width - 1
+                scrollBar.y = self.get.cont.y + 2
                 
-                scrollBar.height = self.props.cont.height - 4
+                scrollBar.height = self.get.cont.height - 4
 
-                local pos = scrollBar.props.pos
+                local pos = scrollBar.get.pos
                 
-                local firstItem = self.props.activePool[1]
-                local lastItem = self.props.activePool[#self.props.activePool]
+                local firstItem = self.get.activePool[1]
+                local lastItem = self.get.activePool[#self.get.activePool]
 
-                pos.height = scrollBar.height * ((self.props.cont.height - self.props.marginBottom - self.props.marginTop) / (self.props.wallHeight + self.props.marginBottom + self.props.marginTop - firstItem.y))
-                pos.y = -(scrollBar.height - pos.height) * ((-self.props.pool.y + self.props.cont.top + self.props.marginTop - firstItem.y) / ((self.props.cont.bottom - self.props.marginBottom - lastItem.y - lastItem.height) - (self.props.cont.top + self.props.marginTop - firstItem.y)))
+                pos.height = scrollBar.height * ((self.get.cont.height - self.get.marginBottom - self.get.marginTop) / (self.get.wallHeight + self.get.marginBottom + self.get.marginTop - firstItem.y))
+                pos.y = -(scrollBar.height - pos.height) * ((-self.get.pool.y + self.get.cont.top + self.get.marginTop - firstItem.y) / ((self.get.cont.bottom - self.get.marginBottom - lastItem.y - lastItem.height) - (self.get.cont.top + self.get.marginTop - firstItem.y)))
             end
         })
 
@@ -245,18 +245,18 @@ Nodes:define("TerminalWindow", "UIWindow", {
         elseif string.starts_with(msg, "caught (...) exception") then
             item.text = "Error: Invalid property assignment or function call."
             item.color = Colors.Red
-            self.props.allowTrace = true
+            self.get.allowTrace = true
             ret = true
         elseif string.starts_with(msg, "Error: ") then
             item.color = Colors.Red
-            self.props.allowTrace = true
+            self.get.allowTrace = true
             ret = true
         elseif string.starts_with(msg, "[json.exception.type_error.302]") then
             local details = string.match(msg, '%[json.exception.type_error.302] type(.*)')
             details = string.gsub(details, "null", "object")
             item.text = "Error: Type" .. details
             item.color = Colors.Red
-            self.props.allowTrace = true
+            self.get.allowTrace = true
             ret = true
         else
             if msg == "Program aborted unexpectedly." then
@@ -274,44 +274,44 @@ Nodes:define("TerminalWindow", "UIWindow", {
             end
             ret = false
         end
-        item.props.defColor = item.color
-        item.props.isError = ret
+        item.get.defColor = item.color
+        item.get.isError = ret
 
         local filePath = string.match(msg, '"([^"]+%.lua[c]?)"')
         if filePath and string.len(filePath) > 0 then
-            if self.props.projectPath then
-                local targetPath = System:join(self.props.projectPath, "lua_scripts", filePath)
+            if self.get.projectPath then
+                local targetPath = System:join(self.get.projectPath, "lua_scripts", filePath)
                 local settings = self.world.func:getSettings()
                 if System:exists(targetPath) then
                     item.input:activate()
                     item.input.cursor = Cursor.Pointer
                     item.input:listen("onPointerUp", function(txt)
-                        OpenCodeEditor(settings, self.props.projectPath, targetPath)
+                        OpenCodeEditor(settings, self.get.projectPath, targetPath)
 
-                        txt.color = txt.props.isError and Colors.White or "#82adc2"
+                        txt.color = txt.get.isError and Colors.White or "#82adc2"
                         txt.tween:to({
-                            color = txt.props.defColor,
+                            color = txt.get.defColor,
                             duration = 0.1,
                             onComplete = function(txt)
-                                txt.color = txt.props.defColor
+                                txt.color = txt.get.defColor
                             end
                         })
                     end)
                     item.input:listen("onPointerHover", function(txt)
-                        if txt.props.isError then
+                        if txt.get.isError then
                             txt.color = "#ff4646"
                         else
                             txt.color = "#c5ecff"
                         end
-                        txt.props.defColor = txt.color
+                        txt.get.defColor = txt.color
                     end)
                     item.input:listen("onPointerExit", function(txt)
-                        if txt.props.isError then
+                        if txt.get.isError then
                             txt.color = Colors.Red
                         else
                             txt.color = Colors.White
                         end
-                        txt.props.defColor = txt.color
+                        txt.get.defColor = txt.color
                     end)
                 else
                     item.input:stopListening("onPointerUp")
@@ -326,17 +326,17 @@ Nodes:define("TerminalWindow", "UIWindow", {
         if string.starts_with(msg, "\t[C") or string.starts_with(msg, "stack traceback") then
             return;
         end
-        if string.starts_with(msg, "\t[") and not self.props.allowTrace then
+        if string.starts_with(msg, "\t[") and not self.get.allowTrace then
             return;
         end
-        self.props.allowTrace = false
+        self.get.allowTrace = false
 
-        table.insert(self.props.messages, msg)
+        table.insert(self.get.messages, msg)
 
-        local item = self.props.pool:grab()
+        local item = self.get.pool:grab()
         
         if not item then
-            item = table.remove(self.props.activePool, 1)
+            item = table.remove(self.get.activePool, 1)
         end
 
         item:activate()
@@ -346,21 +346,21 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
         self.func:checkForError(msg, item)
 
-        local wrapWidth = self.props.cont.width - self.props.marginLeft - self.props.marginRight
+        local wrapWidth = self.get.cont.width - self.get.marginLeft - self.get.marginRight
         if item.wrapWidth ~= wrapWidth then
             item.wrapWidth = wrapWidth
         end
 
-        if self.props.wallHeight > 0 then
-            self.props.wallHeight = self.props.wallHeight + self.props.lineSpacing
+        if self.get.wallHeight > 0 then
+            self.get.wallHeight = self.get.wallHeight + self.get.lineSpacing
         end
-        item.y = self.props.wallHeight
-        self.props.wallHeight = self.props.wallHeight + item.height
+        item.y = self.get.wallHeight
+        self.get.wallHeight = self.get.wallHeight + item.height
 
-        table.insert(self.props.activePool, item)
+        table.insert(self.get.activePool, item)
 
-        self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - item.y - item.height
-        self.props.bottomLocked = true
+        self.get.pool.y = self.get.cont.bottom - self.get.marginBottom - item.y - item.height
+        self.get.bottomLocked = true
 
         item.input:activate()
         item.input.cursor = Cursor.Pointer
@@ -368,7 +368,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
             System:copyToClipboard(txt.text)
             txt.color = Colors.White;
             txt.tween:to({
-                color = txt.props.defColor,
+                color = txt.get.defColor,
                 duration = 0.25
             })
             local copyMsg = self.world:createChild("Text", {
@@ -401,7 +401,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
     end,
 
     savePosition = function(self)
-        if not self.props.disableSavePosition then
+        if not self.get.disableSavePosition then
             local setting = self.world.func:getSettings()
             if not setting.terminalWindowData then
                 setting.terminalWindowData = {}
@@ -410,33 +410,33 @@ Nodes:define("TerminalWindow", "UIWindow", {
             setting.terminalWindowData.x = self.x
             setting.terminalWindowData.y = self.y
 
-            setting.terminalWindowData.width = self.props.targetWidth
-            setting.terminalWindowData.height = self.props.targetHeight
+            setting.terminalWindowData.width = self.get.targetWidth
+            setting.terminalWindowData.height = self.get.targetHeight
 
             self.world.func:saveSettings()
         end
     end,
 
     onSizeChange = function(self)
-        local wrapWidth = self.props.cont.width - self.props.marginLeft - self.props.marginRight
+        local wrapWidth = self.get.cont.width - self.get.marginLeft - self.get.marginRight
         local lastitem = nil
-        self.props.wallHeight = 0
-        if #self.props.activePool > 0 then
-            for i = 1, #self.props.activePool do
-                local item = self.props.activePool[i]
+        self.get.wallHeight = 0
+        if #self.get.activePool > 0 then
+            for i = 1, #self.get.activePool do
+                local item = self.get.activePool[i]
 
                 if item.wrapWidth ~= wrapWidth then
                     item.wrapWidth = wrapWidth
                 end
 
                 if lastitem then
-                    item.y = lastitem.y + lastitem.height + self.props.lineSpacing
+                    item.y = lastitem.y + lastitem.height + self.get.lineSpacing
                 else
                     item.y = 0
                 end
                 lastitem = item
             end
-            self.props.wallHeight = lastitem.y + lastitem.height
+            self.get.wallHeight = lastitem.y + lastitem.height
         end
     end,
 
@@ -444,69 +444,69 @@ Nodes:define("TerminalWindow", "UIWindow", {
         self.classes.UIWindow.func:onUpdate(self)
 
         if self.input.hovered then
-            self.props.pool.y = self.props.pool.y + self.input.mouse.wheel.y * 5
+            self.get.pool.y = self.get.pool.y + self.input.mouse.wheel.y * 5
 
-            if self.input.mouse.wheel.y ~= 0 and self.props.wallHeight > (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
-                self.props.bottomLocked = false
+            if self.input.mouse.wheel.y ~= 0 and self.get.wallHeight > (self.get.cont.height - self.get.marginBottom - self.get.marginTop) then
+                self.get.bottomLocked = false
             end
         end
 
-        self.props.cont.width = self.props.targetWidth - self.props.paddingLeft - self.props.paddingRight
-        self.props.cont.height = self.props.targetHeight - self.props.paddingTop - self.props.paddingBottom
-        self.props.pool.x = self.props.cont.left + self.props.marginLeft
+        self.get.cont.width = self.get.targetWidth - self.get.paddingLeft - self.get.paddingRight
+        self.get.cont.height = self.get.targetHeight - self.get.paddingTop - self.get.paddingBottom
+        self.get.pool.x = self.get.cont.left + self.get.marginLeft
 
-        if #self.props.activePool > 0 then
-            local firstItem = self.props.activePool[1]
-            local lastItem = self.props.activePool[#self.props.activePool]
-            local viewableHeight = self.props.cont.height - self.props.marginBottom - self.props.marginTop
+        if #self.get.activePool > 0 then
+            local firstItem = self.get.activePool[1]
+            local lastItem = self.get.activePool[#self.get.activePool]
+            local viewableHeight = self.get.cont.height - self.get.marginBottom - self.get.marginTop
 
-            if self.props.wallHeight <= viewableHeight then
-                self.props.pool.y = self.props.cont.top + self.props.marginTop - firstItem.y
-                self.props.bottomLocked = true
+            if self.get.wallHeight <= viewableHeight then
+                self.get.pool.y = self.get.cont.top + self.get.marginTop - firstItem.y
+                self.get.bottomLocked = true
             else
-                if self.props.bottomLocked then
-                    self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - lastItem.y - lastItem.height
+                if self.get.bottomLocked then
+                    self.get.pool.y = self.get.cont.bottom - self.get.marginBottom - lastItem.y - lastItem.height
                 else
-                    if self.props.pool.y + firstItem.y > self.props.cont.top + self.props.marginTop then
-                        self.props.pool.y = self.props.cont.top + self.props.marginTop - firstItem.y
+                    if self.get.pool.y + firstItem.y > self.get.cont.top + self.get.marginTop then
+                        self.get.pool.y = self.get.cont.top + self.get.marginTop - firstItem.y
                     end
-                    if self.props.pool.y + lastItem.y + lastItem.height < self.props.cont.bottom - self.props.marginBottom then
-                        self.props.pool.y = self.props.cont.bottom - self.props.marginBottom - lastItem.y - lastItem.height
-                        self.props.bottomLocked = true
+                    if self.get.pool.y + lastItem.y + lastItem.height < self.get.cont.bottom - self.get.marginBottom then
+                        self.get.pool.y = self.get.cont.bottom - self.get.marginBottom - lastItem.y - lastItem.height
+                        self.get.bottomLocked = true
                     end
                 end
             end
         end
         
-        if self.props.wallHeight > (self.props.cont.height - self.props.marginBottom - self.props.marginTop) then
-            self.props.scrollBar.func:manageScrollPosition()
+        if self.get.wallHeight > (self.get.cont.height - self.get.marginBottom - self.get.marginTop) then
+            self.get.scrollBar.func:manageScrollPosition()
         else
-            self.props.scrollBar.visible = false
+            self.get.scrollBar.visible = false
         end
     end,
 
     unbindGameProcess = function(self)
-        self.props.gameProcess = nil
+        self.get.gameProcess = nil
     end,
 
     startLoading = function(self)
-        self.props.loadingBar = self.props.content:createChild("LoadingBar", {
+        self.get.loadingBar = self.get.content:createChild("LoadingBar", {
             alpha = 0.3,
-            x = 2, y = self.props.targetHeight - 4,
-            width = self.props.targetWidth - 4
+            x = 2, y = self.get.targetHeight - 4,
+            width = self.get.targetWidth - 4
         })
     end,
 
     stopLoading = function(self)
-        if self.props.loadingBar then
-            self.props.loadingBar.tween:to({
+        if self.get.loadingBar then
+            self.get.loadingBar.tween:to({
                 alpha = 0,
                 duration = 0.25,
                 onComplete = function(loadingBar)
                     loadingBar:destroy()
                 end
             })
-            self.props.loadingBar = nil
+            self.get.loadingBar = nil
         end
     end
 })

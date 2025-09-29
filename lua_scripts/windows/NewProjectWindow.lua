@@ -7,16 +7,16 @@ Nodes:define("NewProjectWindow", "UIWindow", {
 
         local settings = self.world.func:getSettings()
 
-        self.props.folderPath = System:getRelativePath("projects")
-        self.props.projectPath = ""
+        self.get.folderPath = System:getRelativePath("projects")
+        self.get.projectPath = ""
 
         if settings.projects and #settings.projects > 0 then
             if System:exists(System:getDirectoryOf(settings.projects[1])) then
-                self.props.folderPath = System:getDirectoryOf(settings.projects[1])
+                self.get.folderPath = System:getDirectoryOf(settings.projects[1])
             end
         end
 
-        local title = self.props.content:createChild("Text", {
+        local title = self.get.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
             text = Localize:get("title_newProject"),
@@ -24,39 +24,39 @@ Nodes:define("NewProjectWindow", "UIWindow", {
             input = true
         })
 
-        self.props.nameField = self.props.content:createChild("TextField", {
+        self.get.nameField = self.get.content:createChild("TextField", {
             x = 8, y = 28,
-            width = self.props.targetWidth - 16,
+            width = self.get.targetWidth - 16,
             defaultText = Localize:get("label_projectName"),
             onChange = function(textField, txt)
-                self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
+                self.get.folderField.func:setText(self.func:makePath(self.get.folderPath, txt))
             end,
             onEnter = function()
                 if not self.func:checkPath() then
-                    self.props.nameField.func:focusField()
+                    self.get.nameField.func:focusField()
                 else
                     self.func:createProject()
                 end
             end
         })
 
-        self.props.folderField = self.props.content:createChild("TextField", {
+        self.get.folderField = self.get.content:createChild("TextField", {
             x = 8, y = 28 + 22,
-            width = self.props.targetWidth - 34,
+            width = self.get.targetWidth - 34,
             inputEnabled = false
         })
 
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "browseButton",
             toolTip = "toolTip_browseDirectory",
-            x = self.props.folderField.x + self.props.folderField.width + 4,
-            y = self.props.folderField.y,
+            x = self.get.folderField.x + self.get.folderField.width + 4,
+            y = self.get.folderField.y,
             icon = 6,
             onPress = function()
                 self.world:hideWindow()
 
                 self:wait(0.2):next(function()
-                    local path = System:browseDirectory(self.props.folderPath)
+                    local path = System:browseDirectory(self.get.folderPath)
 
                     self.world:showWindow()
 
@@ -64,33 +64,33 @@ Nodes:define("NewProjectWindow", "UIWindow", {
                         return
                     end
 
-                    self.props.folderPath = path
+                    self.get.folderPath = path
 
-                    local txt = self.props.nameField.props.finalText
-                    self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
+                    local txt = self.get.nameField.get.finalText
+                    self.get.folderField.func:setText(self.func:makePath(self.get.folderPath, txt))
                 end)
             end
         })
 
-        local buttonPos = self.props.targetWidth - 22
+        local buttonPos = self.get.targetWidth - 22
         local buttonSpacing = 20
 
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "exitButton",
             toolTip = "toolTip_exit",
             x = buttonPos,
             y = 4,
             icon = 1,
             onPress = function()
-                self.world.props.windows.func:closeAll(function(self)
+                self.world.get.windows.func:closeAll(function(self)
                     self.world:destroy()
                 end)
-                self.props.enabled = false
+                self.get.enabled = false
             end
         })
 
         buttonPos = buttonPos - buttonSpacing
-        self.props.content:createChild("UIButton", {
+        self.get.content:createChild("UIButton", {
             id = "newProjectButton",
             toolTip = "toolTip_minimize",
             x = buttonPos,
@@ -98,12 +98,12 @@ Nodes:define("NewProjectWindow", "UIWindow", {
             icon = 4,
             onPress = function(self)
                 self.world:minimizeWindow()
-                self.props.enabled = false
+                self.get.enabled = false
             end
         })
 
         buttonPos = buttonPos - buttonSpacing
-        self.props.backButton = self.props.content:createChild("UIButton", {
+        self.get.backButton = self.get.content:createChild("UIButton", {
             id = "backButton",
             toolTip = "toolTip_back",
             x = buttonPos,
@@ -111,7 +111,7 @@ Nodes:define("NewProjectWindow", "UIWindow", {
             icon = 5,
             onPress = function()
                 self.func:closeWindow(function()
-                    self.props.enabled = false
+                    self.get.enabled = false
                     
                     local newWindow = self.parent:createChild("MainWindow", {
                         x = self.x, y = self.y
@@ -128,11 +128,11 @@ Nodes:define("NewProjectWindow", "UIWindow", {
                 { Key.RightAlt, Key.RightShift, Key.Backspace }
             },
             onPress = function()
-                self.props.backButton.func:forcePress()
+                self.get.backButton.func:forcePress()
             end
         })
 
-        self.props.errorMessage = self.props.content:createChild("Text", {
+        self.get.errorMessage = self.get.content:createChild("Text", {
             font = "defaultFont",
             origin = 0,
             color = Colors.Red,
@@ -140,7 +140,7 @@ Nodes:define("NewProjectWindow", "UIWindow", {
             x = 10, y = 72
         })
 
-        local createButton = self.props.content:createChild("UIButton", {
+        local createButton = self.get.content:createChild("UIButton", {
             id = "createProjectButton",
             text = "label_createProject",
             onPress = function()
@@ -149,32 +149,32 @@ Nodes:define("NewProjectWindow", "UIWindow", {
                 end
             end
         })
-        createButton.x = self.props.targetWidth - createButton.width - 8
+        createButton.x = self.get.targetWidth - createButton.width - 8
         createButton.y = 96
 
-        local txt = self.props.nameField.props.finalText
-        self.props.folderField.func:setText(self.func:makePath(self.props.folderPath, txt))
+        local txt = self.get.nameField.get.finalText
+        self.get.folderField.func:setText(self.func:makePath(self.get.folderPath, txt))
     end,
 
     checkPath = function(self)
-        if string.len(self.props.nameField.props.finalText) == 0 then
-            self.props.errorMessage.text = Localize:get("error_emptyProjectName")
-            self.props.errorMessage.visible = true
-        elseif System:isDirectory(self.props.projectPath) then
-            self.props.errorMessage.text = Localize:get("error_directoryAlreadyExists")
-            self.props.errorMessage.visible = true
-        elseif System:exists(self.props.projectPath) then
-            self.props.errorMessage.text = Localize:get("error_pathToFile")
-            self.props.errorMessage.visible = true
+        if string.len(self.get.nameField.get.finalText) == 0 then
+            self.get.errorMessage.text = Localize:get("error_emptyProjectName")
+            self.get.errorMessage.visible = true
+        elseif System:isDirectory(self.get.projectPath) then
+            self.get.errorMessage.text = Localize:get("error_directoryAlreadyExists")
+            self.get.errorMessage.visible = true
+        elseif System:exists(self.get.projectPath) then
+            self.get.errorMessage.text = Localize:get("error_pathToFile")
+            self.get.errorMessage.visible = true
         else
-            self.props.errorMessage.visible = false
+            self.get.errorMessage.visible = false
             return true
         end
         return false
     end,
 
     makePath = function(self, defPath, target)
-        local txt = self.props.folderField.props.txt
+        local txt = self.get.folderField.get.txt
         local str
         if Game.platform == "windows" then
             str = string.concat(defPath, "\\", target)
@@ -185,41 +185,41 @@ Nodes:define("NewProjectWindow", "UIWindow", {
 
         local edited = false
         txt.text = str
-        while txt.width > self.props.folderField.width - 16 do
+        while txt.width > self.get.folderField.width - 16 do
             str = string.sub(str, 2)
             txt.text = string.concat("...", str)
         end
-        self.props.projectPath = path
+        self.get.projectPath = path
         return txt.text
     end,
 
     createProject = function(self)
-        System:createDirectory(self.props.projectPath)
+        System:createDirectory(self.get.projectPath)
         System:copy(
             System:join(System:getBasePath(), "files", "defaultTemplate"),
-            self.props.projectPath
+            self.get.projectPath
         )
 
-        local projectData = System:readJSON(System:join(self.props.projectPath, "project.json"))
-        projectData["project-name"] = self.props.nameField.props.finalText
-        projectData["executable-name"] = self.props.nameField.props.finalText
+        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        projectData["project-name"] = self.get.nameField.get.finalText
+        projectData["executable-name"] = self.get.nameField.get.finalText
 
         projectData.uninitiated = true
 
-        System:writeFile(System:join(self.props.projectPath, "project.json"), projectData)
+        System:writeFile(System:join(self.get.projectPath, "project.json"), projectData)
         
-        local indexFile = System:readFile(System:join(self.props.projectPath, "lua_scripts", "index.lua"))
-        local fixedIndexFile = string.gsub(indexFile, "${Window_Title}", self.props.nameField.props.finalText)
-        System:writeFile(System:join(self.props.projectPath, "lua_scripts", "index.lua"), fixedIndexFile)
+        local indexFile = System:readFile(System:join(self.get.projectPath, "lua_scripts", "index.lua"))
+        local fixedIndexFile = string.gsub(indexFile, "${Window_Title}", self.get.nameField.get.finalText)
+        System:writeFile(System:join(self.get.projectPath, "lua_scripts", "index.lua"), fixedIndexFile)
 
-        System:createDirectory(System:join(self.props.projectPath, "files"))
+        System:createDirectory(System:join(self.get.projectPath, "files"))
 
         self.func:closeWindow(function()
             self.func:closeWindow(function()
-                self.props.enabled = false
+                self.get.enabled = false
 
                 local newWindow = self.parent:createChild("ProjectWindow", {
-                    projectPath = self.props.projectPath
+                    projectPath = self.get.projectPath
                 })
                 newWindow.func:openDefault()
                 newWindow.func:openWindow()
