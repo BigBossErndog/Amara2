@@ -21,7 +21,6 @@ namespace Amara {
         int chunk_bytes = 0;
 
         float duration = 0;
-        float playDuration = 0;
 
         const float stream_expiry_time = 60;
         float stream_expiry_counter = 0;
@@ -29,6 +28,8 @@ namespace Amara {
         int loopStart = 0;
         int loopEnd = 0;
         int totalFrames = 0;
+        int sampleRate = 0;
+        int channels = 0;
 
         Audio(): Amara::Node() {
             set_base_node_id("Audio");
@@ -74,9 +75,9 @@ namespace Amara {
 
             const auto& samples = audio->samples;
             int total_samples = (int)samples.size();
-            int loop_start_sample = loopStart * audio->channels;
-            int loop_end_sample = (loop && loopEnd > loopStart && (loopEnd + 1) * audio->channels <= total_samples)
-                ? (loopEnd + 1) * audio->channels
+            int loop_start_sample = loopStart * channels;
+            int loop_end_sample = (loop && loopEnd > loopStart && (loopEnd + 1) * channels <= total_samples)
+                ? (loopEnd + 1) * channels
                 : total_samples;
             
             int samples_remaining = chunk_samples;
@@ -89,11 +90,11 @@ namespace Amara {
                     float leftGain  = (1.0f - panning) * 0.5f * gameProps->audioData.volume;
                     float rightGain = (1.0f + panning) * 0.5f * gameProps->audioData.volume;
 
-                    if (audio->channels == 1) {
+                    if (channels == 1) {
                         for (int i = 0; i < samples_to_write; ++i) {
                             stream_chunk[i] = samples[position + i] * gameProps->audioData.volume;
                         }
-                    } else if (audio->channels == 2) {
+                    } else if (channels == 2) {
                         int frames_to_write = samples_to_write / 2;
                         for (int f = 0; f < frames_to_write; ++f) {
                             int idx = position + f * 2;
@@ -137,15 +138,17 @@ namespace Amara {
                 return false;
             }
 
-            chunk_samples = chunk_frames * audio->channels;
+            chunk_samples = chunk_frames * channels;
             chunk_bytes   = chunk_samples * sizeof(float);
             stream_chunk.resize(chunk_samples);
             
-            duration = audio->samples.size() / (float)(audio->sampleRate * audio->channels);
+            duration = audio->samples.size() / (float)(audio->sampleRate * channels);
             loopStart = std::max(0, audio->loopStart);
-            loopEnd = std::min((int)audio->samples.size() / audio->channels, audio->loopEnd);
+            loopEnd = std::min((int)audio->samples.size() / channels, audio->loopEnd);
             totalFrames = audio->totalFrames;
-
+            sampleRate = audio->sampleRate;
+            channels = audio->channels;
+            
             if (id.empty()) id = audio->key;
 
             return true;
@@ -184,7 +187,7 @@ namespace Amara {
 
             SDL_zero(spec);
             spec.format   = SDL_AUDIO_F32;
-            spec.channels = (Uint8)audio->channels;
+            spec.channels = (Uint8)channels;
             spec.freq     = audio->sampleRate;
 
             if (gameProps->audioData.device == 0) {
@@ -233,7 +236,6 @@ namespace Amara {
             if (!stream) createAudioStream();
 
             if (!playing) {
-                playDuration = 0;
                 if (funcs.hasFunction("onPlay")) funcs.callFunction("onPlay");
             }
             else if (!paused) {
@@ -252,7 +254,6 @@ namespace Amara {
         }
 
         virtual void restart() {
-            playDuration = 0;
             setPosition(0);
             play();
         }
@@ -265,9 +266,9 @@ namespace Amara {
             if (stream) {
                 SDL_ClearAudioStream(stream);
             }
-            int max_position = audio->samples.size() / audio->channels;
+            int max_position = audio->samples.size() / channels;
             _position = std::clamp(_position, 0, max_position);
-            position = _position * audio->channels;
+            position = _position * channels;
         }
 
         void setVolume(float _volume) { volume = std::clamp(_volume, 0.0f, 1.0f); }
@@ -290,6 +291,8 @@ namespace Amara {
                 "loopStart", &Audio::loopStart,
                 "loopEnd", &Audio::loopEnd,
                 "totalFrames", sol::readonly(&Audio::totalFrames),
+                "sampleRate", sol::readonly(&Audio::sampleRate),
+                "channels", sol::readonly(&Audio::channels),
                 "duration", sol::readonly(&Audio::duration),
                 "position", sol::property([] (Audio& a) -> int { return a.position; }, [](Audio& a, int v) { a.setPosition(v); }),
                 "audio", sol::property([] (Audio& a) -> std::string { if (a.audio) return a.audio->key; else return ""; }, [](Audio& a, std::string key) { a.setAudio(key); }),
