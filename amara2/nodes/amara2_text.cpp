@@ -351,7 +351,12 @@ namespace Amara {
                             else {
                                 configure(lua_to_json(result));
                             }
-                        } catch (const std::exception& e) {
+                        }
+                        catch (const sol::error& e) {
+                            fatal_error(e.what());
+                            gameProps->breakWorld();
+                        } 
+                        catch (const std::exception& e) {
                             debug_log(e.what());
                             gameProps->breakWorld();
                         }

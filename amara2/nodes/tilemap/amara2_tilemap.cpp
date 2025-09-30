@@ -167,7 +167,12 @@ namespace Amara {
                                 sol::error err = result;
                                 throw std::runtime_error(std::string(err.what()));
                             }
-                        } catch (const std::exception& e) {
+                        } 
+                        catch (const sol::error& e) {
+                            fatal_error(e.what());
+                            gameProps->breakWorld();
+                        }
+                        catch (const std::exception& e) {
                             fatal_error(e.what());
                             gameProps->breakWorld();
                         }

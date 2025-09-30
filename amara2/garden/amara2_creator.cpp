@@ -283,7 +283,6 @@ namespace Amara {
                     catch(std::exception& e) {
                         debug_log(e.what());
                         gameProps.breakWorld();
-                        return gameProps.error_code;
                     }
                 }
             }
@@ -291,10 +290,13 @@ namespace Amara {
                 try {
                     scripts.run(*it);
                 }
-                catch(std::exception& e) {
+                catch (const sol::error& e) {
                     debug_log(e.what());
                     gameProps.breakWorld();
-                    return gameProps.error_code;
+                }
+                catch (std::exception& e) {
+                    debug_log(e.what());
+                    gameProps.breakWorld();
                 }
             }
             
@@ -354,6 +356,10 @@ namespace Amara {
                     try {
                         currentWorld->run(game.deltaTime);
                     }
+                    catch (const sol::error& e) {
+                        debug_log(e.what());
+                        gameProps.breakWorld();
+                    }
                     catch (std::exception& e) {
                         debug_log(e.what());
                         gameProps.breakWorld();
@@ -375,6 +381,10 @@ namespace Amara {
                     currentWorld->prepareRenderer();
                     try {
                         currentWorld->draw(gameProps.master_viewport);
+                    }
+                    catch (const sol::error& e) {
+                        debug_log(e.what());
+                        gameProps.breakWorld();
                     }
                     catch(std::exception& e) {
                         debug_log(e.what());

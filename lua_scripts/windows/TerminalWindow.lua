@@ -243,7 +243,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
             item.text = string.gsub(item.text, "%[string ", "[")
             ret = true
         elseif string.starts_with(msg, "caught (...) exception") then
-            item.text = "Error: Invalid property assignment or function call."
+            item.text = "Error: Invalid assignment or function call."
             item.color = Colors.Red
             self.get.allowTrace = true
             ret = true

@@ -364,6 +364,10 @@ namespace Amara {
                         try {
                             onSpawn(sol::make_object(gameProps->lua, &particle));
                         }
+                        catch (const sol::error& e) {
+                            fatal_error(e.what());
+                            gameProps->breakWorld();
+                        }
                         catch (const std::exception& e) {
                             fatal_error(e.what());
                             gameProps->breakWorld();
@@ -577,6 +581,10 @@ namespace Amara {
                         try {
                             onSpawn(sol::make_object(gameProps->lua, &particle));
                         }
+                        catch (const sol::error& e) {
+                            fatal_error(e.what());
+                            gameProps->breakWorld();
+                        }
                         catch (const std::exception& e) {
                             fatal_error(e.what());
                             gameProps->breakWorld();
@@ -611,6 +619,10 @@ namespace Amara {
                     sol::function func = funcs.getFunction("onParticleUpdate");
                     try {
                         func(sol::make_object(gameProps->lua, &particle), deltaTime);
+                    }
+                    catch (const sol::error& e) {
+                        fatal_error(e.what());
+                        gameProps->breakWorld();
                     }
                     catch (const std::exception& e) {
                         fatal_error(e.what());

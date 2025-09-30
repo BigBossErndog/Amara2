@@ -42,6 +42,10 @@ namespace Amara {
                     throw std::runtime_error(std::string(err.what()));
                 }
             }
+            catch (const sol::error& e) {
+                fatal_error(e.what());
+                gameProps->breakWorld();
+            }
             catch (const std::exception& e) {
                 fatal_error(e.what());
                 gameProps->breakWorld();
@@ -88,7 +92,12 @@ namespace Amara {
                 std::vector<sol::object> remaining_args_vector;
 
                 if (va.size() > 0) {
-                    for (auto it = va.begin() + 1; it != va.end(); ++it) {
+                    int offset = 0;
+                    auto first_arg = *(va.begin());
+                    if (!first_arg.is<FunctionManager>()) {
+                        offset = 1;
+                    }
+                    for (auto it = va.begin() + offset; it != va.end(); ++it) {
                         remaining_args_vector.push_back(*it);
                     }
                 }

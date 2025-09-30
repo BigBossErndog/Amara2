@@ -46,10 +46,10 @@ namespace Amara {
 
         Amara::Color operator* (const Amara::Color& other) const {
             return Amara::Color(
-                (r + other.r) / 2.0,
-                (g + other.g) / 2.0,
-                (b + other.b) / 2.0,
-                (a + other.a) / 2.0
+                (r * other.r) / 255,
+                (g * other.g) / 255,
+                (b * other.b) / 255,
+                (a * other.a) / 255
             );
         }
         Amara::Color operator* (float other) const {
