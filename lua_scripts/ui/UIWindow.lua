@@ -21,6 +21,7 @@ Nodes:define("UIWindow", "NineSlice", {
         
         self.input:listen("onPointerDown", function(self, pointer)
             self:bringToFront()
+            self.world.get.focusedWindow = self
         end)
 
         self.get.contentRoot = self:createChild("Group", {
@@ -92,6 +93,8 @@ Nodes:define("UIWindow", "NineSlice", {
             self.get.contentRoot.scale = 0
         end
 
+        self.world.get.focusedWindow = self
+
         self.get.contentRoot.tween:to({
             scaleX = 1,
             scaleY = 1,
@@ -132,5 +135,11 @@ Nodes:define("UIWindow", "NineSlice", {
             ease = Ease.SineIn,
             onComplete = _onEnd
         })
+    end,
+
+    onDestroy = function(self)
+        if self.world.get.focusedWindow == self then
+            self.world.get.focusedWindow = nil
+        end
     end
 })

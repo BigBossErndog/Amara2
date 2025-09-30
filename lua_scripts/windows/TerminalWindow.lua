@@ -69,10 +69,10 @@ Nodes:define("TerminalWindow", "UIWindow", {
         end
 
         if self.get.gameProcess then
-            self.get.messages = self.get.gameProcess.output
+            self.get.log = self.get.gameProcess.output
         end
-        if not self.get.messages then
-            self.get.messages = {}
+        if not self.get.log then
+            self.get.log = {}
         end
 
         self.get.lineSpacing = 2
@@ -111,9 +111,9 @@ Nodes:define("TerminalWindow", "UIWindow", {
             })
         end
 
-        if self.get.messages and #self.get.messages > 0 then
-            for i = 1, #self.get.messages do
-                local msg = self.get.messages[i]
+        if self.get.log and #self.get.log > 0 then
+            for i = 1, #self.get.log do
+                local msg = self.get.log[i]
                 self.func:pipeMessage(msg)
             end
         end
@@ -331,7 +331,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         end
         self.get.allowTrace = false
 
-        table.insert(self.get.messages, msg)
+        table.insert(self.get.log, msg)
 
         local item = self.get.pool:grab()
         

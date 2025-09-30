@@ -348,7 +348,7 @@ public:
                 justPressed = true;
                 if (funcs.hasFunction("onPress")) funcs.callFunction(actor, "onPress");
             }
-            if (funcs.hasFunction("whilePressed")) funcs.callFunction(actor, "whilePressed");
+            if (funcs.hasFunction("whilePressed")) funcs.callFunction(actor, "whilePressed", deltaTime);
         }
         if (rec_pressed) {
             if (funcs.hasFunction("onRelease")) funcs.callFunction(actor, "onRelease");

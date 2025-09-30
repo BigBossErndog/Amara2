@@ -1,3 +1,0 @@
-[string "scenes/DateBattle.lua"]:127: attempt to call a nil value (field 'changeValue')
-stack traceback:
-	[string "scenes/DateBattle.lua"]:127: in function <[string "scenes/DateBattle.lua"]:102>

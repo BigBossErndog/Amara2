@@ -413,30 +413,13 @@ namespace Amara {
         sol::table props_meta = gameProps->lua.create_table();
         
         props_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
-            if (value.is<sol::function>()) {
-                sol::function callback = value.as<sol::function>();
-                sol::function func = sol::make_object(this->gameProps->lua, [this, callback](sol::variadic_args va)->sol::object {
-                    std::vector<sol::object> remaining_args_vector;
-
-                    if (va.size() > 0) {
-                        for (auto it = va.begin() + 1; it != va.end(); ++it) {
-                            remaining_args_vector.push_back(*it);
-                        }
-                    }
-
-                    return callback(this->get_lua_object(), sol::as_args(remaining_args_vector));
-                });
-                tbl.raw_set(key, func);
-            }
-            else {
-                if (value.is<Amara::Node>() && key.is<std::string>()) {
-                    Amara::Node& node = value.as<Amara::Node&>();
-                    if (node.id.empty()) {
-                        node.id = key.as<std::string>();
-                    }
+            if (value.is<Amara::Node>() && key.is<std::string>()) {
+                Amara::Node& node = value.as<Amara::Node&>();
+                if (node.id.empty()) {
+                    node.id = key.as<std::string>();
                 }
-                tbl.raw_set(key, value);
             }
+            tbl.raw_set(key, value);
         };
         props[sol::metatable_key] = props_meta;
 
@@ -445,12 +428,7 @@ namespace Amara {
         sol::table proxy_meta = gameProps->lua.create_table();
         
         proxy_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
-            if (key.is<std::string>() && value.is<sol::function>()) {
-                this->setFunction(key.as<std::string>(), value.as<sol::function>());
-            }
-            else {
-                this->props[key] = value;
-            }
+            this->props[key] = value;
         };
         proxy_meta["__index"] = [this](sol::table tbl, sol::object key) -> sol::object {
             sol::object value = this->props[key];
@@ -469,15 +447,10 @@ namespace Amara {
                 }
             }
             if (key.is<std::string>()) {
-                std::string key_str = key.as<std::string>();
-                if (this->funcs.hasFunction(key_str)) {
-                    sol::object class_table_obj = this->funcs.getClassTable(this->nodeID);
-                    return class_table_obj.as<sol::table>()[key_str];
-                }
                 Amara::Node* node = this->getChild(key.as<std::string>());
                 if (node && !node->destroyed) return node->get_lua_object();
             }
-            return this->luaobject.as<sol::table>()[key];
+            return sol::nil;
         };
         proxy[sol::metatable_key] = proxy_meta;
 
