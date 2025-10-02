@@ -115,7 +115,9 @@ namespace Amara {
             lua.new_usertype<Amara::Transition>("Transition",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "doTransition", &Amara::Transition::doTransition,
-                "transitionFinished", &Amara::Transition::transitionFinished,
+                "transitionFinished", sol::property([](Amara::Transition& self) {
+                    return self.transitionFinished();
+                }),
                 "interim", &Amara::Transition::interim,
                 "complete", &Amara::Transition::complete
             );

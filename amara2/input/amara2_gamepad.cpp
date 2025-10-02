@@ -64,11 +64,7 @@ namespace Amara {
 
         std::unordered_map<Amara::GamepadButton, Button> buttons;
 
-        Amara::GameProps* gameProps = nullptr;
-
         bool buttonPressed = false;
-
-        sol::object luaobject;
 
         Vector2 leftStick;
         Vector2 rightStick;
@@ -384,11 +380,13 @@ namespace Amara {
         sol::function onGamepadConnected;
         sol::function onGamepadDisconnected;
 
+        Amara::GameProps* gameProps = nullptr;
+
         GamepadManager() {
             gamepads.resize(8);
         }
 
-        void connectGamepad(SDL_JoystickID _gamepadID) {
+        Amara::Gamepad* connectGamepad(SDL_JoystickID _gamepadID) {
             for (int i = 0; i < gamepads.size(); i++) {
                 Amara::Gamepad& gamepad = gamepads[i];
                 if (gamepad.gamepadID == _gamepadID || gamepad.gamepadID == 0) {
@@ -399,8 +397,8 @@ namespace Amara {
                         connectedGamepadsCount += 1;
                         if (onGamepadConnected.valid()) onGamepadConnected(gamepad);
                         debug_log("Note: Gamepad connected. (ID: ", _gamepadID, ")");
+                        return &gamepad;
                     }
-                    return;
                 }
             }
 
@@ -412,11 +410,12 @@ namespace Amara {
                 gamepadMap[_gamepadID] = gamepads.size()-1;
                 connectedGamepadsCount += 1;
             }
-            if (onGamepadConnected.valid()) onGamepadConnected(gamepad);
+            if (onGamepadConnected.valid()) onGamepadConnected(&gamepad);
             debug_log("Note: Gamepad connected. (ID: ", _gamepadID, ")");
+            return &gamepad;
         }
 
-        void disconnectGamepad(SDL_JoystickID _gamepadID) {
+        Amara::Gamepad* disconnectGamepad(SDL_JoystickID _gamepadID) {
             for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
                 if (it->gamepadID == _gamepadID) {
                     it->active = false;
@@ -427,9 +426,10 @@ namespace Amara {
                         gamepadMap.erase(_gamepadID);
                     }
                     debug_log("Note: Gamepad disconnected. (ID: ", _gamepadID, ")");
-                    return;
+                    return &(*it);
                 }
             }
+            return nullptr;
         }
         
         Amara::Gamepad* getGamepad(int index) {
@@ -501,14 +501,29 @@ namespace Amara {
             lua.new_usertype<Amara::GamepadManager>("GamepadManager",
                 "onGamepadConnected", &Amara::GamepadManager::onGamepadConnected,
                 "onGamepadDisconnected", &Amara::GamepadManager::onGamepadDisconnected,
-                "getGamepad", [](Amara::GamepadManager& manager, int index) {
-                    return manager.getGamepad(index - 1);
+                "get", [](Amara::GamepadManager& manager, sol::object obj) -> sol::object {
+                    if (obj.is<int>()) {
+                        int index = obj.as<int>();
+                        Amara::Gamepad* gamepad = manager.getGamepad(index - 1);
+                        if (gamepad) {
+                            return sol::make_object(manager.gameProps->lua, gamepad);
+                        }
+                        for (Amara::Gamepad& g: manager.gamepads) {
+                            if (g.gamepadID == index) {
+                                return sol::make_object(manager.gameProps->lua, &g);
+                            }
+                        }
+                    }
+                    return sol::nil;
                 },
                 "count", sol::readonly(&Amara::GamepadManager::connectedGamepadsCount),
                 "isDown", &Amara::GamepadManager::isDown,
                 "justPressed", &Amara::GamepadManager::justPressed,
                 "justReleased", &Amara::GamepadManager::justReleased,
-                "timeHeld", &Amara::GamepadManager::timeHeld
+                "timeHeld", &Amara::GamepadManager::timeHeld,
+                sol::meta_function::length, [](Amara::GamepadManager& manager) {
+                    return manager.connectedGamepadsCount;
+                }
             );
         }
     };

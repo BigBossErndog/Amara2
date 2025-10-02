@@ -22,6 +22,8 @@ namespace Amara {
             gameProps = _gameProps;
             gameProps->globalPointer = &globalPointer;
             
+            gamepads.gameProps = _gameProps;
+            
             SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
             SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
             
@@ -246,14 +248,22 @@ namespace Amara {
                         keyboard.release(e.key.key);
                         game.gameProps->messages->send(nullptr, "keyboardup", sol::make_object(game.gameProps->lua, e.key.key));
                         break;
-                    case SDL_EVENT_GAMEPAD_ADDED:
+                    case SDL_EVENT_GAMEPAD_ADDED: {
                         gameProps->controlMode = InputMode::Gamepad;
 
-                        gamepads.connectGamepad(e.gdevice.which);
+                        Amara::Gamepad* gamepad = gamepads.connectGamepad(e.gdevice.which);
+                        if (gamepad) {
+                            gameProps->messages->send("onGamepadConnected", sol::make_object(gameProps->lua, gamepad));
+                        }
                         break;
-                    case SDL_EVENT_GAMEPAD_REMOVED:
-                        gamepads.disconnectGamepad(e.gdevice.which);
+                    }
+                    case SDL_EVENT_GAMEPAD_REMOVED: {
+                        Amara::Gamepad* gamepad = gamepads.disconnectGamepad(e.gdevice.which);
+                        if (gamepad) {
+                            gameProps->messages->send("onGamepadDisconnected", sol::make_object(gameProps->lua, gamepad));
+                        }
                         break;
+                    }
                     case SDL_EVENT_GAMEPAD_BUTTON_DOWN: {
                         gameProps->controlMode = InputMode::Gamepad;
 
