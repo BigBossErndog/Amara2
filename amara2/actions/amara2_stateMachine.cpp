@@ -304,6 +304,8 @@ namespace Amara {
                     sol::resolve<void(std::string)>(&StateMachine::start),
                     sol::resolve<bool()>(&StateMachine::start)
                 ),
+                "eventLooker", sol::readonly(&StateMachine::eventLooker),
+                "currentEvent", sol::readonly(&StateMachine::currentEvent),
                 "event", &StateMachine::event,
                 "once", &StateMachine::once,
                 "nextEvent", &StateMachine::nextEvent,

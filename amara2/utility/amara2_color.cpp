@@ -109,6 +109,11 @@ namespace Amara {
             if (String::equal(key, "yellow")) return true;
             if (String::equal(key, "magenta")) return true;
             if (String::equal(key, "cyan")) return true;
+            if (String::equal(key, "orange")) return true;
+            if (String::equal(key, "purple")) return true;
+            if (String::equal(key, "brown")) return true;
+            if (String::equal(key, "pink")) return true;
+            if (String::equal(key, "gray")) return true;
             if (String::equal(key, "transparent")) return true;
             return false;
         }
@@ -149,31 +154,46 @@ namespace Amara {
                     }
                 }
                 else if (String::equal(color_str, "white")) {
-                    r = 255; g = 255; b = 255; a = 255;
+                    *this = Color::White;
                 }
                 else if (String::equal(color_str, "black")) {
-                    r = 0; g = 0; b = 0; a = 255;
+                    *this = Color::Black;
                 }
                 else if (String::equal(color_str, "red")) {
-                    r = 255; g = 0; b = 0; a = 255;
+                    *this = Color::Red;
                 }
                 else if (String::equal(color_str, "green")) {
-                    r = 0; g = 255; b = 0; a = 255;
+                    *this = Color::Green;
                 }
                 else if (String::equal(color_str, "blue")) {
-                    r = 0; g = 0; b = 255; a = 255;
+                    *this = Color::Blue;
                 }
                 else if (String::equal(color_str, "yellow")) {
-                    r = 255; g = 255; b = 0; a = 255;
+                    *this = Color::Yellow;
                 }
                 else if (String::equal(color_str, "magenta")) {
-                    r = 255; g = 0; b = 255; a = 255;
+                    *this = Color::Magenta;
                 }
                 else if (String::equal(color_str, "cyan")) {
-                    r = 0; g = 255; b = 255; a = 255;
+                    *this = Color::Cyan;
+                }
+                else if (String::equal(color_str, "orange")) {
+                    *this = Color::Orange;
+                }
+                else if (String::equal(color_str, "purple")) {
+                    *this = Color::Purple;
+                }
+                else if (String::equal(color_str, "brown")) {
+                    *this = Color::Brown;
+                }
+                else if (String::equal(color_str, "pink")) {
+                    *this = Color::Pink;
+                }
+                else if (String::equal(color_str, "gray")) {
+                    *this = Color::Gray;
                 }
                 else if (String::equal(color_str, "transparent")) {
-                    r = 0; g = 0; b = 0; a = 0;
+                    *this = Color::Transparent;
                 }
                 else {
                     fatal_error("Error: Invalid color: " + color_str);
@@ -215,6 +235,11 @@ namespace Amara {
         static Color Yellow;
         static Color Magenta;
         static Color Cyan;
+        static Color Orange;
+        static Color Purple;
+        static Color Brown;
+        static Color Pink;
+        static Color Gray;
         static Color Transparent;
 
         static void bind_lua(sol::state& lua);
@@ -228,6 +253,11 @@ namespace Amara {
     Color Color::Yellow = {255, 255, 0, 255};
     Color Color::Magenta = {255, 0, 255, 255};
     Color Color::Cyan = {0, 255, 255, 255};
+    Color Color::Orange = {255, 165, 0, 255};
+    Color Color::Purple = {128, 0, 128, 255};
+    Color Color::Brown = {165, 42, 42, 255};
+    Color Color::Pink = {255, 192, 203, 255};
+    Color Color::Gray = {128, 128, 128, 255};
     Color Color::Transparent = {0, 0, 0, 0};
 
     void Color::bind_lua(sol::state& lua) {
@@ -255,6 +285,11 @@ namespace Amara {
             "Yellow", Color::Yellow,
             "Magenta", Color::Magenta,
             "Cyan", Color::Cyan,
+            "Orange", Color::Orange,
+            "Purple", Color::Purple,
+            "Brown", Color::Brown,
+            "Pink", Color::Pink,
+            "Gray", Color::Gray,
             "Transparent", Color::Transparent
         );
     }
