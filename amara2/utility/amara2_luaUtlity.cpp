@@ -387,6 +387,22 @@ namespace Amara {
         });
         
         sol::table table_metatable = lua["table"];
+        table_metatable.set_function("size", [](sol::object tbl) -> int {
+            if (!tbl.is<sol::table>()) {
+                fatal_error("Error: table.size() expected a table argument.");
+            }
+            sol::table t = tbl.as<sol::table>();
+
+            if (lua_object_is_table_array(tbl)) {
+                return static_cast<int>(t.size());
+            }
+
+            int count = 0;
+            for (auto& pair : t) {
+                ++count;
+            }
+            return count;
+        });
         table_metatable.set_function("to_string", string_to_lua_object(lua, lua_table_to_string));
         table_metatable.set_function("shallow_copy", [&lua](sol::table tbl) -> sol::table {
             return lua_shallow_copy(lua, tbl);

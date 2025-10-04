@@ -323,14 +323,14 @@ Nodes:define("TerminalWindow", "UIWindow", {
     end,
 
     pipeMessage = function(self, msg)
-        if string.starts_with(msg, "\t[C") or string.starts_with(msg, "stack traceback") then
+        if string.starts_with(msg, "\t[C") or string.starts_with(msg, "stack tr") then
             return;
         end
         if string.starts_with(msg, "\t[") and not self.get.allowTrace then
             return;
         end
         self.get.allowTrace = false
-
+        
         table.insert(self.get.log, msg)
 
         local item = self.get.pool:grab()

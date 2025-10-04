@@ -246,6 +246,30 @@ namespace Amara {
             }
             return false;
         }
+        bool lua_waitUntil(sol::object condition) {
+            bool result = false;
+            if (condition.is<bool>()) {
+                result = condition.as<bool>();
+            }
+            else if (condition.is<sol::function>()) {
+                sol::function func = condition.as<sol::function>();
+                sol::protected_function_result func_result = func();
+                if (func_result.valid()) {
+                    if (func_result.get_type() == sol::type::boolean) {
+                        result = func_result;
+                    }
+                }
+                else {
+                    sol::error err = func_result;
+                    fatal_error(err.what());
+                    gameProps->breakWorld();
+                }
+            }
+            else if (condition.valid()) {
+                result = true;
+            }
+            return waitUntil(result);
+        }
 
         bool repeat(int num) {
             bool ret = false;
@@ -314,7 +338,7 @@ namespace Amara {
                     sol::resolve<bool(double, bool)>(&StateMachine::wait),
                     sol::resolve<bool(float)>(&StateMachine::wait)
                 ),
-                "waitUntil", &StateMachine::waitUntil,
+                "waitUntil", &StateMachine::lua_waitUntil,
                 "repeat", &StateMachine::repeat,
                 "bookmark", &StateMachine::bookmark,
                 "jump", &StateMachine::jump,
