@@ -12,9 +12,9 @@ Built in C++ using SDL3, with exports to Windows and Web.
 ## Features
 - Setting up a new project and running a test is easy as heck.
 - Game architecture inspired by my favorite elements of the Phaser framework and the Godot Engine.
-- Minimal GUI. Get the necessities while making your commonly used tools more cohesive.
+- Minimal GUI. Rather than being an all-in-one engine, the goal is to integrate and seamlessly tie all your commonly used game dev tools together.
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
-- Built using SDL3, so porting to other platforms shouldn't be too great a task for porting companies.
+- Built using SDL3, so a porting company should be able to port to any of the multitude of  platforms SDL3 supports with ease.
 
 <img width="1920" height="1080" alt="Screenshot 2025-07-15 141959" src="https://github.com/user-attachments/assets/98571dfa-3573-4019-bfe9-5382c862b4e7" />
 
