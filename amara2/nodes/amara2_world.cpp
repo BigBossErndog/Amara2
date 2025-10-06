@@ -88,6 +88,8 @@ namespace Amara {
         float bottom = 0;
 
         bool errorCapturing = false;
+
+        bool mouse_pos_handled = false;
         
         World(): Node() {
             set_base_node_id("World");
@@ -1005,6 +1007,8 @@ namespace Amara {
         virtual void run(double deltaTime) override {
             checkClickThrough();
 
+            if (!mouse_pos_handled) handleMouseMovement(inputManager.mouse.real_pos, inputManager.mouse.real_movement);
+
             if (!base_dir_path.empty()) {
                 gameProps->system->setBasePath(base_dir_path);
             }
@@ -1025,6 +1029,8 @@ namespace Amara {
             if (gameProps->lua_exception_thrown) {
                 exception_thrown = true;
             }
+
+            mouse_pos_handled = false;
         }
 
         void basePassOnProps() {
@@ -1171,6 +1177,8 @@ namespace Amara {
                 )
             );
             inputManager.handleMouseMovement(pos);
+
+            mouse_pos_handled = true;
         }
 
         void handleFingerEvent(const Vector2& pos, SDL_FingerID fingerID, SDL_EventType eventType) {

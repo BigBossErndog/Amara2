@@ -465,7 +465,7 @@ namespace Amara {
                         word.glyphs.push_back(glyph);
 
                         line->merge(word);
-
+                        
                         word = TextLine();
 
                         cursorX = 0;

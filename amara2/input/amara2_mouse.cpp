@@ -13,7 +13,7 @@ namespace Amara {
         
         Mouse() = default;
         Mouse(GameProps* _gameProps): gameProps(_gameProps) {}
-
+        
         void update(double deltaTime) {
             left.update(deltaTime);
             right.update(deltaTime);

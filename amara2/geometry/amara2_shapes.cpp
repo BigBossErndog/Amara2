@@ -547,7 +547,7 @@ namespace Amara {
         static bool checkCollision(const T1& s1, const T2& s2);
         
         bool collidesWith(const Shape& other) const;
-
+        
         static bool collision(const Rectangle& r1, const Rectangle& r2) {
             if (r1.x + r1.w <= r2.x || r2.x + r2.w <= r1.x) {
                 return false;
