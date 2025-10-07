@@ -13,7 +13,7 @@ Creator:createWorld({
         
         title = "${Window_Title}"
     },
-
+    
     onPreload = function(self)
         self.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
     end,

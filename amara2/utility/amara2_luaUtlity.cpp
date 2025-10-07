@@ -385,6 +385,18 @@ namespace Amara {
             double b = ob.as<double>();
             return std::sqrt(a * a + b * b);
         });
+        math_metatable.set_function("hash", [](sol::object input) -> double {
+            if (input.is<std::string>()) {
+                std::string str = input.as<std::string>();
+                uint32_t hash = 2166136261u;
+                for (unsigned char c : str) {
+                    hash ^= c;
+                    hash *= 16777619u;
+                }
+                return (double)hash;
+            }
+            return 0;
+        });
         
         sol::table table_metatable = lua["table"];
         table_metatable.set_function("size", [](sol::object tbl) -> int {

@@ -56,7 +56,7 @@ namespace Amara {
 
     struct PassOnProps {
         float alpha = 1;
-        
+    
         float rotation = 0;
         Vector3 anchor = { 0, 0, 0 };
         Vector2 scale = { 1, 1 };

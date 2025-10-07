@@ -182,6 +182,24 @@ namespace Amara {
             return this;
         }
 
+        sol::object luaConfigure(std::string key, sol::object val) {
+            if (String::equal(key, "manipulators")) {
+                if (val.is<sol::table>()) {
+                    sol::table tbl = val.as<sol::table>();
+                    
+                    manipulators.clear();
+                    for (auto manipulator: tbl) {
+                        if (manipulator.first.is<std::string>()) {
+                            if (manipulator.first.is<std::string>() && manipulator.second.is<sol::function>()) {
+                                manipulators[manipulator.first.as<std::string>()] = manipulator.second;
+                            }
+                        }
+                    }
+                }
+            }
+            return Amara::Node::luaConfigure(key, val);
+        }
+        
         void updateText() {
             if (font) {
                 font->packGlyphsFromString(converted_text);
