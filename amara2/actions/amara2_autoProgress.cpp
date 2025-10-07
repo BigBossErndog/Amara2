@@ -74,6 +74,9 @@ namespace Amara {
         sol::object skip() {
             if (!completed) {
                 if (text) text->progress = until;
+                if (funcs.hasFunction("onSkip")) {
+                    funcs.callFunction(actor, "onSkip");
+                }
                 complete();
             }
             return get_lua_object();

@@ -16,7 +16,7 @@ namespace Amara {
                 play_now = json_extract(config, "playing");
             }
             
-    if (json_has(config, "audio")) {
+            if (json_has(config, "audio")) {
                 if (config["audio"].is_string()) {
                     std::string key = json_extract(config, "audio");
                     if (setAudio(key)) {
@@ -69,8 +69,7 @@ namespace Amara {
                 }
             }
             if (freeQueue.size() > 0) {
-                // TODO: Randomize which audio is played from pool
-                Amara::Audio* chosen = freeQueue[0];
+                Amara::Audio* chosen = freeQueue[floor(lua_random(gameProps->lua) * freeQueue.size())];
                 chosen->play();
                 playing = true;
                 return chosen->get_lua_object();
@@ -112,11 +111,26 @@ namespace Amara {
             }
         }
 
+        bool isPlaying() {
+            for (Amara::Audio* audio: pool) {
+                if (audio->destroyed || audio->parent != this) continue;
+                if (audio->playing) {
+                    playing = true;
+                    return true;
+                }
+            }
+            playing = false;
+            return false;
+        }
+        
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<AudioPool>("AudioPool",
                 sol::base_classes, sol::bases<Amara::Audio, Amara::Node>(),
                 "play", &AudioPool::play_from_pool,
                 "stop", &AudioPool::stop,
+                "playing", sol::property([](Amara::AudioPool& p) {
+                    return p.isPlaying();
+                }),
                 "randomOrder", &AudioPool::randomOrder
             );
         }

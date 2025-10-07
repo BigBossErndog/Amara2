@@ -6,6 +6,8 @@ namespace Amara {
         float volume = 1;
         float masterVolume = 1;
         float panning = 0;
+        float pitch = 1.0f;
+        float rec_pitch = -1;
 
         bool playing = false;
         bool loop = false;
@@ -43,6 +45,7 @@ namespace Amara {
             if (json_has(config, "volume")) setVolume(config["volume"]);
             if (json_has(config, "masterVolume")) setMasterVolume(config["masterVolume"]);
             if (json_has(config, "panning")) setPanning(config["panning"]);
+            if (json_has(config, "pitch")) setPitch(config["pitch"]);
             if (json_has(config, "position")) setPosition(config["position"]);
             if (json_is(config, "playing")) play();
             return Amara::Node::configure(config);
@@ -50,6 +53,9 @@ namespace Amara {
 
         virtual void update(double deltaTime) override {
             gameProps->audioData.volume = gameProps->audioData.volume * volume * masterVolume;
+            gameProps->audioData.panning = panning * (gameProps->audioData.panning + 1);
+            gameProps->audioData.pitch = pitch * gameProps->audioData.pitch;
+            
             Amara::Node::update(deltaTime);
 
             if (!playing || audio == nullptr || stream == nullptr) return;
@@ -69,6 +75,11 @@ namespace Amara {
                     stream_expiry_counter = 0;
                 }
                 return;
+            }
+
+            if (rec_pitch != gameProps->audioData.pitch) {
+                SDL_SetAudioStreamFrequencyRatio(stream, gameProps->audioData.pitch);
+                rec_pitch = gameProps->audioData.pitch;
             }
 
             stream_expiry_counter = 0;
@@ -276,6 +287,10 @@ namespace Amara {
         void setMasterVolume(float _mvolume) { masterVolume = std::clamp(_mvolume, 0.0f, 1.0f); }
         void setPanning(float _pan) { panning = std::clamp(_pan, -1.0f, 1.0f); }
 
+        void setPitch(float _pitch) {
+            pitch = std::max(0.0f, _pitch);
+        }
+
         virtual void destroy() override {
             destroyAudioStream();
             Amara::Node::destroy();
@@ -287,6 +302,7 @@ namespace Amara {
                 "volume", sol::property([] (Audio& a) -> float { return a.volume; }, [](Audio& a, float v) { a.setVolume(v); }),
                 "masterVolume", sol::property([] (Audio& a) -> float { return a.masterVolume; }, [](Audio& a, float v) { a.setMasterVolume(v); }),
                 "panning", sol::property([] (Audio& a) -> float { return a.panning; }, [](Audio& a, float v) { a.setPanning(v); }),
+                "pitch", sol::property([] (Audio& a) -> float { return a.pitch; }, [](Audio& a, float v) { a.setPitch(v); }),
                 "playing", sol::readonly(&Audio::playing),
                 "loop", &Audio::loop,
                 "loopStart", &Audio::loopStart,

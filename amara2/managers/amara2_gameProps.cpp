@@ -40,8 +40,8 @@ namespace Amara {
         SDL_AudioSpec spec;
 
         float volume = 1;
-
         float panning = 0;
+        float pitch = 1.0f;
         
         void reset() {
             AudioData new_data;
