@@ -38,6 +38,8 @@ namespace Amara {
         Amara::Loader* loader = nullptr;
 
         Vector3 pos = { 0, 0, 0 };
+        Vector3 worldPos = { 0, 0, 0 };
+
         Vector2 scale = { 1, 1 };
         float rotation = 0;
 
@@ -380,7 +382,7 @@ namespace Amara {
                         Vector2( 
                             (gameProps->passOn.anchor.x + pos.x*gameProps->passOn.scale.x), 
                             (gameProps->passOn.anchor.y + pos.y*gameProps->passOn.scale.y)
-                        ), 
+                        ),
                         gameProps->passOn.rotation
                     ),
                     passOn.anchor.z + pos.z
@@ -400,6 +402,9 @@ namespace Amara {
  
         virtual void run(double deltaTime) {
             update_properties();
+            pass_on_properties();
+            worldPos = passOn.anchor;
+            
             if (!actuated) {
                 if (!destroyed && finishedLoading()) {
                     create();
@@ -436,7 +441,7 @@ namespace Amara {
                     funcs.callFunction("onUpdate", deltaTime);
                 }
             }
-
+            
             if (!destroyed) runChildren(deltaTime);
             clean_node_list(children);
 
@@ -467,6 +472,8 @@ namespace Amara {
                     continue;
                 }
                 child->run(deltaTime * child->speed);
+
+                gameProps->passOn = passOn;
 
 				++it;
 				if (destroyed) break;
@@ -877,6 +884,7 @@ namespace Amara {
                 "getClass", &Node::getClassFunctions,
                 "classes", &Node::funcs,
                 "pos", sol::property([](Node& e, sol::object val) { e.pos = val; }, [](Node& e) -> Vector2& { return e.pos; }),
+                "worldPos", sol::readonly(&Node::worldPos),
                 "x", sol::property([](Node& e, float val) { e.pos.x = val; }, [](Node& e) { return e.pos.x; }),
                 "y", sol::property([](Node& e, float val) { e.pos.y = val; }, [](Node& e) { return e.pos.y; }),
                 "z", sol::property([](Node& e, float val) { e.pos.z = val; }, [](Node& e) { return e.pos.z; }),

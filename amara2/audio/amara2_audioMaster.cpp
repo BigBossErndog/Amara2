@@ -1,8 +1,6 @@
 namespace Amara {
     class AudioMaster: public Amara::AudioGroup {
     public:
-        float volume = 1;
-
         SDL_AudioDeviceID device = 0;
         
         std::vector<float> buffer;
@@ -45,8 +43,7 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<AudioMaster>("AudioMaster",
-                sol::base_classes, sol::bases<Amara::AudioGroup, Amara::Node>(),
-                "volume", &AudioMaster::volume
+                sol::base_classes, sol::bases<Amara::AudioGroup, Amara::Audio, Amara::Node>()
             );
         }
     };
