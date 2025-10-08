@@ -7,7 +7,7 @@ namespace Amara {
         float masterVolume = 1;
         float panning = 0;
         float pitch = 1.0f;
-        float rec_pitch = -1;
+        float rec_pitch = 1.0f;
 
         bool playing = false;
         bool loop = false;
@@ -18,7 +18,7 @@ namespace Amara {
         std::vector<float> stream_chunk;
         SDL_AudioSpec spec;
 
-        const int chunk_frames = 1024;
+        const int chunk_frames = 4096;
         int chunk_samples = 0;
         int chunk_bytes = 0;
 
@@ -93,6 +93,15 @@ namespace Amara {
             
             int samples_remaining = chunk_samples;
             while (samples_remaining > 0 && playing) {
+                if (!loop && position >= total_samples) {
+                    if (SDL_GetAudioStreamAvailable(stream) <= 0) {
+                        setPosition(0);
+                        playing = false;
+                        if (funcs.hasFunction("onComplete")) funcs.callFunction("onComplete");
+                    }
+                    break;
+                }
+
                 int endPoint = loop ? loop_end_sample : total_samples;
                 int samples_to_end = endPoint - position;
                 int samples_to_write = std::min(samples_remaining, samples_to_end);
@@ -123,12 +132,6 @@ namespace Amara {
                     int overshoot = position - loop_end_sample;
                     position = loop_start_sample + overshoot;
                     if (funcs.hasFunction("onLoop")) funcs.callFunction("onLoop");
-                }
-                else if (!loop && position >= total_samples) {
-                    setPosition(0);
-                    playing = false;
-                    if (funcs.hasFunction("onComplete")) funcs.callFunction("onComplete");
-                    break;
                 }
             }
         }
