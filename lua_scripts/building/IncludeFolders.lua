@@ -52,11 +52,17 @@ Nodes:define("IncludeFolders", "FillRect", {
             init = true
         end
 
+        local invalidFolders = {
+            build = {},
+            lua_scripts = {},
+            assets = {}
+        }
+
         local found = System:getSubDirectories(self.get.projectPath)
         self.get.directories = {}
         for i, v in ipairs(found) do
             local dirName = System:getDirectoryName(v)
-            if System:isDirectory(v) and dirName ~= "build" and dirName ~= "lua_scripts" then
+            if System:isDirectory(v) and (not string.starts_with(dirName, ".")) and (not invalidFolders[dirName]) then
                 table.insert(self.get.directories, dirName)
                 if init then
                     self.get.tempData[dirName] = true

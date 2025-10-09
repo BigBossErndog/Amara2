@@ -221,12 +221,6 @@ namespace Amara {
         imageLayers.clear();
         mapProperties.clear();
         
-        if (!gameProps->system->exists(path)) {
-            fatal_error("Error: Tilemap file not found at \"", path, "\".");
-            gameProps->breakWorld();
-            return false;
-        }
-        
         std::string mapDir = "";
         size_t lastSlash = path.find_last_of("/\\");
         if (lastSlash != std::string::npos) {

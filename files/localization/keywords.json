@@ -107,7 +107,7 @@
     "label_encryptFilesAndAssets": "Encrypt Files and Assets",
     "label_encryptWriteOutput": "Encrypt Write Output",
 
-    "label_includeFoldersDesc": "Choose directories to include in build.",
+    "label_includeFoldersDesc": "Choose optional directories to include.",
 
     "label_doNotCloseCommandPrompt": "Warning: Do not close the external command prompt window. You may minimize it instead.",
 

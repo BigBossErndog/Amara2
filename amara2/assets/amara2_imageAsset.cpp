@@ -19,12 +19,6 @@ namespace Amara {
         
         bool loadImage(std::string _p) {
             path = gameProps->system->getAssetPath(_p);
-            
-            if (!gameProps->system->exists(path)) {
-                fatal_error("Error: Image file not found \"", path, "\".");
-                return false;
-            }
-            
             clearTexture();
 
             std::string contents = gameProps->system->readFile(path);

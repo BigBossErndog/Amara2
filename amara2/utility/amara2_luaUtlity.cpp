@@ -36,10 +36,14 @@ namespace Amara {
             return nullptr;
         } else if (obj.get_type() == sol::type::boolean) {
             return obj.as<bool>();
-        } else if (obj.is<int>()) {
-            return obj.as<int>();
-        } else if (obj.is<double>()) {
-            return obj.as<double>();
+        } else if (obj.get_type() == sol::type::number) {
+            if (obj.is<double>()) {
+                if (floor(obj.as<double>()) == obj.as<double>()) return (int)(obj.as<double>());
+                else return obj.as<double>();
+            }
+            if (obj.is<int>()) {
+                return obj.as<int>();
+            }
         } else if (obj.get_type() == sol::type::string) {
             return obj.as<std::string>();
         } else if (obj.is<Amara::Color>()) {

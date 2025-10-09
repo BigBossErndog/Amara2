@@ -57,6 +57,13 @@ if System:exists(System:join(props.projectPath, "lua_scripts")) then
     Copy_Travel(srcDir, targetDir, "", Encrypting("encrypt-lua-scripts"))
 end
 
+if System:exists(System:join(props.projectPath, "assets")) then
+    local srcDir = System:join(props.projectPath, "assets")
+    local targetDir = System:join(props.projectPath, "build", "windows", "assets")
+    System:createDirectory(targetDir)
+    Copy_Travel(srcDir, targetDir, "", Encrypting("encrypt-files-assets"))
+end
+
 if projectData["build-directories"] then
     local directories = projectData["build-directories"]
     for i, v in ipairs(directories) do

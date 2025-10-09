@@ -987,7 +987,7 @@ namespace Amara {
             
             update_properties();
             basePassOnProps();
-
+            
             Amara::Node::preload();
         }
 
@@ -1006,7 +1006,6 @@ namespace Amara {
 
         virtual void run(double deltaTime) override {
             basePassOnProps();
-            
             checkClickThrough();
 
             if (!mouse_pos_handled) handleMouseMovement(inputManager.mouse.real_pos, inputManager.mouse.real_movement);

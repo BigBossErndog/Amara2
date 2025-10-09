@@ -118,6 +118,10 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             table.insert(args, "--preload-file")
             table.insert(args, fix_path(System:join(self.get.projectPath, "lua_scripts@/lua_scripts")))
         end
+        if System:exists(System:join(self.get.projectPath, "assets")) then
+            table.insert(args, "--preload-file")
+            table.insert(args, fix_path(System:join(self.get.projectPath, "assets@/assets")))
+        end
 
         if projectData["build-directories"] then
             for i, dir in ipairs(projectData["build-directories"]) do

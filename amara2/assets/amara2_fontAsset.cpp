@@ -145,11 +145,6 @@ namespace Amara {
             
             path = gameProps->system->getAssetPath(_p);
             fontSize = _size;
-            
-            if (!gameProps->system->exists(path)) {
-                fatal_error("Error: Font file not found at \"", path, ".\"");
-                return false;
-            }
 
             std::string contents = gameProps->system->readFile(path);
             size_t bufferSize = contents.size();

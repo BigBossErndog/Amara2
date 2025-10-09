@@ -26,12 +26,6 @@ namespace Amara {
         bool loadAudio(std::string _p) {
             path = gameProps->system->getAssetPath(_p);
 
-            if (!gameProps->system->exists(path)) {
-                fatal_error("Error: Audio file not found \"", path, "\".");
-                gameProps->breakWorld();
-                return false;
-            }
-
             samples.clear();
             sampleRate = 0;
             channels = 0;

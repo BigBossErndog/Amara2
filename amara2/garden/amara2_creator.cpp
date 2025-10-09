@@ -161,7 +161,7 @@ namespace Amara {
                 new_world->demiurge = currentDemiurge;
                 currentDemiurge->addWorld(new_world);
             }
-
+            
             new_world->preload();
             if (!new_world->destroyed && new_world->finishedLoading()) {
                 new_world->create();
