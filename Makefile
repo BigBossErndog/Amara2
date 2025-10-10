@@ -22,7 +22,7 @@ WINDOWS_COMPILER_FLAGS = -w -m64 -Wl,/SUBSYSTEM:WINDOWS -Wl,/NOIMPLIB -std=c++17
 
 LINUX_COMPILER_FLAGS = -w -Wall -m32 -std=c++17
 
-RESOURCES = $(WINDOWS_BUILDMODULE_PATH)/resources
+RESOURCES = resources
 
 SDL_INCLUDE_PATHS_WIN64 = -I$(RESOURCES)/libs/SDL3-3.2.16/include
 SDL_LIBRARY_PATHS_WIN64 = -L$(RESOURCES)/libs/SDL3-3.2.16/lib/x64
@@ -41,7 +41,7 @@ LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthre
 LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl2-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
 
 OTHER_LIB_LINKS = 
-OTHER_LIB_PATHS = -Isrc -I$(RESOURCES)/libs/nlohmann/include -I$(RESOURCES)/libs/murmurhash3 -I$(RESOURCES)/libs/lua -I$(RESOURCES)/libs/sol2 -I$(RESOURCES)/libs/stb -I$(RESOURCES)/libs/glm -I$(RESOURCES)/libs/minimp3 -I$(RESOURCES)/libs/portable-file-dialogs -I$(RESOURCES)/libs/tinyxml2
+OTHER_LIB_PATHS = -Isrc -I$(RESOURCES)/libs/json/include -I$(RESOURCES)/libs/lua -I$(RESOURCES)/libs/sol2 -I$(RESOURCES)/libs/stb -I$(RESOURCES)/libs/glm -I$(RESOURCES)/libs/minimp3 -I$(RESOURCES)/libs/portable-file-dialogs -I$(RESOURCES)/libs/tinyxml2
 
 OTHER_LIB = $(OTHER_LIB_PATHS)
 

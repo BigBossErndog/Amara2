@@ -6,7 +6,13 @@
 	url = https://github.com/nlohmann/json.git
 [submodule "resources/libs/portable-file-dialogs"]
 	path = resources/libs/portable-file-dialogs
-	url = https://github.com/samhocevar/portable-file-dialogs.git
+	url = https://github.com/samhocevar/portable-file-dialogs
 [submodule "resources/libs/tinyxml2"]
 	path = resources/libs/tinyxml2
 	url = https://github.com/leethomason/tinyxml2.git
+[submodule "resources/libs/json"]
+	path = resources/libs/json
+	url = https://github.com/nlohmann/json.git
+[submodule "resources/libs/minimp3"]
+	path = resources/libs/minimp3
+	url = https://github.com/lieff/minimp3

@@ -83,8 +83,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             table.insert(args, "-I" .. fix_path(System:join(self.get.projectPath, "plugins")))
         end
 
-        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/nlohmann/include")))
-        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/murmurhash3")))
+        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/json/include")))
         table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/lua")))
         table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/sol2")))
         table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/stb")))

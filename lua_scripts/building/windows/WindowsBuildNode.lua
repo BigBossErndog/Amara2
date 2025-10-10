@@ -51,7 +51,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         
         local sdl3Path = System:join(buildModule, "resources/libs/SDL3-3.2.16")
 
-        local nlohmannPath = System:join(buildModule, "resources/libs/nlohmann/include")
+        local nlohmannPath = System:join(buildModule, "resources/libs/json/include")
         local murmurhash3Path = System:join(buildModule, "resources/libs/murmurhash3")
         local luaPath = System:join(buildModule, "resources/libs/lua")
         local sol2Path = System:join(buildModule, "resources/libs/sol2")

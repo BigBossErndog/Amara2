@@ -372,6 +372,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             })
 
             win:destroy()
+            
         end)
     end,
 
