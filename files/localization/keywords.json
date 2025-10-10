@@ -70,7 +70,7 @@
     "label_buildSuccess": "Success: Build successfully completed. Press Exit to return.",
     "label_buildFailed": "Error: Build failed to complete. Press Exit to return.",
     "label_enterExecutableFileName": "Enter Executable File Name",
-    "label_selectIcon": "32 x 32 px PNG, JPG, JPEG or BMP",
+    "label_selectIcon": "256 x 256 px PNG, JPG, JPEG or BMP",
     "label_performingInitialSetup": "Performing Initial Setup...",
     "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
     "label_saveSettings": "Save Settings",

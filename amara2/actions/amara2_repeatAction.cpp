@@ -48,7 +48,7 @@ namespace Amara {
                 }
             }
         }
-
+        
         void setInterim(double _interim) {
             interim = _interim;
             if (counter > interim) {

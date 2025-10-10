@@ -1,0 +1,1 @@
+From the SDL website: https://www.libsdl.org/
