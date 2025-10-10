@@ -29,6 +29,8 @@ namespace Amara {
         
         bool replaceExisting = true;
 
+        bool queue_empty = true;
+
         Loader(): Amara::Action() {
             set_base_node_id("Loader");
         }
@@ -193,7 +195,10 @@ namespace Amara {
         }
 
         void queueTask(const LoadTask& task) {
-            if (loadRate > 0) tasks.push_back(task);
+            if (loadRate > 0) {
+                tasks.push_back(task);
+                queue_empty = false;
+            }
             else processTask(task);
         }
         
@@ -203,7 +208,8 @@ namespace Amara {
             }
             Amara::Action::act(deltaTime);
 
-            if (has_started) {
+            if (tasks.size() == 0) complete();
+            else if (has_started) {
                 int processedTasks = 0;
 
                 for (auto it = tasks.begin(); it != tasks.end();) {
@@ -236,7 +242,6 @@ namespace Amara {
                     funcs.callFunction(actor, "onLoadProgress", loadProgress);
                 }
             }
-            if (tasks.size() == 0) complete();
         }
 
         void onLoadProgress(sol::function callback) {
@@ -284,6 +289,6 @@ namespace Amara {
     };
     
     bool Amara::Node::finishedLoading() {
-        return loader == nullptr || loader->completed || loader->tasks.size() == 0;
+        return loader == nullptr || loader->completed || loader->queue_empty;
     }
 }
