@@ -80,10 +80,15 @@ namespace Amara {
             return Amara::Sprite::setHeight(_h);
         }
 
+        using Amara::Sprite::getRectangle;
+        using Amara::Sprite::stretchTo;
+        
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Amara::FillRect>("FillRect",
                 sol::base_classes, sol::bases<Amara::Sprite, Amara::Node>(),
                 "color", sol::property([](Amara::FillRect& t) -> Amara::Color { return t.tint; }, [](Amara::FillRect& t, sol::object c) { t.tint = c; }),
+                "w", sol::property([](Amara::FillRect& t) -> float { return t.rectWidth; }, &Amara::FillRect::setWidth),
+                "h", sol::property([](Amara::FillRect& t) -> float { return t.rectHeight; }, &Amara::FillRect::setHeight),
                 "width", sol::property([](Amara::FillRect& t) -> float { return t.rectWidth; }, &Amara::FillRect::setWidth),
                 "height", sol::property([](Amara::FillRect& t) -> float { return t.rectHeight; }, &Amara::FillRect::setHeight),
                 "texture", sol::property([](Amara::FillRect& t) -> std::string { return t.image ? t.image->key : ""; }, &Amara::FillRect::setTexture)

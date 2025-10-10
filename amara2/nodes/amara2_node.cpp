@@ -598,7 +598,7 @@ namespace Amara {
             Amara::Node* child;
 			for (auto it = children.rbegin(); it != children.rend();) {
                 child = *it;
-				if (String::equal(child->id, gid)) {
+				if (String::equal(child->id, gid) && !child->destroyed && child->parent == this) {
 					return child;
 				}
 				++it;

@@ -253,6 +253,7 @@ namespace Amara {
             registerNode<Amara::Animation>("Animation");
 
             registerNode<Amara::FillRect>("FillRect");
+            registerNode<Amara::FillCircle>("FillCircle");
 
             registerNode<Amara::Container>("Container");
 
@@ -320,8 +321,9 @@ namespace Amara {
             Amara::RepeatSprite::bind_lua(lua);
             Amara::ParticleEmitter::bind_lua(lua);
             Amara::Animation::bind_lua(lua);
-
+            
             Amara::FillRect::bind_lua(lua);
+            Amara::FillCircle::bind_lua(lua);
 
             Amara::Container::bind_lua(lua);
             

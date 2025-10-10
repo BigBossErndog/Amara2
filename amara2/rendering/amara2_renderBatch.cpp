@@ -20,7 +20,7 @@ namespace Amara {
         std::vector<unsigned int> indices;
         std::vector<float> alphas_per_vertex;
         std::vector<float> tints_per_vertex;
-
+        
         size_t rec_buffer_size_vbo = 0;
         size_t rec_buffer_size_alpha = 0;
         size_t rec_buffer_size_tint = 0;

@@ -311,6 +311,7 @@ namespace Amara {
             elapsedTime = 0;
     
             #ifdef __EMSCRIPTEN__
+                emscripten_run_script("amara2Ready();");
                 emscripten_set_main_loop(emscripten_main_loop, 0, 1);
             #else
             while (!game.hasQuit && worlds.size() != 0) { // Creation cannot exist without any worlds.

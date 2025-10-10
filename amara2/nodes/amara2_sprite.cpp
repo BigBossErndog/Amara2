@@ -140,7 +140,8 @@ namespace Amara {
             if (json_has(config, "height")) setHeight(config["height"]);
 
             if (json_has(config, "rect")) stretchTo(config["rect"]);
-
+            if (json_has(config, "size")) stretchTo(config["size"]);
+            
             if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
 
             return Amara::Node::configure(config);
@@ -459,6 +460,10 @@ namespace Amara {
                 "width", sol::property(&Sprite::getWidth, &Sprite::setWidth),
                 "height", sol::property(&Sprite::getHeight, &Sprite::setHeight),
                 "rect", sol::property(&Sprite::getRectangle, [](Amara::Sprite& t, sol::object v) {
+                    Rectangle r = v;
+                    t.stretchTo(r);
+                }),
+                "size", sol::property(&Sprite::getRectangle, [](Amara::Sprite& t, sol::object v) {
                     Rectangle r = v;
                     t.stretchTo(r);
                 }),

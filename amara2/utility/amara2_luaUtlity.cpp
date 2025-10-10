@@ -133,12 +133,12 @@ namespace Amara {
         if (obj.is<std::string>()) return obj.as<std::string>();
         if (obj.is<sol::function>()) return "(function)";
 
-        if (obj.is<int>()) return std::to_string(obj.as<int>());
         if (obj.is<double>()) {
             double val = obj.as<double>();
             if (floor(val) == val) return std::to_string((int)val);
             else return std::to_string(val);
         }
+        if (obj.is<int>()) return std::to_string(obj.as<int>());
 
         if (obj.is<Rectangle>()) return std::string(obj.as<Rectangle>());
         if (obj.is<Circle>()) return std::string(obj.as<Circle>());

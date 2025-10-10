@@ -129,12 +129,13 @@
           this.totalDependencies = Math.max(this.totalDependencies, left);
           Module.setStatus(left
             ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')'
-            : 'All downloads complete.');
-          if (left === 0) {
-            canvasElement.style.display = 'block';
-            document.getElementById('loading-container').style.display = 'none';
-          }
+            : '');
         }
+      };
+
+      function amara2Ready() {
+        canvasElement.style.display = 'block';
+        document.getElementById('loading-container').style.display = 'none';
       };
 
       Module.setStatus('Downloading...');

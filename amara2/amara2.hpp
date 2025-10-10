@@ -238,6 +238,7 @@
     #include "actions/amara2_animation.cpp"
 
     #include "nodes/amara2_fillRect.cpp"
+    #include "nodes/amara2_fillCircle.cpp"
 
     #include "nodes/amara2_container.cpp"
 
