@@ -32,6 +32,10 @@ Nodes:define("ProjectWindow", "UIWindow", {
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 3,
+            hotkey = {
+                left = { Key.LeftAlt, Key.LeftShift, Key.Enter },
+                right = { Key.RightAlt, Key.RightShift, Key.Enter }
+            },
             onPress = function()
                 if not self.get.gameProcess then
                     self.func:runGame()
@@ -64,7 +68,11 @@ Nodes:define("ProjectWindow", "UIWindow", {
             toolTip = "toolTip_openCodeEditor",
             x = buttonPos.x,
             y = buttonPos.y,
-            icon = 7
+            icon = 7,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.X },
+                { Key.RightAlt, Key.RightShift, Key.X }
+            }
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
@@ -74,8 +82,24 @@ Nodes:define("ProjectWindow", "UIWindow", {
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 6,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.P },
+                { Key.RightAlt, Key.RightShift, Key.P }
+            },
             onPress = function()
                 System:openDirectory(self.get.projectPath)
+            end
+        })
+
+        buttonPos.x = buttonPos.x + buttonSpacing
+        self.get.content:createChild("UIButton", {
+            id = "minimizeButton",
+            toolTip = "toolTip_minimize",
+            x = buttonPos.x,
+            y = buttonPos.y,
+            icon = 4,
+            onPress = function(button)
+                self.world:minimizeWindow()
             end
         })
 
@@ -105,22 +129,11 @@ Nodes:define("ProjectWindow", "UIWindow", {
                     
                     self:destroy()
                 end)
-            end
-        })
-
-        buttonPos.x = buttonPos.x + buttonSpacing
-        self.get.content:createChild("UIButton", {
-            id = "exitButton",
-            toolTip = "toolTip_exit",
-            x = buttonPos.x,
-            y = buttonPos.y,
-            icon = 1,
-            onPress = function(button)
-                self.world.get.windows.func:closeAll(function(self)
-                    self.world:destroy()
-                end)
-                button.get.enabled = false
-            end
+            end,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.Backspace },
+                { Key.RightAlt, Key.RightShift, Key.Backspace }
+            }
         })
 
         buttonPos.x = 6
@@ -132,6 +145,10 @@ Nodes:define("ProjectWindow", "UIWindow", {
             x = buttonPos.x,
             y = buttonPos.y,
             icon = 8,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.B },
+                { Key.RightAlt, Key.RightShift, Key.B }
+            },
             onPress = function(button)
                 button.get.enabled = false
                 self.func:buildGame()
@@ -159,7 +176,11 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 else
                     self.get.printLog.get.exitButton.func:forcePress()
                 end
-            end
+            end,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.M },
+                { Key.RightAlt, Key.RightShift, Key.M }
+            }
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
@@ -246,70 +267,11 @@ Nodes:define("ProjectWindow", "UIWindow", {
             end
         end)
 
-        self.func:setHotkeys()
-
         self.input:listen("onPointerUp", function(self)
             self.func:savePosition()
         end)
 
         self.world.func:registerProject(self.get.projectPath)
-    end,
-
-    setHotkeys = function(self)
-        self:createChild("Hotkey", {
-            config = {
-                left = { Key.LeftAlt, Key.LeftShift, Key.Enter },
-                right = { Key.RightAlt, Key.RightShift, Key.Enter }
-            },
-            onPress = function()
-                self.get.playButton.func:forcePress()
-            end
-        })
-        self:createChild("Hotkey", {
-            config = {
-                { Key.LeftAlt, Key.LeftShift, Key.X },
-                { Key.RightAlt, Key.RightShift, Key.X }
-            },
-            onPress = function()
-                self.get.codeEditorButton.func:forcePress()
-            end
-        })
-        self:createChild("Hotkey", {
-            config = {
-                { Key.LeftAlt, Key.LeftShift, Key.P },
-                { Key.RightAlt, Key.RightShift, Key.P }
-            },
-            onPress = function()
-                self.get.openDirectoryButton.func:forcePress()
-            end
-        })
-        self:createChild("Hotkey", {
-            config = {
-                { Key.LeftAlt, Key.LeftShift, Key.B },
-                { Key.RightAlt, Key.RightShift, Key.B }
-            },
-            onPress = function()
-                self.get.buildButton.func:forcePress()
-            end
-        })
-        self:createChild("Hotkey", {
-            config = {
-                { Key.LeftAlt, Key.LeftShift, Key.M },
-                { Key.RightAlt, Key.RightShift, Key.M }
-            },
-            onPress = function()
-                self.get.printLogButton.func:forcePress()
-            end
-        })
-        self:createChild("Hotkey", {
-            config = {
-                { Key.LeftAlt, Key.LeftShift, Key.Backspace },
-                { Key.RightAlt, Key.RightShift, Key.Backspace }
-            },
-            onPress = function()
-                self.get.backButton.func:forcePress()
-            end
-        })
     end,
 
     savePosition = function(self)

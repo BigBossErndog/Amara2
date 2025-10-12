@@ -25,6 +25,15 @@ Nodes:define("UIButton", "NineSlice", {
 
     onCreate = function(self)
         self.get.enabled = true
+
+        if self.get.hotkey then
+            self:createChild("Hotkey", {
+                config = self.get.hotkey,
+                onPress = function()
+                    self.func:forcePress()
+                end
+            })
+        end
     end,
     
     onConfigure = function(self, config)
@@ -66,6 +75,10 @@ Nodes:define("UIButton", "NineSlice", {
 
         if config.toolTip then
             self.get.toolTip = config.toolTip
+        end
+
+        if config.hotkey then
+            self.get.hotkey = config.hotkey
         end
     end,
 

@@ -280,7 +280,11 @@ Nodes:define("MainWindow", "UIWindow", {
                     
                     self:destroy()
                 end)
-            end
+            end,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.O },
+                { Key.RightAlt, Key.RightShift, Key.O }
+            }
         })
 
         buttonPos = buttonPos - buttonSpacing
@@ -301,7 +305,11 @@ Nodes:define("MainWindow", "UIWindow", {
                     
                     self:destroy()
                 end)
-            end
+            end,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.N },
+                { Key.RightAlt, Key.RightShift, Key.N }
+            }
         })
 
         if not settings.projects or failedProjects >= #settings.projects then
@@ -319,24 +327,6 @@ Nodes:define("MainWindow", "UIWindow", {
     end,
 
     setHotkeys = function(self)
-        self:createChild("Hotkey", {
-            config = {
-                { Key.LeftAlt, Key.LeftShift, Key.N },
-                { Key.RightAlt, Key.RightShift, Key.N }
-            },
-            onPress = function()
-                self.get.newProjectButton.func:forcePress()
-            end
-        })
-        self:createChild("Hotkey", {
-            config = {
-                { Key.LeftAlt, Key.LeftShift, Key.O },
-                { Key.RightAlt, Key.RightShift, Key.O }
-            },
-            onPress = function()
-                self.get.openDirectoryButton.func:forcePress()
-            end
-        })
         self:createChild("Hotkey", {
             config = {
                 { Key.LeftAlt, Key.LeftShift, Key.One },
