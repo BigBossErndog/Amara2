@@ -205,7 +205,11 @@ Nodes:define("MainWindow", "UIWindow", {
             icon = 4,
             onPress = function(self)
                 self.world:minimizeWindow()
-            end
+            end,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.Minus },
+                { Key.RightAlt, Key.RightShift, Key.Minus }
+            }
         })
 
         buttonPos = buttonPos - buttonSpacing

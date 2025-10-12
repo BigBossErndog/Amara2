@@ -120,7 +120,7 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
 
         buttonPos = buttonPos - buttonSpacing
         self.get.content:createChild("UIButton", {
-            id = "newProjectButton",
+            id = "minimizeButton",
             toolTip = "toolTip_minimize",
             x = buttonPos,
             y = 4,
@@ -128,7 +128,11 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
             onPress = function(button)
                 self.world:minimizeWindow()
                 button.get.enabled = false
-            end
+            end,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.Minus },
+                { Key.RightAlt, Key.RightShift, Key.Minus }
+            }
         })
 
         self.get.errorMessage = self.get.content:createChild("Text", {

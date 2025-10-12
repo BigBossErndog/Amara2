@@ -16,7 +16,7 @@
     "toolTip_exit": "Exit (Ctrl + Shift + F4)",
     "toolTip_exitOnly": "Exit",
     "toolTip_cancel": "Cancel",
-    "toolTip_minimize": "Minimize",
+    "toolTip_minimize": "Minimize (Alt + Shift + Minus)",
     "toolTip_back": "Back (Alt + Shift + Backspace)",
     "toolTip_browseDirectory": "Browse Directory",
     "toolTip_browseFile": "Browse File",

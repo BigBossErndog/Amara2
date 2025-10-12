@@ -162,7 +162,11 @@ Nodes:define("TerminalWindow", "UIWindow", {
                 end,
                 onPress = function(self)
                     self.world:minimizeWindow()
-                end
+                end,
+                hotkey = {
+                    { Key.LeftAlt, Key.LeftShift, Key.Minus },
+                    { Key.RightAlt, Key.RightShift, Key.Minus }
+                }
             })
         end
 
