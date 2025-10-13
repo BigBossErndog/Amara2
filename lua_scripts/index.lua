@@ -45,7 +45,7 @@ Creator:createWorld({
         clickThrough = true,
         alwaysOnTop = true,
         vsync = true,
-        graphics = Graphics.OpenGL,
+        graphics = Graphics.Render2D,
         screenMode = ScreenMode.BorderlessFullscreen,
     },
     
@@ -76,11 +76,9 @@ Creator:createWorld({
 
         local props = world.props;
         
-        props.windowShadows = world:createChild("ShaderContainer", {
+        props.windowShadows = world:createChild("TextureContainer", {
             alpha = 0.5,
             tint = Colors.Black,
-            shaderPass = "boxBlur",
-            repeats = 4,
             onCreate = function(self)
                 self.size = self.world.view
             end,
