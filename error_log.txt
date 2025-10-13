@@ -1,0 +1,8 @@
+[string "index.lua"]:59: attempt to call a nil value (global 'ghj')
+stack traceback:
+	[string "index.lua"]:59: in function <[string "index.lua"]:52>
+	[C]: in method 'createWorld'
+	[string "index.lua"]:38: in main chunk
+stack traceback:
+	[C]: in method 'createWorld'
+	[string "index.lua"]:38: in main chunk

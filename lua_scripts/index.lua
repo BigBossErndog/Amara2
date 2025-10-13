@@ -45,12 +45,17 @@ Creator:createWorld({
         clickThrough = true,
         alwaysOnTop = true,
         vsync = true,
-        graphics = Graphics.Render2D,
+        graphics = Graphics.OpenGL,
         screenMode = ScreenMode.BorderlessFullscreen,
     },
     
     onPreload = function(world)
         world:restoreWindow()
+
+        world.load:shaderProgram("boxBlur", {
+            vertex = "defaultVert",
+            fragment = "shaders/boxBlur.frag"
+        })
         
         world.load:image("uiBox", "ui/amara2_uiBox.png")
         world.load:spritesheet("terminalWindow", "ui/amara2_terminalWindow.png", 32, 32)
@@ -71,9 +76,11 @@ Creator:createWorld({
 
         local props = world.props;
         
-        props.windowShadows = world:createChild("TextureContainer", {
+        props.windowShadows = world:createChild("ShaderContainer", {
             alpha = 0.5,
             tint = Colors.Black,
+            shaderPass = "boxBlur",
+            repeats = 4,
             onCreate = function(self)
                 self.size = self.world.view
             end,

@@ -18,47 +18,50 @@ namespace Amara {
 
         std::vector<Amara::ShaderProgram*> shader_passes;
 
+        void swapCanvases() {
+            canvas_flip = !canvas_flip;
+            if (gameProps->graphics == GraphicsEnum::Render2D) {
+                canvasTexture = (canvas_flip) ? canvas1Texture : canvas2Texture;
+            }
+            #ifdef AMARA_OPENGL
+            else if (gameProps->graphics == GraphicsEnum::OpenGL) {
+                glBufferID = (canvas_flip) ? glBuffer1ID : glBuffer2ID;
+                glCanvasID = (canvas_flip) ? glCanvas1ID : glCanvas2ID;
+            }
+            #endif
+        }
+
         ShaderContainer(): Amara::TextureContainer() {
             set_base_node_id("ShaderContainer");
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "shaderPasses")) {
-                nlohmann::json passes = config["shaderPasses"];
-                if (passes.is_array()) {
-                    for (nlohmann::json s: passes) {
+            auto it = config.find("shaderPasses");
+            if (it != config.end()) {
+                if (it->is_array()) {
+                    for (nlohmann::json s: *it) {
                         addShaderPass(s);
                     }
                 }
-                else if (passes.is_string()) {
-                    addShaderPass(passes);
+                else if (it->is_string()) {
+                    addShaderPass(*it);
                 }
             }
-            if (json_has(config, "shaderPass")) {
-                if (config["shaderPass"].is_string()) {
-                    addShaderPass(config["shaderPass"]);
+            it = config.find("shaderPass");
+            if (it != config.end()) {
+                if (it->is_string()) {
+                    addShaderPass(*it);
                 }
             }
-            if (json_has(config, "repeats")) {
-                repeats = config["repeats"];
+            it = config.find("repeats");
+            if (it != config.end() && it->is_number_integer() && *it > 0) {
+                repeats = *it;
             }
             return Amara::TextureContainer::configure(config);
         }
 
         virtual void deletePipeline() override {
-            canvasTexture = canvas1Texture;
-
-            #ifdef AMARA_OPENGL
-            glCanvasID = glCanvas1ID;
-            glBufferID = glBuffer1ID;
-            #endif
-
             Amara::TextureContainer::deletePipeline();
-
-            #ifdef AMARA_OPENGL
-            glCanvas1ID = glCanvasID;
-            glBuffer1ID = glBufferID;
-            #endif
 
             if (canvas2Texture) {
                 SDL_DestroyTexture(canvas2Texture);
@@ -79,6 +82,8 @@ namespace Amara {
         virtual void createCanvas(int _w, int _h) override {
             Amara::TextureContainer::createCanvas(_w, _h);
 
+            canvas1Texture = canvasTexture;
+
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) { 
                 canvas2Texture = SDL_CreateTexture(
                     gameProps->renderer,
@@ -87,10 +92,14 @@ namespace Amara {
                     _w,
                     _h
                 );
+                SDL_SetTextureBlendMode(canvas1Texture, SDL_BLENDMODE_NONE);
+                SDL_SetTextureBlendMode(canvas2Texture, SDL_BLENDMODE_NONE);
             }
-            canvas1Texture = canvasTexture;
-
+            
             #ifdef AMARA_OPENGL
+            glBuffer1ID = glBufferID;
+            glCanvas1ID = glCanvasID;
+
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 GLint prevBuffer = 0;
                 glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
@@ -100,16 +109,14 @@ namespace Amara {
 
                 glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
             }
-            glBuffer1ID = glBufferID;
-            glCanvas1ID = glCanvasID;
             #endif
         }
 
         void drawPass() {
-            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
-                SDL_Texture* stamp_texture = (canvas_flip) ? canvas2Texture : canvas1Texture;
-                SDL_Texture* target_texture = (canvas_flip) ? canvas1Texture : canvas2Texture;
+            SDL_Texture* stamp_texture = (canvas_flip) ? canvas2Texture : canvas1Texture;
+            SDL_Texture* target_texture = (canvas_flip) ? canvas1Texture : canvas2Texture;
 
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 SDL_SetRenderTarget(gameProps->renderer, target_texture);
                 SDL_SetRenderDrawColor(gameProps->renderer, 0, 0, 0, 0);
                 SDL_RenderClear(gameProps->renderer);
@@ -127,11 +134,8 @@ namespace Amara {
             }
             #ifdef AMARA_OPENGL
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
-                GLuint stamp_buffer = (canvas_flip) ? glBuffer2ID : glBuffer1ID;
                 GLuint stamp_canvas = (canvas_flip) ? glCanvas2ID : glCanvas1ID;
-
                 GLuint target_buffer = (canvas_flip) ? glBuffer1ID : glBuffer2ID;
-                GLuint target_canvas = (canvas_flip) ? glCanvas1ID : glCanvas2ID;
 
                 gameProps->renderBatch->flush();
                 glBindFramebuffer(GL_FRAMEBUFFER, target_buffer);
@@ -179,8 +183,7 @@ namespace Amara {
                     shader_passes.push_back(prog);
                 }
                 else {
-                    fatal_error("Error: ShaderProgram \"", shader_key, "\" not found.");
-                    gameProps->breakWorld();
+                    Amara::fatal_error("Error: ShaderProgram \"", shader_key, "\" not found.");
                 }
             }
             #endif
@@ -210,7 +213,7 @@ namespace Amara {
                 SDL_GetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL
-            ShaderProgram* rec_shader = currentShaderProgram;
+            ShaderProgram* originalShaderProgram = currentShaderProgram;
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 gameProps->renderBatch->flush();
 
@@ -219,7 +222,7 @@ namespace Amara {
             }
             #endif
 
-            PassOnProps rec_props = gameProps->passOn;
+            PassOnProps originalPassOnProps = gameProps->passOn;
 
             Amara::TextureContainer::drawCanvas(v);
 
@@ -237,21 +240,21 @@ namespace Amara {
 
             for (int i = 0; i < repeats; i++) {
                 for (Amara::ShaderProgram* prog: shader_passes) {
-                    canvas_flip = !canvas_flip;
+                    swapCanvases();
                     gameProps->passOn = new_props;
                     currentShaderProgram = prog;
                     drawPass();
                 }
             }
 
-            gameProps->passOn = rec_props;
+            gameProps->passOn = originalPassOnProps;
 
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = (canvas_flip) ? canvas1Texture : canvas2Texture;
                 SDL_SetRenderViewport(gameProps->renderer, &prevSDLViewport);
             }
             #ifdef AMARA_OPENGL
-            currentShaderProgram = rec_shader;
+            currentShaderProgram = originalShaderProgram;
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 gameProps->renderBatch->flush();
 
