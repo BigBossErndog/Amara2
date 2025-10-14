@@ -135,9 +135,10 @@ namespace Amara {
                 "held", sol::readonly(&NodeInput::held),
                 "timeHeld", sol::readonly(&NodeInput::timeHeld),
                 "draggable", &NodeInput::draggable,
+                "drag", sol::readonly(&NodeInput::drag),
+                "dragging", sol::readonly(&NodeInput::dragging),
                 "configure", sol::resolve<void(sol::object)>(&NodeInput::configure),
                 "cursor", &NodeInput::cursor,
-                "drag", sol::readonly(&NodeInput::drag),
                 "pointer", sol::property([](Amara::NodeInput& n) {
                     return n.gameProps->inputManager->generalPointer;
                 })
