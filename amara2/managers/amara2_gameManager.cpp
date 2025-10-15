@@ -17,6 +17,7 @@ namespace Amara {
         bool hasQuit = false;
 
         Amara::GameProps* gameProps = nullptr;
+        sol::object luaobject;
         
         std::string executable;
 

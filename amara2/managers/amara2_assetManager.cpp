@@ -6,12 +6,18 @@ namespace Amara {
         Amara::SinglePixelAsset* whitePixel = nullptr;
 
         std::unordered_map<std::string, Amara::Asset*> assets;
+
+        sol::object luaobject;
         
         AssetManager() = default;
 
-        void init() {
+        void init(Amara::GameProps* _gameProps) {
+            gameProps = _gameProps;
+
             whitePixel = new Amara::SinglePixelAsset(gameProps);
             add("whitePixel", whitePixel);
+
+            luaobject = sol::make_object(gameProps->lua, this);
         }
         
         Amara::Asset* get(std::string key) {

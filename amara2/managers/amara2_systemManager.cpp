@@ -4,6 +4,7 @@ namespace Amara {
         std::string basePath;
 
         Amara::GameProps* gameProps = nullptr;
+        sol::object luaobject;
 
         SystemManager() = default;
         

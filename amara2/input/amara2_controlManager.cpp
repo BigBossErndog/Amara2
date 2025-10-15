@@ -2,6 +2,7 @@ namespace Amara {
     class ControlManager {
     public:
         Amara::GameProps* gameProps = nullptr;
+        sol::object luaobject;
 
         ControlManager() = default;
 

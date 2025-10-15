@@ -176,9 +176,9 @@ namespace Amara {
             gameProps->shaders = &shaders;
             gameProps->audio = audio;
 
-            gameProps->lua["Mouse"] = &inputManager.mouse;
-            gameProps->lua["Touch"] = &inputManager.touch;
-            gameProps->lua["Assets"] = &assets;
+            gameProps->lua["Mouse"] = inputManager.mouse.luaobject;
+            gameProps->lua["Touch"] = inputManager.touch.luaobject;
+            gameProps->lua["Assets"] = assets.luaobject;
             
             if (window) {
                 #ifdef AMARA_OPENGL
@@ -921,7 +921,7 @@ namespace Amara {
 
                 if (vsync != 0) setVsync(vsync);
 
-                assets.init();
+                assets.init(gameProps);
 
                 debug_log("Note: ", *this, " rendering to window using ", graphics_to_string(graphics), ".");
 

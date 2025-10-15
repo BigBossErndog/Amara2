@@ -21,6 +21,7 @@ namespace Amara {
         static inline std::unordered_map<std::string, std::function<sol::object(Node*)>> nodeRegistry;
 
         Amara::GameProps* gameProps = nullptr;
+        sol::object luaobject;
         
         NodeFactory() = default;
 

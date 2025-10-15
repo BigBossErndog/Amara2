@@ -58,6 +58,7 @@ namespace Amara {
             bind_lua();
 
             setup(&gameProps);
+            luaobject = sol::make_object(lua, this);
 
             lua["Keyboard"] = &(eventHandler.keyboard);
             gameProps.keyboard = &(eventHandler.keyboard);
@@ -188,13 +189,14 @@ namespace Amara {
         virtual void override_existence() override {
             true_creator = this;
             
-            gameProps.lua["Creator"] = this;
-            gameProps.lua["Game"] = &game;
-            gameProps.lua["System"] = &system;
-            gameProps.lua["Nodes"] = &factory;
-            gameProps.lua["Scripts"] = &scripts;
-            gameProps.lua["Controls"] = &controls;
-            
+            gameProps.lua["Creator"] = luaobject;
+            gameProps.lua["Game"] = game.luaobject;
+            gameProps.lua["System"] = system.luaobject;
+            gameProps.lua["Nodes"] = factory.luaobject;
+            gameProps.lua["Scripts"] = scripts.luaobject;
+            gameProps.lua["Controls"] = controls.luaobject;
+
+            gameProps.game = &game;
             gameProps.system = &system;
             gameProps.factory = &factory;
             gameProps.scripts = &scripts;

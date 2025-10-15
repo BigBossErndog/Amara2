@@ -20,17 +20,19 @@ namespace Amara {
         std::string base_dir_path;
 
         GameProps* gameProps = nullptr;
+        sol::object luaobject;
 
         Demiurge() {}
 
         virtual void override_existence() {
-            gameProps->lua["Creator"] = this;
-            gameProps->lua["Game"] = &game;
-            gameProps->lua["System"] = &system;
-            gameProps->lua["Nodes"] = &factory;
-            gameProps->lua["Scripts"] = &scripts;
-            gameProps->lua["Controls"] = &controls;
+            gameProps->lua["Creator"] = luaobject;
+            gameProps->lua["Game"] = game.luaobject;
+            gameProps->lua["System"] = system.luaobject;
+            gameProps->lua["Nodes"] = factory.luaobject;
+            gameProps->lua["Scripts"] = scripts.luaobject;
+            gameProps->lua["Controls"] = controls.luaobject;
             
+            gameProps->game = &game;
             gameProps->system = &system;
             gameProps->factory = &factory;
             gameProps->scripts = &scripts;
@@ -56,15 +58,23 @@ namespace Amara {
 
         void setup(GameProps* _gameProps) {
             gameProps = _gameProps;
-
+            luaobject = sol::make_object(gameProps->lua, this);
+            
             game.gameProps = gameProps;
+            game.luaobject = sol::make_object(gameProps->lua, &game);
             gameProps->game = &game;
 
             factory.gameProps = gameProps;
+            factory.luaobject = sol::make_object(gameProps->lua, &factory);
+
             scripts.gameProps = gameProps;
+            scripts.luaobject = sol::make_object(gameProps->lua, &scripts);
+
             system.gameProps = gameProps;
-            factory.gameProps = gameProps;
+            system.luaobject = sol::make_object(gameProps->lua, &system);
+
             controls.gameProps = gameProps;
+            controls.luaobject = sol::make_object(gameProps->lua, &controls);
 
             system.getBasePath();
 

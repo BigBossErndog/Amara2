@@ -10,6 +10,8 @@ namespace Amara {
         bool moved = false;
 
         GameProps* gameProps = nullptr;
+
+        sol::object luaobject;
         
         Mouse() = default;
         Mouse(GameProps* _gameProps): gameProps(_gameProps) {}

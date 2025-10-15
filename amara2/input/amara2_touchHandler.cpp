@@ -1,6 +1,8 @@
 namespace Amara {
     class TouchHandler {
     public:
+        sol::object luaobject;
+        
         std::vector<Pointer*> pointers;
 
         int count = 0;

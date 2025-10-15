@@ -5,6 +5,7 @@ namespace Amara {
         std::unordered_map<std::string, sol::function> compiledScripts;
 
         Amara::GameProps* gameProps = nullptr;
+        sol::object luaobject;
 
         ScriptFactory() = default;
         

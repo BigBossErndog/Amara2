@@ -56,6 +56,9 @@ namespace Amara {
             mouse.id = 0;
 
             generalPointer = GeneralPointer(_gameProps);
+
+            mouse.luaobject = sol::make_object(gameProps->lua, &mouse);
+            touch.luaobject = sol::make_object(gameProps->lua, &touch);
         }
 
         void queueInput(const Amara::InputDef& input) {
