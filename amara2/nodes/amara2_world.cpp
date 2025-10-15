@@ -1237,7 +1237,16 @@ namespace Amara {
             shaders.clear();
             animations.clear();
             renderBatch.destroy();
+            
+            gameProps->lua["Mouse"] = sol::nil;
+            inputManager.mouse.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
 
+            gameProps->lua["Touch"] = sol::nil;
+            inputManager.touch.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+
+            gameProps->lua["Assets"] = sol::nil;
+            assets.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+            
             #ifdef AMARA_OPENGL
             if (glContext != NULL) {
                 SDL_GL_DestroyContext(glContext);

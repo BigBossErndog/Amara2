@@ -43,6 +43,23 @@ namespace Amara {
             }
         }
 
+        virtual void unbind() {
+            gameProps->lua["Game"] = sol::nil;
+            game.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+
+            gameProps->lua["System"] = sol::nil;
+            system.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+
+            gameProps->lua["Nodes"] = sol::nil;
+            factory.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+            
+            gameProps->lua["Scripts"] = sol::nil;
+            scripts.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+
+            gameProps->lua["Controls"] = sol::nil;
+            controls.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+        }
+
         void removeWorld(Amara::World* world) {
             for (auto it = worlds.begin(); it != worlds.end(); it++) {
                 if (*it == world) {
@@ -59,7 +76,7 @@ namespace Amara {
         void setup(GameProps* _gameProps) {
             gameProps = _gameProps;
             luaobject = sol::make_object(gameProps->lua, this);
-            
+
             game.gameProps = gameProps;
             game.luaobject = sol::make_object(gameProps->lua, &game);
             gameProps->game = &game;
@@ -106,6 +123,7 @@ namespace Amara {
             controls.clearAllSchemes();
             factory.clear();
             scripts.clear();
+            unbind();
         }
 
         static void bind_lua(sol::state& lua) {

@@ -201,7 +201,9 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                     self.get.projectData["exe-icon"] = nil
                     System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
                 end
-                self.get.errorMessage.visible = false
+                if self.get.errorMessage then
+                    self.get.errorMessage.visible = false
+                end
             end
         elseif pageIndex == 2 then
             local desc = self.get.pageContent:createChild("Text", {
@@ -324,7 +326,9 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
 
     checkIcon = function(self, path)
         self.get.iconPreview.visible = false
-        self.get.errorMessage.visible = false
+        if self.get.errorMessage then
+            self.get.errorMessage.visible = false
+        end
         if not System:exists(path) then
             return false
         end
@@ -337,8 +341,10 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             end
         end
         if not valid then
-            self.get.errorMessage.text = Localize:get("error_invalidIcon")
-            self.get.errorMessage.visible = true
+            if self.get.errorMessage then
+                self.get.errorMessage.text = Localize:get("error_invalidIcon")
+                self.get.errorMessage.visible = true
+            end
             return false
         end
         self.load:image("iconPreview", path)
@@ -354,8 +360,10 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             self.get.projectData["exe-icon"] = self.get.iconPath
             return true
         end
-        self.get.errorMessage.text = Localize:get("error_invalidIconSize")
-        self.get.errorMessage.visible = true
+        if self.get.errorMessage then
+            self.get.errorMessage.text = Localize:get("error_invalidIconSize")
+            self.get.errorMessage.visible = true
+        end
         return false
     end,
 

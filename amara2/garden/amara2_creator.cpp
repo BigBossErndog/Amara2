@@ -195,7 +195,7 @@ namespace Amara {
             gameProps.lua["Nodes"] = factory.luaobject;
             gameProps.lua["Scripts"] = scripts.luaobject;
             gameProps.lua["Controls"] = controls.luaobject;
-
+            
             gameProps.game = &game;
             gameProps.system = &system;
             gameProps.factory = &factory;
@@ -206,7 +206,12 @@ namespace Amara {
                 gameProps.system->setBasePath(base_dir_path);
             }
         }
-
+        virtual void unbind() override {
+            gameProps.lua["Creator"] = sol::nil;
+            luaobject = sol::make_object(gameProps.lua, sol::lua_nil);
+            
+            Amara::Demiurge::unbind();
+        }
 
         Amara::Demiurge* createDemiurge() {
             Amara::Demiurge* new_demiurge = new Demiurge();
