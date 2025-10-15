@@ -344,6 +344,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
         self.load:image("iconPreview", path)
         self.get.iconPreview.texture = "iconPreview"
         if self.get.iconPreview.width == 256 and self.get.iconPreview.height == 256 then
+            self.get.iconPath = path
             self.get.iconPreview.visible = true
             self.get.iconPreview.rect = { 
                 self.get.iconPreview.x,
@@ -377,6 +378,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
     end,
 
     setPage = function(self, pageIndex)
+        System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
         if self.get.pageIndex == 1 then
             if self.get.exeNameField and self.get.exeNameField.get.finalText == "" then
                 self.get.errorMessage.text = Localize:get("error_emptyExecutableFileName")

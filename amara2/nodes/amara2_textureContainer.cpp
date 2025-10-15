@@ -204,7 +204,7 @@ namespace Amara {
                 SDL_SetRenderDrawColor(gameProps->renderer, 
                     fill.r, fill.g, fill.b, fill.a
                 );
-
+                
                 SDL_Rect setv = Rectangle::makeSDLRect(container_viewport);
                 SDL_SetRenderViewport(gameProps->renderer, &setv);
 

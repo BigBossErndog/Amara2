@@ -1136,4 +1136,191 @@ namespace Amara {
         if (owner_node) return std::string(*owner_node);
         return "";
     }
+
+    void Amara::AssetManager::createTexture(std::string key, sol::table luaconfig) {
+        int w = 128, h = 12;
+        
+        nlohmann::json config = lua_to_json(luaconfig);
+        if (json_has(config, "width")) w = config["width"];
+        if (json_has(config, "w")) w = config["w"];
+
+        if (json_has(config, "height")) h = config["height"]; 
+        if (json_has(config, "h")) h = config["h"];
+
+        ImageAsset* asset = new ImageAsset(gameProps);
+        asset->width = w;
+        asset->height = h;
+
+        SDL_Texture* rec_target = nullptr;
+        SDL_Rect prevSDLViewport;
+        if (gameProps->renderer) {
+            rec_target = SDL_GetRenderTarget(gameProps->renderer);
+            SDL_GetRenderViewport(gameProps->renderer, &prevSDLViewport);
+
+            SDL_Texture* canvas = SDL_CreateTexture(
+                gameProps->renderer,
+                SDL_PIXELFORMAT_RGBA32,
+                SDL_TEXTUREACCESS_TARGET,
+                w, h
+            );
+
+            SDL_SetRenderTarget(gameProps->renderer, canvas);
+            SDL_SetTextureBlendMode(canvas, SDL_BLENDMODE_NONE);
+            SDL_SetRenderDrawColor(gameProps->renderer, 255, 255, 255, 255);
+            
+            SDL_Rect setv = { 0, 0, w, h };
+            SDL_SetRenderViewport(gameProps->renderer, &setv);
+
+            SDL_RenderClear(gameProps->renderer);
+
+            asset->texture = canvas;
+        }
+        #ifdef AMARA_OPENGL
+        GLint prevBuffer = 0;
+        GLint prevViewport[4];
+        if (gameProps->glContext != NULL) {
+            gameProps->renderBatch->flush();
+
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
+            glGetIntegerv(GL_VIEWPORT, prevViewport);
+
+            GLuint glCanvasID = 0;
+            GLuint glBufferID = 0;
+
+            glMakeFrameBuffer(glCanvasID, glBufferID, w, h);
+            glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
+
+            #ifdef AMARA_OPENGL
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                gameProps->currentShaderProgram = nullptr;
+            }
+            #endif
+            
+            glViewport(0, 0, w, h);
+            glClearColor(1, 1, 1, 1);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            asset->glTextureID = glCanvasID;
+        }
+        #endif
+
+        if (luaconfig["node"].valid()) {
+            sol::object luaobj = luaconfig["node"];
+            Amara::Node* node = luaobj.as<Amara::Node*>();
+            
+            if (node) {
+                PassOnProps rec_props = gameProps->passOn;
+                PassOnProps new_props;
+                new_props.insideTextureContainer = true;
+
+                gameProps->passOn = new_props;
+                
+                node->draw({0, 0, (float)w, (float)h});
+
+                gameProps->passOn = rec_props;
+            }
+        }
+        if (gameProps->renderer) {
+            SDL_SetRenderTarget(gameProps->renderer, rec_target);
+            SDL_SetRenderViewport(gameProps->renderer, &prevSDLViewport);
+        }
+        #ifdef AMARA_OPENGL
+        if (gameProps->glContext != NULL) {
+            gameProps->renderBatch->flush();
+            glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+            glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+        }
+        #endif
+        add(key, asset);
+    }
+
+    void Amara::AssetManager::updateTexture(std::string key, sol::table luaconfig) {
+        if (!has(key)) fatal_error("Error: ImageAsset \"", key, "\" not found.");
+
+        ImageAsset* asset = get(key)->as<ImageAsset*>();
+        if (asset == nullptr) {
+            fatal_error("Error: Asset with key \"", key, "\" is not an image.");
+            return;
+        }
+
+        int w = asset->width, h = asset->height;
+        
+        SDL_Texture* rec_target = nullptr;
+        SDL_Rect prevSDLViewport;
+        if (gameProps->renderer) {
+            rec_target = SDL_GetRenderTarget(gameProps->renderer);
+            SDL_GetRenderViewport(gameProps->renderer, &prevSDLViewport);
+
+            SDL_Texture* canvas = SDL_CreateTexture(
+                gameProps->renderer,
+                SDL_PIXELFORMAT_RGBA32,
+                SDL_TEXTUREACCESS_TARGET,
+                w, h
+            );
+
+            SDL_SetRenderTarget(gameProps->renderer, asset->texture);
+            SDL_SetTextureBlendMode(canvas, SDL_BLENDMODE_NONE);
+            SDL_SetRenderDrawColor(gameProps->renderer, 255, 255, 255, 255);
+            
+            SDL_Rect setv = { 0, 0, w, h };
+            SDL_SetRenderViewport(gameProps->renderer, &setv);
+
+            SDL_RenderClear(gameProps->renderer);
+        }
+        #ifdef AMARA_OPENGL
+        GLint prevBuffer = 0;
+        GLint prevViewport[4];
+        if (gameProps->glContext != NULL) {
+            gameProps->renderBatch->flush();
+
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
+            glGetIntegerv(GL_VIEWPORT, prevViewport);
+
+            GLuint glCanvasID = 0;
+            GLuint glBufferID = 0;
+
+            glBindFramebuffer(GL_FRAMEBUFFER, glBufferID);
+
+            #ifdef AMARA_OPENGL
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                gameProps->currentShaderProgram = nullptr;
+            }
+            #endif
+            
+            glViewport(0, 0, w, h);
+            glClearColor(1, 1, 1, 1);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            asset->glTextureID = glCanvasID;
+        }
+        #endif
+
+        if (luaconfig["node"].valid()) {
+            sol::object luaobj = luaconfig["node"];
+            Amara::Node* node = luaobj.as<Amara::Node*>();
+            
+            if (node) {
+                PassOnProps rec_props = gameProps->passOn;
+                PassOnProps new_props;
+                new_props.insideTextureContainer = true;
+
+                gameProps->passOn = new_props;
+                
+                node->draw({0, 0, (float)w, (float)h});
+
+                gameProps->passOn = rec_props;
+            }
+        }
+        if (gameProps->renderer) {
+            SDL_SetRenderTarget(gameProps->renderer, rec_target);
+            SDL_SetRenderViewport(gameProps->renderer, &prevSDLViewport);
+        }
+        #ifdef AMARA_OPENGL
+        if (gameProps->glContext != NULL) {
+            gameProps->renderBatch->flush();
+            glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+            glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+        }
+        #endif
+    }
 }

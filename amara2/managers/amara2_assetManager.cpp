@@ -13,7 +13,7 @@ namespace Amara {
             whitePixel = new Amara::SinglePixelAsset(gameProps);
             add("whitePixel", whitePixel);
         }
-
+        
         Amara::Asset* get(std::string key) {
             if (assets.find(key) != assets.end()) {
                 return assets[key];
@@ -44,6 +44,9 @@ namespace Amara {
             gameProps->queue_asset_garbage(asset);
         }
 
+        void createTexture(std::string key, sol::table luaconfig);
+        void updateTexture(std::string key, sol::table luaconfig);
+
         void clear() {
             for (auto it = assets.begin(); it != assets.end(); it++) {
                 Amara::Asset* a = it->second;
@@ -56,7 +59,9 @@ namespace Amara {
             lua.new_usertype<AssetManager>("AssetManager",
                 "has", &AssetManager::has,
                 "remove", &AssetManager::removeAsset,
-                "clear", &AssetManager::clear
+                "clear", &AssetManager::clear,
+                "createTexture", &AssetManager::createTexture,
+                "updateTexture", &AssetManager::updateTexture
             );
         }
     };

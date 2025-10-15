@@ -178,6 +178,7 @@ namespace Amara {
 
             gameProps->lua["Mouse"] = &inputManager.mouse;
             gameProps->lua["Touch"] = &inputManager.touch;
+            gameProps->lua["Assets"] = &assets;
             
             if (window) {
                 #ifdef AMARA_OPENGL

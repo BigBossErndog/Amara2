@@ -806,6 +806,10 @@ namespace Amara {
             "h", &Rectangle::h,
             "width", &Rectangle::w,
             "height", &Rectangle::h,
+            "left", sol::property([](Amara::Rectangle& r) { return r.x; }),
+            "top", sol::property([](Amara::Rectangle& r) { return r.y; }),
+            "right", sol::property([](Amara::Rectangle& r) { return r.x + r.w; }),
+            "bottom", sol::property([](Amara::Rectangle& r) { return r.y + r.h; }),
             "string", [](const Rectangle& r) {
                 return std::string(r);
             },

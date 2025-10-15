@@ -247,10 +247,4 @@ namespace Amara {
             }
         }
     };
-
-    class AsepriteAsset: public Amara::Asset {
-    public:
-        
-
-    };
 }
