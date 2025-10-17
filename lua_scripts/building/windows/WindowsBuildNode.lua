@@ -207,6 +207,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         if not self.get.printLog then
             self.get.printLog = self.world.get.windows:createChild("TerminalWindow", {
+                titleText = "title_windowsBuilder",
                 gameProcess = self,
                 props = {
                     projectPath = self.get.projectPath

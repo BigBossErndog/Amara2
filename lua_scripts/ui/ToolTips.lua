@@ -22,11 +22,14 @@ Nodes:define("ToolTips", "NineSlice", {
         props.attempt = 0
     end,
 
-    showToolTip = function(self, str, deltaTime)
+    showToolTip = function(self, str, deltaTime, instant)
         if str ~= self.get.check then
             self.get.check = str
             self.get.attempt = 0
             return
+        end
+        if instant then
+            self.get.attempt = 1
         end
 
         self.get.attempt = self.get.attempt + deltaTime

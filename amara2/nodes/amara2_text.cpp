@@ -642,6 +642,14 @@ namespace Amara {
                         return t.getRectangle();
                     }
                 ),
+                "rect", sol::property(&Amara::Text::getRectangle, [](Amara::Text& t, sol::object v) {
+                    Rectangle r = v;
+                    t.stretchTo(r);
+                }),
+                "size", sol::property(&Amara::Text::getRectangle, [](Amara::Text& t, sol::object v) {
+                    Rectangle r = v;
+                    t.stretchTo(r);
+                }),
                 "center", sol::property(&Text::getCenter),
                 "length", sol::property(&Text::length),
                 "text", sol::property(

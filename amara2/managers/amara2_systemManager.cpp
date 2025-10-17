@@ -190,6 +190,37 @@ namespace Amara {
             }
         }
 
+        bool removeDirectoryContents(std::string path) {
+            std::filesystem::path dirPath = getRelativePath(path);
+            if (!std::filesystem::exists(dirPath)) { 
+                fatal_error("Error: \"", removeBasePath(dirPath), "\" does not exist.");
+                return false;
+            }
+            if (!std::filesystem::is_directory(dirPath)) {
+                fatal_error("Error: \"", removeBasePath(dirPath), "\" is not a directory.");
+                return false;
+            }
+            try {
+                for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+                    remove(entry.path().string());
+                }
+            }
+            catch (const std::filesystem::filesystem_error& e) {
+                fatal_error("Error: Filesystem exception while clearing directory \"", removeBasePath(dirPath), "\": ", e.what());
+                return false;
+            }
+            catch (const std::exception& e) { // Catch other exceptions
+                fatal_error("Error: General exception while clearing directory \"", removeBasePath(dirPath), "\": ", e.what());
+                return false;
+            }
+
+            #if defined(__EMSCRIPTEN__)
+            flushPersistentFolder(dirPath.string());
+            #endif
+
+            return true;
+        }
+
         bool isDirectory(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
             return std::filesystem::is_directory(filePath);
@@ -1342,6 +1373,7 @@ namespace Amara {
                 "mergePaths", &SystemManager::mergePaths,
                 "join", &SystemManager::lua_join,
                 "remove", &SystemManager::remove,
+                "removeDirectoryContents", &SystemManager::removeDirectoryContents,
                 "copy", sol::overload(
                     sol::resolve<bool(std::string, std::string, bool)>(&SystemManager::copy),
                     sol::resolve<bool(std::string, std::string)>(&SystemManager::copy)

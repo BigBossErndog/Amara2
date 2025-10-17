@@ -14,7 +14,7 @@ namespace Amara {
             return true;
         }
         return (json_has(data, other_keys) || ...);
-    } 
+    }
 
     bool json_is(const nlohmann::json& data, std::string key) {
         return json_has(data, key) && data[key].is_boolean() && data[key];

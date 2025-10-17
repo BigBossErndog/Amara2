@@ -14,7 +14,7 @@ Nodes:define("PagedWindow", "UIWindow", {
                 self.func:changePage(-1)
             end
         })
-
+        
         self.get.rightButton = self.get.content:createChild("UIButton", {
             x = self.get.targetWidth - 16 - 8, y = self.get.targetHeight - 16 - 8,
             icon = 22,

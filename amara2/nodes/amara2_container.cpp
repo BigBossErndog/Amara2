@@ -36,6 +36,21 @@ namespace Amara {
             update_size();
         }
 
+        void setSize(Rectangle v) {
+            setWidth(v.w);
+            setHeight(v.h);
+            pos.x = v.x + (v.w * origin.x);
+            pos.y = v.y + (v.h * origin.y);
+        }
+
+        Rectangle getRectangle() {
+            return Rectangle(
+                pos.x - (width * origin.x),
+                pos.y - (height * origin.y),
+                width, height
+            );
+        }
+
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "width")) setWidth(config["width"]);
             if (json_has(config, "height")) setHeight(config["height"]);
@@ -137,7 +152,7 @@ namespace Amara {
                 update_properties();
 				child->draw(Rectangle(destRect));
 
-                gameProps->passOn = passOn;
+                gameProps->passOn = new_props;
 				++it;
 			}
 
@@ -165,6 +180,24 @@ namespace Amara {
                     if (v.is<float>()) c.setHeight(v.as<float>());
                     else if (v.is<int>()) c.setHeight(static_cast<float>(v.as<int>()));
                 }),
+                "size", sol::property(
+                    [](Amara::Container& c) {
+                        return c.getRectangle();
+                    },
+                    [](Amara::Container& c, sol::object v) {
+                        Rectangle r = v;
+                        c.setSize(r);
+                    }
+                ),
+                "rect", sol::property(
+                    [](Amara::Container& c) {
+                        return c.getRectangle();
+                    },
+                    [](Amara::Container& c, sol::object v) {
+                        Rectangle r = v;
+                        c.setSize(r);
+                    }
+                ),
                 "left", sol::readonly(&Container::left),
                 "right", sol::readonly(&Container::right),
                 "top", sol::readonly(&Container::top),

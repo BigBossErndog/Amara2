@@ -4,6 +4,8 @@
     "title_codeEditor": "Code Editor",
     "title_newProject": "New Project",
     "title_printLog": "Print Log",
+    "title_webBuilder": "Web Builder",
+    "title_windowsBuilder": "Windows Builder",
     "title_copyProject": "Copy Project",
     "title_buildOptions": "Build Options",
     "title_executableFileName": "Executable File Name",
@@ -11,6 +13,7 @@
     "title_choosePlatform": "Select Target Platform",
     "title_encryptionOptions": "Encryption Options",
     "title_projectSettings": "Project Settings",
+    "title_exampleProjects": "Example Projects",
 
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit (Ctrl + Shift + F4)",

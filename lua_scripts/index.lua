@@ -22,6 +22,7 @@ Nodes:load("windows/NewProjectWindow")
 Nodes:load("windows/ProjectWindow")
 Nodes:load("windows/TerminalWindow")
 Nodes:load("windows/ProjectSettingsWindow")
+Nodes:load("windows/ExamplesWindow")
 
 Nodes:load("building/BuildPlatformMenu")
 Nodes:load("building/IncludeFolders")
@@ -63,6 +64,7 @@ Creator:createWorld({
         world.load:spritesheet("uiButton", "ui/amara2_uiButton.png", 16, 16)
         world.load:spritesheet("uiIcons", "ui/amara2_icons.png", 16, 16)
         world.load:spritesheet("tickBox", "ui/amara2_tickBox.png", 9, 9)
+        world.load:spritesheet("largeIcons", "ui/amara2_large_icons.png", 56, 56)
         
         world.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
 

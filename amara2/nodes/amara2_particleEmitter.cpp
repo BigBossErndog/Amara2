@@ -66,6 +66,8 @@ namespace Amara {
         int spawnedCount = 0;
         int end_particle = -1;
 
+        bool updated_this_frame = false;
+
         ParticleEmitter(): Amara::Sprite() {
             set_base_node_id("ParticleEmitter");
         }
@@ -122,6 +124,11 @@ namespace Amara {
                 }
             }
             return Amara::Sprite::luaConfigure(key, val);
+        }
+
+        virtual void update(double deltaTime) override {
+            Amara::Sprite::update(deltaTime);
+            updated_this_frame = false;
         }
 
         Vector2 parseVector(const nlohmann::json& config) {
@@ -532,15 +539,17 @@ namespace Amara {
             double deltaTime = gameProps->deltaTime;
 
             int spawn_count = 0;
-            if (spawning && spawnRate > 0) {
-                spawn_timer -= deltaTime;
-                while (spawn_timer <= 0) {
-                    spawn_timer += 1/spawnRate;
-                    spawn_count += 1;
+            if (!updated_this_frame) {
+                if (spawning && spawnRate > 0) {
+                    spawn_timer -= deltaTime;
+                    while (spawn_timer <= 0) {
+                        spawn_timer += 1/spawnRate;
+                        spawn_count += 1;
+                    }
                 }
-            }
-            else {
-                spawn_timer = 0;
+                else {
+                    spawn_timer = 0;
+                }
             }
 
             sol::function onSpawn = funcs.getFunction("onParticleSpawn");
@@ -560,7 +569,7 @@ namespace Amara {
                     else spawn_new = true;
                 }
                 else {
-                    if (particle.lifeTime >= particle.maxLifeTime) {
+                    if (particle.lifeTime >= particle.maxLifeTime && !updated_this_frame) {
                         spawnedCount -= 1;
                         if (spawn_count > 0) {
                             spawn_new = true;
@@ -592,41 +601,43 @@ namespace Amara {
                     }
                 }
 
-                particle.pos += particle.velocity * deltaTime + particle.acceleration * deltaTime * deltaTime * 0.5f;
-                particle.velocity += particle.acceleration * deltaTime;
-                
-                if (particle.startX != invalid && particle.endX != invalid) {
-                    particle.pos.x = ease(particle.startX, particle.endX, particle.lifeTime / particle.maxLifeTime, easing); 
-                }
-                if (particle.startY != invalid && particle.endY != invalid) {
-                    particle.pos.y = ease(particle.startY, particle.endY, particle.lifeTime / particle.maxLifeTime, easing); 
-                }
-                
-                if (particle.startAlpha != invalid && particle.endAlpha != invalid) {
-                    particle.alpha = ease(particle.startAlpha, particle.endAlpha, particle.lifeTime / particle.maxLifeTime, easing); 
-                }
-
-                if (particle.end_scale_set) {
-                    particle.scale = Vector2(
-                        ease(particle.scale.x, particle.endScale.x, particle.lifeTime / particle.maxLifeTime, easing),
-                        ease(particle.scale.y, particle.endScale.y, particle.lifeTime / particle.maxLifeTime, easing)
-                    );
-                }
-
-                particle.rotation += particle.angularVelocity * deltaTime;
-
-                if (onUpdate_defined) {
-                    sol::function func = funcs.getFunction("onParticleUpdate");
-                    try {
-                        func(sol::make_object(gameProps->lua, &particle), deltaTime);
+                if (!updated_this_frame) {
+                    particle.pos += particle.velocity * deltaTime + particle.acceleration * deltaTime * deltaTime * 0.5f;
+                    particle.velocity += particle.acceleration * deltaTime;
+                    
+                    if (particle.startX != invalid && particle.endX != invalid) {
+                        particle.pos.x = ease(particle.startX, particle.endX, particle.lifeTime / particle.maxLifeTime, easing); 
                     }
-                    catch (const sol::error& e) {
-                        fatal_error(e.what());
-                        gameProps->breakWorld();
+                    if (particle.startY != invalid && particle.endY != invalid) {
+                        particle.pos.y = ease(particle.startY, particle.endY, particle.lifeTime / particle.maxLifeTime, easing); 
                     }
-                    catch (const std::exception& e) {
-                        fatal_error(e.what());
-                        gameProps->breakWorld();
+                    
+                    if (particle.startAlpha != invalid && particle.endAlpha != invalid) {
+                        particle.alpha = ease(particle.startAlpha, particle.endAlpha, particle.lifeTime / particle.maxLifeTime, easing); 
+                    }
+
+                    if (particle.end_scale_set) {
+                        particle.scale = Vector2(
+                            ease(particle.scale.x, particle.endScale.x, particle.lifeTime / particle.maxLifeTime, easing),
+                            ease(particle.scale.y, particle.endScale.y, particle.lifeTime / particle.maxLifeTime, easing)
+                        );
+                    }
+
+                    particle.rotation += particle.angularVelocity * deltaTime;
+
+                    if (onUpdate_defined) {
+                        sol::function func = funcs.getFunction("onParticleUpdate");
+                        try {
+                            func(sol::make_object(gameProps->lua, &particle), deltaTime);
+                        }
+                        catch (const sol::error& e) {
+                            fatal_error(e.what());
+                            gameProps->breakWorld();
+                        }
+                        catch (const std::exception& e) {
+                            fatal_error(e.what());
+                            gameProps->breakWorld();
+                        }
                     }
                 }
 
@@ -634,9 +645,13 @@ namespace Amara {
 
                 drawParticle(v, particle);
 
-                particle.lifeTime += deltaTime;
+                if (!updated_this_frame) {
+                    particle.lifeTime += deltaTime;
+                }
             }
             end_particle = last_particle;
+
+            updated_this_frame = true;
         }
 
         static void bind_lua(sol::state& lua) {

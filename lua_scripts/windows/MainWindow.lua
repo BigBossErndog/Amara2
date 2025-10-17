@@ -232,7 +232,16 @@ Nodes:define("MainWindow", "UIWindow", {
             y = 4,
             icon = 20,
             onPress = function(button)
-                
+                self.func:closeWindow(function()
+                    self.get.enabled = false
+
+                    local newWindow = self.parent:createChild("ExamplesWindow", {
+                        x = self.x, y = self.y
+                    })
+                    newWindow.func:openWindow()
+                    
+                    self:destroy()
+                end)
             end
         })
 

@@ -14,6 +14,10 @@ Nodes:define("ProjectWindow", "UIWindow", {
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
         local projectName = projectData["project-name"]
 
+        if projectData.exampleProject then
+            self.get.exampleProject = true
+        end
+
         local title = self.get.content:createChild("Text", {
             y = 4,
             font = "defaultFont",
@@ -128,7 +132,12 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 self.func:closeWindow(function(button)
                     button.get.enabled = false
                     
-                    local newWindow = self.parent:createChild("MainWindow")
+                    local newWindow
+                    if self.get.exampleProject then
+                        newWindow = self.parent:createChild("ExamplesWindow")
+                    else
+                        newWindow = self.parent:createChild("MainWindow")
+                    end
                     newWindow.func:openWindow()
                     
                     self:destroy()
@@ -275,7 +284,9 @@ Nodes:define("ProjectWindow", "UIWindow", {
             self.func:savePosition()
         end)
 
-        self.world.func:registerProject(self.get.projectPath)
+        if not self.get.exampleProject then
+            self.world.func:registerProject(self.get.projectPath)
+        end
     end,
 
     savePosition = function(self)

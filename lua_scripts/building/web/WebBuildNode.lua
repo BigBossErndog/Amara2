@@ -173,6 +173,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
 
         if not self.get.printLog then
             self.get.printLog = self.world.get.windows:createChild("TerminalWindow", {
+                titleText = "title_webBuilder",
                 gameProcess = self,
                 props = {
                     projectPath = self.get.projectPath

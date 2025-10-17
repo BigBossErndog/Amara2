@@ -10,6 +10,8 @@ namespace Amara {
 
         bool destroyed = false;
 
+        bool temp = false;
+
         Asset(Amara::GameProps* _gameProps) {
             gameProps = _gameProps;
         }

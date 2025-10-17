@@ -176,6 +176,14 @@ namespace Amara {
             if (other.is<Amara::Node*>()) {
                 return collidesWith(other.as<Amara::Node*>());
             }
+            if (other.is<Amara::Pointer>()) {
+                Vector2 pos = other.as<Amara::Pointer>();
+                return getCollisionShape().collidesWith(pos);
+            }
+            if (other.is<Amara::GeneralPointer>()) {
+                Vector2 pos = other.as<Amara::GeneralPointer*>()->pos;
+                return getCollisionShape().collidesWith(pos);
+            }
             Shape shape = Shape(other);
             return getCollisionShape().collidesWith(shape);
         }
@@ -667,7 +675,7 @@ namespace Amara {
             destroyed = true;
 
             if (funcs.hasFunction("onDestroy")) funcs.callFunction("onDestroy");
-
+            
             messages.destroy();
             input.destroy();
 

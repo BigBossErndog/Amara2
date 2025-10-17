@@ -21,7 +21,8 @@ Nodes:define("NewProjectWindow", "UIWindow", {
             font = "defaultFont",
             text = Localize:get("title_newProject"),
             color = "#f0f6ff",
-            input = true
+            input = true,
+            origin = 0
         })
 
         self.get.nameField = self.get.content:createChild("TextField", {
@@ -91,7 +92,7 @@ Nodes:define("NewProjectWindow", "UIWindow", {
 
         buttonPos = buttonPos - buttonSpacing
         self.get.content:createChild("UIButton", {
-            id = "newProjectButton",
+            id = "minimizeButton",
             toolTip = "toolTip_minimize",
             x = buttonPos,
             y = 4,
@@ -113,6 +114,10 @@ Nodes:define("NewProjectWindow", "UIWindow", {
             x = buttonPos,
             y = 4,
             icon = 5,
+            hotkey = {
+                { Key.LeftAlt, Key.LeftShift, Key.Backspace },
+                { Key.RightAlt, Key.RightShift, Key.Backspace }
+            },
             onPress = function()
                 self.func:closeWindow(function()
                     self.get.enabled = false
@@ -124,15 +129,6 @@ Nodes:define("NewProjectWindow", "UIWindow", {
                     
                     self:destroy()
                 end)
-            end
-        })
-        self:createChild("Hotkey", {
-            config = {
-                { Key.LeftAlt, Key.LeftShift, Key.Backspace },
-                { Key.RightAlt, Key.RightShift, Key.Backspace }
-            },
-            onPress = function()
-                self.get.backButton.func:forcePress()
             end
         })
 

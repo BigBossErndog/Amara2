@@ -208,7 +208,7 @@ namespace Amara {
             followTarget = nullptr;
             return get_lua_object();
         }
-
+        
         sol::object changeScroll(float _sx, float _sy) {
             scroll.x += _sx;
             scroll.y += _sy;
@@ -382,6 +382,17 @@ namespace Amara {
                     sol::resolve<sol::object(Amara::Node*, float)>(&Camera::startFollow)
                 ),
                 "stopFollow", &Camera::stopFollow,
+                "followTarget", sol::property(
+                    [](Amara::Camera& c) { return c.followTarget; },
+                    [](Amara::Camera& c, sol::object val) {
+                        if (val.is<Amara::Node>()) {
+                            c.startFollow(val.as<Amara::Node*>());
+                        }
+                        else {
+                            c.stopFollow();
+                        }
+                    }
+                ),
                 "sizeTethered", &Camera::sizeTethered,
                 "focusOn", sol::overload(
                     sol::resolve<sol::object(float, float)>(&Camera::focusOn),

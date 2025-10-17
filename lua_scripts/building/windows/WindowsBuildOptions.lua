@@ -80,7 +80,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             self.get.exeNameField = self.get.pageContent:createChild("TextField", {
                 x = 8, y = exeNameTitle.y + exeNameTitle.height + 4,
                 width = self.get.targetWidth - 16,
-
+                
                 defaultText = Localize:get("label_enterExecutableFileName"),
 
                 onCreate = function(self)

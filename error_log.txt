@@ -1,8 +1,9 @@
-[string "index.lua"]:59: attempt to call a nil value (global 'ghj')
+Error: File does not exist "nil\project.json"
 stack traceback:
-	[string "index.lua"]:59: in function <[string "index.lua"]:52>
-	[C]: in method 'createWorld'
-	[string "index.lua"]:38: in main chunk
+	[C]: in method 'readJSON'
+	[string "windows/ProjectWindow.lua"]:14: in function <[string "windows/ProjectWindow.lua"]:11>
+	[C]: in method 'createChild'
+	[string "windows/ExamplesWindow.lua"]:141: in function <[string "windows/ExamplesWindow.lua"]:140>
 stack traceback:
-	[C]: in method 'createWorld'
-	[string "index.lua"]:38: in main chunk
+	[C]: in method 'createChild'
+	[string "windows/ExamplesWindow.lua"]:141: in function <[string "windows/ExamplesWindow.lua"]:140>

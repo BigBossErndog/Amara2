@@ -17,7 +17,7 @@ namespace Amara {
         int repeats = 0;
 
         double delay = 0;
-        bool delayed = false;
+        double interim = 0;
 
         Tween(): Amara::Action() {
             set_base_node_id("Tween");
@@ -83,9 +83,12 @@ namespace Amara {
             }
             if (lua_data["delay"].valid()) {
                 delay = lua_data["delay"].get<double>();
-                delayed = true;
                 lua_data["delay"] = sol::nil;
-            } 
+            }
+            if (lua_data["interim"].valid()) {
+                interim = lua_data["interim"].get<double>();
+                lua_data["interim"] = sol::nil;
+            }
             
             nlohmann::json data = lua_to_json(lua_data);
             
@@ -209,15 +212,11 @@ namespace Amara {
             Amara::Action::act(deltaTime);
             
             if (has_started) {
-                progress += deltaTime/tween_duration;
-                
-                if (delayed) {
-                    if (progress >= delay) {
-                        progress -= delay;
-                        delayed = false;
-                    }
+                if (delay > 0) {
+                    delay -= deltaTime;
                 }
-                if (!delayed) {
+                else {
+                    progress += deltaTime/tween_duration;
                     if (progress >= 1) {
                         if (waitingYoyo) {
                             progress -= 1;
@@ -234,6 +233,9 @@ namespace Amara {
                             if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", progress, deltaTime);
                             
                             complete();
+                        }
+                        if (interim > 0) {
+                            delay = interim;
                         }
                     }
 
@@ -258,6 +260,9 @@ namespace Amara {
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "progress", sol::readonly(&Tween::progress),
                 "duration", sol::readonly(&Tween::tween_duration),
+                "interim", &Tween::interim,
+                "delay", &Tween::delay,
+                "repeats", &Tween::repeats,
                 "from", &Tween::from,
                 "to", &Tween::to,
                 "set", &Tween::from,

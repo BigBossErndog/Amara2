@@ -55,6 +55,7 @@ namespace Amara {
                 "movement", sol::readonly(&Amara::Pointer::movement),
                 "active", sol::readonly(&Amara::Pointer::active),
                 "state", sol::readonly(&Amara::Pointer::state),
+                "pos", sol::property([](Amara::Pointer& p) -> Vector2 { return (Vector2)p; }),
                 "real_pos", sol::readonly(&Amara::Pointer::real_pos),
                 "real_movement", sol::readonly(&Amara::Pointer::real_movement)
             );

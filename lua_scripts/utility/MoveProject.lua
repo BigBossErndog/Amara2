@@ -14,4 +14,8 @@ projectData["project-name"] = projectName
 
 projectData.uninitiated = true
 
+if projectData.exampleProject then
+    projectData.exampleProject = nil
+end
+
 System:writeFile(System:join(newProjectDirectory, "project.json"), projectData)

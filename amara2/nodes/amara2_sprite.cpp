@@ -43,6 +43,10 @@ namespace Amara {
         }
         
         virtual bool setTexture(std::string key) {
+            if (image && image->temp) {
+                delete image;
+            }
+
             image = nullptr;
             spritesheet = nullptr;
 
@@ -82,6 +86,78 @@ namespace Amara {
             return true;
         }
 
+        virtual bool setTempTexture(std::string path, bool isSpritesheet, int frameWidth, int frameHeight) {
+            if (image && image->temp) {
+                delete image;
+            }
+
+            image = nullptr;
+            spritesheet = nullptr;
+
+            textureWidth = 0;
+            textureHeight = 0;
+
+            frameWidth = 0;
+            frameHeight = 0;
+
+            if (destroyed || path.empty()) return false;
+
+            if (isSpritesheet) {
+                image = new ImageAsset(gameProps);
+                image->loadImage(path);
+            }
+            else {
+                spritesheet = new SpritesheetAsset(gameProps);
+                spritesheet->loadSpritesheet(path, frameWidth, frameHeight);
+                image = spritesheet;
+            }
+
+            textureWidth = image->width;
+            textureHeight = image->height;
+
+            spritesheet = image->as<SpritesheetAsset*>();
+            if (spritesheet) {
+                frameWidth = spritesheet->frameWidth;
+                frameHeight = spritesheet->frameHeight;
+            }
+            else {
+                frameWidth = 0;
+                frameHeight = 0;
+            }
+
+            image->key = "temp";
+            image->temp = true;
+
+            return true;
+        }
+        bool setTempTexture(nlohmann::json temp_data) {
+            if (temp_data.is_string()) {
+                return setTempTexture(temp_data.get<std::string>(), false, 0, 0);
+            }
+            else if (temp_data.is_object()) {
+                if (json_has(temp_data, "path")) {
+                    if (json_has_any(temp_data, "width", "height", "w", "h")) {
+                        int width = 0;
+                        int height = 0;
+                        if (json_has(temp_data, "width")) width = temp_data["width"].get<int>();
+                        if (json_has(temp_data, "height")) height = temp_data["height"].get<int>();
+                        if (json_has(temp_data, "w")) width = temp_data["w"].get<int>();
+                        if (json_has(temp_data, "h")) height = temp_data["h"].get<int>();
+                        return setTempTexture(temp_data["path"].get<std::string>(), true, width, height);
+                    }
+                    else {
+                        return setTempTexture(temp_data["path"].get<std::string>(), false, 0, 0);
+                    }
+                }
+            }
+            fatal_error("Error: Invalid temp image data.");
+            return false;
+        }
+
+        bool lua_setTempTexture(sol::object v) {
+            return setTempTexture(lua_to_json(v));
+        }
+
         virtual nlohmann::json toJSON() override {
             nlohmann::json data = Amara::Node::toJSON();
             
@@ -111,6 +187,8 @@ namespace Amara {
             if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
 
             if (json_has(config, "texture")) setTexture(config["texture"]);
+            if (json_has(config, "tempTexture")) setTempTexture(config["tempTexture"]);
+            
             if (json_has(config, "frame")) frame = config["frame"];
             if (json_has(config, "animation")) animate(config["animation"]);
 
@@ -395,11 +473,34 @@ namespace Amara {
             return getRectangle().getCenter();
         }
 
+        virtual void destroy() override {
+            if (image && image->temp) {
+                delete image;
+                image = nullptr;
+            }
+            Amara::Node::destroy();
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Sprite>("Sprite",
                 sol::base_classes, sol::bases<Node>(),
                 "setTexture", &Sprite::setTexture,
-                "texture", sol::property([](Amara::Sprite& t) -> std::string { return t.image ? t.image->key : ""; }, [](Amara::Sprite& t, std::string v) { t.setTexture(v); }),
+                "texture", sol::property(
+                    [](Amara::Sprite& t) -> sol::object {
+                        return t.image ?
+                            sol::make_object(t.gameProps->lua, t.image->key) : 
+                            sol::make_object(t.gameProps->lua, sol::nil); 
+                    },
+                    [](Amara::Sprite& t, std::string v) { t.setTexture(v); }
+                ),
+                "tempTexture", sol::property(
+                    [](Amara::Sprite& t) -> sol::object {
+                        return t.image ?
+                            sol::make_object(t.gameProps->lua, t.image->key) : 
+                            sol::make_object(t.gameProps->lua, sol::nil); 
+                    },
+                    [](Amara::Sprite& t, sol::object v) { t.lua_setTempTexture(v); }
+                ),
                 "tint", sol::property([](Amara::Sprite& t) -> Amara::Color { return t.tint; }, [](Amara::Sprite& t, sol::object v) { t.tint = v; }),
                 "blendMode", &Sprite::blendMode,
                 "frame", &Sprite::frame,

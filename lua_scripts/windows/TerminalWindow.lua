@@ -5,6 +5,10 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
     input = true,
 
+    props = {
+        titleText = "title_printLog"
+    },
+
     onConfigure = function(self, config)
         if config.gameProcess then
             self.get.gameProcess = config.gameProcess
@@ -17,6 +21,9 @@ Nodes:define("TerminalWindow", "UIWindow", {
         end
         if config.projectPath then
             self.get.projectPath = config.projectPath
+        end
+        if config.titleText then
+            self.get.titleText = config.titleText
         end
     end,
 
@@ -79,7 +86,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
         self.get.content:createChild("Text", {
             font = "defaultFont",
-            text = Localize:get("title_printLog"),
+            text = Localize:get(self.get.titleText),
             color = "#b1d7e9",
             origin = { 0, 0 },
             x = 10, y = 6
