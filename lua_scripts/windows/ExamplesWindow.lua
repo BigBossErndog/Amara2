@@ -208,7 +208,7 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
 
         local openProject = function(path)
             self.func:closeWindow(function()
-                local sandboxPath = "files/sandbox"
+                local sandboxPath = System:getRelativePath("files/sandbox")
                 if System:exists(sandboxPath) then
                     System:removeDirectoryContents(sandboxPath)
                 end

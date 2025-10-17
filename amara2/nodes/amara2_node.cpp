@@ -240,6 +240,12 @@ namespace Amara {
                     speed = 1;
                 }
             }
+
+            if (json_is(config, "collider")) {
+                if (collider == nullptr) {
+                    collider = createChild("Collider");
+                }
+            }
             
             #ifdef AMARA_OPENGL
             if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
@@ -581,7 +587,7 @@ namespace Amara {
                     node->actuated = true;
                 }
             }
-
+            
             return node;
         }
         Amara::Node* createChild(std::string);
@@ -958,9 +964,26 @@ namespace Amara {
                     return std::string(*e);
                 },
                 "overlaps", &Node::overlaps,
-                "collider", sol::property([](Node& e) -> sol::object { 
-                    return (e.collider) ? e.collider->get_lua_object() : sol::nil;
-                }),
+                "collider", sol::property(
+                    [](Node& e) -> sol::object { 
+                        return (e.collider) ? e.collider->get_lua_object() : sol::nil;
+                    },
+                    [](Node& e, sol::object v) {
+                        if (v.is<sol::table>()) {
+                            if (e.collider) {
+                                e.collider->luaConfigure(v);
+                            }
+                            else {
+                                e.collider = e.luaCreateChild("Collider", v).as<Amara::Node*>();
+                            }
+                        }
+                        else if (v.is<bool>() && v.as<bool>()) {
+                            if (e.collider == nullptr) {
+                                e.collider = e.createChild("Collider");
+                            }
+                        }
+                    }
+                ),
 
                 "assets", sol::property([](Node& e) { return e.gameProps->assets; }),
                 "shaders", sol::property([](Node& e) { return e.gameProps->shaders; }),

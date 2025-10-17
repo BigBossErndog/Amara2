@@ -24,7 +24,7 @@ Nodes:define("PlatformerScene", "Scene", {
         })
 
         local player = self:createChild("FillRect", {
-            color = Colors.White,
+            color = Colors.Red,
             width = 20,
             height = 28,
 
@@ -32,7 +32,7 @@ Nodes:define("PlatformerScene", "Scene", {
             collider = {
                 target = platform, -- Your target can be any node.
                 acceleration = { 0, 800 }, -- Acceleration for gravity.
-                damping = { 0.998, 0 } -- Damping slows velocity, here slows the x velocity.
+                damping = { 0.996, 0 } -- Damping slows velocity, the closer to 1 the more damping occurs. Here slows the x velocity.
             },
 
             jump = function(self)
@@ -53,7 +53,9 @@ Nodes:define("PlatformerScene", "Scene", {
                     control = control + 120
                 end
 
-                self.collider.velocity.x = control
+                if control ~= 0 then
+                    self.collider.velocity.x = control
+                end
             end
         })
 

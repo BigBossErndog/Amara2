@@ -75,7 +75,7 @@
     "label_enterExecutableFileName": "Enter Executable File Name",
     "label_selectIcon": "256 x 256 px PNG, JPG, JPEG or BMP",
     "label_performingInitialSetup": "Performing Initial Setup...",
-    "label_noProjectsFound": "No Projects Found.\nConsider trying some examples.",
+    "label_noProjectsFound": "No Projects Found.\nConsider trying some examples above.",
     "label_saveSettings": "Save Settings",
     "label_projectLocation": "Project Location",
 
