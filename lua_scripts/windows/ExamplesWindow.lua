@@ -68,19 +68,24 @@ Nodes:define("ExampleModule", "Group", {
         self.get.txt = self.get.cont:createChild("Text", {
             font = "defaultFont",
             text = self.get.name,
-            origin = { 0, 1 },
-            x = self.get.cont.left + 2,
+            origin = { 0.5, 1 },
             y = self.get.cont.bottom - 2
         })
-        self.get.txt.tween:to({
-            x = self.get.cont.right - self.get.txt.width - 2,
-            duration = 3,
-            ease = Ease.SineInOut,
-            yoyo = true,
-            repeats = -1,
-            delay = 1,
-            interim = 1
-        })
+        if self.get.txt.width > self.get.cont.width - 4 then
+            self.get.txt.tween:to({
+                origin = { 0, 1 },
+                x = self.get.cont.left + 2
+            })
+            self.get.txt.tween:to({
+                x = self.get.cont.right - self.get.txt.width - 2,
+                duration = 3,
+                ease = Ease.SineInOut,
+                yoyo = true,
+                repeats = -1,
+                delay = 1,
+                interim = 1
+            })
+        end
     end
 })
 

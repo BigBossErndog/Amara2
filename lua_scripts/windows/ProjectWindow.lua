@@ -18,14 +18,34 @@ Nodes:define("ProjectWindow", "UIWindow", {
             self.get.exampleProject = true
         end
 
-        local title = self.get.content:createChild("Text", {
-            y = 4,
+        local cont = self.get.content:createChild("Container", {
+            width = self.get.targetWidth - 6,
+            height = self.get.targetHeight - 4,
+            origin = 0,
+            x = 3, y = 2
+        })
+
+        local title = cont:createChild("Text", {
+            y = cont.top + 2,
             font = "defaultFont",
             text = projectName,
             color = Colors.White,
             origin = { 0, 0 }
         })
-        title.x = math.floor(self.get.targetWidth/2.0 - title.width/2.0)
+        title.x = -math.floor(title.width/2.0)
+        
+        if title.width > self.get.targetWidth - 4 then
+            title.x = cont.left + 3
+            title.tween:to({
+                x = cont.right - 3 - title.width,
+                duration = 3,
+                ease = Ease.SineInOut,
+                yoyo = true,
+                repeats = -1,
+                delay = 1,
+                interim = 1
+            })
+        end
 
         local buttonPos = Vector2.new(6, 18)
         local buttonSpacing = 20

@@ -35,11 +35,15 @@ Nodes:define("PlatformerScene", "Scene", {
                 damping = { 0.998, 0 } -- Damping slows velocity, here slows the x velocity.
             },
 
+            jump = function(self)
+                self.collider.velocity.y = -300
+            end,
+
             onUpdate = function(self)
                 local control = 0 -- for controlling left/right movement. Prevent moving if left and right are both pressed.
 
                 if Controls:isDown("up") and self.collider:hasCollided(Direction.Down) then
-                    self.collider.velocity.y = -300
+                    self.func:jump()
                 end
 
                 if Controls:isDown("left") then
