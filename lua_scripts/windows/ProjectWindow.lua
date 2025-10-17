@@ -38,12 +38,12 @@ Nodes:define("ProjectWindow", "UIWindow", {
             title.x = cont.left + 3
             title.tween:to({
                 x = cont.right - 3 - title.width,
-                duration = 3,
+                duration = 4,
                 ease = Ease.SineInOut,
                 yoyo = true,
                 repeats = -1,
-                delay = 1,
-                interim = 1
+                delay = 2,
+                interim = 2
             })
         end
 
