@@ -99,22 +99,22 @@ namespace Amara {
 
             frameWidth = 0;
             frameHeight = 0;
-
+            
             if (destroyed || path.empty()) return false;
-
+            
             if (isSpritesheet) {
-                image = new ImageAsset(gameProps);
-                image->loadImage(path);
-            }
-            else {
                 spritesheet = new SpritesheetAsset(gameProps);
                 spritesheet->loadSpritesheet(path, frameWidth, frameHeight);
                 image = spritesheet;
             }
+            else {
+                image = new ImageAsset(gameProps);
+                image->loadImage(path);
+            }
 
             textureWidth = image->width;
             textureHeight = image->height;
-
+            
             spritesheet = image->as<SpritesheetAsset*>();
             if (spritesheet) {
                 frameWidth = spritesheet->frameWidth;

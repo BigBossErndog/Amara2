@@ -408,7 +408,7 @@ namespace Amara {
 
     sol::object Node::get_lua_object() {
         if (luaobject.valid()) return luaobject;
-
+        
         luaobject = gameProps->factory->castLuaNode(this, baseNodeID);
         
         props = gameProps->lua.create_table();

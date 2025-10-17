@@ -12,12 +12,15 @@ Nodes:define("ExampleModule", "Group", {
         if config.openProject then
             self.get.openProject = config.openProject
         end
+        if config.openFolder then
+            self.get.openFolder = config.openFolder
+        end
     end,
 
     onCreate = function(self)
         self.get.rect = self:createChild("FillRect", {
-            color = Colors.White,
-            x = 8, y = 8,
+            color = "#111d27",
+            x = 4, y = 4,
             width = 56,
             height = 56,
             origin = 0,
@@ -33,13 +36,15 @@ Nodes:define("ExampleModule", "Group", {
                 onPointerUp = function()
                     if self.get.type == "example-project" and self.get.openProject then
                         self.get.openProject(self.get.path)
+                    elseif self.get.openFolder then
+                        self.get.openFolder(self.get.path)
                     end
                 end
             },
             onUpdate = function()
                 if self.get.selected then
                     self.get.rect.color = "#333e4d"
-                    -- self.world.get.toolTips.func:showToolTip(self.get.projectName, Game.deltaTime, true)
+                    self.world.get.toolTips.func:showToolTip(self.get.name, Game.deltaTime)
                 else
                     self.get.rect.color = "#111d27"
                 end
@@ -49,12 +54,16 @@ Nodes:define("ExampleModule", "Group", {
             width = 56,
             height = 56,
             origin = 0,
-            x = 8, y = 8
+            x = 4, y = 4
         })
 
         self.get.icon = self.get.cont:createChild("Sprite")
         if self.get.type == "example-project" then
-            self.get.icon.texture = "largeIcons"
+            if System:exists(System:join(self.get.path, "thumbnail.png")) then
+                self.get.icon.tempTexture = System:join(self.get.path, "thumbnail.png")
+            else
+                self.get.icon.texture = "largeIcons"
+            end
         else
             self.get.icon.texture = "largeIcons"
         end
@@ -91,13 +100,29 @@ Nodes:define("ExampleModule", "Group", {
 
 Nodes:define("ExamplesWindow", "PagedWindow", {
     width = 64*4 + 8,
-    height = 200,
+    height = 180,
+
+    props = {
+        currentPath = "files/examples"
+    },
 
     onCreate = function(self)
-        self.get.currentPath = "files/examples"
+        local dirs = System:getDirectoryContents(self.get.currentPath)
+        self.get.examples = {}
+        local projects = {}
 
-        self.get.examples = System:getDirectoryContents(self.get.currentPath)
-        self.get.pageCount = math.ceil(#self.get.examples / 6)
+        for i, v in ipairs(dirs) do
+            if System:isDirectory(v) and System:exists(System:join(v, "project.json")) then
+                table.insert(projects, v)
+            else
+                table.insert(self.get.examples, v)
+            end
+        end
+        for i, v in ipairs(projects) do
+            table.insert(self.get.examples, v)
+        end
+
+        self.get.pageCount = math.ceil(#self.get.examples / 8)
 
         self.classes.PagedWindow.func:onCreate()
 
@@ -125,16 +150,36 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
                 { Key.RightAlt, Key.RightShift, Key.Backspace }
             },
             onPress = function()
-                self.func:closeWindow(function()
-                    self.get.enabled = false
-                    
-                    local newWindow = self.parent:createChild("MainWindow", {
-                        x = self.x, y = self.y
+                if self.get.pathStack then
+                    local pathStack = table.shallow_copy(self.get.pathStack)
+                    local path = table.remove(pathStack)
+
+                    if #pathStack == 0 then
+                        pathStack = nil
+                    end
+
+                    local newWindow = self.parent:createChild("ExamplesWindow", {
+                        x = self.x, y = self.y,
+                        props = {
+                            currentPath = path,
+                            pathStack = pathStack
+                        }
                     })
-                    newWindow.func:openWindow()
-                    
+                    newWindow.func:showInstantly()
+
                     self:destroy()
-                end)
+                else
+                    self.func:closeWindow(function()
+                        self.get.enabled = false
+                        
+                        local newWindow = self.parent:createChild("MainWindow", {
+                            x = self.x, y = self.y
+                        })
+                        newWindow.func:openWindow()
+                        
+                        self:destroy()
+                    end)
+                end
             end
         })
 
@@ -184,8 +229,30 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
             end)
         end
 
-        local startIndex = math.floor((pageIndex - 1) / 6) * 6 + 1
-        local endIndex = math.min(startIndex + 5, #self.get.examples)
+        local openFolder = function(path)
+            local pathStack = self.get.pathStack
+
+            if not pathStack then
+                pathStack = {}
+            else
+                pathStack = table.shallow_copy(pathStack)
+            end
+            table.insert(pathStack, self.get.currentPath)
+
+            local newWindow = self.parent:createChild("ExamplesWindow", {
+                x = self.x, y = self.y,
+                props = {
+                    currentPath = path,
+                    pathStack = pathStack
+                }
+            })
+            newWindow.func:showInstantly()
+            
+            self:destroy()
+        end
+
+        local startIndex = ((pageIndex - 1) * 8) + 1
+        local endIndex = math.min(startIndex + 7, #self.get.examples)
 
         for i = startIndex, endIndex do
             local v = self.get.examples[i]
@@ -210,8 +277,9 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
                     name = name,
                     path = v,
                     openProject = openProject,
-                    x = ((i - 1) % 3) * 64 + 4,
-                    y = math.floor((i - 1) / 3) * 64 + 24
+                    openFolder = openFolder,
+                    x = (((i - 1) % 4) * 64) + 4,
+                    y = math.floor((i - startIndex) / 4) * 64 + 24
                 })
             end
         end

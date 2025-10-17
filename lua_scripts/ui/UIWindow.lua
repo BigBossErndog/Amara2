@@ -75,6 +75,15 @@ Nodes:define("UIWindow", "NineSlice", {
 
         return self
     end,
+    showInstantly = function(self)
+        self.width = self.get.targetWidth
+        self.height = self.get.targetHeight
+        self.visible = true
+        self.get.content.visible = true
+        self.get.contentRoot.scale = 1
+
+        return self
+    end,
     setTarget = function(self, _width, _height)
         if _width then
             self.get.targetWidth = _width
