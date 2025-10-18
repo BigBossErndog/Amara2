@@ -91,6 +91,17 @@ namespace Amara {
             }
         }
 
+        bool isPlaying(std::string gid) {
+            Amara::Node* node = getChild(gid);
+            if (node) {
+                Amara::Audio* audio = node->as<Amara::Audio*>();
+                if (audio) {
+                    return audio->playing;
+                }
+            }
+            return false;
+        }
+
         void restart() {
             Amara::Audio::restart();
         }
@@ -112,6 +123,7 @@ namespace Amara {
                     sol::resolve<void()>(&AudioGroup::play),
                     sol::resolve<void(std::string)>(&AudioGroup::play)
                 ),
+                "isPlaying", &AudioGroup::isPlaying,
                 "pause", sol::overload(
                     sol::resolve<void()>(&AudioGroup::pause),
                     sol::resolve<void(std::string)>(&AudioGroup::pause)

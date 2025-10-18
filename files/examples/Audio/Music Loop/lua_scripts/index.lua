@@ -17,7 +17,7 @@ Creator:createWorld({
     onPreload = function(self)
         self.load:image("soundButton", "soundButton.png")
 
-        -- Load your audio
+        -- Load audio. wav, ogg, mp3
         self.load:audio("myMusic", "We Are Home.ogg")
     end,
 
@@ -34,6 +34,7 @@ Creator:createWorld({
                 active = true,
                 cursor = Cursor.Pointer,
                 onPointerDown = function(self)
+                    -- Tween to animate button press
                     self.scale = 0.9
                     self.tween:to({
                         scale = 1,
@@ -41,8 +42,12 @@ Creator:createWorld({
                         ease = Ease.BackOut
                     })
 
-                    -- Play your music.
-                    self.audio:play("myMusic")
+                    -- Toggle playing music.
+                    if not self.audio:isPlaying("myMusic") then
+                        self.audio:play("myMusic")
+                    else
+                        self.audio:stop("myMusic")
+                    end
                 end
             }
         })

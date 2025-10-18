@@ -1,1 +1,4 @@
-Error: Audio child "jump" of group "AudioMaster" not found.
+Error: Invalid Vector2 assignment.
+stack traceback:
+	[C]: in function 'math.angleBetween'
+	[string "index.lua"]:28: in function <[string "index.lua"]:27>

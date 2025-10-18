@@ -70,8 +70,8 @@ Nodes:define("ExampleModule", "Group", {
         self.get.icon:fitWithin({
             x = self.get.cont.left,
             y = self.get.cont.top,
-            width = 56,
-            height = 56
+            width = self.get.cont.width,
+            height = self.get.cont.height
         })
 
         self.get.txt = self.get.cont:createChild("Text", {
@@ -81,7 +81,7 @@ Nodes:define("ExampleModule", "Group", {
             y = self.get.cont.bottom - 2
         })
         if self.get.txt.width > self.get.cont.width - 4 then
-            self.get.txt.tween:to({
+            self.get.txt:configure({
                 origin = { 0, 1 },
                 x = self.get.cont.left + 2
             })

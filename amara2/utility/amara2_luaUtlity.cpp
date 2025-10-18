@@ -190,7 +190,7 @@ namespace Amara {
         }
         return ss.str();
     }
-
+    
     std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args) {
         std::ostringstream ss;
         bool first = true;

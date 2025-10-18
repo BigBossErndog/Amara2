@@ -180,10 +180,6 @@ namespace Amara {
                 Vector2 pos = other.as<Amara::Pointer>();
                 return getCollisionShape().collidesWith(pos);
             }
-            if (other.is<Amara::GeneralPointer>()) {
-                Vector2 pos = other.as<Amara::GeneralPointer*>()->pos;
-                return getCollisionShape().collidesWith(pos);
-            }
             Shape shape = Shape(other);
             return getCollisionShape().collidesWith(shape);
         }
@@ -781,8 +777,20 @@ namespace Amara {
             rotation += _r;
             return get_lua_object();
         }
-        sol::object pointTowards(Amara::Node* other) {
-            rotation = angleBetween(pos, other->pos);
+        
+        sol::object pointTowards(float _x, float _y) {
+            rotation = angleBetween(pos, Vector2(_x, _y));
+            return get_lua_object();
+        }
+        sol::object pointTowards(sol::object v) {
+            if (v.is<Node>()) {
+                rotation = angleBetween(pos, v.as<Amara::Node*>()->pos);
+            }
+            else {
+                Vector2 v2 = v;
+                rotation = angleBetween(pos, v2);
+            }
+            
             return get_lua_object();
         }
 

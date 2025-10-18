@@ -17,6 +17,7 @@ Creator:createWorld({
     onPreload = function(self)
         self.load:image("soundButton", "soundButton.png")
 
+        -- Load audio. wav, ogg, mp3
         self.load:audio("jump", "sounds/jump.wav")
         self.load:audio("lose", "sounds/lose.wav")
         self.load:audio("coin", "sounds/coin.wav")
@@ -46,6 +47,7 @@ Creator:createWorld({
                 active = true,
                 cursor = Cursor.Pointer,
                 onPointerDown = function(self)
+                    -- Tween to animate button press
                     self.scale = 0.9
                     self.tween:to({
                         scale = 1,
@@ -66,6 +68,7 @@ Creator:createWorld({
                 active = true,
                 cursor = Cursor.Pointer,
                 onPointerDown = function(self)
+                    -- Tween to animate button press
                     self.scale = 0.9
                     self.tween:to({
                         scale = 1,
@@ -84,6 +87,7 @@ Creator:createWorld({
                 active = true,
                 cursor = Cursor.Pointer,
                 onPointerDown = function(self)
+                    -- Tween to animate button press
                     self.scale = 0.9
                     self.tween:to({
                         scale = 1,

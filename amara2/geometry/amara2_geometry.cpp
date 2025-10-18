@@ -15,17 +15,21 @@ namespace Amara {
         return distanceBetween(p1.x, p1.y, p2.x, p2.y);
     }
 
+    
     float angleBetween(float p1x, float p1y, float p2x, float p2y) {
-        // Angle in Radians
-        float angle = -atan2(p2y-p1y, p2x-p1x) + M_PI/2.0;
-        while (angle < 0) {
-            angle += 2*M_PI;
-        }
-        angle = fmod(angle, 2*M_PI);
+        float dx = p2x - p1x;
+        float dy = p2y - p1y;
+
+        dy = -dy;
+
+        float angle = -std::atan2(dy, dx);
+
+        if (angle < 0)
+            angle += 2.0f * static_cast<float>(M_PI);
+
         return angle;
     }
     float angleBetween(const Vector2& p1, const Vector2& p2) {
-        // Angle in Radians
         return angleBetween(p1.x, p1.y, p2.x, p2.y);
     }
 
@@ -452,17 +456,32 @@ namespace Amara {
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("rotateAroundAnchor", sol::overload(
             sol::resolve<Vector2(const Vector2&, const Vector2&, float)>(&Amara::rotateAroundAnchor),
-            sol::resolve<Vector2(const Vector2&, float)>(&Amara::rotateAroundAnchor)
+            [](sol::object p1, sol::object p2) {
+                Vector2 p1_vec = p1;
+                float rotation = p2.as<double>();
+                return Amara::rotateAroundAnchor(p1_vec, rotation);
+            }
         ));
         math_metatable.set_function("distanceBetween", sol::overload(
             sol::resolve<float(float, float, float, float)>(&Amara::distanceBetween),
-            sol::resolve<float(const Vector2&, const Vector2&)>(&Amara::distanceBetween)
+            [](sol::object p1, sol::object p2) {
+                Vector2 p1_vec = p1;
+                Vector2 p2_vec = p2;
+                return Amara::distanceBetween(p1_vec, p2_vec);
+            }
         ));
         math_metatable.set_function("angleBetween", sol::overload(
             sol::resolve<float(float, float, float, float)>(&Amara::angleBetween),
-            sol::resolve<float(const Vector2&, const Vector2&)>(&Amara::angleBetween)
+            [](sol::object p1, sol::object p2) {
+                Vector2 p1_vec = p1;
+                Vector2 p2_vec = p2;
+                return Amara::angleBetween(p1_vec, p2_vec);
+            }
         ));
-        math_metatable.set_function("centerOf", &Amara::centerOf);
+        math_metatable.set_function("centerOf", [](sol::object v) {
+            Rectangle rect = v;
+            return Amara::centerOf(rect);
+        });
 
         lua.new_enum("Position",
             "Top", &Vector2::Top,

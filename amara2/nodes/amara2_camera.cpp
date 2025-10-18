@@ -366,7 +366,7 @@ namespace Amara {
                     sol::resolve<sol::object(float, float)>(&Camera::changeZoom),
                     sol::resolve<sol::object(float)>(&Camera::changeZoom)
                 ),
-                "lerp", &Camera::lerp,
+                "lerp", sol::property([](Amara::Camera& cam) -> Vector2& { return cam.lerp; }, [](Amara::Camera& cam, sol::object val) { cam.lerp = val; } ),
                 "lerpX", sol::property([](Camera& cam) { return cam.lerp.x; }, [](Camera& cam, float val) { cam.lerp.x = val; }),
                 "lerpY", sol::property([](Camera& cam) { return cam.lerp.y; }, [](Camera& cam, float val) { cam.lerp.y = val; }),
                 "center", sol::readonly(&Camera::center),

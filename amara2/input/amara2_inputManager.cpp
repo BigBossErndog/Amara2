@@ -10,11 +10,10 @@ namespace Amara {
         Pointer* lastPointer = nullptr;
     };
 
-    class GeneralPointer {
+    class GeneralPointer: public Amara::Pointer {
     public:
         Amara::GameProps* gameProps = nullptr;
         
-        Vector2 pos;
         Vector2 real_pos;
 
         GeneralPointer() = default;
@@ -71,11 +70,14 @@ namespace Amara {
 
         void pre_update(double deltaTime) {
             if (mouse.moved) {
-                generalPointer.pos = mouse;
+                generalPointer.x = mouse.x;
+                generalPointer.y = mouse.y;
                 generalPointer.real_pos = mouse.real_pos;
             }
             else if (touch.isDown()) {
-                generalPointer.pos = *touch.lastFinger;
+                Vector2 p = *touch.lastFinger;
+                generalPointer.x = p.x;
+                generalPointer.y = p.y;
                 generalPointer.real_pos = touch.lastFinger->real_pos;
             }
         }
@@ -115,6 +117,7 @@ namespace Amara {
 
     void GeneralPointer::bind_lua(sol::state& lua) {
         lua.new_usertype<GeneralPointer>("GeneralPointer",
+            sol::base_classes, sol::bases<Amara::Pointer, Amara::Vector2>(),
             "isDown", sol::property([](Amara::GeneralPointer& p) {
                 return p.isDown();
             }),
@@ -123,14 +126,7 @@ namespace Amara {
             }),
             "justReleased", sol::property([](Amara::GeneralPointer& p) {
                 return p.justReleased();
-            }),
-            "x", sol::property([](Amara::GeneralPointer& p) {
-                return p.pos.x;
-            }),
-            "y", sol::property([](Amara::GeneralPointer& p) {
-                return p.pos.y;
-            }),
-            "pos", sol::readonly(&GeneralPointer::pos)
+            })
         );
     }
 }
