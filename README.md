@@ -3,7 +3,7 @@ A free and open-source 2D game engine with Lua scripting for people like me who 
 
 Built in C++ using SDL3, with exports to Windows and Web.
 
-*Note: Amara2 is currently available for Windows only. Sorry to my Mac homies, I can't afford a Mac :( I'll maybe do a Mac port if I receive enough donations through my [ko-fi](https://ko-fi.com/ernestplacido).*
+*Note: Amara2 is currently available for Windows only. Sorry to my Mac homies, I can't afford a Mac :( I'll do a Mac port if I receive enough donations through my [ko-fi](https://ko-fi.com/ernestplacido).*
 
 [Click here for the latest release.](https://github.com/BigBossErndog/Amara2/releases)
 
