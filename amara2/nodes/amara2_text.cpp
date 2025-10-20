@@ -551,8 +551,12 @@ namespace Amara {
         }
         bool progressText(int speed) {
             progress += speed;
-            if (progress >= layout.display_size()) {
+            if (speed > 0 && progress >= layout.display_size()) {
                 progress = layout.display_size();
+                return true;
+            }
+            if (speed < 0 && progress <= 0) {
+                progress = 0;
                 return true;
             }
             return false;

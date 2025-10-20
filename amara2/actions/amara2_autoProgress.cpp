@@ -17,7 +17,7 @@ namespace Amara {
         Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "rate")) speed = config["rate"];
             if (json_has(config, "start")) startIndex = config["start"];
-            if (json_has(config, "progressUntil")) until = config["progressUntil"];
+            if (json_has(config, "until")) until = config["until"];
 
             return Action::configure(config);
         }
@@ -49,7 +49,7 @@ namespace Amara {
             if (has_started) {
                 timer += deltaTime * speed;
                 if (!completed && funcs.hasFunction("skipCondition")) {
-                    sol::object obj = funcs.callFunction(actor, "skipCondition");\
+                    sol::object obj = funcs.callFunction(actor, "skipCondition");
                     if (obj.is<bool>() && obj.as<bool>()) {
                         skip();
                     }
@@ -62,7 +62,7 @@ namespace Amara {
                     }
                     while (timer > 1.0) {
                         timer -= 1.0;
-                        if (text->progressText(1) || text->progress >= until) {
+                        if (text->progressText(until > text->progress ? 1 : -1) || text->progress == until) {
                             complete();
                             break;
                         }

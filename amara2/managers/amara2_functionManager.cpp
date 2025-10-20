@@ -109,7 +109,7 @@ namespace Amara {
             if (funcMap.find(className) == funcMap.end()) createTable(className);
             funcMap[className].setFunction(funcName, func, _create_wrapped_function(className, funcName));
         }
-
+        
         void createTable(std::string className) {
             funcMap[className] = FunctionMap(gameProps);
             FunctionMap& new_map = funcMap[className];

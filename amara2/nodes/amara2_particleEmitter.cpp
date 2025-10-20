@@ -14,6 +14,8 @@ namespace Amara {
         int frame = 0;
 
         Amara::Color tint;
+        Amara::Color endTint;
+        Amara::Color drawTint;
 
         Amara::Vector2 velocity;
         Amara::Vector2 acceleration;
@@ -89,8 +91,8 @@ namespace Amara {
                 if (json_has(particle_config, "poolSize")) {
                     int _poolSize = particle_config["poolSize"];
                     if (_poolSize != poolSize) {
-                        if (poolSize > _poolSize) {
-                            for (int i = poolSize - 1; i >= _poolSize; i--) {
+                        if (particles.size() > _poolSize) {
+                            for (int i = particles.size() - 1; i >= _poolSize; i--) {
                                 Amara::Particle& particle = particles[i];
                                 if (particle.in_use) {
                                     particle.in_use = false;
@@ -340,6 +342,45 @@ namespace Amara {
                     }
                 }
             }
+            particle.drawTint = particle.tint;
+
+            particle.endTint = particle.tint;
+            if (json_has(particle_config, "endTint")) {
+                nlohmann::json tint_config = particle_config["endTint"];
+                if (tint_config.is_object()) {
+                    if (json_has(tint_config, "min", "max")) {
+                        Color min = tint_config["min"];
+                        Color max = tint_config["max"];
+                        particle.endTint = Color(
+                            lua_random(gameProps->lua, min.r, max.r),
+                            lua_random(gameProps->lua, min.g, max.g),
+                            lua_random(gameProps->lua, min.b, max.b),
+                            lua_random(gameProps->lua, min.a, max.a)
+                        );
+                    }
+                    else {
+                        particle.endTint = tint_config;
+                    }
+                }
+                else if (tint_config.is_string()) {
+                    particle.endTint = Color(tint_config);
+                }
+                else if (tint_config.is_array()) {
+                    if (tint_config.size() == 4) {
+                        particle.endTint = Color(tint_config[0], tint_config[1], tint_config[2], tint_config[3]);
+                    }
+                    else if (tint_config.size() == 2) {
+                        Color min = tint_config[0];
+                        Color max = tint_config[1];
+                        particle.endTint = Color(
+                            lua_random(gameProps->lua, min.r, max.r),
+                            lua_random(gameProps->lua, min.g, max.g),
+                            lua_random(gameProps->lua, min.b, max.b),
+                            lua_random(gameProps->lua, min.a, max.a)
+                        );
+                    }
+                }
+            }
 
             particle.startX = particle.pos.x;
             particle.startY = particle.pos.y;
@@ -476,7 +517,7 @@ namespace Amara {
                 input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nullptr);
             }
 
-            Amara::Color particleTint = particle.tint * tint;
+            Amara::Color particleTint = particle.drawTint * tint;
 
             if (image->texture && gameProps->renderer) {
                 // 2D Rendering
@@ -602,26 +643,29 @@ namespace Amara {
                 }
 
                 if (!updated_this_frame) {
+                    double prog = particle.lifeTime / particle.maxLifeTime;
                     particle.pos += particle.velocity * deltaTime + particle.acceleration * deltaTime * deltaTime * 0.5f;
                     particle.velocity += particle.acceleration * deltaTime;
                     
                     if (particle.startX != invalid && particle.endX != invalid) {
-                        particle.pos.x = ease(particle.startX, particle.endX, particle.lifeTime / particle.maxLifeTime, easing); 
+                        particle.pos.x = ease(particle.startX, particle.endX, prog, easing); 
                     }
                     if (particle.startY != invalid && particle.endY != invalid) {
-                        particle.pos.y = ease(particle.startY, particle.endY, particle.lifeTime / particle.maxLifeTime, easing); 
+                        particle.pos.y = ease(particle.startY, particle.endY, prog, easing); 
                     }
                     
                     if (particle.startAlpha != invalid && particle.endAlpha != invalid) {
-                        particle.alpha = ease(particle.startAlpha, particle.endAlpha, particle.lifeTime / particle.maxLifeTime, easing); 
+                        particle.alpha = ease(particle.startAlpha, particle.endAlpha, prog, easing); 
                     }
 
                     if (particle.end_scale_set) {
                         particle.scale = Vector2(
-                            ease(particle.scale.x, particle.endScale.x, particle.lifeTime / particle.maxLifeTime, easing),
-                            ease(particle.scale.y, particle.endScale.y, particle.lifeTime / particle.maxLifeTime, easing)
+                            ease(particle.scale.x, particle.endScale.x, prog, easing),
+                            ease(particle.scale.y, particle.endScale.y, prog, easing)
                         );
                     }
+
+                    particle.drawTint = ease(particle.tint, particle.endTint, prog, easing);
 
                     particle.rotation += particle.angularVelocity * deltaTime;
 

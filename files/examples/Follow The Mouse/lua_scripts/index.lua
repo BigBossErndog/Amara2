@@ -28,11 +28,13 @@ Creator:createWorld({
     end,
 
     onUpdate = function(self, deltaTime)
-        self.get.arrow.rotation = math.angleBetween(self.get.arrow.pos, self.input.pointer)
+        -- You can "pointTowards" any Node, Pointer or Vector2 coordinate.
+        self.get.arrow:pointTowards(self.input.pointer)
         
         if math.distanceBetween(self.get.arrow.pos, self.input.pointer) > 4 then
-            self.get.arrow.x = self.get.arrow.pos.x + math.cos(self.get.arrow.rotation) * 100 * deltaTime
-            self.get.arrow.y = self.get.arrow.pos.y + math.sin(self.get.arrow.rotation) * 100 * deltaTime
+            -- You can "moveTowards" any Node, Pointer or Vector2 coordinate.
+            -- e.g. self.get.arrow:moveTowards({ 100, 100 }, 100 * deltaTime) to move towards { 100, 100 }
+            self.get.arrow:moveTowards(self.input.pointer, 100 * deltaTime)
         end
     end
 })

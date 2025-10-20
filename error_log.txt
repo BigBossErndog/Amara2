@@ -1,4 +1,3 @@
-Error: Invalid Vector2 assignment.
+[string "index.lua"]:34: attempt to call a nil value (method 'moveTowards')
 stack traceback:
-	[C]: in function 'math.angleBetween'
-	[string "index.lua"]:28: in function <[string "index.lua"]:27>
+	[string "index.lua"]:34: in function <[string "index.lua"]:30>

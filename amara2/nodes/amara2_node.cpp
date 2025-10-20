@@ -794,6 +794,21 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object moveTowards(float _x, float _y, float speed) {
+            float angle = angleBetween(pos, Vector2(_x, _y));
+            return move(cos(angle) * speed, sin(angle) * speed);
+        }
+        sol::object moveTowards(sol::object v, float speed) {
+            if (v.is<Node>()) {
+                Vector2& other_pos = v.as<Amara::Node*>()->pos;
+                return moveTowards(other_pos.x, other_pos.y, speed);
+            }
+            else {
+                Vector2 v2 = v;
+                return moveTowards(v2.x, v2.y, speed);
+            }
+        }
+
         void stopActing() {
             for (Amara::Node* node: children) {
                 if (node->is_action && !node->destroyed) node->destroy();
@@ -927,6 +942,14 @@ namespace Amara {
                 "scaleY", sol::property([](Node& e, float val) { e.scale.y = val; }, [](Node& e) { return e.scale.y; }),
                 "rotation", &Node::rotation,
                 "rotate", &Node::rotate,
+                "pointTowards", sol::overload(
+                    sol::resolve<sol::object(float, float)>(&Node::pointTowards),
+                    sol::resolve<sol::object(sol::object)>(&Node::pointTowards)
+                ),
+                "moveTowards", sol::overload(
+                    sol::resolve<sol::object(float, float, float)>(&Node::moveTowards),
+                    sol::resolve<sol::object(sol::object, float)>(&Node::moveTowards)
+                ),
                 "cameraFollowOffset", &Node::cameraFollowOffset,
                 "cameraFollowOffsetX", sol::property([](Node& e, float val) { e.cameraFollowOffset.x = val; }, [](Node& e) { return e.cameraFollowOffset.x; }),
                 "cameraFollowOffsetY", sol::property([](Node& e, float val) { e.cameraFollowOffset.y = val; }, [](Node& e) { return e.cameraFollowOffset.y; }),

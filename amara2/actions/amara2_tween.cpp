@@ -196,9 +196,9 @@ namespace Amara {
                 Amara::Color target_color = val2;
                 target.set(key, ease(start_color, target_color, progress, easing));
             }
-            else if (String::equal(key, "props") && target[key].is<sol::table>()) {
+            else if ((String::equal(key, "props") || String::equal(key, "get")) && target[key].is<sol::table>()) {
                 for (auto it = val1.begin(); it != val1.end(); ++it) {
-                    tweenValue(target["props"], it.key(), val1[it.key()], val2[it.key()], progress);
+                    tweenValue(target[key], it.key(), val1[it.key()], val2[it.key()], progress);
                 }
             }
         }
