@@ -29,7 +29,7 @@ SDL_LIBRARY_PATHS_WIN64 = -L$(RESOURCES)/libs/SDL3-3.2.16/lib/x64
 SDL_PATHS_WIN64 = $(SDL_INCLUDE_PATHS_WIN64) $(SDL_LIBRARY_PATHS_WIN64)
 SDL_LINKER_FLAGS_WIN64 = -lSDL3
 
-SDL_INCLUDE_PATHS_LINUX = `sdl2-config --cflags`
+SDL_INCLUDE_PATHS_LINUX = `sdl3-config --cflags`
 
 RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
@@ -38,7 +38,7 @@ STDLIB_FLAG = -stdlib=libc++
 WINDOWS_SYSTEM_LIBS = -lshell32 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lversion # Add system libraries for Windows API
 LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) $(WINDOWS_SYSTEM_LIBS) -static
 
-LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl2-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
+LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl3-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
 
 OTHER_LIB_LINKS = 
 OTHER_LIB_PATHS = -Isrc -I$(RESOURCES)/libs/json/include -I$(RESOURCES)/libs/lua -I$(RESOURCES)/libs/sol2 -I$(RESOURCES)/libs/stb -I$(RESOURCES)/libs/glm -I$(RESOURCES)/libs/minimp3 -I$(RESOURCES)/libs/portable-file-dialogs -I$(RESOURCES)/libs/tinyxml2
@@ -119,8 +119,7 @@ win-release:
 	if exist "$(BUILD_PATH)\files\settings.json" del "$(BUILD_PATH)\files\settings.json"
 
 linux:
-	$(COMPILER) $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) $(SDL_INCLUDE_PATHS_LINUX) $(LINUX_COMPILER_FLAGS) $(STDLIB_FLAG) $(LINKER_FLAGS_LINUX) -o $(BUILD_EXECUTABLE_LINUX)
-	mkdir $(BUILD_PATH)/saves
+	clang++ $(ENTRY_FILES) $(AMARA_PATH) $(OTHER_LIB) `sdl3-config --cflags` $(LINUX_COMPILER_FLAGS) $(EXTRA_OPTIONS) `sdl3-config --libs` -lGL -lm -ldl -o $(BUILD_EXECUTABLE_LINUX)
 
 EMSCRIPTEN_COMPILER = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\em++"
 EMSCRIPTEN_SERVER = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\emrun"
@@ -145,29 +144,3 @@ valgrind:
 	rm -rf build/assets/*
 	cp -R assets/ build/
 	valgrind --leak-check=yes ./$(BUILD_EXECUTABLE_LINUX)
-
-setup-apt64:
-	sudo apt-get install libsdl2-2.0-0
-	sudo apt-get install libsdl2-dev
-	sudo apt-get install libsdl2-image-dev
-	sudo apt-get install libsdl2-ttf-dev
-	sudo apt-get install libsdl2-mixer-dev
-	sudo apt-get install libsdl2-net-dev
-
-setup-yum64:
-	sudo yum install SDL2
-	sudo yum install SDL2_image
-	sudo yum install SDL2_ttf
-	sudo yum install SDL2_mixer
-	sudo yum install SDL2_net
-	sudo yum install SDL2_image-devel
-	sudo yum install SDL2_ttf-devel
-	sudo yum install SDL2_mixer-devel
-	sudo yum install SDL2_net-devel
-
-setup-pacman64:
-	sudo pacman -S sdl2
-	sudo pacman -S sdl2_image
-	sudo pacman -S sdl2_ttf
-	sudo pacman -S sdl2_mixer
-	sudo pacman -S sdl2_net
