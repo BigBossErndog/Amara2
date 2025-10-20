@@ -55,6 +55,10 @@ namespace Amara {
             if (json_has(config, "marginRight")) marginRight = json_extract(config, "marginRight");
             if (json_has(config, "marginTop")) marginTop = json_extract(config, "marginTop");
             if (json_has(config, "marginBottom")) marginBottom = json_extract(config, "marginBottom");
+
+            if (json_has(config, "margins")) {
+                marginLeft = marginRight = marginTop = marginBottom = json_extract(config, "margins");
+            }
             
             update_size();
             

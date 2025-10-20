@@ -17,6 +17,7 @@ Nodes:define("GameScene", "Scene", {
         })
         self.get.player.collider:addCollisionTarget(self.get.tilemap)
         
+        -- Scenes automatically come with a Camera which you can use to follow the player.
         self.camera.followTarget = self.get.player
     end
 })

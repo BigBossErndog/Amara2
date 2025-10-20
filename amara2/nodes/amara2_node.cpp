@@ -84,6 +84,8 @@ namespace Amara {
 
         sol::table proxy;
 
+        static std::unordered_map<std::string, bool> in_order_props;
+
         #ifdef AMARA_OPENGL
         ShaderProgram* shaderProgram = nullptr;
         #endif
@@ -301,6 +303,9 @@ namespace Amara {
                             else {
                                 collider = luaCreateChild("Collider", val).as<Amara::Node*>();
                             }
+                        }
+                        else if (in_order_props[key]) {
+                            continue;
                         }
                         else {
                             luaConfigure(key, val);
@@ -1385,4 +1390,14 @@ namespace Amara {
         }
         #endif
     }
+
+    std::unordered_map<std::string, bool> Amara::Node::in_order_props = {
+        { "origin", true },
+        { "scale", true },
+        { "size", true },
+        { "rect", true },
+        { "view", true },
+        { "pos", true },
+        { "animation", true }
+    };
 }

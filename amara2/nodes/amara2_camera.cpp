@@ -78,6 +78,11 @@ namespace Amara {
             if (json_has(config, "height")) setHeight(config["height"]);
             else if (json_has(config, "h")) setHeight(config["h"]);
 
+            if (json_has(config, "size")) {
+                setSize(config["size"]);
+            }
+            if (json_has(config, "bounds")) setBounds(config["bounds"]);
+
             update_bounds();
 
             return this;
@@ -174,6 +179,11 @@ namespace Amara {
         sol::object setBounds(float _x, float _y, float _w, float _h) {
             return setBounds(Rectangle( _x, _y, _w, _h ));
         }
+        void setBounds(nlohmann::json config) {
+            Rectangle rect = config;
+            setBounds(rect);
+        }
+
         sol::object removeBounds() {
             hasBounds = false;
             return get_lua_object();
@@ -229,8 +239,23 @@ namespace Amara {
             return changeZoom(_z, _z);
         }
 
-        sol::object setSize(sol::object _s) {
-            
+        void setSize(Rectangle rect) {
+            pos.x = rect.x + (rect.w * origin.x);
+            pos.y = rect.y + (rect.h * origin.y);
+            width = rect.w;
+            height = rect.h;
+
+            sizeTethered = false;
+        }
+        void setSize(nlohmann::json config) {
+            Rectangle rect = config;
+            setSize(rect);
+        }
+
+        sol::object lua_setSize(sol::object _s) {
+            Rectangle rect = _s;
+            setSize(rect);
+            return get_lua_object();
         }
 
         sol::object setWidth(double _w) {
@@ -282,11 +307,6 @@ namespace Amara {
             
             children_copy_list = parent->children;
 
-            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
-                SDL_Rect setv = Rectangle::makeSDLRect(v);
-                SDL_SetRenderViewport(gameProps->renderer, &setv);
-            }
-
             Vector2 vcenter = Vector2(v.w/2.0f, v.h/2.0f);
 
             if (sizeTethered) {
@@ -303,9 +323,23 @@ namespace Amara {
                 );
             }
 
-            pass_on_properties();
-
+            SDL_Rect old_sdl_viewport;
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
+                SDL_GetRenderViewport(gameProps->renderer, &old_sdl_viewport);
+                
+                SDL_Rect setv = Rectangle::makeSDLRect(viewport);
+                SDL_SetRenderViewport(gameProps->renderer, &setv);
+            }
+            #ifdef AMARA_OPENGL
+            GLint old_gl_viewport[4];
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                glGetIntegerv(GL_VIEWPORT, old_gl_viewport);
+                glViewport(viewport.x, gameProps->master_viewport.h - (viewport.y + viewport.h), viewport.w, viewport.h);
+            }
+            #endif
+            
             PassOnProps rec_passOn = gameProps->passOn;
+            pass_on_properties();
 
             passOn.insideCamera = true;
             gameProps->passOn = passOn;
@@ -331,6 +365,16 @@ namespace Amara {
 			}
 
             gameProps->passOn = rec_passOn;
+
+            if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
+                SDL_SetRenderViewport(gameProps->renderer, &old_sdl_viewport);
+            }
+            #ifdef AMARA_OPENGL
+            else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                gameProps->renderBatch->flush();
+                glViewport(old_gl_viewport[0], old_gl_viewport[1], old_gl_viewport[2], old_gl_viewport[3]);
+            }
+            #endif
         }
 
         static void bind_lua(sol::state& lua) {
@@ -362,6 +406,9 @@ namespace Amara {
                 ),
                 "zoomX", sol::property([](Camera& cam) { return cam.zoom.x; }, [](Camera& cam, float val) { cam.zoom.x = val; }),
                 "zoomY", sol::property([](Camera& cam) { return cam.zoom.y; }, [](Camera& cam, float val) { cam.zoom.y = val; }),
+                "origin", sol::property([](Amara::Camera& t) -> Vector2& { return t.origin; }, [](Amara::Camera& t, sol::object v) { t.origin = v; }),
+                "originX", sol::property([](Amara::Camera& t) -> float { return t.origin.x; }, [](Amara::Camera& t, float v) { t.origin.x = v; }),
+                "originY", sol::property([](Amara::Camera& t) -> float { return t.origin.y; }, [](Amara::Camera& t, float v) { t.origin.y = v; }),
                 "changeZoom", sol::overload(
                     sol::resolve<sol::object(float, float)>(&Camera::changeZoom),
                     sol::resolve<sol::object(float)>(&Camera::changeZoom)
@@ -376,6 +423,10 @@ namespace Amara {
                 "bottom", sol::readonly(&Camera::bottom),
                 "view", sol::readonly(&Camera::view),
                 "rect", sol::readonly(&Camera::view),
+                "size", sol::property(
+                    [](Camera& cam) { return Rectangle(cam.pos.x - (cam.width * cam.origin.x), cam.pos.y - (cam.height * cam.origin.y), cam.width, cam.height); },
+                    [](Camera& cam, sol::object val) { cam.setSize(val); }
+                ),
                 "startFollow", sol::overload(
                     sol::resolve<sol::object(Amara::Node*)>(&Camera::startFollow),
                     sol::resolve<sol::object(Amara::Node*, float, float)>(&Camera::startFollow),
