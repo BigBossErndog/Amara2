@@ -13,7 +13,7 @@ Built in C++ using SDL3, with exports to Windows and Web.
 - Setting up a new project and running a test is easy as heck.
 - Game architecture inspired by my favorite elements of the Phaser framework, DragonRuby and the Godot Engine.
 - Minimal GUI. Rather than being an all-in-one engine, the goal is to integrate and seamlessly tie all your commonly used game dev tools together.
-- Code compilation and obfuscation.
+- Code and asset encryption, protect your content or go without to support modding.
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
 - Built using SDL3, so a porting company should be able to port to any of the multitude of  platforms SDL3 supports with ease.
 
