@@ -91,8 +91,8 @@ Nodes:define("ExampleModule", "Group", {
                 ease = Ease.SineInOut,
                 yoyo = true,
                 repeats = -1,
-                delay = 1,
-                interim = 1
+                delay = 0.5,
+                interim = 0.5
             })
         end
     end
@@ -143,12 +143,12 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
     getExamplesContaining = function(self, str)
         local examples = {}
         for k, v in pairs(self.get.allProjects.directories) do
-            if string.find(k, str) then
+            if string.contains(k, str, false) then
                 table.insert(examples, v)
             end
         end
         for k, v in pairs(self.get.allProjects.projects) do
-            if string.find(k, str) then
+            if string.contains(k, str, false) then
                 table.insert(examples, v)
             end
         end
@@ -304,7 +304,7 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
                     System:removeDirectoryContents(sandboxPath)
                 end
                 System:copy(path, sandboxPath)
-
+                
                 local projectData = System:readJSON(System:join(sandboxPath, "project.json"))
                 projectData.uninitiated = true
                 projectData.exampleProject = true

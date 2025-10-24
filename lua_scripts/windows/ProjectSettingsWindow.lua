@@ -244,8 +244,12 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
                                 local newTerminal = parent:createChild("TerminalWindow", {
                                     allowMinimize = true,
                                     disableSavePosition = true,
-                                    onExit = function(self)
-                                        returnWindow()
+                                    onExit = function()
+                                        local newWindow = parent:createChild("ProjectSettingsWindow", {
+                                            projectPath = self.get.oldProjectPath,
+                                            exampleProject = self.get.exampleProject
+                                        })
+                                        newWindow.func:openWindow()
                                     end
                                 })
                                 newTerminal.func:handleMessage(Localize:get("error_failedToMoveProject"))
