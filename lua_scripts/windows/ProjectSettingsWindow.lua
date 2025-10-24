@@ -6,6 +6,9 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
         if config.projectPath then
             self.get.oldProjectPath = config.projectPath
         end
+        if config.exampleProject then
+            self.get.exampleProject = config.exampleProject
+        end
     end,
 
     onCreate = function(self)
@@ -100,7 +103,8 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
                 button.get.enabled = false
                 self.func:closeWindow(function()
                     local newWindow = self.parent:createChild("ProjectWindow", {
-                        projectPath = self.get.oldProjectPath
+                        projectPath = self.get.oldProjectPath,
+                        exampleProject = self.get.exampleProject
                     })
                     newWindow.func:openWindow()
                     
@@ -208,7 +212,8 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
         local parent = self.parent
         local returnWindow = function()
             local newWindow = parent:createChild("ProjectWindow", {
-                projectPath = newProjectDirectory
+                projectPath = newProjectDirectory,
+                exampleProject = self.get.exampleProject
             })
             newWindow.func:openDefault()
             newWindow.func:openWindow()

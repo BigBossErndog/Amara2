@@ -248,7 +248,8 @@ Nodes:define("ProjectWindow", "UIWindow", {
                     button.get.enabled = false
                     
                     local newWindow = self.parent:createChild("ProjectSettingsWindow", {
-                        projectPath = self.get.projectPath
+                        projectPath = self.get.projectPath,
+                        exampleProject = self.get.exampleProject
                     })
                     newWindow.func:openWindow()
                     
