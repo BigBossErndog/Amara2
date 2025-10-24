@@ -199,6 +199,11 @@ namespace Amara {
             }
             return Amara::Node::luaConfigure(key, val);
         }
+
+        void init() override {
+            Amara::Node::init();
+            if (!font) font = gameProps->assets->defaultFont;
+        }
         
         void updateText() {
             if (font) {

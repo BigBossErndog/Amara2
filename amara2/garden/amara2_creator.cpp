@@ -52,7 +52,8 @@ namespace Amara {
                 sol::lib::debug,
                 sol::lib::bit32,
                 sol::lib::utf8,
-                sol::lib::os
+                sol::lib::os,
+                sol::lib::coroutine
             );
 
             bind_lua();

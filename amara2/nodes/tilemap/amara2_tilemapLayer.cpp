@@ -36,27 +36,29 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            Amara::TextureContainer::configure(config);
-            
             if (json_has(config, "tileWidth")) tileWidth = config["tileWidth"];
             if (json_has(config, "tileHeight")) tileHeight = config["tileHeight"];
+
             if (json_has(config, "width")) mapWidth = json_extract(config, "width");
             if (json_has(config, "height")) mapHeight = json_extract(config, "height");
+            if (json_has(config, "w")) mapWidth = json_extract(config, "w");
+            if (json_has(config, "h")) mapHeight = json_extract(config, "h");
 
-            Amara::Tile tile;
-            tiles.resize(mapWidth * mapHeight, tile);
+            Amara::TextureContainer::configure(config);
+
+            update_tiles();
 
             if (json_has(config, "tiles")) {
                 nlohmann::json tileData = json_extract(config, "tiles");
                 if (tileData.is_array()) {
                     if (tileData.size() != mapWidth * mapHeight) {
-                        fatal_error("Error: Given tile data does not match given TilemapLayer width and height.");
+                        fatal_error("Error: Given tile data does not match given TilemapLayer width and height: ", width, ", ", height, ".");
                     }
                     else {
                         for (int i = 0; i < tileData.size(); ++i) {
                             if (tileData[i].is_number()) {
                                 setTile(
-                                    i % mapWidth, i / mapWidth, 
+                                    i % mapWidth, floor(i / mapWidth), 
                                     sol::make_object(gameProps->lua, tileData[i].get<int>())
                                 );
                             }
@@ -75,6 +77,18 @@ namespace Amara {
             update_canvas = true;
 
             return this;
+        }
+
+        void update_tiles() {
+            int new_size = mapWidth * mapHeight;
+            for (int i = tiles.size(); i < new_size; i++) {
+                Amara::Tile tile;
+
+                tile.pos.x = i % mapWidth;
+                tile.pos.y = floor(i / mapWidth);
+                
+                tiles.push_back(tile);
+            }
         }
 
         bool setTexture(std::string key) {
@@ -115,20 +129,28 @@ namespace Amara {
             anim.currentTileId = anim.frames[0].tileId;
         }
 
-        void setTile(int gx, int gy, sol::object sol_config) {
-            if (gx < 0 || gx >= mapWidth || gy < 0 || gy >= mapHeight) {
-                fatal_error("Error: (", gx, ", ", gy, ") is out of bounds of TilemapLayer.");
+        void setTile(int index, sol::object sol_config) {
+            if (index < 0 || index >= mapWidth * mapHeight) {
+                fatal_error("Error: index ", index, " is out of bounds of TilemapLayer of size ", mapWidth, ", ", mapHeight, ".");
                 return;
             }
             nlohmann::json config = lua_to_json(sol_config);
             
-            Amara::Tile& tile = tiles[gy * mapWidth + gx];
+            Amara::Tile& tile = tiles[index];
             
             if (config.is_number()) {
                 tile.tileID = config.get<int>() - 1;
             }
 
             drawOnce();
+        }
+
+        void setTile(int gx, int gy, sol::object sol_config) {
+            if (gx < 0 || gx >= mapWidth || gy < 0 || gy >= mapHeight) {
+                fatal_error("Error: (", gx, ", ", gy, ") is out of bounds of TilemapLayer of size ", mapWidth, ", ", mapHeight, ".");
+                return;
+            }
+            setTile(gy * mapWidth + gx, sol_config);
         }
 
         void processAnimations(double deltaTime) {
@@ -325,7 +347,10 @@ namespace Amara {
                 "partitionHeight", sol::property([](Amara::TilemapLayer& t) -> int { return t.partitionHeight; }, [](Amara::TilemapLayer& t, double value) { t.partitionHeight = floor(value); } ),
                 "texture", sol::property([](Amara::TilemapLayer& t) -> std::string { if (t.image) return t.image->key; else return ""; }, [](Amara::TilemapLayer& t, std::string key) { t.setTexture(key); }),
                 "setTexture", sol::resolve<bool(std::string)>(&TilemapLayer::setTexture),
-                "setTile", &TilemapLayer::setTile
+                "setTile", sol::overload(
+                    sol::resolve<void(int, sol::object)>(&TilemapLayer::setTile),
+                    sol::resolve<void(int, int, sol::object)>(&TilemapLayer::setTile)
+                )
             );
         }
     };

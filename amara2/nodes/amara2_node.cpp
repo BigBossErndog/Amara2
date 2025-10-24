@@ -1398,6 +1398,7 @@ namespace Amara {
         { "rect", true },
         { "view", true },
         { "pos", true },
-        { "animation", true }
+        { "animation", true },
+        { "tiles", true }
     };
 }

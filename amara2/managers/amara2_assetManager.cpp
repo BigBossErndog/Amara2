@@ -4,6 +4,7 @@ namespace Amara {
         Amara::GameProps* gameProps = nullptr;
 
         Amara::SinglePixelAsset* whitePixel = nullptr;
+        Amara::FontAsset* defaultFont = nullptr;
 
         std::unordered_map<std::string, Amara::Asset*> assets;
 
@@ -53,6 +54,18 @@ namespace Amara {
         void createTexture(std::string key, sol::table luaconfig);
         void updateTexture(std::string key, sol::table luaconfig);
 
+        void setDefaultFont(std::string key) {
+            if (has(key)) {
+                defaultFont = get(key)->as<Amara::FontAsset*>();
+                if (defaultFont == nullptr) {
+                    fatal_error("Error: Asset \"", key, "\" is not a valid font asset.");
+                }
+            }
+            else {
+                fatal_error("Error: Asset \"", key, "\" was not found.");
+            }
+        }
+
         void clear() {
             for (auto it = assets.begin(); it != assets.end(); it++) {
                 Amara::Asset* a = it->second;
@@ -67,7 +80,8 @@ namespace Amara {
                 "remove", &AssetManager::removeAsset,
                 "clear", &AssetManager::clear,
                 "createTexture", &AssetManager::createTexture,
-                "updateTexture", &AssetManager::updateTexture
+                "updateTexture", &AssetManager::updateTexture,
+                "setDefaultFont", &AssetManager::setDefaultFont
             );
         }
     };

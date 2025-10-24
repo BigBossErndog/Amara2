@@ -437,7 +437,14 @@ namespace Amara {
         }
 
         std::string getScriptPath(std::string path) {
-            std::filesystem::path filePath = getRelativePath(gameProps->lua_script_path) / (std::filesystem::path)path;
+            std::filesystem::path filePath;
+            if (String::endsWith(path, ".lua") || String::endsWith(path, ".luac")) {
+                filePath = getRelativePath(gameProps->lua_script_path) / (std::filesystem::path)removeFileExtension(path);
+            }
+            else {
+                filePath = getRelativePath(gameProps->lua_script_path) / (std::filesystem::path)path;
+            }
+
             if (!exists(filePath.string())) {
                 path = filePath.string() + ".luac";
                 if (exists(path)) return path;
@@ -1361,6 +1368,7 @@ namespace Amara {
                 "resetBasePath", &SystemManager::resetBasePath,
                 "getRelativePath", &SystemManager::getRelativePath,
                 "getScriptPath", &SystemManager::getScriptPath,
+                "getAssetPath", &SystemManager::getAssetPath,
                 "getFileName", sol::overload(
                     sol::resolve<std::string(std::string)>(&SystemManager::getFileName),
                     sol::resolve<std::string(std::string, bool)>(&SystemManager::getFileName)
