@@ -150,7 +150,7 @@ Nodes:define("TextField", "FillRect", {
 
                 if Keyboard:justPressed(Key.Enter) then
                     if self.func.onEnter then
-                        self.func:onEnter()
+                        self.func:onEnter(self.get.finalText)
                     end
                 end
             end

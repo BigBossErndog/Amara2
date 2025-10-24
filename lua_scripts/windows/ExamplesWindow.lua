@@ -100,33 +100,91 @@ Nodes:define("ExampleModule", "Group", {
 
 Nodes:define("ExamplesWindow", "PagedWindow", {
     width = 64*4 + 8,
-    height = 180,
+    height = 200,
 
     props = {
         currentPath = "files/examples"
     },
 
-    onCreate = function(self)
-        local dirs = System:getDirectoryContents(self.get.currentPath)
-        self.get.examples = {}
-        local projects = {}
+    onConfigure = function(self, config)
+        if config.allProjects then
+            self.get.allProjects = config.allProjects
+        end
+        if config.examples then
+            self.get.examples = config.examples
+        end
+    end,
+
+    getAllProjects = function(self, currentPath)
+        if not self.get.allProjects then
+            self.get.allProjects = {
+                directories = {},
+                projects = {}
+            }
+        end
+        if not currentPath then
+            currentPath = self.get.currentPath
+        end
+        
+        local dirs = System:getDirectoryContents(currentPath)
 
         for i, v in ipairs(dirs) do
             if System:isDirectory(v) and System:exists(System:join(v, "project.json")) then
-                table.insert(projects, v)
+                local projectData = System:readJSON(System:join(v, "project.json"))
+                
+                self.get.allProjects.projects[projectData["project-name"]] = v
             else
-                table.insert(self.get.examples, v)
+                self.get.allProjects.directories[System:getDirectoryName(v)] = v
+                self.func:getAllProjects(v)
             end
         end
-        for i, v in ipairs(projects) do
-            table.insert(self.get.examples, v)
+    end,
+
+    getExamplesContaining = function(self, str)
+        local examples = {}
+        for k, v in pairs(self.get.allProjects.directories) do
+            if string.find(k, str) then
+                table.insert(examples, v)
+            end
+        end
+        for k, v in pairs(self.get.allProjects.projects) do
+            if string.find(k, str) then
+                table.insert(examples, v)
+            end
+        end
+
+        return examples
+    end,
+
+    onCreate = function(self)
+        if not self.get.allProjects then
+            self.func:getAllProjects()
+        end
+
+        if not self.get.examples then
+            local dirs = System:getDirectoryContents(self.get.currentPath)
+            self.get.examples = {}
+            local projects = {}
+
+            for i, v in ipairs(dirs) do
+                if System:isDirectory(v) and System:exists(System:join(v, "project.json")) then
+                    table.insert(projects, v)
+                else
+                    table.insert(self.get.examples, v)
+                end
+            end
+            for i, v in ipairs(projects) do
+                table.insert(self.get.examples, v)
+            end
+        else
+            self.get.currentPath = self.get.examples
         end
 
         self.get.pageCount = math.ceil(#self.get.examples / 8)
 
         self.classes.PagedWindow.func:onCreate()
 
-        local title = self.get.content:createChild("Text", {
+        self.get.title = self.get.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
             text = Localize:get("title_exampleProjects"),
@@ -199,6 +257,31 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
                 { Key.RightAlt, Key.RightShift, Key.Minus }
             }
         })
+
+        self.get.nameField = self.get.content:createChild("TextField", {
+            x = 8, y = 27,
+            width = self.get.targetWidth - 16,
+            defaultText = Localize:get("label_searchExamples"),
+            onChange = function(textField, txt)
+                self.func:searchExamples(txt)
+            end,
+            onEnter = function(textField, txt)
+                self.func:searchExamples(txt)
+            end
+        })
+    end,
+
+    searchExamples = function(self, str)
+        local found = self.func:getExamplesContaining(str)
+        if #found > 0 then
+            self.get.examples = found
+            self.get.pageCount = math.ceil(#self.get.examples / 8)
+            self.func:setPage(1)
+        else
+            self.get.examples = {}
+            self.get.pageCount = 1
+            self.func:setPage(1)
+        end
     end,
 
     onCreatePage = function(self, pageIndex)
@@ -279,7 +362,7 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
                     openProject = openProject,
                     openFolder = openFolder,
                     x = (((i - 1) % 4) * 64) + 4,
-                    y = math.floor((i - startIndex) / 4) * 64 + 24
+                    y = math.floor((i - startIndex) / 4) * 64 + 48
                 })
             end
         end

@@ -16,6 +16,12 @@ namespace Amara {
         static bool contains(const std::string& str, const std::string& substr) {
             return str.find(substr) != std::string::npos;
         }
+        static bool contains(const std::string &str, const std::string& substr, bool caseSensitive) {
+            if (!caseSensitive) {
+                return String::contains(String::toLower(str), String::toLower(substr));
+            }
+            return contains(str, substr);
+        }
         
         static std::string trim(const std::string& str) {
             size_t first = str.find_first_not_of(' ');

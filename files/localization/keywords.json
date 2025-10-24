@@ -78,6 +78,7 @@
     "label_noProjectsFound": "No Projects Found.\nConsider trying some examples above.",
     "label_saveSettings": "Save Settings",
     "label_projectLocation": "Project Location",
+    "label_searchExamples": "Search Examples...",
 
     "label_downloadModule": "Download Module",
     "label_installVSBuildTools": "Install VS Build Tools",

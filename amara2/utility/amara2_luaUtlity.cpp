@@ -365,7 +365,10 @@ namespace Amara {
             }
             return String::endsWith(self.as<std::string>(), check.as<std::string>());
         });
-        string_metatable.set_function("contains", [](std::string self, std::string check) -> bool {
+        string_metatable.set_function("contains", [](std::string self, std::string check, sol::object caseSensitive) -> bool {
+            if (caseSensitive.is<bool>()) {
+                return String::contains(self, check, caseSensitive.as<bool>());
+            }
             return String::contains(self, check);
         });
         string_metatable.set_function("concat", &Amara::lua_string_concat);
@@ -377,7 +380,7 @@ namespace Amara {
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("round", [](sol::object num) -> int {
             if (!num.is<double>() && !num.is<int>()) {
-                fatal_error("Error: math.round() expected a number argument.");
+            fatal_error("Error: math.round() expected a number argument.");
             }
             return std::round(num.as<double>());
         });

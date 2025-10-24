@@ -1,3 +1,15 @@
-[string "index.lua"]:34: attempt to call a nil value (method 'moveTowards')
+[string "windows/ExamplesWindow.lua"]:275: attempt to get length of a nil value (field 'examples')
 stack traceback:
-	[string "index.lua"]:34: in function <[string "index.lua"]:30>
+	[string "windows/ExamplesWindow.lua"]:275: in function <[string "windows/ExamplesWindow.lua"]:273>
+	[C]: in method 'searchExamples'
+	[string "windows/ExamplesWindow.lua"]:265: in function <[string "windows/ExamplesWindow.lua"]:264>
+	[C]: in method 'onChange'
+	[string "ui/TextField.lua"]:76: in function <[string "ui/TextField.lua"]:71>
+stack traceback:
+	[C]: in method 'searchExamples'
+	[string "windows/ExamplesWindow.lua"]:265: in function <[string "windows/ExamplesWindow.lua"]:264>
+	[C]: in method 'onChange'
+	[string "ui/TextField.lua"]:76: in function <[string "ui/TextField.lua"]:71>
+stack traceback:
+	[C]: in method 'onChange'
+	[string "ui/TextField.lua"]:76: in function <[string "ui/TextField.lua"]:71>
