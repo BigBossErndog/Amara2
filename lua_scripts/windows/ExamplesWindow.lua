@@ -176,6 +176,8 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
             for i, v in ipairs(projects) do
                 table.insert(self.get.examples, v)
             end
+
+            self.get.fixedExamples = self.get.examples
         else
             self.get.currentPath = self.get.examples
         end
@@ -272,6 +274,12 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
     end,
 
     searchExamples = function(self, str)
+        if string.len(str) == 0 then
+            self.get.examples = self.get.fixedExamples
+            self.get.pageCount = math.ceil(#self.get.examples / 8)
+            self.func:setPage(1)
+            return
+        end
         local found = self.func:getExamplesContaining(str)
         if #found > 0 then
             self.get.examples = found
