@@ -3,7 +3,7 @@ A free and open-source 2D game engine with Lua scripting for people like me who 
 
 Built in C++ using SDL3, with exports to Windows and Web.
 
-*Note: Amara2 is currently available for Windows only. Sorry to my Mac homies, I can't afford a Mac :( I'll do a Mac port if I receive enough donations through my [ko-fi](https://ko-fi.com/ernestplacido).*
+*Note: Amara2 build is currently available for Windows. Sorry to my Mac homies, I don't have a Mac :( I'll do a Mac port if I receive enough donations through my [ko-fi](https://ko-fi.com/ernestplacido). For Linux, clone the repo and run the build.sh shell script.*
 
 [Click here for the latest release.](https://github.com/BigBossErndog/Amara2/releases)
 
@@ -13,6 +13,7 @@ Built in C++ using SDL3, with exports to Windows and Web.
 - Setting up a new project and running a test is easy as heck.
 - Game architecture inspired by my favorite elements of the Phaser framework, DragonRuby and the Godot Engine.
 - Minimal GUI. Rather than being an all-in-one engine, the goal is to integrate and seamlessly tie all your commonly used game dev tools together.
+- Code and asset encryption, protect your content or go without to support modding.
 - A charming pixel-art aesthetic inspired by popular indie developer tools such as Aseprite.
 - Built using SDL3, so a porting company should be able to port to any of the multitude of  platforms SDL3 supports with ease.
 
