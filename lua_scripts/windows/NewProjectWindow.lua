@@ -7,7 +7,7 @@ Nodes:define("NewProjectWindow", "UIWindow", {
 
         local settings = self.world.func:getSettings()
 
-        self.get.folderPath = System:getRelativePath("projects")
+        self.get.folderPath = System:join(System:getUserArea(), "Amara2 Projects")
         self.get.projectPath = ""
 
         if settings.projects and #settings.projects > 0 then
