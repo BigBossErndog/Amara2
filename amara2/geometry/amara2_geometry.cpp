@@ -43,7 +43,10 @@ namespace Amara {
     }
 
     float angleDifference(float angle1, float angle2) {
-        
+        float diff = angle1 - angle2;
+        while (diff < -M_PI) diff += 2.0f * M_PI;
+        while (diff > M_PI) diff -= 2.0f * M_PI;
+        return diff;
     }
 
     Vector2 rotateAroundAnchor(const Vector2& v1, const Vector2& v2, float rotation) {
@@ -481,6 +484,31 @@ namespace Amara {
         math_metatable.set_function("centerOf", [](sol::object v) {
             Rectangle rect = v;
             return Amara::centerOf(rect);
+        });
+        math_metatable.set_function("closestEquivalentAngle", &Amara::closestEquivalentAngle);
+        math_metatable.set_function("angleDifference", &Amara::angleDifference);
+        
+        math_metatable.set_function("offsetX", [](int dir) -> double {
+            switch ((Amara::Direction)dir) {
+                case Amara::Direction::Left: return -1;
+                case Amara::Direction::Right: return 1;
+                case Amara::Direction::UpLeft: return -0.7071;
+                case Amara::Direction::UpRight: return 0.7071;
+                case Amara::Direction::DownLeft: return -0.7071;
+                case Amara::Direction::DownRight: return 0.7071;
+            };
+            return 0;
+        });
+        math_metatable.set_function("offsetY", [](int dir) -> double {
+            switch ((Amara::Direction)dir) {
+                case Amara::Direction::Up: return -1;
+                case Amara::Direction::Down: return 1;
+                case Amara::Direction::UpLeft: return -0.7071;
+                case Amara::Direction::UpRight: return -0.7071;
+                case Amara::Direction::DownLeft: return 0.7071;
+                case Amara::Direction::DownRight: return 0.7071;
+            };
+            return 0;
         });
 
         lua.new_enum("Position",

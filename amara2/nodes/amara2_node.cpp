@@ -498,6 +498,11 @@ namespace Amara {
         virtual void draw(const Rectangle& v) {
             if (destroyed) return;
             update_properties();
+
+            if (funcs.hasFunction("preDraw")) {
+                funcs.callFunction("preDraw", v);
+            }
+
             drawObjects(v);
         }
         virtual void drawObjects(const Rectangle& v) {

@@ -155,7 +155,7 @@ namespace Amara {
                 input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nullptr);
             }
 
-            if (image->texture && gameProps->renderer) {
+            if (gameProps->renderer) {
                 int adaptive = (int)std::ceil(std::max(destRect.w * 0.5f, destRect.h * 0.5f) / 6.0f);
                 int segments = std::min(128, std::max(12, baseSegments + adaptive));
 
@@ -164,11 +164,6 @@ namespace Amara {
                 float pixelRadiusX = destRect.w * 0.5f;
                 float pixelRadiusY = destRect.h * 0.5f;
 
-                float uvCenterX = (srcRect.x + srcRect.w * 0.5f) / (float)textureWidth;
-                float uvCenterY = (srcRect.y + srcRect.h * 0.5f) / (float)textureHeight;
-                float uvRadiusX = (srcRect.w * 0.5f) / (float)textureWidth;
-                float uvRadiusY = (srcRect.h * 0.5f) / (float)textureHeight;
-
                 float rot = passOn.rotation + rotation;
                 float cosr = cosf(rot);
                 float sinr = sinf(rot);
@@ -176,16 +171,12 @@ namespace Amara {
                 verts.resize((size_t)segments + 2);
                 indices.resize((size_t)segments * 3);
 
+                Uint8 finalA = (Uint8)std::round((float)tint.a * passOn.alpha * alpha);
+
                 SDL_Vertex centerVert;
                 centerVert.position.x = centerX;
                 centerVert.position.y = centerY;
-                centerVert.tex_coord.x = uvCenterX;
-                centerVert.tex_coord.y = uvCenterY;
-                Uint8 finalA = (Uint8)std::round((float)tint.a * passOn.alpha * alpha);
-                centerVert.color.r = tint.r;
-                centerVert.color.g = tint.g;
-                centerVert.color.b = tint.b;
-                centerVert.color.a = finalA;
+                centerVert.color = { (float)tint.r/255.0f, (float)tint.g/255.0f, (float)tint.b/255.0f, (float)finalA/255.0f };
                 verts[0] = centerVert;
 
                 for (int i = 0; i <= segments; ++i) {
@@ -203,12 +194,7 @@ namespace Amara {
                     SDL_Vertex vtx;
                     vtx.position.x = centerX + rx;
                     vtx.position.y = centerY + ry;
-                    vtx.tex_coord.x = uvCenterX + cx * uvRadiusX;
-                    vtx.tex_coord.y = uvCenterY + sy * uvRadiusY;
-                    vtx.color.r = tint.r;
-                    vtx.color.g = tint.g;
-                    vtx.color.b = tint.b;
-                    vtx.color.a = finalA;
+                    vtx.color = { (float)tint.r/255.0f, (float)tint.g/255.0f, (float)tint.b/255.0f, (float)finalA/255.0f };
                     verts[i + 1] = vtx;
                 }
 
@@ -221,14 +207,12 @@ namespace Amara {
                     index += 3;
                 }
 
-                // Apply blend and scale mode similar to Sprite path
-                SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
-                Apply_SDL_BlendMode(gameProps, image->texture, blendMode);
+                SDL_SetRenderDrawBlendMode(gameProps->renderer, SDL_BLENDMODE_BLEND);
 
                 // Render geometry
                 SDL_RenderGeometry(
                     gameProps->renderer,
-                    image->texture,
+                    NULL,
                     verts.data(), (int)verts.size(),
                     indices.data(), (int)indices.size()
                 );

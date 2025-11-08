@@ -29,6 +29,7 @@ Creator:createWorld({
 
     onUpdate = function(self, deltaTime)
         -- You can "pointTowards" any Node, Pointer or Vector2 coordinate.
+        --  self.get.arrow:pointTowards({ 8, 8 }) will point towards { 8, 8 }
         self.get.arrow:pointTowards(self.input.pointer)
         
         if math.distanceBetween(self.get.arrow.pos, self.input.pointer) > 4 then
