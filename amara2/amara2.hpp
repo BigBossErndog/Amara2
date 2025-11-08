@@ -246,6 +246,7 @@
 
     #ifdef AMARA_OPENGL
     #include "nodes/amara2_shaderContainer.cpp"
+    #include "nodes/amara2_shaderLayer.cpp"
     #endif
     
     #include "nodes/tilemap/amara2_tilemapLayer.cpp"

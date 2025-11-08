@@ -261,6 +261,7 @@ namespace Amara {
             registerNode<Amara::TextureContainer>("TextureContainer");
             #ifdef AMARA_OPENGL
             registerNode<Amara::ShaderContainer>("ShaderContainer");
+            registerNode<Amara::ShaderLayer>("ShaderLayer");
             #endif
             
             registerNode<Amara::TilemapLayer>("TilemapLayer");
@@ -331,6 +332,7 @@ namespace Amara {
             Amara::TextureContainer::bind_lua(lua);
             #ifdef AMARA_OPENGL
             Amara::ShaderContainer::bind_lua(lua);
+            Amara::ShaderLayer::bind_lua(lua);
             #endif
             
             Amara::TilemapLayer::bind_lua(lua);

@@ -206,7 +206,7 @@ namespace Amara {
             if (json_has(config, "x")) pos.x = config["x"];
             if (json_has(config, "y")) pos.y = config["y"];
             if (json_has(config, "z")) pos.z = config["z"];
-
+            
             if (json_has(config, "scaleX")) scale.x = config["scaleX"];
             if (json_has(config, "scaleY")) scale.y = config["scaleY"];
             if (json_has(config, "scale")) scale = config["scale"];
@@ -226,6 +226,9 @@ namespace Amara {
             if (json_has(config, "visible")) visible = config["visible"];
 
             if (json_has(config, "fixedToCamera")) fixedToCamera = config["fixedToCamera"];
+            if (json_has(config, "cameraFollowOffset")) cameraFollowOffset = config["cameraFollowOffset"];
+            if (json_has(config, "cameraFollowOffsetX")) cameraFollowOffset.x = config["cameraFollowOffsetX"];
+            if (json_has(config, "cameraFollowOffsetY")) cameraFollowOffset.y = config["cameraFollowOffsetY"];
 
             if (json_has(config, "sortable")) sortable = config["sortable"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
