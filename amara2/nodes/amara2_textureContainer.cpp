@@ -422,6 +422,7 @@ namespace Amara {
             new_props.insideTextureContainer = true;
 
             gameProps->passOn = new_props;
+            passOn = gameProps->passOn;
 
             Amara::Node* child;
 			for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
@@ -440,10 +441,12 @@ namespace Amara {
 				child->draw(v);
 
                 gameProps->passOn = new_props;
+                passOn = gameProps->passOn;
 				++it;
 			}
 
             gameProps->passOn = rec_props;
+            passOn = rec_props;
         }
 
         virtual void destroy() override {

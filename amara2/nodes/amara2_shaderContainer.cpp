@@ -14,19 +14,6 @@ namespace Amara {
 
         std::vector<Amara::ShaderProgram*> shader_passes;
 
-        void swapCanvases() {
-            canvas_flip = !canvas_flip;
-            if (gameProps->graphics == GraphicsEnum::Render2D) {
-                canvasTexture = (canvas_flip) ? canvases[1] : canvases[0];
-            }
-            #ifdef AMARA_OPENGL
-            else if (gameProps->graphics == GraphicsEnum::OpenGL) {
-                glBufferID = (canvas_flip) ? glBuffers[1] : glBuffers[0];
-                glCanvasID = (canvas_flip) ? glCanvases[1] : glCanvases[0];
-            }
-            #endif
-        }
-
         ShaderContainer(): Amara::TextureContainer() {
             set_base_node_id("ShaderContainer");
         }
@@ -151,7 +138,7 @@ namespace Amara {
                 Quad destQuad = glTranslateQuad(
                     container_viewport,
                     Quad(container_viewport),
-                    passOn.insideTextureContainer
+                    true
                 );
 
                 vertices = {
@@ -199,11 +186,24 @@ namespace Amara {
             }
         }
 
+        void swapCanvases() {
+            canvas_flip = !canvas_flip;
+            if (gameProps->graphics == GraphicsEnum::Render2D) {
+                canvasTexture = (canvas_flip) ? canvases[1] : canvases[0];
+            }
+            #ifdef AMARA_OPENGL
+            else if (gameProps->graphics == GraphicsEnum::OpenGL) {
+                glBufferID = (canvas_flip) ? glBuffers[1] : glBuffers[0];
+                glCanvasID = (canvas_flip) ? glCanvases[1] : glCanvases[0];
+            }
+            #endif
+        }
+
         void drawCanvas(const Rectangle& v) {
             canvas_flip = true;
 
             SDL_Rect prevSDLViewport;
-
+            
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = canvases[0];
                 SDL_SetTextureBlendMode(canvases[0], SDL_BLENDMODE_NONE);
@@ -230,16 +230,28 @@ namespace Amara {
             PassOnProps new_props;
             new_props.insideTextureContainer = true;
 
+            #ifdef AMARA_OPENGL
             for (int i = 0; i < repeats; i++) {
                 for (Amara::ShaderProgram* prog: shader_passes) {
                     swapCanvases();
                     gameProps->passOn = new_props;
+                    passOn = gameProps->passOn;
                     currentShaderProgram = prog;
                     drawPass();
                 }
             }
+            
+            if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
+                if ((repeats * shader_passes.size()) % 2 != 0) {
+                    swapCanvases();
+                    currentShaderProgram = gameProps->defaultShaderProgram;
+                    drawPass();
+                }
+            }
+            #endif
 
             gameProps->passOn = originalPassOnProps;
+            passOn = gameProps->passOn;
 
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 canvasTexture = (canvas_flip) ? canvases[0] : canvases[1];
