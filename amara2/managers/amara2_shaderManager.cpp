@@ -357,5 +357,9 @@ namespace Amara {
             setUniform(it.key(), it.value());
         }
     }
+
+    Amara::ShaderProgram* AssetManager::getShaderProgram(std::string key) {
+        return gameProps->shaders->getShaderProgram(key);
+    }
     #endif
 }

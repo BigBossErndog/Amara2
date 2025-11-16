@@ -54,7 +54,7 @@ Creator:createWorld({
         world:restoreWindow()
 
         world.load:shaderProgram("boxBlur", {
-            vertex = "defaultVert",
+            vertex = "defaultVertex",
             fragment = "shaders/boxBlur.frag"
         })
         

@@ -73,6 +73,8 @@ namespace Amara {
             }
             assets.clear();
         }
+
+        ShaderProgram* getShaderProgram(std::string key);
         
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<AssetManager>("AssetManager",
@@ -81,7 +83,8 @@ namespace Amara {
                 "clear", &AssetManager::clear,
                 "createTexture", &AssetManager::createTexture,
                 "updateTexture", &AssetManager::updateTexture,
-                "setDefaultFont", &AssetManager::setDefaultFont
+                "setDefaultFont", &AssetManager::setDefaultFont,
+                "getShaderProgram", &AssetManager::getShaderProgram
             );
         }
     };

@@ -963,11 +963,11 @@ namespace Amara {
 
         #ifdef AMARA_OPENGL
         void prepareGLShaders() {
-            gameProps->shaders->compileGLShader("defaultVert", defaultVertexShader, ShaderTypeEnum::Vertex);
-            gameProps->shaders->compileGLShader("defaultFrag", defaultFragmentShader, ShaderTypeEnum::Fragment);
+            gameProps->shaders->compileGLShader("defaultVertex", defaultVertexShader, ShaderTypeEnum::Vertex);
+            gameProps->shaders->compileGLShader("defaultFragment", defaultFragmentShader, ShaderTypeEnum::Fragment);
             gameProps->shaders->createShaderProgram("default", {
-                { "vertex", "defaultVert" },
-                { "fragment", "defaultFrag" }
+                { "vertex", "defaultVertex" },
+                { "fragment", "defaultFragment" }
             });
         }
         #endif

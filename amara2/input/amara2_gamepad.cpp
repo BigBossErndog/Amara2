@@ -65,7 +65,7 @@ namespace Amara {
         std::unordered_map<Amara::GamepadButton, Button> buttons;
 
         bool buttonPressed = false;
-
+        
         Vector2 leftStick;
         Vector2 rightStick;
 
