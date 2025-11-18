@@ -21,12 +21,14 @@ namespace Amara {
         virtual void init() override {
             Amara::Sprite::init();
 
-            image = gameProps->assets->whitePixel;
-            textureWidth = image->width;
-            textureHeight = image->height;
+            if (!image) {
+                image = gameProps->assets->whitePixel;
+                textureWidth = image->width;
+                textureHeight = image->height;
 
-            setWidth(rectWidth);
-            setHeight(rectHeight);
+                setWidth(rectWidth);
+                setHeight(rectHeight);
+            }
         }
 
         virtual void drawChildren(const Rectangle& v) override {

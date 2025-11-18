@@ -1,4 +1,4 @@
-Nodes:load("Slider")
+Nodes:load("Slider") -- Loads the Slider.lua file.
 
 Creator:createWorld({
     window = {

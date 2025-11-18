@@ -1,4 +1,6 @@
-Nodes:load("Slider")
+-- This example shows you usage of a shader together with a uniform variable you can manipulate.
+
+Nodes:load("Slider") -- Loads the Slider.lua file.
 
 Creator:createWorld({
     window = {
@@ -24,14 +26,21 @@ Creator:createWorld({
         -- A shader program must at least have a vertex and fragment shader.
         -- Other shader types such as geometry shaders are optional.
         self.load:shaderProgram("boxBlur", {
-            vertex = "defaultVertex",
-            fragment = "shaders/boxBlur.frag",
+            vertex = "defaultVertex", -- Using the default vertex shader provided by the engine.
+
+            -- 'defaultFragment' also exists.
+
+            fragment = "shaders/boxBlur.frag", -- Loads the boxBlur.frag asset file. This is an OpenGL fragment shader.
+
+            -- Box blur is a simple blur effect that averages the colors of neighboring pixels.
+            -- More complicated blur effects exist, such as Gaussian blur.
 
             blurRadius = 5.0 -- Unrecognized key words are treated as uniform variables in the shader.
         })
     end,
 
     onCreate = function(self)
+        -- Using a Container to crop the image to the left of the screen.
         self.get.leftContainer = self:createChild("Container", {
             origin = 0,
             x = self.world.view.left,
@@ -40,21 +49,25 @@ Creator:createWorld({
             height = self.world.view.height
         })
 
+        -- The image we will be blurring.
         self.get.starryNight = self.get.leftContainer:createChild("Sprite", {
             texture = "starryNight",
             x = self.get.leftContainer.right
         })
 
+        -- A ShaderContainer will apply a given shader on its contents.
         self.get.rightContainer = self:createChild("ShaderContainer", {
             origin = 0,
             x = 0,
             y = self.world.view.top,
             width = self.world.view.width/2,
             height = self.world.view.height,
-            shaderPass = "boxBlur"
+            shaderPass = "boxBlur",
+            -- shaderPasses = { "boxBlur", "sepia", "wavy" } -- Multiple shader passes can be applied in sequence.
         })
 
-        -- Using a copy node to render a duplicate of the starry night sprite
+        -- Using a copy node to render a duplicate of the starry night sprite.
+        -- Added to the ShaderContainer as a child.
         self.get.starryNightCopy = self.get.rightContainer:createChild("CopyNode", {
             target = self.get.starryNight,
             x = -self.get.leftContainer.width/2 - self.get.rightContainer.width/2

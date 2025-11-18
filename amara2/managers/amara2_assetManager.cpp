@@ -17,7 +17,7 @@ namespace Amara {
 
             whitePixel = new Amara::SinglePixelAsset(gameProps);
             add("whitePixel", whitePixel);
-
+            
             luaobject = sol::make_object(gameProps->lua, this);
         }
         

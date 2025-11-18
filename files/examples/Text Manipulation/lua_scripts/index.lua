@@ -20,14 +20,14 @@ Creator:createWorld({
         Assets:setDefaultFont("defaultFont")
 
         self:createChild("Text", {
-            text = "This text is ${red}red${end}.",
+            text = "This text is ${red}red${end}.", -- Using a color tag does not require a custom manipulator.
             y = -32
         })
 
         self:createChild("Text", {
             text = "This text is ${wavy}wavy${wavy}.",
-            manipulators = {
-                wavy = function(index, time, char)
+            manipulators = { -- the 'manipulators' table is used to define all your manipulator functions.
+                wavy = function(index, time, char) -- manipulator with key 'wavy'
                     return {
                         offsetY = math.sin(time * 5 + index * 0.8) * 0.8
                     }

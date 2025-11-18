@@ -274,7 +274,42 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<ShaderContainer>("ShaderContainer",
                 sol::base_classes, sol::bases<Amara::TextureContainer, Amara::Node>(),
-                "repeats", &ShaderContainer::repeats
+                "repeats", &ShaderContainer::repeats,
+                "shaderPasses", sol::property(
+                    [](Amara::ShaderContainer& sc) -> sol::table {
+                        if (sc.shader_passes.size() == 0) return sol::nil;
+                        
+                        sol::state_view lua = sc.gameProps->lua;
+                        sol::table t = lua.create_table();
+                        int index = 1;
+                        for (Amara::ShaderProgram* prog: sc.shader_passes) {
+                            t[index] = prog->key;
+                            index += 1;
+                        }
+                        return t;
+                    },
+                    [](Amara::ShaderContainer& sc, sol::object val) {
+                        sc.luaAddShaderPass(val);
+                    }
+                ),
+                "shaderPass", sol::overload(
+                    [](Amara::ShaderContainer& sc) -> sol::object {
+                        if (sc.shader_passes.size() == 0) return sol::nil;
+                        if (sc.shader_passes.size() == 1) return sol::make_object(sc.gameProps->lua, sc.shader_passes[0]);
+                        
+                        sol::state_view lua = sc.gameProps->lua;
+                        sol::table t = lua.create_table();
+                        int index = 1;
+                        for (Amara::ShaderProgram* prog: sc.shader_passes) {
+                            t[index] = prog->key;
+                            index += 1;
+                        }
+                        return t;
+                    },
+                    [](Amara::ShaderContainer& sc, sol::object val) {
+                        sc.luaAddShaderPass(val);
+                    }
+                )
             );
         }
     };

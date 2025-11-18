@@ -209,7 +209,7 @@ namespace Amara {
             }
             return sol::lua_nil;
         }
-
+        
         template <typename T>
         void registerNode(std::string key) {
             factory[key] = []() -> T* { return new T(); };
@@ -262,6 +262,7 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             registerNode<Amara::ShaderContainer>("ShaderContainer");
             registerNode<Amara::ShaderLayer>("ShaderLayer");
+            registerNode<Amara::ShaderCamera>("ShaderCamera");
             #endif
             
             registerNode<Amara::TilemapLayer>("TilemapLayer");
@@ -333,6 +334,7 @@ namespace Amara {
             #ifdef AMARA_OPENGL
             Amara::ShaderContainer::bind_lua(lua);
             Amara::ShaderLayer::bind_lua(lua);
+            Amara::ShaderCamera::bind_lua(lua);
             #endif
             
             Amara::TilemapLayer::bind_lua(lua);

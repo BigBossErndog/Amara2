@@ -1,5 +1,3 @@
--- Welcome to your new world
-
 Creator:createWorld({
     window = {
         width = 640,
@@ -10,6 +8,8 @@ Creator:createWorld({
         backgroundColor = "#294d6a",
 
         screenMode = ScreenMode.Windowed,
+
+        -- graphics = Graphics.OpenGL, -- If you have heavy use of particles, using OpenGL rendering may improve performance.
         
         title = "Particles"
     },

@@ -317,7 +317,7 @@ namespace Amara {
         in vec2 texCoord;
         in float fragAlpha;
         in vec4 fragTint;
-
+        
         uniform sampler2D _texture;
 
         out vec4 fragColor;

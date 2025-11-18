@@ -230,6 +230,7 @@ namespace Amara {
                 if (time_location != -1) {
                     glUniform1f(time_location, (float)gameProps->worldLifetime);
                 }
+                
                 switch (blendMode) {
                     case BlendMode::Alpha:
                         glEnable(GL_BLEND);

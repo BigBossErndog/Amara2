@@ -71,18 +71,18 @@ namespace Amara {
             if (json_has(config, "lerpX")) lerp.x = config["lerpX"];
             if (json_has(config, "lerpY")) lerp.y = config["lerpY"];
             if (json_has(config, "lerp")) lerp = config["lerp"];
-
+            
             if (json_has(config, "width")) setWidth(config["width"]);
             else if (json_has(config, "w")) setWidth(config["w"]);
-
+            
             if (json_has(config, "height")) setHeight(config["height"]);
             else if (json_has(config, "h")) setHeight(config["h"]);
-
+            
             if (json_has(config, "size")) {
                 setSize(config["size"]);
             }
             if (json_has(config, "bounds")) setBounds(config["bounds"]);
-
+            
             update_bounds();
 
             return this;
@@ -261,11 +261,13 @@ namespace Amara {
         sol::object setWidth(double _w) {
             sizeTethered = false;
             width = _w;
+            return get_lua_object();
         }
 
         sol::object setHeight(double _h) {
             sizeTethered = false;
             height = _h;
+            return get_lua_object();
         }
 
         virtual void pass_on_properties() override {
