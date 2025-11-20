@@ -87,6 +87,7 @@ namespace Amara {
         Amara::Camera* setMainCamera(Amara::Camera* cam, bool destroyExisting) {
             if (destroyExisting && camera != nullptr && camera != cam) camera->destroy();
             camera = cam;
+            camera->switchParent(this);
             return cam;
         }
         Amara::Camera* setMainCamera(Amara::Camera* cam) {
@@ -104,15 +105,15 @@ namespace Amara {
                 if (scene) node->scene = scene;
                 node->parent = this;
                 cameras.push_back(cam);
-
+                
                 if (!node->actuated) {
                     node->preload();
                     if (!node->destroyed && node->finishedLoading()) {
                         node->create();
                         node->actuated = true;
                     }
-                    return node;
                 }
+                return node;
             }
             return Amara::Node::addChild(node);
         }
