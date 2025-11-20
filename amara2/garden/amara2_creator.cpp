@@ -166,8 +166,8 @@ namespace Amara {
             
             new_world->preload();
             if (!new_world->destroyed && new_world->finishedLoading()) {
-                new_world->create();
                 new_world->actuated = true;
+                new_world->create();
             }
 
             return new_world;

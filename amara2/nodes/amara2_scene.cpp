@@ -109,8 +109,8 @@ namespace Amara {
                 if (!node->actuated) {
                     node->preload();
                     if (!node->destroyed && node->finishedLoading()) {
-                        node->create();
                         node->actuated = true;
+                        node->create();
                     }
                 }
                 return node;

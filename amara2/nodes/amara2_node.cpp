@@ -425,8 +425,8 @@ namespace Amara {
             
             if (!actuated) {
                 if (!destroyed && finishedLoading()) {
-                    create();
                     actuated = true;
+                    create();
                 }
             }
             if (destroyed) return;
@@ -592,8 +592,8 @@ namespace Amara {
             if (!node->actuated) {
                 node->preload();
                 if (!node->destroyed && node->finishedLoading()) {
-                    node->create();
                     node->actuated = true;
+                    node->create();
                 }
             }
             
