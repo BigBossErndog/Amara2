@@ -29,6 +29,8 @@ namespace Amara {
 
         std::unordered_map<int, TMXAnimation> tmxAnimations;
 
+        std::unordered_map<int, Amara::Shape> tile_shapes;
+
         TilemapLayer(): Amara::TextureContainer() {
             set_base_node_id("TilemapLayer");
             tmxAnimations.clear();
@@ -285,6 +287,28 @@ namespace Amara {
             return rotateQuad(Quad(rect), pos, rotation);
         }
 
+        Shape getTileShape(int gx, int gy) {
+            int tileID = getTileID(gx, gy);
+            if (tileID == -1) return Vector2(0, 0);
+            
+            if (tile_shapes.find(tileID) != tile_shapes.end()) {
+                return tile_shapes[tileID].move(Vector2(pos.x + gx * tileWidth, pos.y + gy * tileHeight));
+            }
+            return getTileQuad(gx, gy);
+        }
+
+        void setTileShape(int tileID, sol::object _obj) {
+            if (tileID == -1) return;
+
+            if (_obj.is<sol::nil_t>()) {
+                tile_shapes.erase(tileID);
+                return;
+            }
+
+            Shape shape = _obj;
+            tile_shapes[tileID] = shape;
+        }
+
         Quad getPartitionQuad(int j, int k) {
             Rectangle rect = { 
                 pos.x + j * partitionWidth*tileWidth - widthInPixels*scale.x*origin.x,
@@ -318,7 +342,8 @@ namespace Amara {
                                 int tileID = getTileID(x, y);
                                 if (tileID == -1) continue;
                                 
-                                Quad tile = getTileQuad(x, y);
+                                Shape tile = getTileShape(x, y);
+                                
                                 if (other.collidesWith(tile)) {
                                     return true;
                                 }
@@ -350,7 +375,9 @@ namespace Amara {
                 "setTile", sol::overload(
                     sol::resolve<void(int, sol::object)>(&TilemapLayer::setTile),
                     sol::resolve<void(int, int, sol::object)>(&TilemapLayer::setTile)
-                )
+                ),
+                "getTileAt", &TilemapLayer::getTileID,
+                "setTileShape", sol::resolve<void(int, sol::object)>(&TilemapLayer::setTileShape)
             );
         }
     };

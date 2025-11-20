@@ -295,12 +295,12 @@ namespace Amara {
 
             leftTrigger = (double)SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) / (double)SDL_JOYSTICK_AXIS_MAX;
             
-            if (leftTrigger < -leftTriggerDeadzone) press(Amara::GamepadButton::LeftTrigger);
+            if (leftTrigger > leftTriggerDeadzone) press(Amara::GamepadButton::LeftTrigger);
             else release(Amara::GamepadButton::LeftTrigger);
 
             rightTrigger = (double)SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) / (double)SDL_JOYSTICK_AXIS_MAX;
             
-            if (rightTrigger < -rightTriggerDeadzone) press(Amara::GamepadButton::RightTrigger);
+            if (rightTrigger > rightTriggerDeadzone) press(Amara::GamepadButton::RightTrigger);
             else release(Amara::GamepadButton::RightTrigger);
 
             for (auto it = buttons.begin(); it != buttons.end(); it++) {

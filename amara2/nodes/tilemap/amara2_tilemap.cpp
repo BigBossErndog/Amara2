@@ -29,10 +29,12 @@ namespace Amara {
 
         std::vector<unsigned int> fillMap;
 
+        std::unordered_map<int, Amara::Shape> tile_shapes;
+
         Tilemap(): Amara::Group() {
             set_base_node_id("Tilemap");
         }
-
+        
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Group::configure(config);
 
@@ -50,13 +52,24 @@ namespace Amara {
                 if (String::equal(key, "objects")) createObjects(val.as<sol::protected_function>());
                 else if (String::equal(key, "createObjects")) createObjects(val.as<sol::protected_function>());
             }
+            if (String::equal(key, "tileShapes")) {
+                if (val.is<sol::table>()) {
+                    sol::table tbl = val.as<sol::table>();
+                    for (auto& kv : tbl) {
+                        int key = kv.first.as<int>();
+                        Shape shape = kv.second;
+
+                        tile_shapes[key] = shape;
+                    }
+                }
+            }
 
             return Amara::Group::luaConfigure(key, val);
         }
 
         bool setTexture(std::string key) {
             image = nullptr;
-
+            
             if (!gameProps->assets->has(key)) {
                 fatal_error("Error: Asset \"", key, "\" was not found.");
                 return false;
@@ -203,6 +216,8 @@ namespace Amara {
                 for (int layerIndex = 0; layerIndex < tmxAsset->layers.size(); ++layerIndex) {
                     const Amara::TMXTileLayer& layer = tmxAsset->layers[layerIndex];
                     Amara::TilemapLayer* layerNode = createChild("TilemapLayer")->as<Amara::TilemapLayer*>();
+
+                    layerNode->tile_shapes = tile_shapes;
                     
                     layerNode->setTexture(image);
                     layerNode->id = layer.name;
@@ -218,6 +233,11 @@ namespace Amara {
                     layerNode->partitionWidth = partitionWidth;
                     layerNode->partitionHeight = partitionHeight;
                     layerNode->origin = origin;
+
+                    for (auto it = layer.properties.begin(); it != layer.properties.end(); ++it) {
+                        TMXProperty prop = it->second;
+                        layerNode->props[prop.name] = json_to_lua(gameProps->lua, nlohmann::json::parse(prop.value));
+                    }
                     
                     for (unsigned int ty = 0; ty < layer.height; ++ty) {
                         for (unsigned int tx = 0; tx < layer.width; ++tx) {
@@ -280,6 +300,10 @@ namespace Amara {
                             
                             layerNode->tiles.push_back(tile);
                         }
+                    }
+
+                    if (funcs.hasFunction("onCreateLayer")) {
+                        funcs.callFunction("onCreateLayer", layerNode->get_lua_object());
                     }
                 }
 

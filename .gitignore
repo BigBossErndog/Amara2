@@ -8,4 +8,5 @@
 /files/settings.json
 /files/sandbox
 .vscode/
+.VSCodeCounter/
 error_log.txt

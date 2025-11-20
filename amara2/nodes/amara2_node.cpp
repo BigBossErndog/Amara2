@@ -684,6 +684,14 @@ namespace Amara {
             other->addChild(this);
         }
 
+        void moveChildren(Amara::Node* other) {
+            if (destroyed || other == this || other->destroyed) return;
+
+            for (Amara::Node* child: children) {
+                child->switchParent(other);
+            }
+        }
+
         virtual void destroy() {
             if (destroyed) return;
             update_properties();
@@ -988,6 +996,7 @@ namespace Amara {
                 "bringToFront", &Node::bringToFront,
                 "sendToBack", &Node::sendToBack,
                 "switchParent", &Node::switchParent,
+                "moveChildren", &Node::moveChildren,
                 #ifdef AMARA_OPENGL
                 "shaderProgram", sol::property([&](Node& e) { return e.shaderProgram; }, &Amara::Node::setShaderProgram),
                 "setShaderProgram", &Node::setShaderProgram,

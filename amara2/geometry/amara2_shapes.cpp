@@ -479,7 +479,7 @@ namespace Amara {
             return std::get<T>(shape);
         }
 
-        Shape move(const Vector2 v) {
+        Shape move(const Vector2& v) {
             if (is<Rectangle>()) {
                 Rectangle r = as<Rectangle>();
                 r.x += v.x;
@@ -619,6 +619,9 @@ namespace Amara {
             }
             else if (config.is_object()) {
                 if (json_has(config, "x", "y", "w", "h")) {
+                    shape = Rectangle(config);
+                }
+                else if (json_has(config, "x", "y", "width", "height")) {
                     shape = Rectangle(config);
                 }
                 else if (json_has(config, "x", "y", "z")) {
