@@ -568,7 +568,7 @@ namespace Amara {
 
         static bool collision(const Rectangle& rect, const Quad& quad);
         static bool collision(const Rectangle& rect, const Circle& circle);
-        // static bool collision(const Rectangle& rect, const Triangle& triangle);
+        static bool collision(const Rectangle& rect, const Triangle& triangle);
 
         static bool collision(const Quad& q, const Circle& r);
         static bool collision(const Quad& q, const Triangle& t);
@@ -583,6 +583,31 @@ namespace Amara {
         }
         static bool collision(const std::vector<Shape>& list, const Shape& s2) {
             return collision(s2, list);
+        }
+
+        Vector2 getCenter() {
+            if (is<Rectangle>()) {
+                return as<Rectangle>().getCenter();
+            }
+            else if (is<Quad>()) {
+                return as<Quad>().p1 + as<Quad>().p2 + as<Quad>().p3 + as<Quad>().p4 / 4;
+            }
+            else if (is<Circle>()) {
+                return as<Circle>();
+            }
+            else if (is<Triangle>()) {
+                return as<Triangle>().p1 + as<Triangle>().p2 + as<Triangle>().p3 / 3;
+            }
+            else if (is<Line>()) {
+                return as<Line>().start + as<Line>().end / 2;
+            }
+            else if (is<Vector2>()) {
+                return as<Vector2>();
+            }
+            else if (is<Vector3>()) {
+                return (Vector2)as<Vector3>();
+            }
+            return Vector2( 0, 0 );
         }
 
         Shape& operator= (const nlohmann::json& config) {

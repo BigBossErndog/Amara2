@@ -87,6 +87,27 @@ namespace Amara {
             return x * v.x + y * v.y;
         }
 
+        // Normalize the vector
+        Vector2 normalize() {
+            float length = std::sqrt(x * x + y * y);
+            if (length > 0) {
+                x /= length;
+                y /= length;
+            }
+            return *this;
+        }
+
+        Vector2 normalized() const {
+            Vector2 result = *this;
+            result.normalize();
+            return result;
+        }
+
+        // Reflect the vector off a normal
+        Vector2 reflect(const Vector2& normal) const {
+            return *this - normal * 2.0f * this->dot(normal);
+        }
+
         nlohmann::json toJSON() {
             return nlohmann::json::object({
                 {"x", x},

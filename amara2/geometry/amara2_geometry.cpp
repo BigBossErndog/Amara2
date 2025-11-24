@@ -211,7 +211,7 @@ namespace Amara {
 
     bool Shape::collision(const Circle& c1, const Circle& c2) {
         double distance = distanceBetween(c1.x, c1.y, c2.x, c2.y);
-        if (distance <= (c1.radius + c2.radius)) return true;
+        return distance <= (c1.radius + c2.radius);
     }
 
     bool Shape::collision(const Triangle& t1, const Triangle& t2) {
@@ -332,6 +332,10 @@ namespace Amara {
         float dy = circle.y - closestY;
 
         return (dx * dx + dy * dy) <= (circle.radius * circle.radius);
+    }
+
+    bool Shape::collision(const Rectangle& rect, const Triangle& triangle) {
+        return Shape::collision(Quad(rect), triangle);
     }
 
     bool Shape::collision(const Quad& quad, const Circle& circle) {
