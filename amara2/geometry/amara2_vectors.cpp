@@ -117,7 +117,16 @@ namespace Amara {
         Vector2 reflect(const Vector2& normal) const {
             return *this - normal * 2.0f * this->dot(normal);
         }
-
+    
+        Vector2 project(const Vector2& other) const {
+            if (other.length() == 0) {
+                return Vector2::Origin;
+            }
+            float dot_product = dot(other);
+            float other_magnitude_squared = other.length() * other.length();
+            return other * (dot_product / other_magnitude_squared);
+        }
+    
         nlohmann::json toJSON() {
             return nlohmann::json::object({
                 {"x", x},
@@ -138,6 +147,7 @@ namespace Amara {
             return Vector2(std::ceil(x), std::ceil(y));
         }
         
+        static Vector2 Origin;
         static Vector2 Left;
         static Vector2 Right;
         static Vector2 Top;
@@ -148,7 +158,8 @@ namespace Amara {
         static Vector2 BottomRight;
         static Vector2 Center;
     };
-
+    
+    Vector2 Vector2::Origin = Vector2(0, 0);
     Vector2 Vector2::Left = Vector2(0, 0.5);
     Vector2 Vector2::Right = Vector2(1, 0.5);
     Vector2 Vector2::Top = Vector2(0.5, 0);

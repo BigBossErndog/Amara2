@@ -292,7 +292,10 @@ namespace Amara {
             if (tileID == -1) return Vector2(0, 0);
             
             if (tile_shapes.find(tileID) != tile_shapes.end()) {
-                return tile_shapes[tileID].move(Vector2(pos.x + gx * tileWidth, pos.y + gy * tileHeight));
+                return tile_shapes[tileID].move(Vector2(
+                    pos.x + gx * tileWidth - widthInPixels*scale.x*origin.x,
+                    pos.y + gy * tileHeight - heightInPixels*scale.y*origin.y
+                ));
             }
             return getTileQuad(gx, gy);
         }

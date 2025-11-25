@@ -14,7 +14,9 @@ namespace Amara {
     float distanceBetween(const Vector2& p1, const Vector2& p2) {
         return distanceBetween(p1.x, p1.y, p2.x, p2.y);
     }
-
+    float distanceOf(const Vector2& p) {
+        return distanceBetween(Vector2(0, 0), p);
+    }
     
     float angleBetween(float p1x, float p1y, float p2x, float p2y) {
         float dx = p2x - p1x;
