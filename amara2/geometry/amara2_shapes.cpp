@@ -120,7 +120,7 @@ namespace Amara {
         }
         Rectangle& operator= (sol::object obj);
 
-        Vector2 getCenter() {
+        Vector2 getCenter() const {
             return Vector2(x + w/2, y + h/2);
         }
     };
@@ -585,21 +585,21 @@ namespace Amara {
             return collision(s2, list);
         }
 
-        Vector2 getCenter() {
+        Vector2 getCenter() const {
             if (is<Rectangle>()) {
-                return as<Rectangle>().getCenter();
+                return as<Rectangle>() .getCenter();
             }
             else if (is<Quad>()) {
-                return as<Quad>().p1 + as<Quad>().p2 + as<Quad>().p3 + as<Quad>().p4 / 4;
+                return (as<Quad>() .p1 + as<Quad>() .p2 + as<Quad>() .p3 + as<Quad>() .p4) / 4.0f;
             }
             else if (is<Circle>()) {
                 return as<Circle>();
             }
             else if (is<Triangle>()) {
-                return as<Triangle>().p1 + as<Triangle>().p2 + as<Triangle>().p3 / 3;
+                return (as<Triangle>() .p1 + as<Triangle>() .p2 + as<Triangle>() .p3) / 3.0f;
             }
             else if (is<Line>()) {
-                return as<Line>().start + as<Line>().end / 2;
+                return (as<Line>() .start + as<Line>() .end) / 2.0f;
             }
             else if (is<Vector2>()) {
                 return as<Vector2>();
@@ -824,6 +824,80 @@ namespace Amara {
         return std::visit([](const auto& s1, const auto& s2) -> bool {
             return checkCollision(s1, s2);
         }, shape, other.shape);
+    }
+
+    
+    Vector2 getCollisionNormal(const Shape& s1, const Shape& s2) {
+        if (s1.is<Circle>() && s2.is<Circle>()) {
+            const Circle& c1 = s1.as<Circle>();
+            const Circle& c2 = s2.as<Circle>();
+
+            Vector2 diff = Vector2(c2.x - c1.x, c2.y - c1.y);
+            float len = diff.length();
+
+            // If overlapping at same center, just give an arbitrary normal
+            if (len == 0.0f) return Vector2(1, 0);
+
+            return diff / len;
+        }
+
+        // ---------------------------------------------------------
+        // HANDLE RECTANGLE–RECTANGLE (AABB push normal)
+        // ---------------------------------------------------------
+        if (s1.is<Rectangle>() && s2.is<Rectangle>()) {
+            const Rectangle& a = s1.as<Rectangle>();
+            const Rectangle& b = s2.as<Rectangle>();
+
+            // Compute overlap on both axes
+            float axCenter = a.x + a.w * 0.5f;
+            float ayCenter = a.y + a.h * 0.5f;
+            float bxCenter = b.x + b.w * 0.5f;
+            float byCenter = b.y + b.h * 0.5f;
+
+            float dx = bxCenter - axCenter;
+            float px = (a.w * 0.5f + b.w * 0.5f) - std::fabs(dx);
+
+            float dy = byCenter - ayCenter;
+            float py = (a.h * 0.5f + b.h * 0.5f) - std::fabs(dy);
+
+            if (px < py) {
+                return Vector2((dx < 0 ? -1.f : 1.f), 0.f);
+            } else {
+                return Vector2(0.f, (dy < 0 ? -1.f : 1.f));
+            }
+        }
+
+        if (s1.is<Rectangle>() && s2.is<Circle>()) {
+            const Rectangle& r = s1.as<Rectangle>();
+            const Circle& c = s2.as<Circle>();
+
+            float closestX = std::clamp(c.x, r.x, r.x + r.w);
+            float closestY = std::clamp(c.y, r.y, r.y + r.h);
+
+            Vector2 diff(closestX - c.x, closestY - c.y);
+            float len = diff.length();
+            if (len == 0.0f) {\
+                Vector2 rc = r.getCenter();
+                diff = Vector2(c.x - rc.x, c.y - rc.y);
+                len = diff.length();
+                if (len == 0.0f) return Vector2(1,0);
+            }
+
+            return diff / len;
+        }
+
+        if (s1.is<Circle>() && s2.is<Rectangle>()) {
+            return getCollisionNormal(s2, s1) * -1.f;
+        }
+
+        Vector2 c1 = s1.getCenter();
+        Vector2 c2 = s2.getCenter();
+        Vector2 diff = c2 - c1;
+
+        float len = diff.length();
+        if (len == 0.0f) return Vector2(1, 0);
+
+        return diff / len;
     }
 
     void bind_lua_Shapes(sol::state& lua) {

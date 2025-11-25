@@ -87,6 +87,16 @@ namespace Amara {
             return x * v.x + y * v.y;
         }
 
+        // Length (magnitude) of the vector
+        float length() const {
+            return std::sqrt(x * x + y * y);
+        }
+
+        // Alias for length (magnitude)
+        float magnitude() const {
+            return length();
+        }
+
         // Normalize the vector
         Vector2 normalize() {
             float length = std::sqrt(x * x + y * y);
@@ -472,6 +482,9 @@ namespace Amara {
             sol::meta_function::to_string, [](const Vector2& v) {
                 return std::string(v);
             },
+            "normalized", sol::property([](const Vector2& v) {
+                return v.normalized();
+            }),
             "string", [](const Vector2& v) {
                 return std::string(v);
             }

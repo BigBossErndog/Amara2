@@ -1,6 +1,6 @@
 Nodes:define("PlatformerScene", "Scene", {
     onCreate = function(self)
-        -- Creating controls 
+        -- Creating controls
 
         local leftControl = Controls:scheme("left")
         leftControl:setKeys(Key.Left, Key.A)
@@ -13,7 +13,7 @@ Nodes:define("PlatformerScene", "Scene", {
         local upControl = Controls:scheme("up")
         upControl:setKeys(Key.Up, Key.W)
         upControl:setButtons(Button.DpadUp, Button.LeftStickUp, Button.B)
-        
+
         -- Creating a platform using a FillRect
         -- You can make the platform out of anything: Text, TilemapLayer, etc.
         local platform = self:createChild("FillRect", {
@@ -74,10 +74,10 @@ Creator:createWorld({
         backgroundColor = "#294d6a",
 
         screenMode = ScreenMode.Windowed,
-        
+
         title = "2D Platformer Collision"
     },
-    
+
     onPreload = function(self)
         self.load:font("defaultFont", "fonts/PixelMplus10-Regular.ttf", 10)
     end,
