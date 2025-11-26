@@ -5,19 +5,19 @@ namespace Amara {
         Vector2 acceleration = Vector2(0, 0);
         Vector2 damping = Vector2(0, 0);
         Vector2 bounciness = Vector2(0, 0);
-        float slopeDamping = 0.5f;
+        float slopeDamping = 0.0f;
 
         std::vector<Amara::Node*> collisionTargets;
 
         Shape shape;
         bool set_shape = false;
         
-        double targetAccuracy = 0.1;
+        double targetAccuracy = 0.01;
 
         int maxChecks = 64;
         int splitChecks = 8;
         int correctionChecks = 16;
-
+        
         int collisionDirections = 0;
 
         static constexpr float dampingPower = 3.0f;
@@ -150,8 +150,6 @@ namespace Amara {
             Vector2 last_pos = parent->pos;
             Vector2 fix_pos, rec_pos;
 
-
-
             bool collided = false;
             Line line = Line(start_pos, start_pos + change);
             for (int i = 0; i < splitChecks; i++) {
@@ -216,42 +214,41 @@ namespace Amara {
                 velocity.y += acceleration.y * deltaTime;
 
                 Vector2 original_pos = parent->pos;
-
+                Vector2 original_vel = velocity;
+                
                 bool wall_hit = false;
-
-                if (moveActor(velocity * Vector2(1, 0), deltaTime)) {
+                if (moveActor(velocity * ((abs(velocity.x) > abs(velocity.y)) ? Vector2(0, 1.0f) : Vector2(1.0f, 0)), deltaTime)) {
+                    wall_hit = true;
                     if (velocity.x < 0) collisionDirections |= (int)Direction::Left;
                     else if (velocity.x > 0) collisionDirections |= (int)Direction::Right;
                     velocity.x = -velocity.x * bounciness.x;
-                    if (bounciness.x != 0) velocity.x = -velocity.x * bounciness.x;
-                    wall_hit = true;
                 }
-                if (moveActor(velocity * Vector2(0, 1), deltaTime)) {
-                    if (velocity.y < 0) collisionDirections |= (int)Direction::Up;
-                    else if (velocity.y > 0) collisionDirections |= (int)Direction::Down;
-                    if (bounciness.y != 0) velocity.y = -velocity.y * bounciness.y;
+                if (moveActor(velocity * ((abs(velocity.x) > abs(velocity.y)) ? Vector2(1.0f, 0) : Vector2(0, 1.0f)), deltaTime)) {
                     wall_hit = true;
+                    if (velocity.y > 0) collisionDirections |= (int)Direction::Down;
+                    else if (velocity.y < 0) collisionDirections |= (int)Direction::Up;
+                    velocity.y = -velocity.y * bounciness.y;
                 }
 
                 if (wall_hit) {
                     if (bounciness.x == 0 && bounciness.y == 0) {
-                        Vector2 leftover_force = velocity - (parent->pos - original_pos);
-                        Vector2 wall_vector = findWallVector(velocity);
+                        float leftover_force = (original_vel * deltaTime).magnitude() - (parent->pos - original_pos).magnitude();
+                        Vector2 wall_vector = findWallVector(original_vel);
                         float angle_between = abs(angleDifference(
-                            angleBetween(Vector2::Origin, velocity),
+                            angleBetween(Vector2::Origin, original_vel),
                             angleBetween(Vector2::Origin, wall_vector)
                         ));
-                        debug_log("sliding at angle ", angle_between, " ", leftover_force, " ", wall_vector);
-                        if (angle_between < M_PI/2.0) {
-                            Vector2 slide_vector = wall_vector.normalize() * leftover_force.magnitude();
-                            debug_log("slide force ", slide_vector);
+                        
+                        if (angle_between <= M_PI/2.0 * 0.75) {
+                            Vector2 slide_vector = wall_vector.normalize() * leftover_force;
                             Vector2 damped_slide = slide_vector * (angle_between/(M_PI/2.0));
                             slide_vector = Vector2(
                                 ease(slide_vector.x, damped_slide.x, slopeDamping),
                                 ease(slide_vector.y, damped_slide.y, slopeDamping)
                             );
-                            debug_log("actual_slide ", slide_vector);
-                            moveActor(slide_vector, deltaTime);
+                            
+                            moveActor(slide_vector * (abs(slide_vector.x) > abs(slide_vector.y) ? Vector2(0, 1.0f) : Vector2(1.0f, 0)), 1);
+                            moveActor(slide_vector * (abs(slide_vector.x) > abs(slide_vector.y) ? Vector2(1.0f, 0) : Vector2(0, 1.0f)), 1);
                         }
                     }
                 }
@@ -263,7 +260,7 @@ namespace Amara {
             }
             cleanCollisionTargets();
         }
-
+        
         void cleanCollisionTargets() {
             for (auto it = collisionTargets.begin(); it != collisionTargets.end();) {
                 if ((*it)->destroyed) {
@@ -297,39 +294,25 @@ namespace Amara {
         }
 
         Vector2 findWallVector(Vector2 direction) {
-            Vector2 normal1 = rotateAroundAnchor(direction, -M_PI/2.0).normalized();
-            Vector2 normal2 = rotateAroundAnchor(direction, M_PI/2.0).normalized();
-            double rate_of_rotation = M_PI * 0.05;
-
-            if (checkForWall(normal1)) {
-                if (checkForWall(normal2)) {
-                    return normal1;
-                }
-                while (checkForWall(normal1)) {
-                    normal1 = rotateAroundAnchor(normal1, rate_of_rotation);
-                    normal2 = rotateAroundAnchor(normal2, rate_of_rotation);
-                    if (!checkForWall(normal1)) {
-                        return normal1;
-                    }
-                    if (checkForWall(normal2)) {
-                        return normal1;
-                    }
-                }
-            }
-            else if (checkForWall(normal2)) {
-                while (checkForWall(normal2)) {
-                    normal1 = rotateAroundAnchor(normal1, -rate_of_rotation);
-                    normal2 = rotateAroundAnchor(normal2, -rate_of_rotation);
-                    if (!checkForWall(normal2)) {
-                        return normal2;
-                    }
-                    if (checkForWall(normal1)) {
-                        return normal2;
-                    }
-                }
-            }
+            float start_dir = angleOf(direction);
+            float current_change = 0;
+            double rate_of_rotation = M_PI * 0.001;
             
-            return normal1;
+            Vector2 check;
+            while (current_change <= M_PI) {
+                check = Vector2(cos(start_dir + current_change), sin(start_dir + current_change));
+                if (!checkForWall(check)) {
+                    current_change += rate_of_rotation;
+                    return Vector2(cos(start_dir + current_change), sin(start_dir + current_change));
+                }
+                check = Vector2(cos(start_dir - current_change), sin(start_dir - current_change));
+                if (!checkForWall(check)) {
+                    current_change += rate_of_rotation;
+                    return Vector2(cos(start_dir - current_change), sin(start_dir - current_change));
+                }
+                current_change += rate_of_rotation;
+            }
+            return direction;
         }
 
         bool checkForWall(Vector2 movement) {

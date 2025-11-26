@@ -34,6 +34,9 @@ namespace Amara {
     float angleBetween(const Vector2& p1, const Vector2& p2) {
         return angleBetween(p1.x, p1.y, p2.x, p2.y);
     }
+    float angleOf(const Vector2& p) {
+        return angleBetween(Vector2::Origin, p);
+    }
 
     float closestEquivalentAngle(float angle1, float angle2) {
         angle2 = std::remainder(angle2, 2.0 * M_PI);
