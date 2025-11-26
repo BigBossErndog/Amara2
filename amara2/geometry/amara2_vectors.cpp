@@ -148,6 +148,7 @@ namespace Amara {
         }
         
         static Vector2 Origin;
+        static Vector2 Zero;
         static Vector2 Left;
         static Vector2 Right;
         static Vector2 Top;
@@ -160,6 +161,7 @@ namespace Amara {
     };
     
     Vector2 Vector2::Origin = Vector2(0, 0);
+    Vector2 Vector2::Zero = Vector2(0, 0);
     Vector2 Vector2::Left = Vector2(0, 0.5);
     Vector2 Vector2::Right = Vector2(1, 0.5);
     Vector2 Vector2::Top = Vector2(0.5, 0);

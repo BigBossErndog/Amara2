@@ -5,7 +5,7 @@ namespace Amara {
         Vector2 acceleration = Vector2(0, 0);
         Vector2 damping = Vector2(0, 0);
         Vector2 bounciness = Vector2(0, 0);
-        Vector2 friction = Vector2(0, 0);
+        float friction = 0;
         float slopeDamping = 0.0f;
 
         std::vector<Amara::Node*> collisionTargets;
@@ -22,6 +22,8 @@ namespace Amara {
         int correctionChecks = 16;
         
         int collisionDirections = 0;
+        
+        bool onSlope = false;
 
         static constexpr float dampingPower = 3.0f;
 
@@ -217,18 +219,6 @@ namespace Amara {
                 if (velocity.x < 0) collisionDirections |= (int)Direction::Left;
                 else if (velocity.x > 0) collisionDirections |= (int)Direction::Right;
                 if (bounciness.x != 0) velocity.x = -velocity.x * bounciness.x;
-                
-                float fric = friction.x;
-                if (lastCollision->as<Amara::Collider*>()) {
-                    fric = friction.x + lastCollision->as<Amara::Collider*>()->friction.x;
-                }
-                if (fric > 1) {
-                    velocity.x = 0;
-                }
-                else {
-                    float mappeddampingX = 1.0f - std::pow(1.0f - fric, dampingPower);
-                    velocity.x *= std::pow(1.0f - mappeddampingX, deltaTime);
-                }
                 return true;
             }
             return false;
@@ -239,17 +229,6 @@ namespace Amara {
                 if (velocity.y > 0) collisionDirections |= (int)Direction::Down;
                 else if (velocity.y < 0) collisionDirections |= (int)Direction::Up;
                 if (bounciness.y != 0) velocity.y = -velocity.y * bounciness.y;
-                float fric = friction.y;
-                if (lastCollision->as<Amara::Collider*>()) {
-                    fric = friction.y + lastCollision->as<Amara::Collider*>()->friction.y;
-                }
-                if (fric > 1) {
-                    velocity.y = 0;
-                }
-                else {
-                    float mappeddampingY = 1.0f - std::pow(1.0f - fric, dampingPower);
-                    velocity.y *= std::pow(1.0f - mappeddampingY, deltaTime);
-                }
                 return true;
             }
             return false;
@@ -276,8 +255,23 @@ namespace Amara {
                     wall_hit = moveVelocityX(deltaTime) || wall_hit;
                     wall_hit = moveVelocityY(deltaTime) || wall_hit;
                 }
+                
+                onSlope = false;
 
                 if (wall_hit) {
+                    float fric = friction;
+                    if (lastCollision->as<Amara::Collider*>()) {
+                        fric = friction + lastCollision->as<Amara::Collider*>()->friction;
+                    }
+                    if (fric > 1) {
+                        velocity = Vector2::Zero;
+                    }
+                    else {
+                        float mag = velocity.magnitude();
+                        float mappeddamping = 1.0f - std::pow(1.0f - fric, dampingPower);
+                        velocity = velocity.normalized() * (mag * std::pow(1.0f - mappeddamping, deltaTime));
+                    }
+                    
                     if (bounciness.x == 0 && bounciness.y == 0) {
                         float leftover_force = (velocity * deltaTime).magnitude() - (parent->pos - original_pos).magnitude();
                         
@@ -289,6 +283,8 @@ namespace Amara {
                             ));
                             
                             if (angle_between <= M_PI/2.0 * 0.75) {
+                                onSlope = true;
+                                
                                 Vector2 slide_vector = wall_vector.normalize() * leftover_force;
                                 Vector2 damped_slide = slide_vector * (angle_between/(M_PI/2.0));
                                 slide_vector = Vector2(
@@ -403,14 +399,12 @@ namespace Amara {
                 "dampingX", sol::property([](Collider& t) { return t.damping.x; }, [](Collider& t, float val) { t.damping.x = val; }),
                 "dampingY", sol::property([](Collider& t) { return t.damping.y; }, [](Collider& t, float val) { t.damping.y = val; }),
                 "slopeDamping", &Collider::slopeDamping,
+                "onSlope", sol::readonly(&Collider::onSlope),
                 "bounciness", sol::property(
                     [](Collider& t) -> Vector2& { return t.bounciness; },
                     [](Collider& t, sol::object v) { t.bounciness = v; }
                 ),
-                "friction", sol::property(
-                    [](Collider& t) -> Vector2& { return t.friction; },
-                    [](Collider& t, sol::object v) { t.friction = v; }
-                ),
+                "friction", &Collider::friction,
                 "shape", sol::property(
                     [](Collider& t) -> sol::object { return t.shape.get_lua_object(t.gameProps->lua); },
                     [](Collider& t, sol::object v) { t.shape = v; t.set_shape = true; }
