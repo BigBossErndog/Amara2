@@ -5,9 +5,12 @@ namespace Amara {
         Vector2 acceleration = Vector2(0, 0);
         Vector2 damping = Vector2(0, 0);
         Vector2 bounciness = Vector2(0, 0);
+        Vector2 friction = Vector2(0, 0);
         float slopeDamping = 0.0f;
 
         std::vector<Amara::Node*> collisionTargets;
+        Amara::Node* lastCollision = nullptr;
+        Amara::Node* collisionResult = nullptr;
 
         Shape shape;
         bool set_shape = false;
@@ -42,6 +45,7 @@ namespace Amara {
             if (json_has(config, "damping")) damping = config["damping"];
             if (json_has(config, "slopeDamping")) slopeDamping = config["slopeDamping"];
             if (json_has(config, "bounciness")) bounciness = config["bounciness"];
+            if (json_has(config, "friction")) friction = config["friction"];
 
             if (json_has(config, "maxChecks")) maxChecks = config["maxChecks"];
             if (json_has(config, "targetAccuracy")) targetAccuracy = config["targetAccuracy"];
@@ -122,7 +126,10 @@ namespace Amara {
         bool hasCollided() {
             for (Amara::Node* target: collisionTargets) {
                 if (target->destroyed || target->paused) continue;
-                if (collidesWith(target)) return true;
+                if (collidesWith(target)) {
+                    collisionResult = target;
+                    return true;
+                }
             }
             return false;
         }
@@ -159,6 +166,7 @@ namespace Amara {
 
                 if (hasCollided()) {
                     collided = true;
+                    lastCollision = collisionResult;
                     break;
                 }
 
@@ -193,7 +201,7 @@ namespace Amara {
                         break;
                     }
                 }
-
+                
                 if (hasCollided()) {
                     parent->pos = start_pos;
                 }
@@ -201,6 +209,49 @@ namespace Amara {
                 return true;
             }
 
+            return false;
+        }
+        
+        bool moveVelocityX(double deltaTime) {
+            if (moveActor(velocity * Vector2(1.0f, 0), deltaTime)) {
+                if (velocity.x < 0) collisionDirections |= (int)Direction::Left;
+                else if (velocity.x > 0) collisionDirections |= (int)Direction::Right;
+                if (bounciness.x != 0) velocity.x = -velocity.x * bounciness.x;
+                
+                float fric = friction.x;
+                if (lastCollision->as<Amara::Collider*>()) {
+                    fric = friction.x + lastCollision->as<Amara::Collider*>()->friction.x;
+                }
+                if (fric > 1) {
+                    velocity.x = 0;
+                }
+                else {
+                    float mappeddampingX = 1.0f - std::pow(1.0f - fric, dampingPower);
+                    velocity.x *= std::pow(1.0f - mappeddampingX, deltaTime);
+                }
+                return true;
+            }
+            return false;
+        }
+        
+        bool moveVelocityY(double deltaTime) {
+            if (moveActor(velocity * Vector2(0, 1.0f), deltaTime)) {
+                if (velocity.y > 0) collisionDirections |= (int)Direction::Down;
+                else if (velocity.y < 0) collisionDirections |= (int)Direction::Up;
+                if (bounciness.y != 0) velocity.y = -velocity.y * bounciness.y;
+                float fric = friction.y;
+                if (lastCollision->as<Amara::Collider*>()) {
+                    fric = friction.y + lastCollision->as<Amara::Collider*>()->friction.y;
+                }
+                if (fric > 1) {
+                    velocity.y = 0;
+                }
+                else {
+                    float mappeddampingY = 1.0f - std::pow(1.0f - fric, dampingPower);
+                    velocity.y *= std::pow(1.0f - mappeddampingY, deltaTime);
+                }
+                return true;
+            }
             return false;
         }
 
@@ -217,38 +268,37 @@ namespace Amara {
                 Vector2 original_vel = velocity;
                 
                 bool wall_hit = false;
-                if (moveActor(velocity * ((abs(velocity.x) > abs(velocity.y)) ? Vector2(0, 1.0f) : Vector2(1.0f, 0)), deltaTime)) {
-                    wall_hit = true;
-                    if (velocity.x < 0) collisionDirections |= (int)Direction::Left;
-                    else if (velocity.x > 0) collisionDirections |= (int)Direction::Right;
-                    velocity.x = -velocity.x * bounciness.x;
+                if (abs(velocity.x) > abs(velocity.y)) {
+                    wall_hit = moveVelocityY(deltaTime) || wall_hit;
+                    wall_hit = moveVelocityX(deltaTime) || wall_hit;
                 }
-                if (moveActor(velocity * ((abs(velocity.x) > abs(velocity.y)) ? Vector2(1.0f, 0) : Vector2(0, 1.0f)), deltaTime)) {
-                    wall_hit = true;
-                    if (velocity.y > 0) collisionDirections |= (int)Direction::Down;
-                    else if (velocity.y < 0) collisionDirections |= (int)Direction::Up;
-                    velocity.y = -velocity.y * bounciness.y;
+                else {
+                    wall_hit = moveVelocityX(deltaTime) || wall_hit;
+                    wall_hit = moveVelocityY(deltaTime) || wall_hit;
                 }
 
                 if (wall_hit) {
                     if (bounciness.x == 0 && bounciness.y == 0) {
-                        float leftover_force = (original_vel * deltaTime).magnitude() - (parent->pos - original_pos).magnitude();
-                        Vector2 wall_vector = findWallVector(original_vel);
-                        float angle_between = abs(angleDifference(
-                            angleBetween(Vector2::Origin, original_vel),
-                            angleBetween(Vector2::Origin, wall_vector)
-                        ));
+                        float leftover_force = (velocity * deltaTime).magnitude() - (parent->pos - original_pos).magnitude();
                         
-                        if (angle_between <= M_PI/2.0 * 0.75) {
-                            Vector2 slide_vector = wall_vector.normalize() * leftover_force;
-                            Vector2 damped_slide = slide_vector * (angle_between/(M_PI/2.0));
-                            slide_vector = Vector2(
-                                ease(slide_vector.x, damped_slide.x, slopeDamping),
-                                ease(slide_vector.y, damped_slide.y, slopeDamping)
-                            );
+                        if (leftover_force > 0) {
+                            Vector2 wall_vector = findWallVector(velocity);
+                            float angle_between = abs(angleDifference(
+                                angleBetween(Vector2::Origin, velocity),
+                                angleBetween(Vector2::Origin, wall_vector)
+                            ));
                             
-                            moveActor(slide_vector * (abs(slide_vector.x) > abs(slide_vector.y) ? Vector2(0, 1.0f) : Vector2(1.0f, 0)), 1);
-                            moveActor(slide_vector * (abs(slide_vector.x) > abs(slide_vector.y) ? Vector2(1.0f, 0) : Vector2(0, 1.0f)), 1);
+                            if (angle_between <= M_PI/2.0 * 0.75) {
+                                Vector2 slide_vector = wall_vector.normalize() * leftover_force;
+                                Vector2 damped_slide = slide_vector * (angle_between/(M_PI/2.0));
+                                slide_vector = Vector2(
+                                    ease(slide_vector.x, damped_slide.x, slopeDamping),
+                                    ease(slide_vector.y, damped_slide.y, slopeDamping)
+                                );
+                                
+                                moveActor(slide_vector * (abs(slide_vector.x) > abs(slide_vector.y) ? Vector2(0, 1.0f) : Vector2(1.0f, 0)), 1);
+                                moveActor(slide_vector * (abs(slide_vector.x) > abs(slide_vector.y) ? Vector2(1.0f, 0) : Vector2(0, 1.0f)), 1);
+                            }
                         }
                     }
                 }
@@ -357,6 +407,10 @@ namespace Amara {
                     [](Collider& t) -> Vector2& { return t.bounciness; },
                     [](Collider& t, sol::object v) { t.bounciness = v; }
                 ),
+                "friction", sol::property(
+                    [](Collider& t) -> Vector2& { return t.friction; },
+                    [](Collider& t, sol::object v) { t.friction = v; }
+                ),
                 "shape", sol::property(
                     [](Collider& t) -> sol::object { return t.shape.get_lua_object(t.gameProps->lua); },
                     [](Collider& t, sol::object v) { t.shape = v; t.set_shape = true; }
@@ -370,6 +424,12 @@ namespace Amara {
                     sol::resolve<bool(Amara::Node*)>(&Collider::hasCollided),
                     sol::resolve<bool(Amara::Direction)>(&Collider::hasCollided)
                 ),
+                "lastCollision", sol::property([](Amara::Collider& c) -> sol::object {
+                    if (c.lastCollision) {
+                        return c.lastCollision->get_lua_object();
+                    }
+                    return sol::nil;
+                }),
                 "selfCorrect", &Collider::selfCorrect,
                 "addCollisionTarget", &Collider::addCollisionTarget,
                 "removeCollisionTarget", &Collider::removeCollisionTarget,
