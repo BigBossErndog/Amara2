@@ -348,13 +348,11 @@ namespace Amara {
             while (current_change <= M_PI) {
                 check = Vector2(cos(start_dir + current_change), sin(start_dir + current_change));
                 if (!checkForWall(check)) {
-                    current_change += rate_of_rotation;
-                    return Vector2(cos(start_dir + current_change), sin(start_dir + current_change));
+                    return check;
                 }
                 check = Vector2(cos(start_dir - current_change), sin(start_dir - current_change));
                 if (!checkForWall(check)) {
-                    current_change += rate_of_rotation;
-                    return Vector2(cos(start_dir - current_change), sin(start_dir - current_change));
+                    return check;
                 }
                 current_change += rate_of_rotation;
             }
