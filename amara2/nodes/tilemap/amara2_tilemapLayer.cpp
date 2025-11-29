@@ -15,7 +15,7 @@ namespace Amara {
 
         int mapWidth = 0;
         int mapHeight = 0;
-
+        
         int tileWidth = 0;
         int tileHeight = 0;
 
@@ -30,6 +30,8 @@ namespace Amara {
         std::unordered_map<int, TMXAnimation> tmxAnimations;
 
         std::unordered_map<int, Amara::Shape> tile_shapes;
+        
+        int tile_offset = 0;
 
         TilemapLayer(): Amara::TextureContainer() {
             set_base_node_id("TilemapLayer");
@@ -194,9 +196,9 @@ namespace Amara {
                         Amara::Tile& tile = tiles[y * mapWidth + x];
                         if (tile.tileID == -1) continue;
 
-                        frame = tile.tileID;
+                        frame = tile.tileID + tile_offset;
                         if (tmxAnimations.find(tile.tileID) != tmxAnimations.end()) {
-                            frame = tmxAnimations[tile.tileID].currentTileId;
+                            frame = tmxAnimations[tile.tileID].currentTileId + tile_offset;
                         }
 
                         srcRect = {

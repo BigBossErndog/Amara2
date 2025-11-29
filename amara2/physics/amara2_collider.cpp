@@ -158,6 +158,11 @@ namespace Amara {
 
             Vector2 last_pos = parent->pos;
             Vector2 fix_pos, rec_pos;
+            
+            if (checkForWall(change.normalized() * targetAccuracy)) {
+                lastCollision = collisionResult;
+                return true;
+            }
 
             bool collided = false;
             Line line = Line(start_pos, start_pos + change);
@@ -257,7 +262,7 @@ namespace Amara {
                 }
                 
                 onSlope = false;
-
+                
                 if (wall_hit) {
                     float fric = friction;
                     if (lastCollision->as<Amara::Collider*>()) {

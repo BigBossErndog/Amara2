@@ -144,7 +144,7 @@ namespace Amara {
                     v.w + diag_distance*2, v.h + diag_distance*2
                 )
             )) return;
-
+            
             if (input.active && !passOn.insideTextureContainer) {
                 Quad inputQuad = rotateQuad(
                     Quad(destRect),
@@ -318,6 +318,10 @@ namespace Amara {
         float setRadius(float r) {
             radius = r;
             return radius;
+        }
+        
+        virtual Shape getCollisionShape() override {
+            return Circle(pos.x, pos.y, radius);
         }
 
         float setDiameter(float d) {

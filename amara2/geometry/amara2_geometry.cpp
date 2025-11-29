@@ -135,18 +135,27 @@ namespace Amara {
     }
 
     bool isPointInside(const Quad& quad, const Vector2& p) {
-        Vector2 verts[4] = {quad.p1, quad.p2, quad.p3, quad.p4};
+        Vector2 v[4] = {quad.p1, quad.p2, quad.p3, quad.p4};
+        
+        Vector2 center = (v[0] + v[1] + v[2] + v[3]) * 0.25f;
+        
+        std::sort(std::begin(v), std::end(v),
+            [&](const Vector2& a, const Vector2& b)
+            {
+                float angleA = std::atan2(a.y - center.y, a.x - center.x);
+                float angleB = std::atan2(b.y - center.y, b.x - center.x);
+                return angleA < angleB;
+            });
+    
         bool inside = false;
-
         for (int i = 0, j = 3; i < 4; j = i++) {
-            const Vector2& a = verts[i];
-            const Vector2& b = verts[j];
-
-            bool crossesY = ((a.y > p.y) != (b.y > p.y));
-            if (crossesY) {
-                float xAtPy = a.x + (b.x - a.x) * (p.y - a.y) / ((b.y - a.y) + 1e-6f);
-                if (p.x < xAtPy) inside = !inside;
-            }
+            const Vector2& a = v[i];
+            const Vector2& b = v[j];
+    
+            bool intersects = ((a.y > p.y) != (b.y > p.y)) &&
+                              (p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x);
+    
+            if (intersects) inside = !inside;
         }
         return inside;
     }
@@ -344,14 +353,20 @@ namespace Amara {
     }
 
     bool Shape::collision(const Quad& quad, const Circle& circle) {
+        debug_log("quad circle collision");
         auto closestPointOnSegment = [](const Vector2& A, const Vector2& B, const Vector2& P) -> Vector2 {
             Vector2 AB = B - A;
             float ab2 = AB.x * AB.x + AB.y * AB.y;
             if (ab2 < 1e-6f) return A; // A and B are the same point
             Vector2 AP = P - A;
             float t = (AP.x * AB.x + AP.y * AB.y) / ab2;
-            t = fmax(0.0f, fmin(1.0f, t));
-            return A + AB * t;
+            if (t < 0.0f) {
+                return A;
+            } else if (t > 1.0f) {
+                return B;
+            } else {
+                return A + AB * t;
+            }
         };
 
         Vector2 C{circle.x, circle.y};
@@ -428,8 +443,7 @@ namespace Amara {
 
         return true;  // No separating axis, collision confirmed
     }
-
-
+    
     Vector2 stringToPosition(std::string str) {
         if (String::equal(str, "top")) return { 0.5, 0 };
         if (String::equal(str, "bottom")) return { 0.5, 1 };

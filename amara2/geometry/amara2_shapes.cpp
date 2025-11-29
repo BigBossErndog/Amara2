@@ -420,30 +420,30 @@ namespace Amara {
     class Shape {
     public:
         using ShapeVariant = std::variant<
-            Vector2, 
-            Vector3,
             Rectangle,
             Quad,
             Circle,
             Triangle, 
             Line,
+            Vector2, 
+            Vector3,
             std::vector<Shape>,
             CustomShape
         >;
 
         ShapeVariant shape;
 
-        Shape(): shape(Vector2( -1, -1 )) {}
+        Shape(): shape(Vector2( 0, 0 )) {}
         Shape(ShapeVariant _shape) {
             shape = _shape;
         }
-        Shape(const Vector2& v) : shape(v) {}
-        Shape(const Vector3& v) : shape(v) {}
         Shape(const Rectangle& r) : shape(r) {}
         Shape(const Quad& q) : shape(q) {}
         Shape(const Circle& c) : shape(c) {}
         Shape(const Triangle& t) : shape(t) {}
         Shape(const Line& l) : shape(l) {}
+        Shape(const Vector2& v) : shape(v) {}
+        Shape(const Vector3& v) : shape(v) {}
         Shape(const std::vector<Shape>& list) : shape(list) {}
         Shape(const CustomShape& c) : shape(c) {}
 
@@ -562,16 +562,24 @@ namespace Amara {
         static bool collision(const Circle& c1, const Circle& c2);
         static bool collision(const Triangle& t1, const Triangle& t2);
         static bool collision(const Line& l1, const Line& l2);
-
-        static bool collision(const Vector2& p, const Quad& q);
-        static bool collision(const Vector2& p, const Rectangle& r);
-
+        
+        static bool collision(const Quad& q, const Circle& r);
+        static bool collision(const Circle& circle, const Quad& quad) {
+            return Shape::collision(quad, circle);
+        }
+        static bool collision(const Quad& q, const Triangle& t);
+        
+        static bool collision(const Circle& circle, const Triangle& triangle);
+        static bool collision(const Triangle& triangle, const Circle& circle) {
+            return collision(circle, triangle);
+        }
+        
         static bool collision(const Rectangle& rect, const Quad& quad);
         static bool collision(const Rectangle& rect, const Circle& circle);
         static bool collision(const Rectangle& rect, const Triangle& triangle);
 
-        static bool collision(const Quad& q, const Circle& r);
-        static bool collision(const Quad& q, const Triangle& t);
+        static bool collision(const Vector2& p, const Quad& q);
+        static bool collision(const Vector2& p, const Rectangle& r);
 
         static bool collision(const Shape& s1, const std::vector<Shape>& list) {
             for (const auto& s2 : list) {
@@ -587,7 +595,7 @@ namespace Amara {
 
         Vector2 getCenter() const {
             if (is<Rectangle>()) {
-                return as<Rectangle>() .getCenter();
+                return as<Rectangle>().getCenter();
             }
             else if (is<Quad>()) {
                 return (as<Quad>() .p1 + as<Quad>() .p2 + as<Quad>() .p3 + as<Quad>() .p4) / 4.0f;
@@ -840,15 +848,11 @@ namespace Amara {
 
             return diff / len;
         }
-
-        // ---------------------------------------------------------
-        // HANDLE RECTANGLE–RECTANGLE (AABB push normal)
-        // ---------------------------------------------------------
+        
         if (s1.is<Rectangle>() && s2.is<Rectangle>()) {
             const Rectangle& a = s1.as<Rectangle>();
             const Rectangle& b = s2.as<Rectangle>();
-
-            // Compute overlap on both axes
+            
             float axCenter = a.x + a.w * 0.5f;
             float ayCenter = a.y + a.h * 0.5f;
             float bxCenter = b.x + b.w * 0.5f;
