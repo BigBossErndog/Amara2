@@ -341,7 +341,7 @@ namespace Amara {
     bool Shape::collision(const Rectangle& rect, const Circle& circle) {
         float closestX = std::max(rect.x, std::min(circle.x, rect.x + rect.w));
         float closestY = std::max(rect.y, std::min(circle.y, rect.y + rect.h));
-
+        
         float dx = circle.x - closestX;
         float dy = circle.y - closestY;
 
@@ -353,7 +353,6 @@ namespace Amara {
     }
 
     bool Shape::collision(const Quad& quad, const Circle& circle) {
-        debug_log("quad circle collision");
         auto closestPointOnSegment = [](const Vector2& A, const Vector2& B, const Vector2& P) -> Vector2 {
             Vector2 AB = B - A;
             float ab2 = AB.x * AB.x + AB.y * AB.y;
@@ -476,6 +475,55 @@ namespace Amara {
             fatal_error("Error: Invalid Vector2 assignment.");
         }
         return *this;
+    }
+
+    bool isPointInside(const Vector2& point, const Line& line) {
+    	return abs((distanceBetween(line.start, point) + distanceBetween(point, line.end)) - distanceBetween(line.start, line.end)) < 0.001f;
+    }
+
+    bool Shape::collision(const Circle& circle, const Triangle& triangle) {
+        if (isPointInside(triangle.p1, circle) ||
+            isPointInside(triangle.p2, circle) ||
+            isPointInside(triangle.p3, circle)) {
+            return true;
+        }
+        
+        if (isPointInside(triangle, Vector2(circle.x, circle.y))) {
+            return true;
+        }
+        
+        Line edge1 = {triangle.p1, triangle.p2};
+        Line edge2 = {triangle.p2, triangle.p3};
+        Line edge3 = {triangle.p3, triangle.p1};
+
+        if (Shape::collision(circle, edge1) ||
+            Shape::collision(circle, edge2) ||
+            Shape::collision(circle, edge3)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool Shape::collision(const Circle& circle, const Line& line) {
+        Vector2 circlePos = {circle.x, circle.y};
+        Vector2 lineStart = line.start;
+        Vector2 lineEnd = line.end;
+
+        Vector2 lineVec = lineEnd - lineStart;
+        Vector2 startToCircle = circlePos - lineStart;
+
+        float lineLengthSq = lineVec.x * lineVec.x + lineVec.y * lineVec.y;
+        if (lineLengthSq == 0.0f) {
+            return distanceBetween(circlePos, lineStart) <= circle.radius;
+        }
+
+        float t = (startToCircle.x * lineVec.x + startToCircle.y * lineVec.y) / lineLengthSq;
+        t = std::max(0.0f, std::min(1.0f, t));
+
+        Vector2 closestPoint = lineStart + lineVec * t;
+
+        return distanceBetween(circlePos, closestPoint) <= circle.radius;
     }
 
     void bind_lua_Geometry(sol::state& lua) {

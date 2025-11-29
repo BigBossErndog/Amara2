@@ -20,6 +20,11 @@ namespace Amara {
             if (json_has(config, "r")) setRadius(json_extract(config, "r"));
             if (json_has(config, "d")) setDiameter(json_extract(config, "d"));
             if (json_has(config, "segments")) baseSegments = json_extract(config, "segments");
+            
+            if (json_has(config, "width")) json_extract(config, "width");
+            if (json_has(config, "height")) json_extract(config, "height");
+            if (json_has(config, "w")) json_extract(config, "w");
+            if (json_has(config, "h")) json_extract(config, "h");
 
             return Amara::Sprite::configure(config);
         }

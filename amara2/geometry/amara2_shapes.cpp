@@ -574,6 +574,11 @@ namespace Amara {
             return collision(circle, triangle);
         }
         
+        static bool collision(const Circle& circle, const Line& line);
+        static bool collision(const Line& line, const Circle& circle) {
+            return collision(circle, line);
+        }
+        
         static bool collision(const Rectangle& rect, const Quad& quad);
         static bool collision(const Rectangle& rect, const Circle& circle);
         static bool collision(const Rectangle& rect, const Triangle& triangle);

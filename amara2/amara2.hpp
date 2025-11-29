@@ -160,7 +160,7 @@
     #include "managers/amara2_gameProps.cpp"
     
     #include "rendering/amara2_renderUtility.cpp"
-    #include "utility/amara2_luaUtlity.cpp"
+    #include "utility/amara2_luaUtility.cpp"
 
     #include "input/amara2_button.cpp"
     #include "input/amara2_keyboard.cpp"

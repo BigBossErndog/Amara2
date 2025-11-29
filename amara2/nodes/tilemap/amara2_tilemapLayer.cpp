@@ -32,6 +32,8 @@ namespace Amara {
         std::unordered_map<int, Amara::Shape> tile_shapes;
         
         int tile_offset = 0;
+        
+        bool rotatedCollisions = false;
 
         TilemapLayer(): Amara::TextureContainer() {
             set_base_node_id("TilemapLayer");
@@ -47,6 +49,8 @@ namespace Amara {
             if (json_has(config, "height")) mapHeight = json_extract(config, "height");
             if (json_has(config, "w")) mapWidth = json_extract(config, "w");
             if (json_has(config, "h")) mapHeight = json_extract(config, "h");
+            
+            if (json_has(config, "rotatedCollisions")) rotatedCollisions = json_extract(config, "rotatedCollisions");
 
             Amara::TextureContainer::configure(config);
 
@@ -276,7 +280,7 @@ namespace Amara {
             return tile.tileID;
         }
 
-        Quad getTileQuad(int gx, int gy) {
+        Shape getTileRect(int gx, int gy) {
             int tileID = getTileID(gx, gy);
             if (tileID == -1) return Quad();
             
@@ -286,7 +290,8 @@ namespace Amara {
                 (float)tileWidth*scale.x,
                 (float)tileHeight*scale.y
             };
-            return rotateQuad(Quad(rect), pos, rotation);
+            if (rotatedCollisions) return rotateQuad(Quad(rect), pos, rotation);
+            return rect;
         }
 
         Shape getTileShape(int gx, int gy) {
@@ -299,7 +304,7 @@ namespace Amara {
                     pos.y + gy * tileHeight - heightInPixels*scale.y*origin.y
                 ));
             }
-            return getTileQuad(gx, gy);
+            return getTileRect(gx, gy);
         }
 
         void setTileShape(int tileID, sol::object _obj) {
@@ -314,14 +319,15 @@ namespace Amara {
             tile_shapes[tileID] = shape;
         }
 
-        Quad getPartitionQuad(int j, int k) {
+        Shape getPartitionShape(int j, int k) {
             Rectangle rect = { 
                 pos.x + j * partitionWidth*tileWidth - widthInPixels*scale.x*origin.x,
                 pos.y + k * partitionHeight*tileHeight - heightInPixels*scale.y*origin.y,
                 (float)partitionWidth*tileWidth*scale.x,
                 (float)partitionHeight*tileHeight*scale.y
             };
-            return rotateQuad(Quad(rect), pos, rotation);
+            if (rotatedCollisions) return rotateQuad(Quad(rect), pos, rotation);
+            return rect;
         }
 
         virtual bool collidesWithShape(const Shape& other) override {
@@ -332,7 +338,7 @@ namespace Amara {
 
             for (int j = 0; j < numPartitionsX; ++j) {
                 for (int k = 0; k < numPartitionsY; ++k) {
-                    Quad partition = getPartitionQuad(j, k);
+                    Shape partition = getPartitionShape(j, k);
                     if (other.collidesWith(partition)) {
                         int startX = j * partitionWidth;
                         int startY = k * partitionHeight;
@@ -382,7 +388,8 @@ namespace Amara {
                     sol::resolve<void(int, int, sol::object)>(&TilemapLayer::setTile)
                 ),
                 "getTileAt", &TilemapLayer::getTileID,
-                "setTileShape", sol::resolve<void(int, sol::object)>(&TilemapLayer::setTileShape)
+                "setTileShape", sol::resolve<void(int, sol::object)>(&TilemapLayer::setTileShape),
+                "rotatedCollisions", &TilemapLayer::rotatedCollisions
             );
         }
     };
