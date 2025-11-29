@@ -365,6 +365,40 @@ namespace Amara {
                 start.y + (end.y - start.y) * t
             );
         }
+        
+        bool intersects(const Line& other) const {
+            Vector2 p1 = start;
+            Vector2 q1 = end;
+            Vector2 p2 = other.start;
+            Vector2 q2 = other.end;
+        
+            auto orientation = [](const Vector2& p, const Vector2& q, const Vector2& r) {
+                float val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+                if (val == 0) return 0;
+                return (val > 0) ? 1 : 2;
+            };
+            
+            auto onSegment = [](const Vector2& p, const Vector2& q, const Vector2& r) {
+                return (q.x <= std::max(p.x, r.x) && q.x >= std::min(p.x, r.x) &&
+                        q.y <= std::max(p.y, r.y) && q.y >= std::min(p.y, r.y));
+            };
+        
+            int o1 = orientation(p1, q1, p2);
+            int o2 = orientation(p1, q1, q2);
+            int o3 = orientation(p2, q2, p1);
+            int o4 = orientation(p2, q2, q1);
+        
+            if (o1 != o2 && o3 != o4) {
+                return true;
+            }
+        
+            if (o1 == 0 && onSegment(p1, p2, q1)) return true;
+            if (o2 == 0 && onSegment(p1, q2, q1)) return true;
+            if (o3 == 0 && onSegment(p2, p1, q2)) return true;
+            if (o4 == 0 && onSegment(p2, q1, q2)) return true;
+        
+            return false;
+        }
 
         Line& operator= (const nlohmann::json& config) {
             if (config.is_array()) {
@@ -574,6 +608,11 @@ namespace Amara {
             return collision(circle, triangle);
         }
         
+        static bool collision(const Quad& quad, const Line& line);
+        static bool collision(const Line& line, const Quad& quad) {
+            return Shape::collision(quad, line);
+        }
+        
         static bool collision(const Circle& circle, const Line& line);
         static bool collision(const Line& line, const Circle& circle) {
             return collision(circle, line);
@@ -582,10 +621,15 @@ namespace Amara {
         static bool collision(const Rectangle& rect, const Quad& quad);
         static bool collision(const Rectangle& rect, const Circle& circle);
         static bool collision(const Rectangle& rect, const Triangle& triangle);
+        static bool collision(const Rectangle& rect, const Line& line);
+
+        static bool collision(const Line& line, const Rectangle& rect) {
+            return Shape::collision(rect, line);
+        }
 
         static bool collision(const Vector2& p, const Quad& q);
         static bool collision(const Vector2& p, const Rectangle& r);
-
+        
         static bool collision(const Shape& s1, const std::vector<Shape>& list) {
             for (const auto& s2 : list) {
                 if (s1.collidesWith(s2)) {

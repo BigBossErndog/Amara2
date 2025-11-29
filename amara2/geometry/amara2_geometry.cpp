@@ -133,6 +133,11 @@ namespace Amara {
 
         return (o1 * o2 < 0 && o3 * o4 < 0);
     }
+    
+    bool isPointInside(const Rectangle& rect, const Vector2& p) {
+        return p.x >= rect.x && p.x <= rect.x + rect.w &&
+               p.y >= rect.y && p.y <= rect.y + rect.h;
+    }
 
     bool isPointInside(const Quad& quad, const Vector2& p) {
         Vector2 v[4] = {quad.p1, quad.p2, quad.p3, quad.p4};
@@ -271,24 +276,12 @@ namespace Amara {
             }
         }
 
-        auto isPointInsideTriangle = [](const Triangle& tri, const Vector2& p) {
-            auto sign = [](const Vector2& a, const Vector2& b, const Vector2& c) {
-                return (a.x - c.x)*(b.y - c.y) - (b.x - c.x)*(a.y - c.y);
-            };
-            float d1 = sign(p, tri.p1, tri.p2);
-            float d2 = sign(p, tri.p2, tri.p3);
-            float d3 = sign(p, tri.p3, tri.p1);
-            bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-            bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
-            return !(has_neg && has_pos);
-        };
-
-        if (isPointInsideTriangle(t1, t2.p1) || isPointInsideTriangle(t1, t2.p2) || isPointInsideTriangle(t1, t2.p3))
+        if (isPointInside(t1, t2.p1) || isPointInside(t1, t2.p2) || isPointInside(t1, t2.p3))
             return true;
-        if (isPointInsideTriangle(t2, t1.p1) || isPointInsideTriangle(t2, t1.p2) || isPointInsideTriangle(t2, t1.p3))
+        if (isPointInside(t2, t1.p1) || isPointInside(t2, t1.p2) || isPointInside(t2, t1.p3))
             return true;
 
-        return true; // triangles overlap
+        return true;
     }
 
     bool Shape::collision(const Line& l1, const Line& l2) {
@@ -441,6 +434,47 @@ namespace Amara {
         for (const auto& v : q_vertices) if (isPointInside(t, v)) return true;
 
         return true;  // No separating axis, collision confirmed
+    }
+    
+    bool Shape::collision(const Quad& a, const Line& b) {
+        if (doIntersect(a.p1, a.p2, b.start, b.end)) {
+            return true;
+        }
+        if (doIntersect(a.p2, a.p3, b.start, b.end)) {
+            return true;
+        }
+        if (doIntersect(a.p3, a.p4, b.start, b.end)) {
+            return true;
+        }
+        if (doIntersect(a.p4, a.p1, b.start, b.end)) {
+            return true;
+        }
+        
+        if (isPointInside(a, b.start)) {
+            return true;
+        }
+    
+        return false;
+    }
+    
+    bool Shape::collision(const Rectangle& a, const Line& b) {
+        if (isPointInside(a, b.start) || isPointInside(a, b.end)) {
+            return true;
+        }
+        
+        Vector2 topLeft = {a.x, a.y};
+        Vector2 topRight = {a.x + a.w, a.y};
+        Vector2 bottomLeft = {a.x, a.y + a.h};
+        Vector2 bottomRight = {a.x + a.w, a.y + a.h};
+        
+        if (doIntersect(topLeft, topRight, b.start, b.end) ||
+            doIntersect(topRight, bottomRight, b.start, b.end) ||
+            doIntersect(bottomRight, bottomLeft, b.start, b.end) ||
+            doIntersect(bottomLeft, topLeft, b.start, b.end)) {
+            return true;
+        }
+    
+        return false;
     }
     
     Vector2 stringToPosition(std::string str) {
