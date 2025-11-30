@@ -273,7 +273,15 @@ namespace Amara {
                 sol::resolve<Amara::Color(float) const>(&Amara::Color::operator*)
             ),
             sol::meta_function::addition, &Amara::Color::operator+,
-            sol::meta_function::subtraction, &Amara::Color::operator-
+            sol::meta_function::subtraction, &Amara::Color::operator-,
+            "normalize", [&lua](const Color& self) {
+                sol::table normalized = lua.create_table();
+                normalized[1] = self.r / 255.0f;
+                normalized[2] = self.g / 255.0f;
+                normalized[3] = self.b / 255.0f;
+                normalized[4] = self.a / 255.0f;
+                return normalized;
+            }
         );
 
         lua.new_enum("Colors",

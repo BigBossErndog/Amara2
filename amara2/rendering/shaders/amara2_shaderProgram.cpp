@@ -113,7 +113,11 @@ namespace Amara {
             }
             if (value.is_object()) {
                 if (json_has(value, "r", "g", "b", "a")) {
-                    uniforms[name] = Vector4(value["r"], value["g"], value["b"], value["a"]);
+                    uniforms[name] = Vector4(value["r"].get<float>() / 255.0f, value["g"].get<float>() / 255.0f, value["b"].get<float>() / 255.0f, value["a"].get<float>() / 255.0f);
+                    return;
+                }
+                if (json_has(value, "r", "g", "b")) {
+                    uniforms[name] = Vector4(value["r"], value["g"], value["b"], 1.0f);
                     return;
                 }
                 if (json_has(value, "x", "y", "z", "w")) {

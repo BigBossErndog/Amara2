@@ -268,7 +268,7 @@ namespace Amara {
             if (config.is<sol::table>()) {
                 sol::table tbl = config.as<sol::table>();
                 std::vector<std::string> remove_keys;
-
+                
                 for (const auto& it: tbl) {
                     sol::object val = it.second;
                     if (val.is<sol::function>()) {
