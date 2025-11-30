@@ -328,7 +328,7 @@ namespace Amara {
 
                         bool flipped_horizontally = (gid & FLIPPED_HORIZONTALLY_FLAG);
                         bool flipped_vertically   = (gid & FLIPPED_VERTICALLY_FLAG);
-                        bool flipped_diagonally   = (gid & FLIPPED_DIAGONALLY_FLAG); // Less common, might need special rotation/texture coord handling
+                        bool flipped_diagonally   = (gid & FLIPPED_DIAGONALLY_FLAG);
 
                         unsigned int cleanGid = gid & ~ALL_FLIP_FLAGS;
 
@@ -340,7 +340,7 @@ namespace Amara {
 
                         unsigned int localTileId = cleanGid - tileset->firstGid;
 
-                        config["id"] = localTileId;
+                        config["tileID"] = localTileId;
 
                         config["layer"] = objectGroup.name;
                         
