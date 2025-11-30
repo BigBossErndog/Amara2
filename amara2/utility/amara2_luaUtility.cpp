@@ -391,16 +391,11 @@ namespace Amara {
             double b = ob.as<double>();
             return std::sqrt(a * a + b * b);
         });
-        math_metatable.set_function("hash", [](sol::object input) -> double {
-            if (input.is<std::string>()) {
-                std::string str = input.as<std::string>();
-                uint32_t hash = 2166136261u;
-                for (unsigned char c : str) {
-                    hash ^= c;
-                    hash *= 16777619u;
-                }
-                return (double)hash;
-            }
+        math_metatable.set_function("hash", [](sol::object input, sol::object seed) -> double {
+            if (input.is<std::string>()) return Amara::hash(input.as<std::string>(), seed.is<std::string>() ? seed.as<std::string>() : std::string(""));
+            if (input.is<double>()) return Amara::hash(std::to_string(input.as<double>()), seed.is<std::string>() ? seed.as<std::string>() : std::string(""));
+            if (input.is<int>()) return Amara::hash(std::to_string(input.as<int>()), seed.is<std::string>() ? seed.as<std::string>() : std::string(""));
+            if (input.is<bool>()) return Amara::hash(std::to_string(input.as<bool>()), seed.is<std::string>() ? seed.as<std::string>() : std::string(""));
             return 0;
         });
         

@@ -79,4 +79,18 @@ namespace Amara {
         }
         return compressed_data;
     }
+    
+    template <typename T>
+    double hash(const T& value, const std::string& seed) {
+        std::hash<std::string> stringHasher;
+        std::hash<T> valueHasher;
+        
+        size_t hValue = valueHasher(value);
+        size_t hSeed = stringHasher(seed);
+        size_t combined = hValue ^ (hSeed + 0x9e3779b97f4a7c15ULL + (hValue << 6) + (hValue >> 2));
+        
+        double normalized = static_cast<double>(combined) / static_cast<double>(std::numeric_limits<size_t>::max());
+        
+        return normalized;
+    }
 }
