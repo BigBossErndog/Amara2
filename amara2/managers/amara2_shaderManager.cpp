@@ -270,7 +270,8 @@ namespace Amara {
             ShaderProgram* newProgram = new ShaderProgram(shaderProgramID);
             newProgram->manager = this;
             newProgram->configure(config);
-        
+            newProgram->init(gameProps);
+            
             return newProgram;
         }
 

@@ -567,5 +567,20 @@ namespace Amara {
                 return std::string(v);
             }
         );
+        
+        lua.new_usertype<Vector4>("Vector4",
+            sol::constructors<Vector4(), Vector4(float, float, float, float)>(),
+            "x", &Vector4::x,
+            "y", &Vector4::y,
+            "z", &Vector4::z,
+            "w", &Vector4::w,
+            sol::meta_function::addition, &Vector4::operator+,
+            sol::meta_function::subtraction, &Vector4::operator-,
+            sol::meta_function::multiplication, &Vector4::operator*,
+            sol::meta_function::equal_to, &Vector4::operator==,
+            sol::meta_function::to_string, [](const Vector4& v) {
+                return std::string(v);
+            }
+        );
     }
 }

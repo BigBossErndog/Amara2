@@ -20,6 +20,10 @@ namespace Amara {
         >;
 
         std::unordered_map<std::string, UniformType> uniforms;
+        
+        sol::table uniform_proxy;
+        
+        Amara::GameProps* gameProps = nullptr;
 
         ShaderProgram() = default;
         ShaderProgram(unsigned int id) : programID(id) {}
@@ -27,6 +31,43 @@ namespace Amara {
         
         std::string key;
         unsigned int programID = 0;
+        
+        void init(Amara::GameProps* props) {
+            gameProps = props;
+            
+            sol::state& lua = gameProps->lua;
+            
+            uniform_proxy = lua.create_table();
+            sol::table proxy_meta = lua.create_table();
+            
+            proxy_meta["__index"] = [this, &lua](sol::table t, std::string name) -> sol::object {
+                if (this->uniforms.find(name) != this->uniforms.end()) {
+                    if (this->isUniform<bool>(name)) {
+                        return sol::make_object(lua, getUniform<bool>(name));
+                    }
+                    if (this->isUniform<int>(name)) {
+                        return sol::make_object(lua, getUniform<int>(name));
+                    }
+                    if (this->isUniform<float>(name)) {
+                        return sol::make_object(lua, getUniform<float>(name));
+                    }
+                    if (this->isUniform<Vector2>(name)) {
+                        return sol::make_object(lua, getUniform<Vector2>(name));
+                    }
+                    if (this->isUniform<Vector3>(name)) {
+                        return sol::make_object(lua, getUniform<Vector3>(name));
+                    }
+                    if (this->isUniform<Vector4>(name)) {
+                        return sol::make_object(lua, getUniform<Vector4>(name));
+                    }
+                }
+                return sol::lua_nil;
+            };
+            proxy_meta["__newindex"] = [this](sol::table t, std::string name, sol::object value) {
+                this->setUniform(name, lua_to_json(value));
+            };
+            uniform_proxy[sol::metatable_key] = proxy_meta;
+        }
 
         void applyShader() {
             if (destroyed) return;
@@ -146,6 +187,11 @@ namespace Amara {
         bool isUniform(UniformType type) {
             return std::holds_alternative<T>(type);
         }
+        
+        template <typename T>
+        bool isUniform(std::string name) {
+            return isUniform<T>(uniforms[name]);
+        }
 
         template <typename T>
         T getUniform(std::string name) {
@@ -173,7 +219,8 @@ namespace Amara {
                 "destroy", &ShaderProgram::destroy,
                 "key", &ShaderProgram::key,
                 "configure", &ShaderProgram::configure,
-                "setUniform", sol::resolve<void(std::string, sol::object)>(&ShaderProgram::setUniform)
+                "setUniform", sol::resolve<void(std::string, sol::object)>(&ShaderProgram::setUniform),
+                "uniforms", sol::readonly(&ShaderProgram::uniform_proxy)
             );
         }
     };

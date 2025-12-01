@@ -80,7 +80,7 @@ Creator:createWorld({
             text = "Blur Amount",
             onChange = function(value)
                 -- Get the shader program and set the uniform variable "blurRadius"
-                self.assets:getShaderProgram("boxBlur"):setUniform("blurRadius", math.floor(value * 10))
+                self.assets:getShaderProgram("boxBlur").uniforms["blurRadius"] = math.floor(value * 10)
             end
         })
     end,
