@@ -84,7 +84,25 @@ namespace Amara {
                 "createTexture", &AssetManager::createTexture,
                 "updateTexture", &AssetManager::updateTexture,
                 "setDefaultFont", &AssetManager::setDefaultFont,
-                "getShaderProgram", &AssetManager::getShaderProgram
+                "getShaderProgram", &AssetManager::getShaderProgram,
+                "getTilemapData", [&lua](AssetManager* self, std::string key) -> sol::object {
+                    if (self->has(key)) {
+                        Amara::Asset* asset = self->get(key);
+                        Amara::TMXTilemapAsset* tmx_asset = asset->as<Amara::TMXTilemapAsset*>();
+                        if (tmx_asset != nullptr) {
+                            sol::table tbl = lua.create_table();
+                            tbl["key"] = key;
+                            tbl["width"] = tmx_asset->width;
+                            tbl["height"] = tmx_asset->height;
+                            tbl["tileWidth"] = tmx_asset->tileWidth;
+                            tbl["tileHeight"] = tmx_asset->tileHeight;
+                            tbl["widthInPixels"] = tmx_asset->width * tmx_asset->tileWidth;
+                            tbl["heightInPixels"] = tmx_asset->height * tmx_asset->tileHeight;
+                            return tbl;
+                        }
+                    }
+                    return sol::nil;
+                }
             );
         }
     };

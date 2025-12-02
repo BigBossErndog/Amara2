@@ -538,5 +538,4 @@ namespace Amara {
 
         return true;
     }
-
 }
