@@ -331,6 +331,7 @@ namespace Amara {
                 "eventLooker", sol::readonly(&StateMachine::eventLooker),
                 "currentEvent", sol::readonly(&StateMachine::currentEvent),
                 "event", &StateMachine::event,
+                "hold", &StateMachine::event,
                 "once", &StateMachine::once,
                 "nextEvent", &StateMachine::nextEvent,
                 "nextEventOn", &StateMachine::nextEventOn,

@@ -84,6 +84,15 @@ namespace Amara {
                 "createTexture", &AssetManager::createTexture,
                 "updateTexture", &AssetManager::updateTexture,
                 "setDefaultFont", &AssetManager::setDefaultFont,
+                "defaultFont", sol::property(
+                    [&lua] (AssetManager& self) -> sol::object {
+                        if (self.defaultFont) return sol::make_object(lua, self.defaultFont->key);
+                        return sol::nil;
+                    },
+                    [] (AssetManager& self, std::string font) {
+                        self.setDefaultFont(font);
+                    }
+                ),
                 "getShaderProgram", &AssetManager::getShaderProgram,
                 "getTilemapData", [&lua](AssetManager* self, std::string key) -> sol::object {
                     if (self->has(key)) {

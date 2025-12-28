@@ -48,7 +48,7 @@ namespace Amara {
         float alpha = 1;
         
         float depth = 0.0f;
-
+        
         bool sortable = true;
         bool depthSortChildrenEnabled = true;
 
@@ -136,6 +136,7 @@ namespace Amara {
                 { "visible", visible },
                 { "sortable", sortable },
                 { "depthSortChildrenEnabled", depthSortChildrenEnabled },
+                { "depthSortChildren", depthSortChildrenEnabled },
                 { "props", lua_to_json(props) }
             });
 
@@ -232,6 +233,7 @@ namespace Amara {
 
             if (json_has(config, "sortable")) sortable = config["sortable"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
+            if (json_has(config, "depthSortChildren")) depthSortChildrenEnabled = config["depthSortChildren"];
 
             if (json_has(config, "speed")) {
                 if (config["speed"].is_number()) {
@@ -686,8 +688,9 @@ namespace Amara {
 
         void moveChildren(Amara::Node* other) {
             if (destroyed || other == this || other->destroyed) return;
-
-            for (Amara::Node* child: children) {
+            
+            std::vector<Amara::Node*> children_copy = children;
+            for (Amara::Node* child: children_copy) {
                 child->switchParent(other);
             }
         }
@@ -990,6 +993,7 @@ namespace Amara {
                 "destroyChildren", &Node::destroyChildren,
                 "sortable", &Node::sortable,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
+                "depthSortChildren", &Node::depthSortChildrenEnabled,
                 "forceSortChildren", [](Amara::Node& n) {
                     n.sortChildren();
                 },
