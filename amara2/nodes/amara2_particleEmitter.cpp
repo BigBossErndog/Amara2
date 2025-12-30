@@ -4,6 +4,9 @@ namespace Amara {
         Particle() = default;
 
         static float constexpr invalid = std::numeric_limits<float>::lowest();
+        
+        sol::object luaobject;
+        Particle* keep = nullptr;
 
         Amara::Vector2 pos;
         Amara::Vector2 scale = 1.0f;
@@ -43,6 +46,14 @@ namespace Amara {
                 "pos", sol::property([](Amara::Particle& t) -> Vector2& { return t.pos; }, [](Amara::Particle& t, sol::object v) { t.pos = v; }),
                 "x", sol::property([](Amara::Particle& t) -> float { return t.pos.x; }, [](Amara::Particle& t, float v) { t.pos.x = v; }),
                 "y", sol::property([](Amara::Particle& t) -> float { return t.pos.y; }, [](Amara::Particle& t, float v) { t.pos.y = v; }),
+                "origin", sol::property([](Amara::Particle& t) -> Vector2& { return t.origin; }, [](Amara::Particle& t, sol::object v) { t.origin = v; }),
+                "originX", sol::property([](Amara::Particle& t) -> float { return t.origin.x; }, [](Amara::Particle& t, float v) { t.origin.x = v; }),
+                "originY", sol::property([](Amara::Particle& t) -> float { return t.origin.y; }, [](Amara::Particle& t, float v) { t.origin.y = v; }),
+                "rotation", sol::property([](Amara::Particle& t) -> float { return t.rotation; }, [](Amara::Particle& t, float v) { t.rotation = v; }),
+                "scale", sol::property([](Amara::Particle& t) -> Vector2& { return t.scale; }, [](Amara::Particle& t, sol::object v) { t.scale = v; }),
+                "scaleX", sol::property([](Amara::Particle& t) -> float { return t.scale.x; }, [](Amara::Particle& t, float v) { t.scale.x = v; }),
+                "scaleY", sol::property([](Amara::Particle& t) -> float { return t.scale.y; }, [](Amara::Particle& t, float v) { t.scale.y = v; }),
+                "alpha", sol::property([](Amara::Particle& t) -> float { return t.alpha; }, [](Amara::Particle& t, float v) { t.alpha = v; }),
                 "velocity", sol::property([](Amara::Particle& t) -> Vector2& { return t.velocity; }, [](Amara::Particle& t, sol::object v) { t.velocity = v; }),
                 "acceleration", sol::property([](Amara::Particle& t) -> Vector2& { return t.acceleration; }, [](Amara::Particle& t, sol::object v) { t.acceleration = v; }),
                 "lifeTime", sol::readonly(&Amara::Particle::lifeTime)
@@ -84,7 +95,7 @@ namespace Amara {
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
             if (String::equal(key, "particles")) {
                 particle_config.update(lua_to_json(val));
-
+                
                 if (json_has(particle_config, "ease")) {
                     easing = particle_config["ease"];
                 }
@@ -101,7 +112,7 @@ namespace Amara {
                             }
                         }
                         poolSize = _poolSize;
-                        particles.resize(poolSize);
+                        resizeParticles();
                     }
                 }
                 if (json_has(particle_config, "spawnRate")) {
@@ -122,6 +133,10 @@ namespace Amara {
                     if (tbl["onParticleUpdate"].valid()) {
                         sol::object func = tbl["onParticleUpdate"];
                         funcs.setFunction(nodeID, "onParticleUpdate", func.as<sol::function>());
+                    }
+                    if (tbl["onParticleSpawn"].valid()) {
+                        sol::object func = tbl["onParticleSpawn"];
+                        funcs.setFunction(nodeID, "onParticleSpawn", func.as<sol::function>());
                     }
                 }
             }
@@ -390,7 +405,18 @@ namespace Amara {
 
         virtual void create() override {
             Amara::Sprite::create();
+            resizeParticles();
+        }
+        
+        void resizeParticles() {
             particles.resize(poolSize);
+            for (auto& particle : particles) {
+                particle.in_use = false;
+                if (!particle.luaobject.valid() || particle.keep != &particle) {
+                    particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                    particle.keep = &particle;
+                }
+            }
         }
 
         void burst(double amount, sol::object lua_config) {
@@ -410,7 +436,11 @@ namespace Amara {
                     spawnedCount += 1;
                     if (onSpawn.valid()) {
                         try {
-                            onSpawn(sol::make_object(gameProps->lua, &particle));
+                            if (!particle.luaobject.valid() || particle.keep != &particle) {
+                                particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                                particle.keep = &particle;
+                            }
+                            onSpawn(particle.luaobject);
                         }
                         catch (const sol::error& e) {
                             fatal_error(e.what());
@@ -629,7 +659,11 @@ namespace Amara {
                     initParticle(particle, particle_config);
                     if (onSpawn.valid()) {
                         try {
-                            onSpawn(sol::make_object(gameProps->lua, &particle));
+                            if (!particle.luaobject.valid() || particle.keep != &particle) {
+                                particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                                particle.keep = &particle;
+                            }
+                            onSpawn(particle.luaobject);
                         }
                         catch (const sol::error& e) {
                             fatal_error(e.what());
@@ -672,7 +706,11 @@ namespace Amara {
                     if (onUpdate_defined) {
                         sol::function func = funcs.getFunction("onParticleUpdate");
                         try {
-                            func(sol::make_object(gameProps->lua, &particle), deltaTime);
+                            if (!particle.luaobject.valid() || particle.keep != &particle) {
+                                particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                                particle.keep = &particle;
+                            }
+                            func(particle.luaobject, deltaTime);
                         }
                         catch (const sol::error& e) {
                             fatal_error(e.what());

@@ -52,7 +52,15 @@ Creator:createWorld({
                 }, -- Spins the particle at a rate randomly between -pi and pi.
 
                 alpha = 1,
-                endAlpha = 0 -- Fade the particle out.
+                endAlpha = 0, -- Fade the particle out.
+                
+                onParticleSpawn = function(particle)
+                    -- Do something to a particle when it spawns.
+                end,
+                
+                onParticleUpdate = function(particle, deltaTime)
+                    -- Do something to a particle every frame.
+                end,
             }
         })
     end,
