@@ -14,6 +14,7 @@ namespace Amara {
 
         Vector2 scroll = { 0, 0 };
         Vector2 zoom = { 1, 1 };
+        Vector2 offset = { 0, 0 };
         
         Vector2 center = { 0, 0 };
         float left = 0;
@@ -123,7 +124,7 @@ namespace Amara {
         }
 
         void update_borders() {
-            center = scroll;
+            center = scroll + offset;
             left = center.x - (width/zoom.x)/2.0;
             right = center.x + (width/zoom.x)/2.0;
             top = center.y - (height/zoom.y)/2.0;
@@ -144,18 +145,18 @@ namespace Amara {
                     scroll.x = bounds.x + bounds.w/2;
                 }
                 else {
-                    if (left < bounds.x) scroll.x = bounds.x + view.w/2;
-                    if (right > bounds.x + bounds.w) scroll.x = bounds.x + bounds.w - view.w/2;
+                    if (left < bounds.x) scroll.x = bounds.x + view.w/2 - offset.x;
+                    if (right > bounds.x + bounds.w) scroll.x = bounds.x + bounds.w - view.w/2 - offset.x;
                 }
                 if (bounds.h < view.h) {
-                    scroll.y = bounds.y + bounds.h/2;
+                    scroll.y = bounds.y + bounds.h/2 - offset.y;
                 }
                 else {
-                    if (top < bounds.y) scroll.y = bounds.y + view.h/2;
-                    if (bottom > bounds.y + bounds.h) scroll.y = bounds.y + bounds.h - view.h/2;
+                    if (top < bounds.y) scroll.y = bounds.y + view.h/2 - offset.y;
+                    if (bottom > bounds.y + bounds.h) scroll.y = bounds.y + bounds.h - view.h/2 - offset.y;
                 }
             }
-
+            
             update_borders();
         }
         
@@ -277,7 +278,7 @@ namespace Amara {
                 passOn.anchor = Vector3( 
                     rotateAroundAnchor(
                         Vector2(0, 0),
-                        Vector2(-scroll.x, -scroll.y),
+                        Vector2(-scroll.x -offset.x, -scroll.y -offset.y),
                         rotation
                     ),
                     0
@@ -402,6 +403,12 @@ namespace Amara {
                     sol::resolve<sol::object(float, float)>(&Camera::changeScroll),
                     sol::resolve<sol::object(float)>(&Camera::changeScroll)
                 ),
+                "offset", sol::property(
+                    [] (Camera& cam) -> Vector2& { return cam.offset; },
+                    [] (Camera& cam, sol::object _o) { cam.offset = _o; }
+                ),
+                "offsetX", sol::property([](Camera& cam) { return cam.offset.x; }, [](Camera& cam, float val) { cam.offset.x = val; }),
+                "offsetY", sol::property([](Camera& cam) { return cam.offset.y; }, [](Camera& cam, float val) { cam.offset.y = val; }),
                 "zoom", sol::property(
                     [] (Camera& cam) -> Vector2& { return cam.zoom; },
                     [] (Camera& cam, sol::object _z) { cam.zoom = _z; }

@@ -240,6 +240,11 @@ namespace Amara {
             }
             return get_lua_object();
         }
+        
+        bool hasAnimation(std::string name) {
+            if (spritesheet == nullptr) return false;
+            return gameProps->animations->get(spritesheet->key, name) != nullptr;
+        }
 
         virtual void drawSelf(const Rectangle& v) override {
             if (image == nullptr) return;
@@ -506,6 +511,7 @@ namespace Amara {
                 "frame", &Sprite::frame,
                 "animate",  sol::resolve<sol::object(sol::object)>(&Sprite::animate),
                 "stopAnimating", &Sprite::stopAnimating,
+                "hasAnimation", &Sprite::hasAnimation,
                 "textureWidth", sol::readonly(&Sprite::textureWidth),
                 "textureHeight", sol::readonly(&Sprite::textureHeight),
                 "frameWidth", sol::readonly(&Sprite::frameWidth),

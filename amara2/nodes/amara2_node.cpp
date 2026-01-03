@@ -93,7 +93,7 @@ namespace Amara {
         Node() {
             set_base_node_id("Node");
         }
-
+        
         void set_base_node_id(std::string key) {
             if (!baseNodeID.empty()) {
                 inheritanceChain.push_front(baseNodeID);
@@ -104,7 +104,7 @@ namespace Amara {
         virtual void create() {
             if (funcs.hasFunction("onCreate")) funcs.callFunction("onCreate");
         }
-
+        
         virtual void init() {
             messages.init(gameProps, this);
             input.init(gameProps, this);
@@ -925,6 +925,7 @@ namespace Amara {
                 "id", &Node::id,
                 "baseNodeID", sol::readonly(&Node::baseNodeID),
                 "nodeID", sol::readonly(&Node::nodeID),
+                
                 "parent", sol::property(
                     [](Node& e) { return e.parent->get_lua_object(); },
                     [](Node& e, sol::object val) {

@@ -96,6 +96,9 @@ namespace Amara {
         }
         
         Amara::Node* prepNode(Amara::Node* node, std::string key) {
+            if (!String::equal(node->nodeID, key) && !String::equal(node->baseNodeID, key)) {
+                node->inheritanceChain.push_back(node->nodeID);
+            }
             node->nodeID = key;
             node->gameProps = gameProps;
             node->init();

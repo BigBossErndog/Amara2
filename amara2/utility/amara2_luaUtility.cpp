@@ -9,6 +9,8 @@ namespace Amara {
             return sol::make_object(lua, sol::nil);
         } else if (json.is_boolean()) {
             return sol::make_object(lua, json.get<bool>());
+        } else if (json.is_number_integer()) {
+            return sol::make_object(lua, json.get<int>());
         } else if (json.is_number()) {
             return sol::make_object(lua, json.get<double>());
         } else if (json.is_string()) {
@@ -374,6 +376,19 @@ namespace Amara {
         string_metatable.set_function("sep_concat", &Amara::lua_string_sep_concat);
         string_metatable.set_function("json_string", [](sol::object obj) {
             return lua_to_json(obj).dump();
+        });
+        string_metatable.set_function("random", [&lua](sol::object num_obj) {
+            if (!num_obj.is<int>()) {
+                fatal_error("Error: string.random() expected an integer argument.");
+            }
+            int num = num_obj.as<int>();
+            
+            std::string result = "";
+            for (int i = 0; i < num; i++) {
+                result += 'a' + floor(lua_random(lua) * ('z' + 1));
+            }
+            
+            return result;
         });
 
         sol::table math_metatable = lua["math"];
