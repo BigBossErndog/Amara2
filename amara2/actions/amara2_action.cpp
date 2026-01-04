@@ -183,7 +183,6 @@ namespace Amara {
                 "has_started", sol::readonly(&Action::has_started),
                 "completed", sol::readonly(&Action::completed),
                 "complete", &Action::complete,
-                "addChild", &Action::addChild,
                 "chain", &Action::chain,
                 "whenDone", &Action::whenDone,
                 "next", sol::overload(

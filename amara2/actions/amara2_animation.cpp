@@ -77,6 +77,15 @@ namespace Amara {
                 anim_configured = true;
                 return;
             }
+            else if (config.is_array() && config.size() > 0) {
+                setAnimation(config[0]);
+                if (config.size() > 1) {
+                    config.erase(config.begin());
+                    Amara::Animation* anim = createChild("Animation")->as<Amara::Animation*>();
+                    anim->sprite = sprite;
+                    anim->setAnimation(config);
+                }
+            }
         }
 
         virtual void prepare() override {
@@ -144,6 +153,10 @@ namespace Amara {
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "setAnimation", &Animation::setAnimation,
                 "progress", sol::readonly(&Animation::progress),
+                "key", sol::readonly(&Animation::animKey),
+                "animate", [](Animation& anim, sol::object v) {
+                    if (anim.sprite) anim.sprite->animate(v);
+                },
                 "key", sol::readonly(&Animation::animKey)
             );
 
@@ -191,13 +204,14 @@ namespace Amara {
                 else {
                     Amara::Animation* anim = node->as<Animation*>();
                     if (anim) {
+                        anim->destroyChildren();
                         anim->setAnimation(config);
                         return anim;
                     }
                 }
             }
         }
-        if (config.is_object() || config.is_string()) {
+        if (config.is_object() || config.is_string() || config.is_array()) {
             Amara::Animation* anim = createChild("Animation")->as<Amara::Animation*>();
             anim->sprite = this;
             anim->setAnimation(config);
