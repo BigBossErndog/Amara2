@@ -592,6 +592,13 @@ namespace Amara {
         });
         math_metatable.set_function("closestEquivalentAngle", &Amara::closestEquivalentAngle);
         math_metatable.set_function("angleDifference", &Amara::angleDifference);
+        math_metatable.set_function("vector", [](sol::object objDir) {
+            if (!objDir.is<double>()) {
+                fatal_error("Error: math.vector() expects a number as argument.");
+            }
+            double dir = objDir.as<double>();
+            return Vector2(std::cos(dir), std::sin(dir));
+        });
         
         math_metatable.set_function("offsetX", [](int dir) -> double {
             switch ((Amara::Direction)dir) {

@@ -40,6 +40,8 @@ namespace Amara {
         bool end_scale_set = false;
 
         bool in_use = false;
+        
+        double progress = 0;
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Particle>("Particle",
@@ -56,7 +58,8 @@ namespace Amara {
                 "alpha", sol::property([](Amara::Particle& t) -> float { return t.alpha; }, [](Amara::Particle& t, float v) { t.alpha = v; }),
                 "velocity", sol::property([](Amara::Particle& t) -> Vector2& { return t.velocity; }, [](Amara::Particle& t, sol::object v) { t.velocity = v; }),
                 "acceleration", sol::property([](Amara::Particle& t) -> Vector2& { return t.acceleration; }, [](Amara::Particle& t, sol::object v) { t.acceleration = v; }),
-                "lifeTime", sol::readonly(&Amara::Particle::lifeTime)
+                "lifeTime", sol::readonly(&Amara::Particle::lifeTime),
+                "progress", sol::readonly(&Amara::Particle::progress)
             );
         }
     };
@@ -207,6 +210,7 @@ namespace Amara {
 
         void initParticle(Particle& particle, const nlohmann::json& particle_config) {
             particle.lifeTime = 0;
+            particle.progress = 0;
 
             particle.pos = Vector2(0);
             if (json_has(particle_config, "pos")) {
@@ -730,6 +734,7 @@ namespace Amara {
                 if (!updated_this_frame) {
                     particle.lifeTime += deltaTime;
                 }
+                particle.progress = particle.lifeTime / particle.maxLifeTime;
             }
             end_particle = last_particle;
 

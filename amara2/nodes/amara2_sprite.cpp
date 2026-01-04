@@ -197,10 +197,9 @@ namespace Amara {
             if (json_has(config, "origin")) origin = config["origin"];
 
             if (json_has(config, "originPosition")) {
-                origin = Vector2(config["originPosition"]) / Vector2(
-                    (spritesheet ? frameWidth : textureWidth), 
-                    (spritesheet ? frameHeight : textureHeight)
-                );
+                Vector2 originPosition = config["originPosition"];
+                origin.x = originPosition.x / (spritesheet ? frameWidth : textureWidth);
+                origin.y = originPosition.y / (spritesheet ? frameHeight : textureHeight);
             }
             if (json_has(config, "originPositionX")) {
                 origin.x = config["originPositionX"].get<float>() / (spritesheet ? frameWidth : textureWidth);

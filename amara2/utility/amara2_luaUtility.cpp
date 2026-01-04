@@ -432,26 +432,40 @@ namespace Amara {
             return count;
         });
         table_metatable.set_function("to_string", string_to_lua_object(lua, lua_table_to_string));
-        table_metatable.set_function("shallow_copy", [&lua](sol::table tbl) -> sol::table {
-            return lua_shallow_copy(lua, tbl);
+        table_metatable.set_function("shallow_copy", [&lua](sol::object tbl) -> sol::table {
+            if (!tbl.is<sol::table>()) {
+                fatal_error("Error: table.shallow_copy() expected a table argument.");
+            }
+            return lua_shallow_copy(lua, tbl.as<sol::table>());
         });
-        table_metatable.set_function("deep_copy", [&lua](sol::table tbl) -> sol::table {
-            return lua_deep_copy(lua, tbl);
+        table_metatable.set_function("deep_copy", [&lua](sol::object tbl) -> sol::table {
+            if (!tbl.is<sol::table>()) {
+                fatal_error("Error: table.deep_copy() expected a table argument.");
+            }
+            return lua_deep_copy(lua, tbl.as<sol::table>());
         });
-        table_metatable.set_function("append", [](sol::table tbl1, sol::table tbl2) {
-            if (!tbl1.is<sol::table>() || !tbl2.is<sol::table>()) {
+        table_metatable.set_function("append", [](sol::object obj1, sol::object obj2) {
+            if (!obj1.is<sol::table>() || !obj2.is<sol::table>()) {
                 fatal_error("Error: table.append() expected 2 table arguments.");
             }
+            
+            sol::table tbl1 = obj1.as<sol::table>();
+            sol::table tbl2 = obj2.as<sol::table>();
+            
             int len = tbl1.size();
             for (auto& pair : tbl2) {
                 tbl1[len + 1] = pair.second;
             }
             return tbl1;
         });
-        table_metatable.set_function("merge", [&lua](sol::table t1, sol::table t2) {
-            if (!t1.is<sol::table>() || !t2.is<sol::table>()) {
+        table_metatable.set_function("merge", [&lua](sol::object obj1, sol::object obj2) {
+            if (!obj1.is<sol::table>() || !obj2.is<sol::table>()) {
                 fatal_error("Error: table.merge() expected 2 table arguments.");
             }
+            
+            sol::table t1 = obj1.as<sol::table>();
+            sol::table t2 = obj2.as<sol::table>();
+            
             sol::table new_table = lua.create_table();
             for (auto& it: t1) {
                 new_table[it.first] = it.second;

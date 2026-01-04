@@ -504,8 +504,8 @@ namespace Amara {
             if (destroyed) return;
             update_properties();
 
-            if (funcs.hasFunction("preDraw")) {
-                funcs.callFunction("preDraw", v);
+            if (funcs.hasFunction("onPreDraw")) {
+                funcs.callFunction("onPreDraw", v);
             }
 
             drawObjects(v);
