@@ -505,20 +505,44 @@ namespace Amara {
                 fatal_error("Error: table.shuffle() expected a table argument.");
             }
             sol::table t = obj.as<sol::table>();
-
-            std::vector<sol::object> elems;
-            for (std::size_t i = 1; i <= t.size(); ++i) {
-                elems.push_back(t.get<sol::object>(i));
-            }
-
-            static std::random_device rd;
-            static std::mt19937 gen(rd());
-            std::shuffle(elems.begin(), elems.end(), gen);
-
             sol::table result = lua.create_table();
-            for (const auto& elem : elems) {
-                result[result.size() + 1] = elem;
+            
+            std::vector<sol::object> values;
+            for (auto& pair : t) {
+                values.push_back(pair.second);
             }
+        
+            int n = static_cast<int>(values.size());
+            for (int i = n - 1; i > 0; --i) {
+                int j = static_cast<int>(std::floor(lua_random(lua) * (i + 1)));
+                std::swap(values[i], values[j]);
+            }
+        
+            for (int i = 0; i < n; ++i) {
+                result[i + 1] = values[i];
+            }
+        
+            return result;
+        });
+        table_metatable.set_function("crop", [&lua](sol::object obj, sol::object arg) {
+            if (!obj.is<sol::table>() || (!arg.is<int>() && !arg.is<double>() && !arg.is<float>())) {
+                fatal_error("Error: table.crop() expected a (table, number) arguments.");
+            }
+            if (!arg.is<int>()) {
+                fatal_error("Error: table.crop() expected an integer argument.");
+            }
+            sol::table t = obj.as<sol::table>();
+            sol::table result = lua.create_table();
+            
+            int num = 0;
+            if (arg.is<int>()) num = arg.as<int>();
+            else if (arg.is<double>()) num = static_cast<int>(arg.as<double>());
+            else if (arg.is<float>()) num = static_cast<int>(arg.as<float>());
+            
+            while (result.size() < num && result.size() < t.size()) {
+                result[result.size() + 1] = t[result.size() + 1];
+            }
+        
             return result;
         });
 

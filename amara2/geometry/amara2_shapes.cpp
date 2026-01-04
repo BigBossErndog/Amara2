@@ -125,85 +125,6 @@ namespace Amara {
         }
     };
 
-    struct Quad {
-        Quad() = default;
-        Quad(const Rectangle& rect) {
-            p1 = Vector2( rect.x, rect.y );
-            p2 = Vector2( rect.x + rect.w, rect.y );
-            p3 = Vector2( rect.x + rect.w, rect.y + rect.h );
-            p4 = Vector2( rect.x, rect.y + rect.h );
-        }
-        Quad(const SDL_FRect& rect): Quad(Rectangle(rect)) {}
-        Quad(const SDL_Rect& rect): Quad(Rectangle(rect)) {}
-        Quad(
-            const Vector2& _p1,
-            const Vector2& _p2,
-            const Vector2& _p3,
-            const Vector2& _p4
-        ) {
-            p1 = _p1;
-            p2 = _p2;
-            p3 = _p3;
-            p4 = _p4;
-        }
-
-        Vector2 p1;
-        Vector2 p2;
-        Vector2 p3;
-        Vector2 p4;
-
-        explicit operator std::string() const {
-            return String::concat(
-                "{ \n\t", std::string(p1), ",\n\t",
-                std::string(p2), ",\n\t",
-                std::string(p3), ",\n\t",
-                std::string(p4), "\n}"
-            );
-        }
-        friend std::ostream& operator<<(std::ostream& os, const Quad& v) {
-            return os << static_cast<std::string>(v);
-        }
-
-        nlohmann::json toJSON() {
-            return nlohmann::json::object({
-                {"p1", p1.toJSON()},
-                {"p2", p2.toJSON()},
-                {"p3", p3.toJSON()},
-                {"p4", p4.toJSON()}
-            });
-        }
-
-        Quad& operator= (const nlohmann::json& config) {
-            if (config.is_array()) {
-                if (config.size() == 4) {
-                    p1 = config[0];
-                    p2 = config[1];
-                    p3 = config[2];
-                    p4 = config[3];
-                }
-                else if (config.size() == 8) {
-                    p1 = Vector2(config[0], config[1]);
-                    p2 = Vector2(config[2], config[3]);
-                    p3 = Vector2(config[4], config[5]);
-                    p4 = Vector2(config[6], config[7]);
-                }
-                else {
-                    fatal_error("Error: Invalid Quad assignment.");
-                }
-            }
-            else if (config.is_object()) {
-                if (json_has(config, "p1")) p1 = config["p1"];
-                if (json_has(config, "p2")) p2 = config["p2"];
-                if (json_has(config, "p3")) p3 = config["p3"];
-                if (json_has(config, "p4")) p4 = config["p4"];
-            }
-            else {
-                fatal_error("Error: Invalid Quad assignment.");
-            }
-            return *this;
-        }
-    };
-
     struct Circle: public Vector2 {
         float radius = 0;
 
@@ -269,6 +190,104 @@ namespace Amara {
             return *this;
         }
         Circle& operator= (sol::object obj);
+    };
+    
+    struct Quad {
+        Quad() = default;
+        Quad(const Rectangle& rect) {
+            p1 = Vector2( rect.x, rect.y );
+            p2 = Vector2( rect.x + rect.w, rect.y );
+            p3 = Vector2( rect.x + rect.w, rect.y + rect.h );
+            p4 = Vector2( rect.x, rect.y + rect.h );
+        }
+        Quad(const SDL_FRect& rect): Quad(Rectangle(rect)) {}
+        Quad(const SDL_Rect& rect): Quad(Rectangle(rect)) {}
+        Quad(
+            const Vector2& _p1,
+            const Vector2& _p2,
+            const Vector2& _p3,
+            const Vector2& _p4
+        ) {
+            p1 = _p1;
+            p2 = _p2;
+            p3 = _p3;
+            p4 = _p4;
+        }
+
+        Vector2 p1;
+        Vector2 p2;
+        Vector2 p3;
+        Vector2 p4;
+        
+        Vector2 getCenter() const {
+            return (p1 + p2 + p3 + p4) / 4;
+        }
+        
+        Circle getIncircle() const {
+            Vector2 center = getCenter();
+            float radius = std::min(
+                std::min(
+                    (p2 - p1).length() / 2,
+                    (p3 - p2).length() / 2
+                ),
+                std::min(
+                    (p4 - p3).length() / 2,
+                    (p1 - p4).length() / 2
+                )
+            );
+            return Circle(center, radius);
+        }
+
+        explicit operator std::string() const {
+            return String::concat(
+                "{ \n\t", std::string(p1), ",\n\t",
+                std::string(p2), ",\n\t",
+                std::string(p3), ",\n\t",
+                std::string(p4), "\n}"
+            );
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Quad& v) {
+            return os << static_cast<std::string>(v);
+        }
+
+        nlohmann::json toJSON() {
+            return nlohmann::json::object({
+                {"p1", p1.toJSON()},
+                {"p2", p2.toJSON()},
+                {"p3", p3.toJSON()},
+                {"p4", p4.toJSON()}
+            });
+        }
+
+        Quad& operator= (const nlohmann::json& config) {
+            if (config.is_array()) {
+                if (config.size() == 4) {
+                    p1 = config[0];
+                    p2 = config[1];
+                    p3 = config[2];
+                    p4 = config[3];
+                }
+                else if (config.size() == 8) {
+                    p1 = Vector2(config[0], config[1]);
+                    p2 = Vector2(config[2], config[3]);
+                    p3 = Vector2(config[4], config[5]);
+                    p4 = Vector2(config[6], config[7]);
+                }
+                else {
+                    fatal_error("Error: Invalid Quad assignment.");
+                }
+            }
+            else if (config.is_object()) {
+                if (json_has(config, "p1")) p1 = config["p1"];
+                if (json_has(config, "p2")) p2 = config["p2"];
+                if (json_has(config, "p3")) p3 = config["p3"];
+                if (json_has(config, "p4")) p4 = config["p4"];
+            }
+            else {
+                fatal_error("Error: Invalid Quad assignment.");
+            }
+            return *this;
+        }
     };
     
     struct Triangle {
@@ -992,6 +1011,7 @@ namespace Amara {
                 [](const Quad& q) { return q.p4; },
                 [](Quad& q, sol::object v) { q.p4 = v; }
             ),
+            "center", sol::property(&Quad::getCenter),
             "string", [](const Quad& q) {
                 return std::string(q);
             }

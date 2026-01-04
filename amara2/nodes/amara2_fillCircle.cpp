@@ -159,7 +159,9 @@ namespace Amara {
                     ),
                     passOn.rotation + rotation
                 );
-                input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nullptr);
+                Shape inputShape = inputQuad.getIncircle();
+                
+                input.queueInput(inputShape.move(Vector2(v.x, v.y)), v, nullptr);
             }
 
             if (gameProps->renderer) {

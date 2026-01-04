@@ -331,10 +331,26 @@ namespace Amara {
                 "eventLooker", sol::readonly(&StateMachine::eventLooker),
                 "currentEvent", sol::readonly(&StateMachine::currentEvent),
                 "event", &StateMachine::event,
-                "hold", &StateMachine::event,
+                "hold", [](StateMachine& sm, sol::object arg) {
+                    bool inEvent = false;
+                    int repeats = 1;
+                    
+                    if (arg.is<int>()) {
+                        repeats = arg.as<int>();
+                    }
+                    else if (arg.is<double>()) {
+                        repeats = round(arg.as<double>());
+                    }
+                    
+                    for (int i = 0; i < repeats; i++) {
+                        if (sm.event()) inEvent = true;
+                    }
+                    return inEvent;
+                },
                 "once", &StateMachine::once,
                 "nextEvent", &StateMachine::nextEvent,
                 "nextEventOn", &StateMachine::nextEventOn,
+                "release", &StateMachine::nextEvent,
                 "wait", sol::overload(
                     sol::resolve<bool(double, bool)>(&StateMachine::wait),
                     sol::resolve<bool(float)>(&StateMachine::wait)
