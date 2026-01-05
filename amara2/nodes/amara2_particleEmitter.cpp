@@ -6,6 +6,7 @@ namespace Amara {
         static float constexpr invalid = std::numeric_limits<float>::lowest();
         
         sol::object luaobject;
+        sol::table luatable;
         Particle* keep = nullptr;
 
         Amara::Vector2 pos;
@@ -16,25 +17,14 @@ namespace Amara {
 
         int frame = 0;
 
-        Amara::Color tint;
-        Amara::Color endTint;
-        Amara::Color drawTint;
+        Amara::Color tint = Color::White;
 
         Amara::Vector2 velocity;
         Amara::Vector2 acceleration;
 
-        float angularVelocity = 0;
+        float rotationalVelocity = 0;
 
         float lifeTime = 0;
-        float maxLifeTime = 0;
-        
-        float startX = invalid;
-        float startY = invalid;
-        float endX = invalid;
-        float endY = invalid;
-
-        float startAlpha = invalid;
-        float endAlpha = invalid;
 
         Vector2 endScale = Vector2(1);
         bool end_scale_set = false;
@@ -42,24 +32,34 @@ namespace Amara {
         bool in_use = false;
         
         double progress = 0;
+        
+        nlohmann::json start_data;
+        nlohmann::json end_data;
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Particle>("Particle",
                 "pos", sol::property([](Amara::Particle& t) -> Vector2& { return t.pos; }, [](Amara::Particle& t, sol::object v) { t.pos = v; }),
-                "x", sol::property([](Amara::Particle& t) -> float { return t.pos.x; }, [](Amara::Particle& t, float v) { t.pos.x = v; }),
-                "y", sol::property([](Amara::Particle& t) -> float { return t.pos.y; }, [](Amara::Particle& t, float v) { t.pos.y = v; }),
+                "x", sol::property([](Amara::Particle& t) -> double { return t.pos.x; }, [](Amara::Particle& t, double v) { t.pos.x = v; }),
+                "y", sol::property([](Amara::Particle& t) -> double { return t.pos.y; }, [](Amara::Particle& t, double v) { t.pos.y = v; }),
+                "frame", sol::property([](Amara::Particle& t) -> int { return t.frame; }, [](Amara::Particle& t, int v) { t.frame = v; }),
                 "origin", sol::property([](Amara::Particle& t) -> Vector2& { return t.origin; }, [](Amara::Particle& t, sol::object v) { t.origin = v; }),
-                "originX", sol::property([](Amara::Particle& t) -> float { return t.origin.x; }, [](Amara::Particle& t, float v) { t.origin.x = v; }),
-                "originY", sol::property([](Amara::Particle& t) -> float { return t.origin.y; }, [](Amara::Particle& t, float v) { t.origin.y = v; }),
-                "rotation", sol::property([](Amara::Particle& t) -> float { return t.rotation; }, [](Amara::Particle& t, float v) { t.rotation = v; }),
+                "originX", sol::property([](Amara::Particle& t) -> double { return t.origin.x; }, [](Amara::Particle& t, double v) { t.origin.x = v; }),
+                "originY", sol::property([](Amara::Particle& t) -> double { return t.origin.y; }, [](Amara::Particle& t, double v) { t.origin.y = v; }),
+                "rotation", sol::property([](Amara::Particle& t) -> double { return t.rotation; }, [](Amara::Particle& t, double v) { t.rotation = v; }),
                 "scale", sol::property([](Amara::Particle& t) -> Vector2& { return t.scale; }, [](Amara::Particle& t, sol::object v) { t.scale = v; }),
-                "scaleX", sol::property([](Amara::Particle& t) -> float { return t.scale.x; }, [](Amara::Particle& t, float v) { t.scale.x = v; }),
-                "scaleY", sol::property([](Amara::Particle& t) -> float { return t.scale.y; }, [](Amara::Particle& t, float v) { t.scale.y = v; }),
-                "alpha", sol::property([](Amara::Particle& t) -> float { return t.alpha; }, [](Amara::Particle& t, float v) { t.alpha = v; }),
+                "scaleX", sol::property([](Amara::Particle& t) -> double { return t.scale.x; }, [](Amara::Particle& t, double v) { t.scale.x = v; }),
+                "scaleY", sol::property([](Amara::Particle& t) -> double { return t.scale.y; }, [](Amara::Particle& t, double v) { t.scale.y = v; }),
+                "alpha", sol::property([](Amara::Particle& t) -> double { return t.alpha; }, [](Amara::Particle& t, double v) { t.alpha = v; }),
                 "velocity", sol::property([](Amara::Particle& t) -> Vector2& { return t.velocity; }, [](Amara::Particle& t, sol::object v) { t.velocity = v; }),
+                "velocityX", sol::property([](Amara::Particle& t) -> double { return t.velocity.x; }, [](Amara::Particle& t, double v) { t.velocity.x = v; }),
+                "velocityY", sol::property([](Amara::Particle& t) -> double { return t.velocity.y; }, [](Amara::Particle& t, double v) { t.velocity.y = v; }),
                 "acceleration", sol::property([](Amara::Particle& t) -> Vector2& { return t.acceleration; }, [](Amara::Particle& t, sol::object v) { t.acceleration = v; }),
+                "accelerationX", sol::property([](Amara::Particle& t) -> double { return t.acceleration.x; }, [](Amara::Particle& t, double v) { t.acceleration.x = v; }),
+                "accelerationY", sol::property([](Amara::Particle& t) -> double { return t.acceleration.y; }, [](Amara::Particle& t, double v) { t.acceleration.y = v; }),
+                "rotationalVelocity", sol::property([](Amara::Particle& t) -> double { return t.rotationalVelocity; }, [](Amara::Particle& t, double v) { t.rotationalVelocity = v; }),
                 "lifeTime", sol::readonly(&Amara::Particle::lifeTime),
-                "progress", sol::readonly(&Amara::Particle::progress)
+                "progress", sol::readonly(&Amara::Particle::progress),
+                "tint", sol::property([](Amara::Particle& t) -> Color& { return t.tint; }, [](Amara::Particle& t, sol::object v) { t.tint = v; })
             );
         }
     };
@@ -67,10 +67,6 @@ namespace Amara {
     class ParticleEmitter: public Amara::Sprite {
     public:
         std::vector<Particle> particles;
-
-        nlohmann::json particle_config = nlohmann::json::object();
-
-        static float constexpr invalid = std::numeric_limits<float>::lowest();
 
         Ease easing = Ease::Linear;
 
@@ -81,9 +77,13 @@ namespace Amara {
         bool spawning = false;
         int spawnedCount = 0;
         int end_particle = -1;
+        double particle_lifetime = 0;
+        
+        nlohmann::json start_data;
+        nlohmann::json end_data;
 
         bool updated_this_frame = false;
-
+        
         ParticleEmitter(): Amara::Sprite() {
             set_base_node_id("ParticleEmitter");
         }
@@ -92,321 +92,204 @@ namespace Amara {
             if (json_has(config, "spawning")) {
                 spawning = config["spawning"];
             }
+            if (json_has(config, "ease")) {
+                easing = config["ease"];
+            }
+            if (json_has(config, "poolSize")) {
+                int _poolSize = config["poolSize"];
+                if (_poolSize != poolSize) {
+                    if (particles.size() > _poolSize) {
+                        for (int i = particles.size() - 1; i >= _poolSize; i--) {
+                            Amara::Particle& particle = particles[i];
+                            if (particle.in_use) {
+                                particle.in_use = false;
+                                spawnedCount -= 1;
+                            }
+                        }
+                    }
+                    poolSize = _poolSize;
+                    resizeParticles();
+                }
+            }
+            if (json_has(config, "spawnRate")) {
+                spawnRate = config["spawnRate"];
+            }
+            if (json_has(config, "spawning")) {
+                spawning = config["spawning"];
+            }
+            if (json_has(config, "from")) {
+                start_data = config["from"];
+            }
+            if (json_has(config, "to")) {
+                end_data = config["to"];
+            }
+            if (json_has(config, "lifeTime")) {
+                particle_lifetime = config["lifeTime"];
+            }
+            
             return Amara::Sprite::configure(config);
         }
 
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
-            if (String::equal(key, "particles")) {
-                particle_config.update(lua_to_json(val));
-                
-                if (json_has(particle_config, "ease")) {
-                    easing = particle_config["ease"];
+            if (val.is<sol::table>()) {
+                sol::table tbl = val.as<sol::table>();
+                if (tbl["onParticleUpdate"].valid()) {
+                    sol::object func = tbl["onParticleUpdate"];
+                    funcs.setFunction(nodeID, "onParticleUpdate", func.as<sol::function>());
                 }
-                if (json_has(particle_config, "poolSize")) {
-                    int _poolSize = particle_config["poolSize"];
-                    if (_poolSize != poolSize) {
-                        if (particles.size() > _poolSize) {
-                            for (int i = particles.size() - 1; i >= _poolSize; i--) {
-                                Amara::Particle& particle = particles[i];
-                                if (particle.in_use) {
-                                    particle.in_use = false;
-                                    spawnedCount -= 1;
-                                }
-                            }
-                        }
-                        poolSize = _poolSize;
-                        resizeParticles();
-                    }
-                }
-                if (json_has(particle_config, "spawnRate")) {
-                    spawnRate = particle_config["spawnRate"];
-                }
-                if (json_has(particle_config, "spawning")) {
-                    spawning = particle_config["spawning"];
-                }
-                if (json_has(particle_config, "texture")) {
-                    setTexture(particle_config["texture"]);
-                }
-                if (json_has(particle_config, "depth")) {
-                    depth = particle_config["depth"];
-                }
-
-                if (val.is<sol::table>()) {
-                    sol::table tbl = val.as<sol::table>();
-                    if (tbl["onParticleUpdate"].valid()) {
-                        sol::object func = tbl["onParticleUpdate"];
-                        funcs.setFunction(nodeID, "onParticleUpdate", func.as<sol::function>());
-                    }
-                    if (tbl["onParticleSpawn"].valid()) {
-                        sol::object func = tbl["onParticleSpawn"];
-                        funcs.setFunction(nodeID, "onParticleSpawn", func.as<sol::function>());
-                    }
+                if (tbl["onParticleSpawn"].valid()) {
+                    sol::object func = tbl["onParticleSpawn"];
+                    funcs.setFunction(nodeID, "onParticleSpawn", func.as<sol::function>());
                 }
             }
             return Amara::Sprite::luaConfigure(key, val);
         }
-
+        
         virtual void update(double deltaTime) override {
             Amara::Sprite::update(deltaTime);
             updated_this_frame = false;
         }
-
-        Vector2 parseVector(const nlohmann::json& config) {
-            if (config.is_array() && config.size() == 2) {
-                Vector2 min = config[0];
-                Vector2 max = config[1];
-                return Vector2(
-                    lua_random(gameProps->lua, min.x, max.x),
-                    lua_random(gameProps->lua, min.y, max.y)
+        
+        void setProperty(Particle& p, std::string key, const nlohmann::json& data) {
+            if (p.luatable[key].is<int>()) {
+                p.luatable[key] = static_cast<int>(std::floor(data.get<double>()));
+            }
+            else if (p.luatable[key].is<double>()) {
+                p.luatable[key] = (float)data.get<double>();
+            }
+            else if (p.luatable[key].is<Amara::Vector2>()) {
+                Vector2 val = data; 
+                p.luatable[key] = val;
+            }
+            else if (p.luatable[key].is<Amara::Rectangle>()) {
+                Rectangle val = data;
+                p.luatable[key] = val;
+            }
+            else if (p.luatable[key].is<Amara::Color>()) {
+                Color val = data;
+                p.luatable[key] = val;
+            }
+        }
+        
+        void tweenProperty(Particle& p, std::string key, const nlohmann::json& val1, const nlohmann::json& val2) {
+            if (p.luatable[key].is<int>()) {
+                int start = val1.get<int>();
+                int end = val2.get<int>();
+                p.luatable[key] = static_cast<int>(std::round(ease((double)start, (double)end, p.progress)));
+            }
+            else if (p.luatable[key].is<double>()) {
+                float start = val1.get<float>();
+                float end = val2.get<float>();
+                p.luatable[key] = ease((double)start, (double)end, p.progress, easing);
+            }
+            else if (p.luatable[key].is<Amara::Vector2>()) {
+                Vector2 start = val1;
+                Vector2 end = val2;
+                p.luatable[key] = Vector2(
+                    ease(start.x, end.x, p.progress, easing),
+                    ease(start.y, end.y, p.progress, easing)
                 );
             }
-            else if (config.is_object() && json_has(config, "min", "max")) {
-                Vector2 min = config["min"];
-                Vector2 max = config["max"];
-                return Vector2(
-                    lua_random(gameProps->lua, min.x, max.x),
-                    lua_random(gameProps->lua, min.y, max.y)
+            else if (p.luatable[key].is<Amara::Rectangle>()) {
+                Rectangle start = val1;
+                Rectangle end = val2;
+                p.luatable[key] = Rectangle(
+                    ease(start.x, end.x, p.progress, easing),
+                    ease(start.y, end.y, p.progress, easing),
+                    ease(start.w, end.w, p.progress, easing),
+                    ease(start.h, end.h, p.progress, easing)
                 );
             }
-            else {
-                return Vector2(config);
+            else if (p.luatable[key].is<Amara::Color>()) {
+                Color start = val1;
+                Color end = val2;
+                p.luatable[key] = Color(
+                    ease(start.r, end.r, p.progress, easing),
+                    ease(start.g, end.g, p.progress, easing),
+                    ease(start.b, end.b, p.progress, easing),
+                    ease(start.a, end.a, p.progress, easing)
+                );
             }
+        }
+        
+        nlohmann::json convertProperty(Particle& p, std::string key, const nlohmann::json& data) {
+            if (data.is_object() && json_has(data, "min", "max")) {
+                nlohmann::json min = data["min"];
+                nlohmann::json max = data["max"];
+                if (p.luatable[key].is<int>()) {
+                    int minVal = min.get<double>();
+                    int maxVal = max.get<double>();
+                    return static_cast<int>(std::round(ease((double)minVal, (double)maxVal, lua_random(gameProps->lua))));
+                }
+                else if (p.luatable[key].is<double>()) {
+                    double minVal = min.get<double>();
+                    double maxVal = max.get<double>();
+                    return ease(minVal, maxVal, lua_random(gameProps->lua));
+                }
+                else if (p.luatable[key].is<Vector2>()) {
+                    Vector2 minVal = min;
+                    Vector2 maxVal = max;
+                    p.luatable[key] = Vector2(
+                        ease(minVal.x, maxVal.x, lua_random(gameProps->lua)),
+                        ease(minVal.y, maxVal.y, lua_random(gameProps->lua))
+                    );
+                }
+                else if (p.luatable[key].is<Rectangle>()) {
+                    Rectangle minVal = min;
+                    Rectangle maxVal = max;
+                    return Rectangle(
+                        ease(minVal.x, maxVal.x, lua_random(gameProps->lua)),
+                        ease(minVal.y, maxVal.y, lua_random(gameProps->lua)),
+                        ease(minVal.w, maxVal.w, lua_random(gameProps->lua)),
+                        ease(minVal.h, maxVal.h, lua_random(gameProps->lua))
+                    ).toJSON();
+                }
+                else if (p.luatable[key].is<Color>()) {
+                    Color minVal = min;
+                    Color maxVal = max;
+                    return Color(
+                        ease(minVal.r, maxVal.r, lua_random(gameProps->lua)),
+                        ease(minVal.g, maxVal.g, lua_random(gameProps->lua)),
+                        ease(minVal.b, maxVal.b, lua_random(gameProps->lua)),
+                        ease(minVal.a, maxVal.a, lua_random(gameProps->lua))
+                    ).toJSON();
+                }
+            }
+            return data;
         }
 
-        double parseValue(const nlohmann::json& config) {
-            if (config.is_number()) {
-                return config;
-            }
-            else if (config.is_object() && json_has(config, "min", "max")) {
-                double min = config["min"];
-                double max = config["max"];
-                return lua_random(gameProps->lua, min, max);
-            }
-            else if (config.is_array() && config.size() == 2) {
-                double min = config[0];
-                double max = config[1];
-                return lua_random(gameProps->lua, min, max);
-            }
-            fatal_error("Error: Particle config expected number.");
-        }
-        int parseInteger(const nlohmann::json& config) {
-            if (config.is_number()) {
-                return config;
-            }
-            else if (config.is_object() && json_has(config, "min", "max")) {
-                int min = config["min"];
-                int max = config["max"];
-                max += 1;
-                return floor(lua_random(gameProps->lua, min, max));
-            }
-            else if (config.is_array() && config.size() == 2) {
-                int min = config[0];
-                int max = config[1];
-                max += 1;
-                return floor(lua_random(gameProps->lua, min, max));
-            }
-            fatal_error("Error: Particle config expected number.");
-        }
-
-        void initParticle(Particle& particle, const nlohmann::json& particle_config) {
+        void initParticle(Particle& particle, const nlohmann::json& config) {
             particle.lifeTime = 0;
             particle.progress = 0;
 
             particle.pos = Vector2(0);
-            if (json_has(particle_config, "pos")) {
-                particle.pos = parseVector(particle_config["pos"]);
-            }
-            if (json_has(particle_config, "x")) {
-                particle.pos.x = parseValue(particle_config["x"]);
-            }
-            if (json_has(particle_config, "y")) {
-                particle.pos.y = parseValue(particle_config["y"]);
-            }
-
-            particle.endX = invalid;
-            particle.endY = invalid;
-            if (json_has(particle_config, "endPos")) {
-                Vector2 endPos = parseVector(particle_config["endPos"]);
-                particle.endX = endPos.x;
-                particle.endY = endPos.y;
-            }
-            if (json_has(particle_config, "endX")) {
-                particle.endX = parseValue(particle_config["endX"]);
-            }
-            if (json_has(particle_config, "endY")) {
-                particle.endY = parseValue(particle_config["endY"]);
-            }
-
             particle.frame = frame;
-            if (json_has(particle_config, "frame")) {
-                particle.frame = parseInteger(particle_config["frame"]);
-            }
-
             particle.origin = Vector2(0.5);
-            if (json_has(particle_config, "origin")) {
-                particle.origin = parseVector(particle_config["origin"]);
-            }
-            if (json_has(particle_config, "originX")) {
-                particle.origin.x = parseValue(particle_config["originX"]);
-            }
-            if (json_has(particle_config, "originY")) {
-                particle.origin.y = parseValue(particle_config["originY"]);
-            }
-
             particle.scale = Vector2(1);
-            if (json_has(particle_config, "scale")) {
-                particle.scale = parseVector(particle_config["scale"]);
-            }
-            if (json_has(particle_config, "scaleX")) {
-                particle.scale.x = parseValue(particle_config["scaleX"]);
-            }
-            if (json_has(particle_config, "scaleY")) {
-                particle.scale.y = parseValue(particle_config["scaleY"]);
-            }
-
-            particle.endScale = Vector2(1);
-            particle.end_scale_set = false;
-            if (json_has(particle_config, "endScale")) {
-                particle.endScale = parseVector(particle_config["endScale"]);
-                particle.end_scale_set = true;
-            }
-            if (json_has(particle_config, "endScaleX")) {
-                particle.endScale.x = parseValue(particle_config["endScaleX"]);
-            }
-            if (json_has(particle_config, "endScaleY")) {
-                particle.endScale.y = parseValue(particle_config["endScaleY"]);
-            }
-
             particle.velocity = Vector2(0);
-            if (json_has(particle_config, "velocity")) {
-                particle.velocity = parseVector(particle_config["velocity"]);
-            }
-            if (json_has(particle_config, "velocityX")) {
-                particle.velocity.x = parseValue(particle_config["velocityX"]);
-            }
-            if (json_has(particle_config, "velocityY")) {
-                particle.velocity.y = parseValue(particle_config["velocityY"]);
-            }
-
             particle.acceleration = Vector2(0);
-            if (json_has(particle_config, "acceleration")) {
-                particle.acceleration = parseVector(particle_config["acceleration"]);
-            }
-            if (json_has(particle_config, "accelerationX")) {
-                particle.acceleration.x = parseValue(particle_config["accelerationX"]);
-            }
-            if (json_has(particle_config, "accelerationY")) {
-                particle.acceleration.y = parseValue(particle_config["accelerationY"]);
-            }
-
-            particle.maxLifeTime = 1;
-            if (json_has(particle_config, "lifeTime")) {
-                particle.maxLifeTime = parseValue(particle_config["lifeTime"]);
-            }
-
             particle.rotation = 0;
-            if (json_has(particle_config, "rotation")) {
-                particle.rotation = parseValue(particle_config["rotation"]);
-            }
-
-            particle.angularVelocity = 0;
-            if (json_has(particle_config, "angularVelocity")) {
-                particle.angularVelocity = parseValue(particle_config["angularVelocity"]);
-            }
-            
+            particle.rotationalVelocity = 0;
             particle.alpha = 1;
-            if (json_has(particle_config, "alpha")) {
-                particle.alpha = parseValue(particle_config["alpha"]);
-            }
-
-            particle.endAlpha = invalid;
-            if (json_has(particle_config, "endAlpha")) {
-                particle.endAlpha = parseValue(particle_config["endAlpha"]);
+            particle.tint = Color::White;
+            
+            if (!particle.luaobject.valid() || particle.keep != &particle) {
+                particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                particle.luatable = particle.luaobject.as<sol::table>();
+                particle.keep = &particle;
             }
             
-            particle.tint = Color::White;
-            if (json_has(particle_config, "tint")) {
-                nlohmann::json tint_config = particle_config["tint"];
-                if (tint_config.is_object()) {
-                    if (json_has(tint_config, "min", "max")) {
-                        Color min = tint_config["min"];
-                        Color max = tint_config["max"];
-                        particle.tint = Color(
-                            lua_random(gameProps->lua, min.r, max.r),
-                            lua_random(gameProps->lua, min.g, max.g),
-                            lua_random(gameProps->lua, min.b, max.b),
-                            lua_random(gameProps->lua, min.a, max.a)
-                        );
-                    }
-                    else {
-                        particle.tint = tint_config;
-                    }
-                }
-                else if (tint_config.is_string()) {
-                    particle.tint = Color(tint_config);
-                }
-                else if (tint_config.is_array()) {
-                    if (tint_config.size() == 4) {
-                        particle.tint = Color(tint_config[0], tint_config[1], tint_config[2], tint_config[3]);
-                    }
-                    else if (tint_config.size() == 2) {
-                        Color min = tint_config[0];
-                        Color max = tint_config[1];
-                        particle.tint = Color(
-                            lua_random(gameProps->lua, min.r, max.r),
-                            lua_random(gameProps->lua, min.g, max.g),
-                            lua_random(gameProps->lua, min.b, max.b),
-                            lua_random(gameProps->lua, min.a, max.a)
-                        );
-                    }
-                }
+            for (auto it = config.begin(); it != config.end(); ++it) {
+                setProperty(particle, it.key(), convertProperty(particle, it.key(), it.value()));
             }
-            particle.drawTint = particle.tint;
-
-            particle.endTint = particle.tint;
-            if (json_has(particle_config, "endTint")) {
-                nlohmann::json tint_config = particle_config["endTint"];
-                if (tint_config.is_object()) {
-                    if (json_has(tint_config, "min", "max")) {
-                        Color min = tint_config["min"];
-                        Color max = tint_config["max"];
-                        particle.endTint = Color(
-                            lua_random(gameProps->lua, min.r, max.r),
-                            lua_random(gameProps->lua, min.g, max.g),
-                            lua_random(gameProps->lua, min.b, max.b),
-                            lua_random(gameProps->lua, min.a, max.a)
-                        );
-                    }
-                    else {
-                        particle.endTint = tint_config;
-                    }
-                }
-                else if (tint_config.is_string()) {
-                    particle.endTint = Color(tint_config);
-                }
-                else if (tint_config.is_array()) {
-                    if (tint_config.size() == 4) {
-                        particle.endTint = Color(tint_config[0], tint_config[1], tint_config[2], tint_config[3]);
-                    }
-                    else if (tint_config.size() == 2) {
-                        Color min = tint_config[0];
-                        Color max = tint_config[1];
-                        particle.endTint = Color(
-                            lua_random(gameProps->lua, min.r, max.r),
-                            lua_random(gameProps->lua, min.g, max.g),
-                            lua_random(gameProps->lua, min.b, max.b),
-                            lua_random(gameProps->lua, min.a, max.a)
-                        );
-                    }
-                }
+            
+            particle.start_data = nlohmann::json::object();
+            for (auto it = end_data.begin(); it != end_data.end(); ++it) {
+                particle.end_data[it.key()] = convertProperty(particle, it.key(), it.value());
+                particle.start_data[it.key()] = lua_to_json(particle.luatable[it.key()]);
             }
-
-            particle.startX = particle.pos.x;
-            particle.startY = particle.pos.y;
-
-            particle.startAlpha = particle.alpha;
         }
-
+        
         virtual void create() override {
             Amara::Sprite::create();
             resizeParticles();
@@ -418,6 +301,7 @@ namespace Amara {
                 particle.in_use = false;
                 if (!particle.luaobject.valid() || particle.keep != &particle) {
                     particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                    particle.luatable = particle.luaobject.as<sol::table>();
                     particle.keep = &particle;
                 }
             }
@@ -426,7 +310,7 @@ namespace Amara {
         void burst(double amount, sol::object lua_config) {
             sol::function onSpawn = funcs.getFunction("onParticleSpawn");
 
-            nlohmann::json new_config = particle_config;
+            nlohmann::json new_config = start_data;
             if (lua_config.is<sol::table>()) {
                 new_config.update(lua_to_json(lua_config));
             }
@@ -442,6 +326,7 @@ namespace Amara {
                         try {
                             if (!particle.luaobject.valid() || particle.keep != &particle) {
                                 particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                                particle.luatable = particle.luaobject.as<sol::table>();
                                 particle.keep = &particle;
                             }
                             onSpawn(particle.luaobject);
@@ -551,7 +436,7 @@ namespace Amara {
                 input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nullptr);
             }
 
-            Amara::Color particleTint = particle.drawTint * tint;
+            Amara::Color particleTint = particle.tint * tint;
 
             if (image->texture && gameProps->renderer) {
                 // 2D Rendering
@@ -644,7 +529,7 @@ namespace Amara {
                     else spawn_new = true;
                 }
                 else {
-                    if (particle.lifeTime >= particle.maxLifeTime && !updated_this_frame) {
+                    if (particle.lifeTime >= particle_lifetime && !updated_this_frame) {
                         spawnedCount -= 1;
                         if (spawn_count > 0) {
                             spawn_new = true;
@@ -660,11 +545,12 @@ namespace Amara {
                     spawnedCount += 1;
                     spawn_count -= 1;
                     particle.in_use = true;
-                    initParticle(particle, particle_config);
+                    initParticle(particle, start_data);
                     if (onSpawn.valid()) {
                         try {
                             if (!particle.luaobject.valid() || particle.keep != &particle) {
                                 particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                                particle.luatable = particle.luaobject.as<sol::table>();
                                 particle.keep = &particle;
                             }
                             onSpawn(particle.luaobject);
@@ -681,37 +567,20 @@ namespace Amara {
                 }
 
                 if (!updated_this_frame) {
-                    double prog = particle.lifeTime / particle.maxLifeTime;
                     particle.pos += particle.velocity * deltaTime + particle.acceleration * deltaTime * deltaTime * 0.5f;
                     particle.velocity += particle.acceleration * deltaTime;
+                    particle.rotation += particle.rotationalVelocity * deltaTime;
                     
-                    if (particle.startX != invalid && particle.endX != invalid) {
-                        particle.pos.x = ease(particle.startX, particle.endX, prog, easing); 
-                    }
-                    if (particle.startY != invalid && particle.endY != invalid) {
-                        particle.pos.y = ease(particle.startY, particle.endY, prog, easing); 
+                    for (auto it = particle.end_data.begin(); it != particle.end_data.end(); ++it) {
+                        tweenProperty(particle, it.key(), particle.start_data[it.key()], it.value());
                     }
                     
-                    if (particle.startAlpha != invalid && particle.endAlpha != invalid) {
-                        particle.alpha = ease(particle.startAlpha, particle.endAlpha, prog, easing); 
-                    }
-
-                    if (particle.end_scale_set) {
-                        particle.scale = Vector2(
-                            ease(particle.scale.x, particle.endScale.x, prog, easing),
-                            ease(particle.scale.y, particle.endScale.y, prog, easing)
-                        );
-                    }
-
-                    particle.drawTint = ease(particle.tint, particle.endTint, prog, easing);
-
-                    particle.rotation += particle.angularVelocity * deltaTime;
-
                     if (onUpdate_defined) {
                         sol::function func = funcs.getFunction("onParticleUpdate");
                         try {
                             if (!particle.luaobject.valid() || particle.keep != &particle) {
                                 particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                                particle.luatable = particle.luaobject.as<sol::table>();
                                 particle.keep = &particle;
                             }
                             func(particle.luaobject, deltaTime);
@@ -734,7 +603,7 @@ namespace Amara {
                 if (!updated_this_frame) {
                     particle.lifeTime += deltaTime;
                 }
-                particle.progress = particle.lifeTime / particle.maxLifeTime;
+                particle.progress = particle.lifeTime / particle_lifetime;
             }
             end_particle = last_particle;
 

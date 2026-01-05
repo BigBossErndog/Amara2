@@ -20,18 +20,18 @@ Creator:createWorld({
 
     onCreate = function(self)
         self.get.myParticles = self:createChild("ParticleEmitter", {
-            particles = {
-                texture = "particles", -- Use an image or spritesheet
+            texture = "particles", -- Use an image or spritesheet
 
-                spawning = true, -- Set spawning state.
+            spawning = true, -- Set spawning state.
 
-                poolSize = 2000, -- Max amount that can be shown at once, if omitted default is 128.
-                spawnRate = 100, -- How many to spawn per second.
-                lifeTime = 1, -- Set how long a particle will exist for.
-
-                tint = "white",
-                endTint = "#a34dff",
-
+            poolSize = 2000, -- Max amount that can be shown at once, if omitted default is 128.
+            spawnRate = 100, -- How many to spawn per second.
+            lifeTime = 1, -- Set how long a particle will exist for in seconds.
+            
+            -- 'from' table defines particle at start.
+            from = {
+                -- tint = "white",
+                
                 velocityX = {
                     min = -100,
                     max = 100
@@ -41,27 +41,30 @@ Creator:createWorld({
                     min = -200,
                     max = 0
                 }, -- Throws particles into the air.
-
+                
                 accelerationY = 200, -- Applies some gravity
-
-                frame = { 1, 2 }, -- Choose random frame between 1 and 2
-
-                angularVelocity = {
+                
+                rotationalVelocity = {
                     min = -math.pi,
                     max = math.pi
                 }, -- Spins the particle at a rate randomly between -pi and pi.
-
-                alpha = 1,
-                endAlpha = 0, -- Fade the particle out.
                 
-                onParticleSpawn = function(particle)
-                    -- Do something to a particle when it spawns.
-                end,
-                
-                onParticleUpdate = function(particle, deltaTime)
-                    -- Do something to a particle every frame.
-                end,
-            }
+                alpha = 1 -- Start with full opacity.
+            },
+            
+            -- 'to' table defined all the values that the particle will be tweened to.
+            to = {
+                tint = "#a34dff", -- tint to this color.
+                alpha = 0, -- Fade the particle out.
+            },
+            
+            onParticleSpawn = function(particle)
+                -- Do something to a particle when it spawns.
+            end,
+            
+            onParticleUpdate = function(particle, deltaTime)
+                -- Do something to a particle every frame.
+            end,
         })
     end,
 

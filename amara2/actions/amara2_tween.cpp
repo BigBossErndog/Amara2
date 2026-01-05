@@ -170,7 +170,10 @@ namespace Amara {
         }
 
         void tweenValue(sol::table target, const std::string& key,  const nlohmann::json& val1, const nlohmann::json& val2, double progress) {
-            if (target[key].get_type() == sol::type::number) {
+            if (target[key].is<int>()) {
+                target.set(key, std::round(ease((double)val1, (double)val2, progress, easing)));
+            }
+            else if (target[key].is<double>()) {
                 target.set(key, ease((double)val1, (double)val2, progress, easing));
             }
             else if (target[key].is<Amara::Vector2>()) {
