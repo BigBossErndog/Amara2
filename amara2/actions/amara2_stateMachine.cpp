@@ -22,6 +22,8 @@ namespace Amara {
         
         bool skipEvent = false;
         bool debug = false;
+        
+        int holdCount = 0;
 
         std::string jumpFlag;
 
@@ -308,6 +310,24 @@ namespace Amara {
             }
             return false;
         }
+        
+        bool hold(int count) {
+            bool ret = false;
+            if (once()) {
+                holdCount += count;
+                ret = true;
+            }
+            if (event()) {
+                if (nextEventOn(holdCount <= 0)) {
+                    holdCount = 0;
+                }
+                ret = true;
+            }
+            return ret;
+        }
+        void release() {
+            holdCount -= 1;
+        }
 
         virtual sol::object complete() override {
             if (parent && parent->stateMachine == this) {
@@ -330,6 +350,7 @@ namespace Amara {
                 ),
                 "eventLooker", sol::readonly(&StateMachine::eventLooker),
                 "currentEvent", sol::readonly(&StateMachine::currentEvent),
+                "holdCount", sol::readonly(&StateMachine::holdCount),
                 "event", &StateMachine::event,
                 "hold", [](StateMachine& sm, sol::object arg) {
                     bool inEvent = false;
@@ -342,15 +363,12 @@ namespace Amara {
                         repeats = round(arg.as<double>());
                     }
                     
-                    for (int i = 0; i < repeats; i++) {
-                        if (sm.event()) inEvent = true;
-                    }
-                    return inEvent;
+                    return sm.hold(repeats);
                 },
                 "once", &StateMachine::once,
                 "nextEvent", &StateMachine::nextEvent,
                 "nextEventOn", &StateMachine::nextEventOn,
-                "release", &StateMachine::nextEvent,
+                "release", &StateMachine::release,
                 "wait", sol::overload(
                     sol::resolve<bool(double, bool)>(&StateMachine::wait),
                     sol::resolve<bool(float)>(&StateMachine::wait)
