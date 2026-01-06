@@ -39,12 +39,10 @@ namespace Amara {
         } else if (obj.get_type() == sol::type::boolean) {
             return obj.as<bool>();
         } else if (obj.get_type() == sol::type::number) {
-            if (obj.is<double>()) {
-                return obj.as<double>();
-            }
             if (obj.is<int>()) {
                 return obj.as<int>();
             }
+            return obj.as<double>();
         } else if (obj.get_type() == sol::type::string) {
             return obj.as<std::string>();
         } else if (obj.is<Amara::Color>()) {
@@ -154,7 +152,8 @@ namespace Amara {
 
         if (obj.is<sol::table>()) {
             nlohmann::json j = lua_to_json(obj);
-            return j.dump(2);
+            if (lua_object_is_table_array(obj)) return j.dump();
+            else return j.dump(2);
         }
 
         return lua_to_json(obj).dump(2);
@@ -342,6 +341,12 @@ namespace Amara {
     double lua_random(sol::state& lua, double min, double max) {
         return min + (max - min) * lua_random(lua);
     }
+    
+    bool lua_is_truthy(const sol::object& obj) {
+        return obj.valid() &&
+               obj.get_type() != sol::type::nil &&
+               !(obj.get_type() == sol::type::boolean && !obj.as<bool>());
+    }
 
     void bind_lua_LuaUtilityFunctions(sol::state& lua) {
         lua.set_function("debug_log", &Amara::lua_debug_log);
@@ -522,6 +527,51 @@ namespace Amara {
                 result[i + 1] = values[i];
             }
         
+            return result;
+        });
+        table_metatable.set_function("filter", [&lua](sol::table tbl, sol::object predicate) {
+            if (!tbl.is<sol::table>()) {
+                fatal_error("Error: table.filter() expected a table argument.");
+            }
+            sol::table result = lua.create_table();
+            
+            if (predicate.is<sol::function>()) {
+                sol::function func = predicate.as<sol::function>();
+                for (auto& pair : tbl) {
+                    try {
+                        sol::protected_function_result r = func(pair.second);
+                        if (!r.valid()) {
+                            sol::error err = r;
+                            throw std::runtime_error(err.what());
+                        }
+                        
+                        if (lua_is_truthy(r)) {
+                            if (lua_object_is_table_array(tbl)) {
+                                result[pair.first] = pair.second;
+                            }
+                            else {
+                                result[result.size() + 1] = pair.second;
+                            }
+                        }
+                    }
+                    catch (const sol::error& err) {
+                        fatal_error(err.what());
+                    }
+                }
+            }
+            else {
+                for (auto& pair : tbl) {
+                    if (pair.second == predicate) {
+                        if (lua_object_is_table_array(tbl)) {
+                            result[pair.first] = pair.second;
+                        }
+                        else {
+                            result[result.size() + 1] = pair.second;
+                        }
+                    }
+                }
+            }
+            
             return result;
         });
         table_metatable.set_function("crop", [&lua](sol::object obj, sol::object arg) {

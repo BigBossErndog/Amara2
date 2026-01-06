@@ -82,6 +82,7 @@ namespace Amara {
     X(void, glBindBufferRange, GLenum, GLuint, GLuint, GLintptr, GLsizeiptr) \
     X(void, glGetProgramiv, GLuint, GLenum, GLint*) \
     X(void, glGetProgramInfoLog, GLuint, GLsizei, GLsizei*, GLchar*) \
+    X(void, glGetUniformIndices, GLuint, GLsizei, const GLchar**, GLuint*) \
     X(void, glGetActiveUniform, GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*) \
     X(void, glGetActiveAttrib, GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*) \
     X(GLint, glGetAttribLocation, GLuint, const GLchar*) \
