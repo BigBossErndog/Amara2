@@ -4,6 +4,7 @@ namespace Amara {
     struct StateRecord {
         std::string name;
         int event = 0;
+        int holdCount = 0;
         std::string jumpFlag;
     };
 
@@ -73,6 +74,7 @@ namespace Amara {
             currentState.clear();
             lastState.clear();
             currentEvent = 1;
+            holdCount = 0;
             jumpFlag.clear();
             stateRecords.clear();
         }
@@ -118,12 +120,14 @@ namespace Amara {
         void switchState(std::string key) {
             if (!currentState.empty()) {
                 lastState = currentState;
-                Amara::StateRecord record = { currentState, currentEvent, jumpFlag };
+                Amara::StateRecord record = { currentState, currentEvent, holdCount, jumpFlag };
                 stateRecords.push_back(record);
             }
 
             currentState = key;
             currentEvent = 1;
+            holdCount = 0;
+            jumpFlag.clear();
 
             if (debug) {
                 debug_log(*this, ": switch state \"", key, "\".");
@@ -148,6 +152,7 @@ namespace Amara {
                 Amara::StateRecord record = stateRecords.back();
                 currentState = record.name;
                 currentEvent = record.event;
+                holdCount = record.holdCount;
                 jumpFlag = record.jumpFlag;
                 stateRecords.pop_back();
 

@@ -715,12 +715,11 @@ namespace Amara {
             Amara::Node* child;
             for (auto it = children.begin(); it != children.end();) {
                 child = *it;
-                if (child->parent == this && !child->destroyed) {
+                if (child && child->parent == this && !child->destroyed) {
                     child->destroy();
                 }
 				++it;
 			}
-            children.clear();
         }
 
         sol::object bringToFront() {

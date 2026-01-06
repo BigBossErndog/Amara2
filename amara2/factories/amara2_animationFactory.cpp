@@ -35,6 +35,11 @@ namespace Amara {
         }
 
         bool add(nlohmann::json config) {
+            if (!config.is_object()) {
+                fatal_error("Error: Animation couldn't be created from invalid table: ", config.dump());
+                return false;
+            }
+            
             if (json_has(config, "textures")) {
                 nlohmann::json list = config["textures"];
                 config.erase("textures");
@@ -54,13 +59,13 @@ namespace Amara {
             }
             
             if (!json_has(config, "key")) {
-                debug_log("Error: Animation couldn't be created from ", config.dump());
+                fatal_error("Error: Animation couldn't be created from ", config.dump(), " Missing key.");
                 return false;
             }
             std::string animKey = config["key"];
 
             if (!json_has(config, "texture")) {
-                debug_log("Error: Animation couldn't be created from ", config.dump());
+                fatal_error("Error: Animation couldn't be created from ", config.dump(), " Missing texture.");
                 return false;
             }
             std::string textureKey = config["texture"];
@@ -97,7 +102,7 @@ namespace Amara {
                     anim.numFrames = 1;
                 }
                 else {
-                    debug_log("Error: Animation couldn't be created from ", config.dump());
+                    fatal_error("Error: Animation couldn't be created from ", config.dump(), " Missing frame data.");
                     return invalidAnim;
                 }
             }

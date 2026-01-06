@@ -226,11 +226,18 @@ namespace Amara {
 
         Amara::Action* animate(nlohmann::json config);
 
-        sol::object animate(sol::object config) {
+        sol::object animate(sol::object config, sol::object extra) {
             Amara::Action* anim = animate(lua_to_json(config));
-            if (anim) return anim->get_lua_object();
+            if (anim) {
+                if (extra.valid()) anim->luaConfigure(extra);
+                return anim->get_lua_object();
+            }
             return sol::nil;
         }
+        sol::object animate(sol::object config) {
+            return animate(config, sol::nil);
+        }
+        
         sol::object stopAnimating() {
             for (Amara::Node* node: children) {
                 if (node->is_animation && !node->destroyed) {
@@ -508,7 +515,7 @@ namespace Amara {
                 "tint", sol::property([](Amara::Sprite& t) -> Amara::Color { return t.tint; }, [](Amara::Sprite& t, sol::object v) { t.tint = v; }),
                 "blendMode", &Sprite::blendMode,
                 "frame", &Sprite::frame,
-                "animate",  sol::resolve<sol::object(sol::object)>(&Sprite::animate),
+                "animate",  sol::resolve<sol::object(sol::object, sol::object)>(&Sprite::animate),
                 "stopAnimating", &Sprite::stopAnimating,
                 "hasAnimation", &Sprite::hasAnimation,
                 "textureWidth", sol::readonly(&Sprite::textureWidth),

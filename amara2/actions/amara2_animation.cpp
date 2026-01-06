@@ -18,6 +18,8 @@ namespace Amara {
 
         std::string animKey;
         bool anim_configured = false;
+        
+        nlohmann::json rec_config = nullptr;
 
         Animation(): Amara::Action() {
             set_base_node_id("Animation");
@@ -42,6 +44,8 @@ namespace Amara {
             waitingYoyo = false;
             animKey.clear();
             frames.clear();
+            
+            rec_config = config;
 
             if (config.is_string()) {
                 animKey = config.get<std::string>();
@@ -193,21 +197,14 @@ namespace Amara {
     };
     
     Amara::Action* Amara::Sprite::animate(nlohmann::json config) {
-        for (Amara::Node* node: children) {
+        std::vector<Amara::Node*> copy_children = children;
+        for (Amara::Node* node: copy_children) {
             if (node->is_animation && !node->destroyed) {
-                if (config.is_null()) {
-                    node->destroy();
-                }
-                else if (config.is_string() && String::equal(config, node->as<Animation*>()->animKey)) {
+                if (!config.is_null() && config == node->as<Amara::Animation*>()->rec_config) {
                     return node->as<Amara::Action*>();
                 }
                 else {
-                    Amara::Animation* anim = node->as<Animation*>();
-                    if (anim) {
-                        anim->destroyChildren();
-                        anim->setAnimation(config);
-                        return anim;
-                    }
+                    node->destroy();
                 }
             }
         }

@@ -155,7 +155,7 @@ namespace Amara {
 
                 Amara::Action::prepare();
 
-                if (funcs.hasFunction("onStart")) funcs.callFunction(actor, "onStart");
+                if (funcs.hasFunction("onStart")) funcs.callFunction(actor, "onStart", get_lua_object());
             }
         }
 
@@ -232,8 +232,8 @@ namespace Amara {
                         }
                         else {
                             completeProperties();
-                            
-                            if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", progress, deltaTime);
+                            double real_progress = (yoyo && !waitingYoyo) ? 1 - progress : progress;
+                            if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", get_lua_object(), real_progress, deltaTime);
                             
                             complete();
                         }
@@ -243,16 +243,15 @@ namespace Amara {
                     }
 
                     if (!completed) {
+                        double real_progress = (yoyo && !waitingYoyo) ? 1 - progress : progress;
+                        real_progress = std::clamp(real_progress, 0.0, 1.0);
                         if (lua_actor_table.valid()) {
-                            double real_progress = (yoyo && !waitingYoyo) ? 1 - progress : progress;
-                            real_progress = std::clamp(real_progress, 0.0, 1.0);
-                            
                             for (auto it = target_data.begin(); it != target_data.end(); ++it) {
                                 tweenValue(lua_actor_table, it.key(), start_data[it.key()], target_data[it.key()], real_progress);
                             }
                         }
 
-                        if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", progress, deltaTime);
+                        if (funcs.hasFunction("onProgress")) funcs.callFunction(actor, "onProgress", get_lua_object(),real_progress, deltaTime);
                     }
                 }
             }
