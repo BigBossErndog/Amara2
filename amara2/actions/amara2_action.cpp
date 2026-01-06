@@ -103,7 +103,7 @@ namespace Amara {
                 }
             }
             if (action == nullptr) action = createChild(key)->as<Amara::Action*>();
-
+            
             return action->get_lua_object();
         }
 

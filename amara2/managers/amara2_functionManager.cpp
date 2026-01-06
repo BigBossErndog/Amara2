@@ -8,6 +8,8 @@ namespace Amara {
         sol::table func_table;
         std::unordered_map<std::string, sol::protected_function> func_map;
         
+        Amara::Node* owner = nullptr;
+        
         FunctionMap() = default;
         FunctionMap(GameProps* _gameProps) {
             gameProps = _gameProps;
@@ -179,7 +181,9 @@ namespace Amara {
             if (funcMap.find(className) != funcMap.end()) {
                 FunctionMap& found_map = funcMap[className];
                 if (found_map.hasFunction(funcName)) {
-                    return found_map.callFunction(node, funcName, std::forward<CallArgs>(args)...);
+                    Amara::Node* target_node = node;
+                    node = owner_node;
+                    return found_map.callFunction(target_node, funcName, std::forward<CallArgs>(args)...);
                 }
             }
             if (inheritance_map.find(className) != inheritance_map.end()) {
@@ -196,13 +200,11 @@ namespace Amara {
 
         template<typename... CallArgs>
         sol::object callFunction(Amara::Node* _node, std::string funcName, CallArgs&&... args) {
-            Amara::Node* rec = node;
             node = _node;
             sol::object ret = callFunction(lastClass, funcName, std::forward<CallArgs>(args)...);
-            node = rec;
             return ret;
         }
-
+        
         sol::object get_lua_object();
 
         static void bind_lua(sol::state& lua) {
