@@ -1004,6 +1004,9 @@ namespace Amara {
                 #ifdef AMARA_OPENGL
                 "shaderProgram", sol::property([&](Node& e) { return e.shaderProgram; }, &Amara::Node::setShaderProgram),
                 "setShaderProgram", &Node::setShaderProgram,
+                "shaderPrograms", sol::property([](Node& n) {
+                    return n.gameProps->assets->shader_table;
+                }),
                 #endif
                 "stopActing", &Node::stopActing,
                 "pause", &Node::pause,

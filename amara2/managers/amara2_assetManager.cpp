@@ -9,6 +9,7 @@ namespace Amara {
         std::unordered_map<std::string, Amara::Asset*> assets;
 
         sol::object luaobject;
+        sol::table shader_table;
         
         AssetManager() = default;
 
@@ -18,7 +19,19 @@ namespace Amara {
             whitePixel = new Amara::SinglePixelAsset(gameProps);
             add("whitePixel", whitePixel);
             
-            luaobject = sol::make_object(gameProps->lua, this);
+            sol::state& lua = gameProps->lua;
+            
+            luaobject = sol::make_object(lua, this);
+            
+            shader_table = lua.create_table();
+            sol::table shader_meta = lua.create_table();
+            shader_meta["__index"] = [this](sol::table tbl, sol::object key) -> sol::object {
+                if (key.is<std::string>()) {
+                    return this->getShaderProgram(key.as<std::string>())->lua_object;
+                }
+                return sol::nil;
+            };
+            shader_table[sol::metatable_key] = shader_meta;
         }
         
         Amara::Asset* get(std::string key) {
@@ -93,7 +106,14 @@ namespace Amara {
                         self.setDefaultFont(font);
                     }
                 ),
-                "getShaderProgram", &AssetManager::getShaderProgram,
+                "getShaderProgram", [](Amara::AssetManager& a, sol::object key) -> sol::object {
+                    if (key.is<std::string>()) {
+                        ShaderProgram* shader = a.getShaderProgram(key.as<std::string>());
+                        if (shader) return shader->lua_object;
+                    }
+                    return sol::nil;
+                },
+                "shaderPrograms", sol::readonly(&Amara::AssetManager::shader_table),
                 "getTilemapData", [&lua](AssetManager* self, std::string key) -> sol::object {
                     if (self->has(key)) {
                         Amara::Asset* asset = self->get(key);

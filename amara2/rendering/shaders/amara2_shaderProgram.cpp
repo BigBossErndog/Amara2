@@ -23,6 +23,7 @@ namespace Amara {
         std::unordered_map<std::string, GLenum> int_check;
         std::unordered_map<std::string, GLint> locations;
         
+        sol::object lua_object;
         sol::table uniform_proxy;
         
         Amara::GameProps* gameProps = nullptr;
@@ -45,6 +46,8 @@ namespace Amara {
             gameProps = props;
             
             sol::state& lua = gameProps->lua;
+            
+            lua_object = sol::make_object(lua, this);
             
             uniform_proxy = lua.create_table();
             sol::table proxy_meta = lua.create_table();

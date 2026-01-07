@@ -529,10 +529,11 @@ namespace Amara {
         
             return result;
         });
-        table_metatable.set_function("filter", [&lua](sol::table tbl, sol::object predicate) {
-            if (!tbl.is<sol::table>()) {
+        table_metatable.set_function("filter", [&lua](sol::object obj, sol::object predicate) {
+            if (!obj.is<sol::table>()) {
                 fatal_error("Error: table.filter() expected a table argument.");
             }
+            sol::table tbl = obj.as<sol::table>();
             sol::table result = lua.create_table();
             
             if (predicate.is<sol::function>()) {
@@ -546,7 +547,7 @@ namespace Amara {
                         }
                         
                         if (lua_is_truthy(r)) {
-                            if (lua_object_is_table_array(tbl)) {
+                            if (!lua_object_is_table_array(tbl)) {
                                 result[pair.first] = pair.second;
                             }
                             else {
@@ -562,7 +563,7 @@ namespace Amara {
             else {
                 for (auto& pair : tbl) {
                     if (pair.second == predicate) {
-                        if (lua_object_is_table_array(tbl)) {
+                        if (!lua_object_is_table_array(tbl)) {
                             result[pair.first] = pair.second;
                         }
                         else {
