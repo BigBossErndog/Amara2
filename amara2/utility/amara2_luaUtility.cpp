@@ -529,12 +529,14 @@ namespace Amara {
         
             return result;
         });
-        table_metatable.set_function("filter", [&lua](sol::object obj, sol::object predicate) {
+        table_metatable.set_function("filter", [&lua](sol::object obj, sol::object predicate, sol::object inclusive) {
             if (!obj.is<sol::table>()) {
                 fatal_error("Error: table.filter() expected a table argument.");
             }
             sol::table tbl = obj.as<sol::table>();
             sol::table result = lua.create_table();
+            
+            bool is_table_array = lua_object_is_table_array(tbl);
             
             if (predicate.is<sol::function>()) {
                 sol::function func = predicate.as<sol::function>();
@@ -547,11 +549,11 @@ namespace Amara {
                         }
                         
                         if (lua_is_truthy(r)) {
-                            if (!lua_object_is_table_array(tbl)) {
-                                result[pair.first] = pair.second;
+                            if (is_table_array) {
+                                result[result.size() + 1] = pair.second;
                             }
                             else {
-                                result[result.size() + 1] = pair.second;
+                                result[pair.first] = pair.second;
                             }
                         }
                     }
@@ -562,12 +564,12 @@ namespace Amara {
             }
             else {
                 for (auto& pair : tbl) {
-                    if (pair.second == predicate) {
-                        if (!lua_object_is_table_array(tbl)) {
-                            result[pair.first] = pair.second;
+                    if ((inclusive.is<bool>() && inclusive.as<bool>()) == (pair.second == predicate)) {
+                        if (is_table_array) {
+                            result[result.size() + 1] = pair.second;
                         }
                         else {
-                            result[result.size() + 1] = pair.second;
+                            result[pair.first] = pair.second;
                         }
                     }
                 }
