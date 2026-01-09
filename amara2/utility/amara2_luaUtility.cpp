@@ -110,7 +110,7 @@ namespace Amara {
     }
 
     bool lua_object_is_table_array(const sol::object& obj) {
-        if (!obj.is<sol::table>()) {
+        if (!obj.is<sol::table>() || obj.is<sol::userdata>()) {
             return false;
         }
 
@@ -390,7 +390,7 @@ namespace Amara {
             
             std::string result = "";
             for (int i = 0; i < num; i++) {
-                result += 'a' + floor(lua_random(lua) * ('z' + 1));
+                result += 'a' + floor(lua_random(lua) * ('z' - 'a' + 1));
             }
             
             return result;
