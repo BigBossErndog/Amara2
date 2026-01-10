@@ -637,20 +637,16 @@ namespace Amara {
                         return t.getRectangle();
                     }
                 ),
-                "stretchTo", sol::property(
-                    [](Amara::Text& t, sol::object v) {
-                        Rectangle r = v;
-                        t.stretchTo(r);
-                        return t.getRectangle();
-                    }
-                ),
-                "fitWithin", sol::property(
-                    [](Amara::Text& t, sol::object v) {
-                        Rectangle r = v;
-                        t.fitWithin(r);
-                        return t.getRectangle();
-                    }
-                ),
+                "stretchTo", [](Amara::Text& t, sol::object v) {
+                    Rectangle r = v;
+                    t.stretchTo(r);
+                    return t.getRectangle();
+                },
+                "fitWithin", [](Amara::Text& t, sol::object v) {
+                    Rectangle r = v;
+                    t.fitWithin(r);
+                    return t.getRectangle();
+                },
                 "rect", sol::property(&Amara::Text::getRectangle, [](Amara::Text& t, sol::object v) {
                     Rectangle r = v;
                     t.stretchTo(r);

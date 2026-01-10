@@ -17,7 +17,7 @@ namespace Amara {
             for (Amara::Node* child: children) {
                 if (!child->isActive()) {
                     child->activate();
-
+                    
                     if (funcs.hasFunction("onGrab")) {
                         funcs.callFunction(this, "onGrab", child->get_lua_object());
                     }

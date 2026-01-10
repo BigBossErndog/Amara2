@@ -1,7 +1,6 @@
 namespace Amara {
     class ShaderLayer: public Amara::ShaderContainer {
     public:
-        
         ShaderLayer(): Amara::ShaderContainer() {
             set_base_node_id("ShaderLayer");
         }
@@ -11,7 +10,7 @@ namespace Amara {
                 gameProps->passOn.reset();
             }
             passOn = gameProps->passOn;
-
+            
             width = ceil(v.w);
             height = ceil(v.h);
             rotation = 0;

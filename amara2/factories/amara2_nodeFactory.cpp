@@ -438,7 +438,22 @@ namespace Amara {
         sol::table proxy_meta = gameProps->lua.create_table();
         
         proxy_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
-            this->props[key] = value;
+            if (key.is<std::string>() && this->setter_map.find(key.as<std::string>()) != this->setter_map.end()) {
+                try {
+                    sol::protected_function func = this->setter_map[key.as<std::string>()];
+                    sol::protected_function_result result = func(this->get_lua_object(), value);
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error(std::string(err.what()));
+                    }
+                }
+                catch (const std::exception& e) {
+                    fatal_error(e.what());
+                }
+            }
+            else {
+                this->props[key] = value;
+            }
         };
         proxy_meta["__index"] = [this](sol::table tbl, sol::object key) -> sol::object {
             sol::object value = this->props[key];
@@ -463,6 +478,18 @@ namespace Amara {
             return sol::nil;
         };
         proxy[sol::metatable_key] = proxy_meta;
+        
+        setter_table = gameProps->lua.create_table();
+        sol::table setter_table_meta = gameProps->lua.create_table();
+        setter_table_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object value) {
+            if (!key.is<std::string>() || !value.is<sol::function>()) {
+                fatal_error("Error: Setter expected a function assignment.");
+                return;
+            }
+            std::string str_key = key.as<std::string>();
+            this->setter_map[str_key] = value.as<sol::function>();
+        };
+        setter_table[sol::metatable_key] = setter_table_meta;
 
         return luaobject;
     }

@@ -24,6 +24,9 @@ namespace Amara {
         
         sol::table props;
         sol::object luaobject;
+        
+        std::unordered_map<std::string, sol::protected_function> setter_map;
+        sol::table setter_table;
 
         Amara::PassOnProps passOn;
         bool passOnPropsEnabled = true;
@@ -938,6 +941,7 @@ namespace Amara {
                     }
                 ),
                 "props", &Node::props,
+                "setter", sol::readonly(&Node::setter_table),
                 "get", sol::readonly(&Amara::Node::proxy),
                 "func", sol::property([](Node& e) {
                     return e.funcs.getClassTable(e.nodeID);

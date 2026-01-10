@@ -76,6 +76,12 @@ namespace Amara {
                     cont->addShaderPass(config["shaderPass"]);
                 }
             }
+            if (config.find("shaderUniforms") != config.end()) {
+                nlohmann::json uniforms = config["shaderUniforms"];
+                cont->configure({
+                    { "shaderUniforms", uniforms }
+                });
+            }
             if (config.find("repeats") != config.end()) {
                 cont->repeats = config["repeats"];
             }

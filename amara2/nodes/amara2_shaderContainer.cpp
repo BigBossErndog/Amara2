@@ -7,12 +7,13 @@ namespace Amara {
         #endif
         
         SDL_Texture* canvases[2] = { nullptr, nullptr };
-
+        
         bool canvas_flip = false;
 
         int repeats = 1;
 
         std::vector<Amara::ShaderProgram*> shader_passes;
+        std::vector<nlohmann::json> shader_uniforms;
 
         ShaderContainer(): Amara::TextureContainer() {
             set_base_node_id("ShaderContainer");
@@ -39,6 +40,30 @@ namespace Amara {
             it = config.find("repeats");
             if (it != config.end() && it->is_number_integer() && *it > 0) {
                 repeats = *it;
+            }
+            if (json_has(config, "shaderUniforms")) {
+                shader_passes.clear();
+                nlohmann::json passes = config["shaderUniforms"];
+                if (passes.is_array()) {
+                    nlohmann::json uniforms = nlohmann::json::object();
+                    for (nlohmann::json s: passes) {
+                        if (s.is_object()) {
+                            for (auto it = s.begin(); it != s.end(); ++it) {
+                                uniforms[it.key()] = it.value();
+                            }
+                        }
+                    }
+                    shader_uniforms.push_back(uniforms);
+                }
+                else if (passes.is_object()) {
+                    nlohmann::json uniforms = nlohmann::json::object();
+                    if (passes.is_object()) {
+                        for (auto it = passes.begin(); it != passes.end(); ++it) {
+                            uniforms[it.key()] = it.value();
+                        }
+                    }
+                    shader_uniforms.push_back(uniforms);
+                }
             }
             return Amara::TextureContainer::configure(config);
         }
@@ -232,12 +257,21 @@ namespace Amara {
 
             #ifdef AMARA_OPENGL
             for (int i = 0; i < repeats; i++) {
+                int shader_index = 0;
                 for (Amara::ShaderProgram* prog: shader_passes) {
+                    if (shader_index < shader_uniforms.size()) {
+                        nlohmann::json& uniforms = uniforms[shader_index];
+                        for (auto it = uniforms.begin(); it != uniforms.end(); ++it) {
+                            prog->setUniform(it.key(), it.value());
+                        }
+                    }
                     swapCanvases();
                     gameProps->passOn = new_props;
                     passOn = gameProps->passOn;
                     currentShaderProgram = prog;
                     drawPass();
+                    
+                    shader_index++;
                 }
             }
             
@@ -308,6 +342,32 @@ namespace Amara {
                     },
                     [](Amara::ShaderContainer& sc, sol::object val) {
                         sc.luaAddShaderPass(val);
+                    }
+                ),
+                "shaderUniforms", sol::property(
+                    [](Amara::ShaderContainer& sc) -> sol::object {
+                        if (sc.shader_uniforms.size() == 0) return sol::nil;
+                        if (sc.shader_uniforms.size() == 1) return json_to_lua(sc.gameProps->lua, sc.shader_uniforms[0]);
+                        
+                        sol::state_view lua = sc.gameProps->lua;
+                        sol::table t = lua.create_table();
+                        int index = 1;
+                        for (nlohmann::json uniforms: sc.shader_uniforms) {
+                            t[index] = json_to_lua(sc.gameProps->lua, uniforms);
+                            index += 1;
+                        }
+                        return t;
+                    },
+                    [](Amara::ShaderContainer& sc, sol::object val) {
+                        if (val.valid()) {
+                            nlohmann::json uniforms = lua_to_json(val);
+                            sc.configure({
+                                { "uniforms", uniforms }
+                            });
+                        }
+                        else {
+                            sc.shader_uniforms.clear();
+                        }
                     }
                 )
             );
