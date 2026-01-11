@@ -6,8 +6,6 @@ namespace Amara {
         bool completed = false;
         bool has_started = false;
         bool waitingForChildren = false;
-
-        bool autoDestroy = false;
         
         bool locked = false;
         
@@ -50,7 +48,7 @@ namespace Amara {
             
             if (completed && !destroyed && !has_running_child_actions()) {
                 waitingForChildren = false;
-                // Destroy self when done and children are done.
+                // Destroy self when done and child actions are done.
                 destroy();
             }
         }
@@ -189,7 +187,6 @@ namespace Amara {
                     sol::resolve<sol::object(std::string)>(&Action::next),
                     sol::resolve<sol::object(sol::function)>(&Action::next)
                 ),
-                "autoDestroy", &Action::autoDestroy,
                 "on", &Action::on,
                 "alongside", [](Amara::Node& e, std::string key) -> sol::object {
                     Amara::Action* action = nullptr;

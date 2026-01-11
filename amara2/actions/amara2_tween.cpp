@@ -217,6 +217,11 @@ namespace Amara {
             if (has_started) {
                 if (delay > 0) {
                     delay -= deltaTime;
+                    if (delay <= 0) {
+                        if (funcs.hasFunction("onStart")) {
+                            funcs.callFunction(actor, "onStart", get_lua_object());
+                        }
+                    }
                 }
                 else {
                     progress += deltaTime/tween_duration;

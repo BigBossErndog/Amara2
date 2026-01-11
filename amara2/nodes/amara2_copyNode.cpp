@@ -80,7 +80,7 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<CopyNode>("CopyNode",
                 sol::base_classes, sol::bases<Amara::Node>(),
-                "target", sol::property([](Amara::CopyNode& t) { return t.copyTarget; }, &Amara::CopyNode::copyTarget),
+                "target", sol::property([](Amara::CopyNode& t) -> sol::object { return (t.copyTarget) ? t.copyTarget->get_lua_object() : sol::nil; }, &Amara::CopyNode::copyTarget),
                 "copy", &CopyNode::copy
             );
         }
