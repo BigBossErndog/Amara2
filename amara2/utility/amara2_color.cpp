@@ -281,6 +281,21 @@ namespace Amara {
                 normalized[3] = self.b / 255.0f;
                 normalized[4] = self.a / 255.0f;
                 return normalized;
+            },
+            sol::meta_function::addition, &Amara::Color::operator+,
+            sol::meta_function::subtraction, &Amara::Color::operator-,
+            sol::meta_function::multiplication, [](const Color& self, sol::object val) {
+                if (val.get_type() == sol::type::number) {
+                    float scalar = val.as<float>();
+                    return self * scalar;
+                }
+                else if (val.is<Color>() || val.is<sol::table>() || val.is<std::string>()) {
+                    const Color& other = val;
+                    return self * other;
+                }
+                else {
+                    fatal_error("Error: Invalid type for Color multiplication");
+                }
             }
         );
 

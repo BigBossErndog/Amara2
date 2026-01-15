@@ -15,7 +15,8 @@ namespace Amara {
         bool waitingYoyo = false;
 
         int repeats = 0;
-
+        
+        bool start_delay = false;
         double delay = 0;
         double interim = 0;
 
@@ -84,6 +85,7 @@ namespace Amara {
             if (lua_data["delay"].valid()) {
                 delay = lua_data["delay"].get<double>();
                 lua_data["delay"] = sol::nil;
+                start_delay = true;
             }
             if (lua_data["interim"].valid()) {
                 interim = lua_data["interim"].get<double>();
@@ -217,7 +219,8 @@ namespace Amara {
             if (has_started) {
                 if (delay > 0) {
                     delay -= deltaTime;
-                    if (delay <= 0) {
+                    if (delay <= 0 && start_delay) {
+                        start_delay = false;
                         if (funcs.hasFunction("onStart")) {
                             funcs.callFunction(actor, "onStart", get_lua_object());
                         }
