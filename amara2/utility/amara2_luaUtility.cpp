@@ -115,6 +115,8 @@ namespace Amara {
         }
 
         sol::table table = obj.as<sol::table>();
+        if (table.size() == 0) return false;
+        
         int expected_key = 1;
 
         for (const auto& pair : table) {
@@ -577,6 +579,62 @@ namespace Amara {
             
             return result;
         });
+        table_metatable.set_function("ref_filter", [&lua](sol::object obj, sol::object predicate, sol::object inclusive) {
+            if (!obj.is<sol::table>()) {
+                fatal_error("Error: table.filter() expected a table argument.");
+            }
+            
+            sol::table tbl = obj.as<sol::table>();
+            if (tbl.size() == 0) return tbl;
+            
+            bool is_table_array = lua_object_is_table_array(tbl);
+            
+            auto should_keep = [&](sol::object value) -> bool {
+                if (predicate.is<sol::function>()) {
+                    sol::protected_function func = predicate.as<sol::protected_function>();
+                    sol::protected_function_result r = func(value);
+                    if (!r.valid()) {
+                        sol::error err = r;
+                        fatal_error(err.what());
+                    }
+                    return lua_is_truthy(r);
+                } else {
+                    bool is_inclusive = inclusive.is<bool>() && inclusive.as<bool>();
+                    return (is_inclusive == (value == predicate));
+                }
+            };
+        
+            if (is_table_array) {
+                int write_ptr = 1;
+                int current_size = static_cast<int>(tbl.size());
+        
+                for (int read_ptr = 1; read_ptr <= current_size; ++read_ptr) {
+                    sol::object val = tbl[read_ptr];
+                    if (should_keep(val)) {
+                        if (read_ptr != write_ptr) {
+                            tbl[write_ptr] = val;
+                        }
+                        write_ptr++;
+                    }
+                }
+                for (int i = write_ptr; i <= current_size; ++i) {
+                    tbl[i] = sol::nil;
+                }
+            } else {
+                std::vector<sol::object> keys_to_remove;
+                for (auto& pair : tbl) {
+                    if (!should_keep(pair.second)) {
+                        keys_to_remove.push_back(pair.first);
+                    }
+                }
+        
+                for (const auto& key : keys_to_remove) {
+                    tbl[key] = sol::nil;
+                }
+            }
+        
+            return tbl;
+        });
         table_metatable.set_function("crop", [&lua](sol::object obj, sol::object arg) {
             if (!obj.is<sol::table>() || (!arg.is<int>() && !arg.is<double>() && !arg.is<float>())) {
                 fatal_error("Error: table.crop() expected a (table, number) arguments.");
@@ -597,6 +655,20 @@ namespace Amara {
             }
         
             return result;
+        });
+        table_metatable.set_function("getWrappedIndex", [](sol::object tbl_obj, sol::object index_obj) -> sol::object {
+            if (!tbl_obj.is<sol::table>() || !index_obj.is<int>()) {
+                fatal_error("Error: table.getWrappedIndex() expected (table, integer) arguments.");
+            }
+            
+            sol::table tbl = tbl_obj.as<sol::table>();
+            int tbl_size = (int)tbl.size();
+            if (tbl_size == 0) return sol::nil;
+            
+            int index = index_obj.as<int>();
+            index = ((index - 1) % tbl_size + tbl_size) % tbl_size + 1; 
+            
+            return tbl[index];
         });
 
         lua["fatal_error"] = [](sol::variadic_args args) {
