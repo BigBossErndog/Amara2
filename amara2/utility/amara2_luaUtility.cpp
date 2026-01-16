@@ -656,9 +656,9 @@ namespace Amara {
         
             return result;
         });
-        table_metatable.set_function("getWrappedIndex", [](sol::object tbl_obj, sol::object index_obj) -> sol::object {
+        table_metatable.set_function("wrap_index", [](sol::object tbl_obj, sol::object index_obj) -> sol::object {
             if (!tbl_obj.is<sol::table>() || !index_obj.is<int>()) {
-                fatal_error("Error: table.getWrappedIndex() expected (table, integer) arguments.");
+                fatal_error("Error: table.wrap_index() expected (table, integer) arguments.");
             }
             
             sol::table tbl = tbl_obj.as<sol::table>();
