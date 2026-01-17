@@ -15,7 +15,7 @@ namespace Amara {
 
         Amara::Node* grab() {
             for (Amara::Node* child: children) {
-                if (!child->isActive()) {
+                if (!child->isActive() && !child->destroyed) {
                     child->activate();
                     
                     if (funcs.hasFunction("onGrab")) {

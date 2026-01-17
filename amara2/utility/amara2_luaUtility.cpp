@@ -414,10 +414,18 @@ namespace Amara {
             return std::sqrt(a * a + b * b);
         });
         math_metatable.set_function("hash", [](sol::object input, sol::object seed) -> double {
-            if (input.is<std::string>()) return Amara::hash(input.as<std::string>(), seed.is<std::string>() ? seed.as<std::string>() : std::string(""));
-            if (input.is<double>()) return Amara::hash(std::to_string(input.as<double>()), seed.is<std::string>() ? seed.as<std::string>() : std::string(""));
-            if (input.is<int>()) return Amara::hash(std::to_string(input.as<int>()), seed.is<std::string>() ? seed.as<std::string>() : std::string(""));
-            if (input.is<bool>()) return Amara::hash(std::to_string(input.as<bool>()), seed.is<std::string>() ? seed.as<std::string>() : std::string(""));
+            if (seed.is<std::string>()) {
+                if (input.is<std::string>()) return Amara::hash(input.as<std::string>(), seed.as<std::string>());
+                if (input.is<double>()) return Amara::hash(std::to_string(input.as<double>()), seed.as<std::string>());
+                if (input.is<int>()) return Amara::hash(std::to_string(input.as<int>()), seed.as<std::string>());
+                if (input.is<bool>()) return Amara::hash(std::to_string(input.as<bool>()), seed.as<std::string>());
+            }
+            else {
+                if (input.is<std::string>()) return Amara::hash(input.as<std::string>());
+                if (input.is<double>()) return Amara::hash(std::to_string(input.as<double>()));
+                if (input.is<int>()) return Amara::hash(std::to_string(input.as<int>()));
+                if (input.is<bool>()) return Amara::hash(std::to_string(input.as<bool>()));
+            }
             return 0;
         });
         
