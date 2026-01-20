@@ -373,7 +373,8 @@ namespace Amara {
                 ),
                 "add", &NodeFactory::add,
                 "create", &NodeFactory::luaCreate,
-                "define", &NodeFactory::defineNode
+                "define", &NodeFactory::defineNode,
+                "exists", &NodeFactory::exists
             );
         }
 

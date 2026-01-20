@@ -10,8 +10,6 @@ namespace Amara {
         #endif
     }
 
-    #include <fstream> // Add this include
-
     template<typename... Args>
     void fatal_error(Args... args) {
         std::ostringstream ss;
