@@ -346,9 +346,7 @@ namespace Amara {
             }
             return data;
         }
-        void setStack(sol::object stack) {
-            stateRecords.clear();
-            nlohmann::json data = lua_to_json(stack);
+        void setStack(nlohmann::json data) {
             if (!data.is_array()) return;
             for (auto& state_data : data) {
                 if (!state_data.is_object()) continue;
@@ -371,21 +369,11 @@ namespace Amara {
             current_state["jumpFlag"] = jumpFlag;
             data["current_state"] = current_state;
             
-            nlohmann::json state_records = nlohmann::json::array();
-            for (auto& record : stateRecords) {
-                nlohmann::json state_record = nlohmann::json::object();
-                state_record["name"] = record.name;
-                state_record["event"] = record.event;
-                state_record["holdCount"] = record.holdCount;
-                state_record["jumpFlag"] = record.jumpFlag;
-                state_records.push_back(state_record);
-            }
-            data["state_records"] = state_records;
+            data["state_records"] = getStack();
             
             return data;
         }
-        void setStateData(sol::object obj) {
-            nlohmann::json json_data = obj.as<nlohmann::json>();
+        void setStateData(nlohmann::json json_data) {
             if (json_has(json_data, "current_state")) {
                 nlohmann::json current_state = json_data["current_state"];
                 currentState = current_state["name"].get<std::string>();
@@ -394,16 +382,7 @@ namespace Amara {
                 jumpFlag = current_state["jumpFlag"].get<std::string>();
             }
             if (json_has(json_data, "state_records")) {
-                nlohmann::json state_records = json_data["state_records"];
-                stateRecords.clear();
-                for (auto& record : state_records) {
-                    StateRecord new_record;
-                    new_record.name = record["name"].get<std::string>();
-                    new_record.event = record["event"].get<int>();
-                    new_record.holdCount = record["holdCount"].get<int>();
-                    new_record.jumpFlag = record["jumpFlag"].get<std::string>();
-                    stateRecords.push_back(new_record);
-                }
+                setStack(json_data["state_records"]);
             }
         }
 
@@ -476,14 +455,14 @@ namespace Amara {
                     return json_to_lua(stateMachine.gameProps->lua, stateMachine.getStack());
                 }, [](StateMachine& stateMachine, sol::object stack) {
                     if (stack.is<sol::table>()) {
-                        stateMachine.setStack(stack);
+                        stateMachine.setStack(lua_to_json(stack));
                     }
                 }),
                 "data", sol::property([](StateMachine& stateMachine) -> sol::object {
                     return json_to_lua(stateMachine.gameProps->lua, stateMachine.getStateData());
                 }, [](StateMachine& stateMachine, sol::object data) {
                     if (data.is<sol::table>()) {
-                        stateMachine.setStateData(data);
+                        stateMachine.setStateData(lua_to_json(data));
                     }
                 })
             );
