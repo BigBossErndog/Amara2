@@ -63,6 +63,10 @@ namespace Amara {
         virtual void doTransition() {
             Amara::Node* prev_parent = parent;
             
+            if (funcs.hasFunction("onTransition")) {
+                funcs.callFunction(actor, "onTransition", get_lua_object());
+            }
+            
             if (!next_key.empty()) {
                 if (parent && parent->parent) {
                     sol::object lua_node = parent->parent->luaCreateChild(next_key, next_config);

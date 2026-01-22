@@ -156,7 +156,7 @@ namespace Amara {
             lua.new_usertype<Animation>("Animation",
                 sol::base_classes, sol::bases<Amara::Action, Amara::Node>(),
                 "setAnimation", &Animation::setAnimation,
-                "progress", sol::readonly(&Animation::progress),
+                "progress", &Animation::progress,
                 "key", sol::readonly(&Animation::animKey),
                 "animate", [](Animation& anim, sol::object v) {
                     if (anim.sprite) anim.sprite->animate(v);

@@ -33,6 +33,8 @@ namespace Amara {
         
         double progress = 0;
         
+        double delay = 0;
+        
         nlohmann::json start_data;
         nlohmann::json end_data;
 
@@ -59,6 +61,7 @@ namespace Amara {
                 "rotationalVelocity", sol::property([](Amara::Particle& t) -> double { return t.rotationalVelocity; }, [](Amara::Particle& t, double v) { t.rotationalVelocity = v; }),
                 "lifeTime", sol::readonly(&Amara::Particle::lifeTime),
                 "progress", sol::readonly(&Amara::Particle::progress),
+                "delay", &Amara::Particle::delay,
                 "tint", sol::property([](Amara::Particle& t) -> Color& { return t.tint; }, [](Amara::Particle& t, sol::object v) { t.tint = v; })
             );
         }
@@ -271,6 +274,7 @@ namespace Amara {
             particle.rotation = 0;
             particle.rotationalVelocity = 0;
             particle.alpha = 1;
+            particle.delay = 0;
             particle.tint = Color::White;
             
             if (!particle.luaobject.valid() || particle.keep != &particle) {
@@ -371,8 +375,8 @@ namespace Amara {
                 rotateAroundAnchor(
                     passOn.anchor, 
                     Vector2( 
-                        (passOn.anchor.x + render_pos.x*passOn.scale.x*scale.x),
-                        (passOn.anchor.y + render_pos.y*passOn.scale.y*scale.y)
+                        (passOn.anchor.x + render_pos.x*passOn.scale.x),
+                        (passOn.anchor.y + render_pos.y*passOn.scale.y)
                     ),
                     passOn.rotation
                 ),
@@ -400,8 +404,8 @@ namespace Amara {
             }
 
             Rectangle dim = {
-                anchoredPos.x + (cropLeft - imgw*particle.origin.x)*scale.x*passOn.scale.x, 
-                anchoredPos.y - anchoredPos.z + (cropTop - imgh*particle.origin.y)*scale.y*passOn.scale.y,
+                anchoredPos.x + (cropLeft - imgw*particle.origin.x)*scale.x*passOn.scale.x*particle.scale.x,
+                anchoredPos.y - anchoredPos.z + (cropTop - imgh*particle.origin.y)*scale.y*passOn.scale.y*particle.scale.y,
                 (imgw - cropLeft - cropRight)*scale.x*passOn.scale.x*particle.scale.x,
                 (imgh - cropTop - cropBottom)*scale.y*passOn.scale.y*particle.scale.y
             };
@@ -412,8 +416,8 @@ namespace Amara {
             destRect.h = dim.h * totalZoom.y;
 
             SDL_FPoint dorigin = {
-                (imgw*particle.origin.x - cropLeft)*scale.x*passOn.scale.x*totalZoom.x,
-                (imgh*particle.origin.y - cropTop)*scale.y*passOn.scale.y*totalZoom.y
+                (imgw*particle.origin.x - cropLeft)*scale.x*passOn.scale.x*totalZoom.x*particle.scale.x,
+                (imgh*particle.origin.y - cropTop)*scale.y*passOn.scale.y*totalZoom.y*particle.scale.y
             };
 
             float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
@@ -437,7 +441,7 @@ namespace Amara {
             }
 
             Amara::Color particleTint = particle.tint * tint;
-
+            
             if (image->texture && gameProps->renderer) {
                 // 2D Rendering
                 SDL_SetTextureScaleMode(image->texture, SDL_SCALEMODE_NEAREST);
@@ -567,31 +571,39 @@ namespace Amara {
                 }
 
                 if (!updated_this_frame) {
-                    particle.pos += particle.velocity * deltaTime + particle.acceleration * deltaTime * deltaTime * 0.5f;
-                    particle.velocity += particle.acceleration * deltaTime;
-                    particle.rotation += particle.rotationalVelocity * deltaTime;
-                    
-                    for (auto it = particle.end_data.begin(); it != particle.end_data.end(); ++it) {
-                        tweenProperty(particle, it.key(), particle.start_data[it.key()], it.value());
+                    if (particle.delay > 0) {
+                        particle.delay -= deltaTime;
+                        if (particle.delay < 0) {
+                            particle.delay = 0;
+                        }
                     }
-                    
-                    if (onUpdate_defined) {
-                        sol::function func = funcs.getFunction("onParticleUpdate");
-                        try {
-                            if (!particle.luaobject.valid() || particle.keep != &particle) {
-                                particle.luaobject = sol::make_object(gameProps->lua, &particle);
-                                particle.luatable = particle.luaobject.as<sol::table>();
-                                particle.keep = &particle;
+                    else {
+                        particle.pos += particle.velocity * deltaTime + particle.acceleration * deltaTime * deltaTime * 0.5f;
+                        particle.velocity += particle.acceleration * deltaTime;
+                        particle.rotation += particle.rotationalVelocity * deltaTime;
+                        
+                        for (auto it = particle.end_data.begin(); it != particle.end_data.end(); ++it) {
+                            tweenProperty(particle, it.key(), particle.start_data[it.key()], it.value());
+                        }
+                        
+                        if (onUpdate_defined) {
+                            sol::function func = funcs.getFunction("onParticleUpdate");
+                            try {
+                                if (!particle.luaobject.valid() || particle.keep != &particle) {
+                                    particle.luaobject = sol::make_object(gameProps->lua, &particle);
+                                    particle.luatable = particle.luaobject.as<sol::table>();
+                                    particle.keep = &particle;
+                                }
+                                func(particle.luaobject, deltaTime);
                             }
-                            func(particle.luaobject, deltaTime);
-                        }
-                        catch (const sol::error& e) {
-                            fatal_error(e.what());
-                            gameProps->breakWorld();
-                        }
-                        catch (const std::exception& e) {
-                            fatal_error(e.what());
-                            gameProps->breakWorld();
+                            catch (const sol::error& e) {
+                                fatal_error(e.what());
+                                gameProps->breakWorld();
+                            }
+                            catch (const std::exception& e) {
+                                fatal_error(e.what());
+                                gameProps->breakWorld();
+                            }
                         }
                     }
                 }
@@ -600,7 +612,7 @@ namespace Amara {
 
                 drawParticle(v, particle);
 
-                if (!updated_this_frame) {
+                if (!updated_this_frame && particle.delay == 0) {
                     particle.lifeTime += deltaTime;
                 }
                 particle.progress = particle.lifeTime / particle_lifetime;
