@@ -333,6 +333,79 @@ namespace Amara {
         void release() {
             holdCount -= 1;
         }
+        
+        nlohmann::json getStack() {
+            nlohmann::json data = nlohmann::json::array();
+            for (auto& state : stateRecords) {
+                nlohmann::json state_data = nlohmann::json::object();
+                state_data["name"] = state.name;
+                state_data["event"] = state.event;
+                state_data["holdCount"] = state.holdCount;
+                state_data["jumpFlag"] = state.jumpFlag;
+                data.push_back(state_data);
+            }
+            return data;
+        }
+        void setStack(sol::object stack) {
+            stateRecords.clear();
+            nlohmann::json data = lua_to_json(stack);
+            if (!data.is_array()) return;
+            for (auto& state_data : data) {
+                if (!state_data.is_object()) continue;
+                StateRecord new_record;
+                new_record.name = state_data["name"].get<std::string>();
+                new_record.event = state_data["event"].get<int>();
+                new_record.holdCount = state_data["holdCount"].get<int>();
+                new_record.jumpFlag = state_data["jumpFlag"].get<std::string>();
+                stateRecords.push_back(new_record);
+            }
+        }
+        
+        nlohmann::json getStateData() {
+            nlohmann::json data = nlohmann::json::object();
+            
+            nlohmann::json current_state = nlohmann::json::object();
+            current_state["name"] = currentState;
+            current_state["event"] = currentEvent;
+            current_state["holdCount"] = holdCount;
+            current_state["jumpFlag"] = jumpFlag;
+            data["current_state"] = current_state;
+            
+            nlohmann::json state_records = nlohmann::json::array();
+            for (auto& record : stateRecords) {
+                nlohmann::json state_record = nlohmann::json::object();
+                state_record["name"] = record.name;
+                state_record["event"] = record.event;
+                state_record["holdCount"] = record.holdCount;
+                state_record["jumpFlag"] = record.jumpFlag;
+                state_records.push_back(state_record);
+            }
+            data["state_records"] = state_records;
+            
+            return data;
+        }
+        void setStateData(sol::object obj) {
+            nlohmann::json json_data = obj.as<nlohmann::json>();
+            if (json_has(json_data, "current_state")) {
+                nlohmann::json current_state = json_data["current_state"];
+                currentState = current_state["name"].get<std::string>();
+                currentEvent = current_state["event"].get<int>();
+                holdCount = current_state["holdCount"].get<int>();
+                jumpFlag = current_state["jumpFlag"].get<std::string>();
+            }
+            if (json_has(json_data, "state_records")) {
+                nlohmann::json state_records = json_data["state_records"];
+                stateRecords.clear();
+                for (auto& record : state_records) {
+                    StateRecord new_record;
+                    new_record.name = record["name"].get<std::string>();
+                    new_record.event = record["event"].get<int>();
+                    new_record.holdCount = record["holdCount"].get<int>();
+                    new_record.jumpFlag = record["jumpFlag"].get<std::string>();
+                    stateRecords.push_back(new_record);
+                }
+            }
+        }
 
         virtual sol::object complete() override {
             if (parent && parent->stateMachine == this) {
@@ -395,7 +468,24 @@ namespace Amara {
                 "inState", &StateMachine::inState,
                 "state", &StateMachine::state,
                 "currentState", sol::readonly(&StateMachine::currentState),
-                "lastState", sol::readonly(&StateMachine::lastState)
+                "lastState", sol::readonly(&StateMachine::lastState),
+                "stack", sol::property([](StateMachine& stateMachine) -> sol::object {
+                    if (stateMachine.stateRecords.size() == 0) {
+                        return sol::nil;
+                    }
+                    return json_to_lua(stateMachine.gameProps->lua, stateMachine.getStack());
+                }, [](StateMachine& stateMachine, sol::object stack) {
+                    if (stack.is<sol::table>()) {
+                        stateMachine.setStack(stack);
+                    }
+                }),
+                "data", sol::property([](StateMachine& stateMachine) -> sol::object {
+                    return json_to_lua(stateMachine.gameProps->lua, stateMachine.getStateData());
+                }, [](StateMachine& stateMachine, sol::object data) {
+                    if (data.is<sol::table>()) {
+                        stateMachine.setStateData(data);
+                    }
+                })
             );
 
             sol::usertype<Node> node_type = lua["Node"];
