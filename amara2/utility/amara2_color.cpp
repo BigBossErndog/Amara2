@@ -114,6 +114,7 @@ namespace Amara {
             if (String::equal(key, "brown")) return true;
             if (String::equal(key, "pink")) return true;
             if (String::equal(key, "gray")) return true;
+            if (String::equal(key, "grey")) return true;
             if (String::equal(key, "transparent")) return true;
             return false;
         }
@@ -190,6 +191,9 @@ namespace Amara {
                     *this = Color::Pink;
                 }
                 else if (String::equal(color_str, "gray")) {
+                    *this = Color::Gray;
+                }
+                else if (String::equal(color_str, "grey")) {
                     *this = Color::Gray;
                 }
                 else if (String::equal(color_str, "transparent")) {
@@ -313,6 +317,7 @@ namespace Amara {
             "Brown", Color::Brown,
             "Pink", Color::Pink,
             "Gray", Color::Gray,
+            "Grey", Color::Gray,
             "Transparent", Color::Transparent
         );
     }
