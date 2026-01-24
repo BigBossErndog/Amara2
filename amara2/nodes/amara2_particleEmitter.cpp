@@ -33,6 +33,8 @@ namespace Amara {
         
         double progress = 0;
         
+        bool waitingYoyo = false;
+        
         double delay = 0;
         
         nlohmann::json start_data;
@@ -87,6 +89,8 @@ namespace Amara {
 
         bool updated_this_frame = false;
         
+        bool yoyo = false;
+        
         ParticleEmitter(): Amara::Sprite() {
             set_base_node_id("ParticleEmitter");
         }
@@ -128,6 +132,9 @@ namespace Amara {
             }
             if (json_has(config, "lifeTime")) {
                 particle_lifetime = config["lifeTime"];
+            }
+            if (json_has(config, "yoyo")) {
+                yoyo = config["yoyo"];
             }
             
             return Amara::Sprite::configure(config);
@@ -175,42 +182,45 @@ namespace Amara {
         }
         
         void tweenProperty(Particle& p, std::string key, const nlohmann::json& val1, const nlohmann::json& val2) {
+            double real_progress = (yoyo && !p.waitingYoyo) ? 1.0 - p.progress : p.progress;
+            real_progress = std::clamp(real_progress, 0.0, 1.0);
+            
             if (p.luatable[key].is<int>()) {
                 int start = val1.get<int>();
                 int end = val2.get<int>();
-                p.luatable[key] = static_cast<int>(std::round(ease((double)start, (double)end, p.progress)));
+                p.luatable[key] = static_cast<int>(std::round(ease((double)start, (double)end, real_progress)));
             }
             else if (p.luatable[key].is<double>()) {
                 float start = val1.get<float>();
                 float end = val2.get<float>();
-                p.luatable[key] = ease((double)start, (double)end, p.progress, easing);
+                p.luatable[key] = ease((double)start, (double)end, real_progress, easing);
             }
             else if (p.luatable[key].is<Amara::Vector2>()) {
                 Vector2 start = val1;
                 Vector2 end = val2;
                 p.luatable[key] = Vector2(
-                    ease(start.x, end.x, p.progress, easing),
-                    ease(start.y, end.y, p.progress, easing)
+                    ease(start.x, end.x, real_progress, easing),
+                    ease(start.y, end.y, real_progress, easing)
                 );
             }
             else if (p.luatable[key].is<Amara::Rectangle>()) {
                 Rectangle start = val1;
                 Rectangle end = val2;
                 p.luatable[key] = Rectangle(
-                    ease(start.x, end.x, p.progress, easing),
-                    ease(start.y, end.y, p.progress, easing),
-                    ease(start.w, end.w, p.progress, easing),
-                    ease(start.h, end.h, p.progress, easing)
+                    ease(start.x, end.x, real_progress, easing),
+                    ease(start.y, end.y, real_progress, easing),
+                    ease(start.w, end.w, real_progress, easing),
+                    ease(start.h, end.h, real_progress, easing)
                 );
             }
             else if (p.luatable[key].is<Amara::Color>()) {
                 Color start = val1;
                 Color end = val2;
                 p.luatable[key] = Color(
-                    ease(start.r, end.r, p.progress, easing),
-                    ease(start.g, end.g, p.progress, easing),
-                    ease(start.b, end.b, p.progress, easing),
-                    ease(start.a, end.a, p.progress, easing)
+                    ease(start.r, end.r, real_progress, easing),
+                    ease(start.g, end.g, real_progress, easing),
+                    ease(start.b, end.b, real_progress, easing),
+                    ease(start.a, end.a, real_progress, easing)
                 );
             }
         }
@@ -276,6 +286,8 @@ namespace Amara {
             particle.alpha = 1;
             particle.delay = 0;
             particle.tint = Color::White;
+            
+            particle.waitingYoyo = yoyo;
             
             if (!particle.luaobject.valid() || particle.keep != &particle) {
                 particle.luaobject = sol::make_object(gameProps->lua, &particle);
@@ -533,7 +545,7 @@ namespace Amara {
                     else spawn_new = true;
                 }
                 else {
-                    if (particle.lifeTime >= particle_lifetime && !updated_this_frame) {
+                    if (particle.lifeTime >= particle_lifetime && !updated_this_frame) {\
                         spawnedCount -= 1;
                         if (spawn_count > 0) {
                             spawn_new = true;
@@ -614,6 +626,12 @@ namespace Amara {
 
                 if (!updated_this_frame && particle.delay == 0) {
                     particle.lifeTime += deltaTime;
+                    if (particle.lifeTime >= particle_lifetime) {
+                        if (particle.waitingYoyo) {
+                            particle.lifeTime -= particle_lifetime;
+                            particle.waitingYoyo = false;
+                        }
+                    }
                 }
                 particle.progress = particle.lifeTime / particle_lifetime;
             }
