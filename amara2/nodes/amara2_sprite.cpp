@@ -80,8 +80,8 @@ namespace Amara {
                 frameHeight = spritesheet->frameHeight;
             }
             else {
-                frameWidth = 0;
-                frameHeight = 0;
+                frameWidth = textureWidth;
+                frameHeight = textureHeight;
             }
             return true;
         }

@@ -47,6 +47,8 @@ namespace Amara {
         Rectangle container_viewport;
 
         bool renderPixelPerfect = false;
+        
+        bool drawn_this_frame = false;
 
         TextureContainer(): Amara::Node() {
             set_base_node_id("TextureContainer");
@@ -173,6 +175,10 @@ namespace Amara {
 
             update_canvas = true;
         }
+        
+        virtual void update(double deltaTime) override {
+            drawn_this_frame = false;
+        }
 
         virtual void update_size() {
             left = -width/2.0;
@@ -187,7 +193,10 @@ namespace Amara {
         }
 
         virtual void drawCanvasContents(const Rectangle& v) {
-            if (depthSortChildrenEnabled) sortChildren();
+            if (depthSortChildrenEnabled || sort_children_once) {
+                sort_children_once = false;
+                sortChildren();
+            }
             drawChildren(v);
         }
 
@@ -279,9 +288,12 @@ namespace Amara {
             currentShaderProgram = gameProps->defaultShaderProgram;
             #endif
             
-            if (update_canvas || !canvasLocked) {
-                drawCanvas(v);
-                update_canvas = false;
+            if (!drawn_this_frame) {
+                if (update_canvas || !canvasLocked) {
+                    drawCanvas(v);
+                    update_canvas = false;
+                }
+                drawn_this_frame = true;
             }
 
             #ifdef AMARA_OPENGL
@@ -611,6 +623,7 @@ namespace Amara {
                     [](Amara::TextureContainer& t, float v) { t.origin.y = v / t.height; }
                 ),
                 "canvasLocked", &TextureContainer::canvasLocked,
+                "update_canvas", sol::readonly(&TextureContainer::update_canvas),
                 "drawOnce", &TextureContainer::drawOnce,
                 "clearOnDraw", &TextureContainer::clearOnDraw,
                 "renderPixelPerfect", &TextureContainer::renderPixelPerfect

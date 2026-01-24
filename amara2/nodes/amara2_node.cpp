@@ -54,6 +54,9 @@ namespace Amara {
         
         bool sortable = true;
         bool depthSortChildrenEnabled = true;
+        bool sort_children_once = false;
+        
+        bool ignoreChildren = false;
 
         bool fixedToCamera = false;
 
@@ -465,7 +468,7 @@ namespace Amara {
                 }
             }
             
-            if (!destroyed) runChildren(deltaTime);
+            if (!destroyed and !ignoreChildren) runChildren(deltaTime);
             clean_node_list(children);
 
             lifeTime += deltaTime;
@@ -528,7 +531,10 @@ namespace Amara {
             
             drawSelf(v);
 
-            if (depthSortChildrenEnabled) sortChildren();
+            if (depthSortChildrenEnabled || sort_children_once) {
+                sort_children_once = false;
+                sortChildren();
+            }
             drawChildren(v);
 
             #ifdef AMARA_OPENGL
@@ -567,6 +573,10 @@ namespace Amara {
         }
 
         void sortChildren();
+        void sortChildrenOnce() {
+            sort_children_once = true;
+            depthSortChildrenEnabled = false;
+        }
 
         #ifdef AMARA_OPENGL
         bool setShaderProgram(std::string key) {
@@ -927,7 +937,6 @@ namespace Amara {
                 "id", &Node::id,
                 "baseNodeID", sol::readonly(&Node::baseNodeID),
                 "nodeID", sol::readonly(&Node::nodeID),
-                
                 "parent", sol::property(
                     [](Node& e) { return e.parent->get_lua_object(); },
                     [](Node& e, sol::object val) {
@@ -998,6 +1007,8 @@ namespace Amara {
                 "sortable", &Node::sortable,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
                 "depthSortChildren", &Node::depthSortChildrenEnabled,
+                "sortChildrenOnce", &Node::sortChildrenOnce,
+                "ignoreChildren", &Node::ignoreChildren,
                 "forceSortChildren", [](Amara::Node& n) {
                     n.sortChildren();
                 },
