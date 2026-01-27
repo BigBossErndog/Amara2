@@ -13,7 +13,7 @@ namespace Amara {
             return std::filesystem::exists(filePath);
         }
 
-        std::string readFile(std::string path) {
+        std::string readFile(const std::string& path) {
             std::filesystem::path filePath = getRelativePath(path);
             std::string pathForError = removeBasePath(filePath);
 
@@ -69,7 +69,7 @@ namespace Amara {
             return contents;
         }
 
-        nlohmann::json readJSON(std::string path) {
+        nlohmann::json readJSON(const std::string& path) {
             std::string contents = readFile(path);
             if (!contents.empty() && nlohmann::json::accept(contents)) {
                 return nlohmann::json::parse(contents);
@@ -77,8 +77,13 @@ namespace Amara {
             fatal_error("Warning: Invalid JSON file read from \"", removeBasePath(getRelativePath(path)), "\".");
             return nullptr;
         }
-        sol::object luaReadJSON(std::string path) {
+        sol::object luaReadJSON(const std::string& path) {
             return json_to_lua(gameProps->lua, readJSON(path));
+        }
+        
+        sol::table luaReadCSV(const std::string& path) {
+            std::string contents = readFile(path);
+            return parse_csv(gameProps->lua, contents);
         }
 
         bool writeFile(std::string path, nlohmann::json input, std::string encryptionKey) {
@@ -1350,6 +1355,7 @@ namespace Amara {
                 "exists", &SystemManager::exists,
                 "readFile", &SystemManager::readFile,
                 "readJSON", &SystemManager::luaReadJSON,
+                "readCSV", &SystemManager::luaReadCSV,
                 "writeFile", sol::overload(
                     sol::resolve<bool(std::string, sol::object, std::string)>(&SystemManager::luaWriteFile),
                     sol::resolve<bool(std::string, sol::object)>(&SystemManager::luaWriteFile)

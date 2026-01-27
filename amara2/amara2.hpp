@@ -161,6 +161,7 @@
     
     #include "rendering/amara2_renderUtility.cpp"
     #include "utility/amara2_luaUtility.cpp"
+    #include "utility/amara2_csvUtility.cpp"
 
     #include "input/amara2_button.cpp"
     #include "input/amara2_keyboard.cpp"

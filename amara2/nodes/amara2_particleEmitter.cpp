@@ -76,13 +76,13 @@ namespace Amara {
         Ease easing = Ease::Linear;
 
         int poolSize = 128;
-        double spawnRate = 0;
+        double spawnRate = 1;
         double spawn_timer = 0;
-
+        
         bool spawning = false;
         int spawnedCount = 0;
         int end_particle = -1;
-        double particle_lifetime = 0;
+        double particle_lifetime = 1;
         
         nlohmann::json start_data;
         nlohmann::json end_data;

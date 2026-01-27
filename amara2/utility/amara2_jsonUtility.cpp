@@ -36,4 +36,23 @@ namespace Amara {
         }
         return nullptr;
     }
+    
+    nlohmann::json string_to_json(const std::string& input) {
+        if (input.size() == 0) return "";
+        
+        if (String::equal(input, "TRUE")) {
+            return true;
+        }
+        if (String::equal(input, "FALSE")) {
+            return false;
+        }
+        if (nlohmann::json::accept(input)) {
+            nlohmann::json json = nlohmann::json::parse(input);
+            if (json.is_string()) {
+                return input;
+            }
+            return json;
+        }
+        return "";
+    }
 }

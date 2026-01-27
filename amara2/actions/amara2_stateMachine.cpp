@@ -464,7 +464,8 @@ namespace Amara {
                     if (data.is<sol::table>()) {
                         stateMachine.setStateData(lua_to_json(data));
                     }
-                })
+                }),
+                "debug", &StateMachine::debug
             );
 
             sol::usertype<Node> node_type = lua["Node"];

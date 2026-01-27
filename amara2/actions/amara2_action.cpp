@@ -181,6 +181,10 @@ namespace Amara {
                 "has_started", sol::readonly(&Action::has_started),
                 "completed", sol::readonly(&Action::completed),
                 "complete", &Action::complete,
+                "onComplete", sol::property(
+                    [](Amara::Action& action) { return action.funcs.getFunction("onComplete"); },
+                    [](Amara::Action& action, sol::function func) { action.funcs.setFunction(action.nodeID, "onComplete", func); }
+                ),
                 "chain", &Action::chain,
                 "whenDone", &Action::whenDone,
                 "next", sol::overload(
