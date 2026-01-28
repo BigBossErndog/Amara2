@@ -470,6 +470,8 @@ namespace Amara {
             
             if (!destroyed and !ignoreChildren) runChildren(deltaTime);
             clean_node_list(children);
+            
+            input.post_run(deltaTime);
 
             lifeTime += deltaTime;
             if (is_world) gameProps->worldLifetime = lifeTime;

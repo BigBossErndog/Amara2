@@ -425,6 +425,7 @@ namespace Amara {
                     input->handleMessage({ nullptr, "onPointerDown", mouse.get_lua_object(gameProps) });
 
                     input->rec_interact_pos = input->node->pos;
+                    input->state.press();
                 }
                 else if (mouse.right.justPressed) {
                     input->handleMessage({ nullptr, "onRightMouseDown", mouse.get_lua_object(gameProps) });
@@ -460,6 +461,7 @@ namespace Amara {
                 if (mouse.left.justReleased) {
                     input->handleMessage({ nullptr, "onLeftMouseUp", mouse.get_lua_object(gameProps) });
                     input->handleMessage({ nullptr, "onPointerUp", mouse.get_lua_object(gameProps) });
+                    input->state.release();
                 }
                 else if (mouse.right.justReleased) {
                     input->handleMessage({ nullptr, "onRightMouseUp", mouse.get_lua_object(gameProps) });
@@ -500,16 +502,20 @@ namespace Amara {
                             
                             input->rec_interact_pos = input->node->pos;
                         }
+                        input->state.press();
                         break;
                     }
                     case SDL_EVENT_FINGER_UP: {
                         input->hover.release();
                         input->handleMessage({ nullptr, "onPointerUp", finger->get_lua_object(gameProps) });
                         input->handleMessage({ nullptr, "onTouchUp", finger->get_lua_object(gameProps) });
+                        
+                        input->state.release();
                         break;
                     }
                     case SDL_EVENT_FINGER_MOTION: {
                         input->hover.press();
+                        input->state.press();
                         if (input->hover.justPressed) {
                             input->handleMessage({ nullptr, "onPointerHover", finger->get_lua_object(gameProps) });
                             input->handleMessage({ nullptr, "onTouchHover", finger->get_lua_object(gameProps) });

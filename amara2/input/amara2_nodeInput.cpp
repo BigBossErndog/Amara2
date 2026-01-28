@@ -21,6 +21,8 @@ namespace Amara {
         GeneralPointer pointer;
 
         InputDef lastInteraction;
+        
+        Amara::Button state;
 
         NodeInput() = default;
 
@@ -69,6 +71,7 @@ namespace Amara {
         
         void run(double deltaTime) {
             hover.update(deltaTime);
+            
             if (!messageBox.empty()) {
                 MessageQueue* messages = gameProps->messages;
                 
@@ -116,6 +119,13 @@ namespace Amara {
 
             dragging = false;
         }
+        
+        void post_run(double deltaTime) {
+            state.update(deltaTime);
+            if (state.isDown && !hover.isDown) {
+                state.release();
+            }
+        }
 
         virtual void deactivate() override {
             hover.release();
@@ -141,7 +151,8 @@ namespace Amara {
                 "cursor", &NodeInput::cursor,
                 "pointer", sol::property([](Amara::NodeInput& n) {
                     return n.gameProps->inputManager->generalPointer;
-                })
+                }),
+                "state", &Amara::NodeInput::state
             );
         }
     };

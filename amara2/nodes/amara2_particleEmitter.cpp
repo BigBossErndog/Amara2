@@ -133,6 +133,9 @@ namespace Amara {
             if (json_has(config, "lifeTime")) {
                 particle_lifetime = config["lifeTime"];
             }
+            if (json_has(config, "duration")) {
+                particle_lifetime = config["duration"];
+            }
             if (json_has(config, "yoyo")) {
                 yoyo = config["yoyo"];
             }
@@ -364,6 +367,14 @@ namespace Amara {
                     }   
                 }
             }
+        }
+        
+        void clearAll() {
+            for (int i = 0; i <= end_particle; i++) {
+                particles[i].in_use = false;
+            }
+            spawnedCount = 0;
+            end_particle = -1;
         }
 
         void drawParticle(const Rectangle& v, const Particle& particle) {
@@ -649,7 +660,8 @@ namespace Amara {
                 "spawnRate", &Amara::ParticleEmitter::spawnRate,
                 "spawning", &Amara::ParticleEmitter::spawning,
                 "burst", &Amara::ParticleEmitter::burst,
-                "spawnedCount", sol::readonly(&Amara::ParticleEmitter::spawnedCount)
+                "spawnedCount", sol::readonly(&Amara::ParticleEmitter::spawnedCount),
+                "clearAll", &Amara::ParticleEmitter::clearAll
             );
         }
     };
