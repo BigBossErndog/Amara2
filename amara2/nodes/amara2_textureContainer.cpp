@@ -283,7 +283,7 @@ namespace Amara {
             if (rec_width != width || rec_height != height) {
                 createCanvas(width, height);
             }
-
+            
             #ifdef AMARA_OPENGL
             currentShaderProgram = gameProps->defaultShaderProgram;
             #endif
@@ -357,7 +357,7 @@ namespace Amara {
                 )
             )) return;
 
-            if (input.active && !passOn.insideTextureContainer) {
+            if (input.active && !passOn.inputDisabled) {
                 Quad inputQuad = rotateQuad(
                     Quad(destRect),
                     Vector2(
@@ -432,6 +432,7 @@ namespace Amara {
             PassOnProps rec_props = gameProps->passOn;
             PassOnProps new_props;
             new_props.insideTextureContainer = true;
+            new_props.inputDisabled = true;
 
             gameProps->passOn = new_props;
             passOn = gameProps->passOn;

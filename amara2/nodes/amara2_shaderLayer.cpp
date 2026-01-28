@@ -54,7 +54,7 @@ namespace Amara {
             
             srcRect = getSrcRect();
 
-            if (input.active && !passOn.insideTextureContainer) {
+            if (input.active && !passOn.inputDisabled) {
                 Quad inputQuad = Quad(destRect);
                 input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nullptr);
             }
@@ -114,7 +114,7 @@ namespace Amara {
             gameProps->passOn = passOn;
 
             Amara::Node::drawChildren(v);
-
+            
             gameProps->passOn = rec_props;
             passOn = rec_props;
         }

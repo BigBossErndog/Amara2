@@ -442,7 +442,7 @@ namespace Amara {
             if (messages.active) messages.run();
 
             input.drag = Vector2(0, 0);
-            if (input.active && !passOn.insideTextureContainer) {
+            if (input.active) {
                 input.run(deltaTime);
                 
                 Amara::Pointer* lastPointer = input.lastInteraction.lastPointer;

@@ -108,7 +108,7 @@ namespace Amara {
                 )
             )) return;
 
-            if (input.active && !passOn.insideTextureContainer) {
+            if (input.active && !passOn.inputDisabled) {
                 input.queueInput(Quad(destRect), v, nullptr);
             }
             

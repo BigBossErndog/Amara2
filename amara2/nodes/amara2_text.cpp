@@ -420,7 +420,7 @@ namespace Amara {
                         )
                     )) continue;
 
-                    if (input.active && !passOn.insideTextureContainer) {
+                    if (input.active && !passOn.inputDisabled) {
                         Quad inputQuad = rotateQuad(
                             Quad(Rectangle( // Extrude the input zone
                                 destRect.x-2, destRect.y-2,

@@ -8,6 +8,9 @@ namespace Amara {
         std::string line;
         int row_number = 1;
         while (std::getline(iss, line)) {
+            if (!line.empty() && line.back() == '\r') {
+                line.pop_back();
+            }
             if (!rows[row_number].valid()) {
                 rows[row_number] = lua.create_table();
             }
@@ -50,7 +53,8 @@ namespace Amara {
             
             int column_number = 1;
             for (const std::string& cell_value : cells_in_row) {
-                sol::object cell_obj = json_to_lua(lua, string_to_json(cell_value));
+                sol::object cell_obj = json_to_lua(lua, string_to_json(cell_value, false));
+                
                 rows[row_number][column_number] = cell_obj;
                 if (!columns[column_number].valid()) {
                     columns[column_number] = lua.create_table();

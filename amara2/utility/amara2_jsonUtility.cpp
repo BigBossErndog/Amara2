@@ -37,8 +37,8 @@ namespace Amara {
         return nullptr;
     }
     
-    nlohmann::json string_to_json(const std::string& input) {
-        if (input.size() == 0) return "";
+    nlohmann::json string_to_json(const std::string& input, bool allow_null) {
+        if (input.size() == 0) return allow_null ? nullptr : std::string("");
         
         if (String::equal(input, "TRUE")) {
             return true;
@@ -53,6 +53,9 @@ namespace Amara {
             }
             return json;
         }
-        return "";
+        return input;
+    }
+    nlohmann::json string_to_json(const std::string& input) {
+        return string_to_json(input, true);
     }
 }

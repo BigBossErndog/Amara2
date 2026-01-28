@@ -1086,7 +1086,7 @@ namespace Amara {
             }
             #endif
 
-            if (input.active && !passOn.insideTextureContainer) {
+            if (input.active && !passOn.inputDisabled) {
                 input.queueInput(Quad(v), v, nullptr);
             }
             

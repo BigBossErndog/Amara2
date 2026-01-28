@@ -67,6 +67,7 @@ namespace Amara {
         Vector2 window_zoom = { 1, 1 };
 
         bool insideTextureContainer = false;
+        bool inputDisabled = false;
         bool insideCamera = false;
         
         void reset() {

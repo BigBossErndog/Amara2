@@ -82,7 +82,7 @@ namespace Amara {
                 )
             )) return;
 
-            if (input.active && !passOn.insideTextureContainer) {
+            if (input.active && !passOn.inputDisabled) {
                 Quad inputQuad = rotateQuad(
                     Quad(destRect),
                     Vector2(
