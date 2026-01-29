@@ -428,6 +428,11 @@ namespace Amara {
             }
             return 0;
         });
+        math_metatable.set_function("ease", sol::overload(
+            sol::resolve<double(double, double, double, Amara::Ease)>(&Amara::ease),
+            sol::resolve<double(double, double, double)>(&Amara::ease),
+            sol::resolve<Amara::Color(const Amara::Color&, const Amara::Color&, double, Amara::Ease)>(&Amara::ease)
+        ));
         
         sol::table table_metatable = lua["table"];
         table_metatable.set_function("size", [](sol::object tbl) -> int {

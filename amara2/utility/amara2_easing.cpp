@@ -267,10 +267,5 @@ namespace Amara {
             "ExpoOut", Ease::ExpoOut,
             "ExpoInOut", Ease::ExpoInOut
         );
-        lua.set_function("ease", sol::overload(
-            sol::resolve<double(double, double, double, Amara::Ease)>(&Amara::ease),
-            sol::resolve<double(double, double, double)>(&Amara::ease),
-            sol::resolve<Amara::Color(const Amara::Color&, const Amara::Color&, double, Amara::Ease)>(&Amara::ease)
-        ));
     }
 }
