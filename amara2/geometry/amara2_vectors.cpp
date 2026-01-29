@@ -114,7 +114,7 @@ namespace Amara {
         }
 
         // Reflect the vector off a normal
-        Vector2 reflect(const Vector2& normal) const {
+        Vector2 reflection(const Vector2& normal) const {
             return *this - normal * 2.0f * this->dot(normal);
         }
     
@@ -554,6 +554,10 @@ namespace Amara {
             "string", sol::property([](const Vector2& v) {
                 return std::string(v);
             }),
+            "reflection", [](const Vector2& v, sol::object val) {
+                Vector2 normal = val;
+                return v.reflection(normal);
+            },
             sol::meta_function::equal_to, [](const Vector2& v, sol::object val) {
                 Vector2 other = val;
                 return v == other;
