@@ -33,7 +33,23 @@ namespace Amara {
                         }
                     }
                     else {
-                        current_cell += ch;
+                        if (ch == '\\' && i + 1 < line.length()) {
+                            char next_ch = line[i + 1];
+                            if (next_ch == 'n') {
+                                current_cell += '\n';
+                                i++;
+                            }
+                            else if (next_ch == 't') {
+                                current_cell += '\t';
+                                i++;
+                            }
+                            else {
+                                current_cell += ch;
+                            }
+                        }
+                        else {
+                            current_cell += ch;
+                        }
                     }
                 }
                 else {
@@ -45,7 +61,20 @@ namespace Amara {
                         current_cell.clear();
                     }
                     else {
-                        current_cell += ch;
+                        if (ch == '\\' && i + 1 < line.length()) {
+                            char next_ch = line[i + 1];
+                            if (next_ch == 'n') {
+                                current_cell += '\n';
+                                i++;
+                            } else if (next_ch == 't') {
+                                current_cell += '\t';
+                                i++;
+                            } else {
+                                current_cell += ch;
+                            }
+                        } else {
+                            current_cell += ch;
+                        }
                     }
                 }
             }

@@ -56,8 +56,17 @@ namespace Amara {
             if (json_has(config, "marginTop")) marginTop = json_extract(config, "marginTop");
             if (json_has(config, "marginBottom")) marginBottom = json_extract(config, "marginBottom");
 
-            if (json_has(config, "margins")) {
-                marginLeft = marginRight = marginTop = marginBottom = json_extract(config, "margins");
+            if (json_has(config, "margin")) {
+                nlohmann::json j_margin = json_extract(config, "margin");
+                if (j_margin.is_number()) {
+                    marginLeft = marginRight = marginTop = marginBottom = j_margin;
+                }
+                else if (j_margin.is_array() && j_margin.size() == 4) {
+                    marginLeft = j_margin[0];
+                    marginRight = j_margin[1];
+                    marginTop = j_margin[2];
+                    marginBottom = j_margin[3];
+                }
             }
             
             update_size();

@@ -272,12 +272,6 @@ namespace Amara {
             "b", &Color::b,
             "a", &Color::a,
             "hex", &Color::hex,
-            sol::meta_function::multiplication, sol::overload(
-                sol::resolve<Amara::Color(const Amara::Color&) const>(&Amara::Color::operator*),
-                sol::resolve<Amara::Color(float) const>(&Amara::Color::operator*)
-            ),
-            sol::meta_function::addition, &Amara::Color::operator+,
-            sol::meta_function::subtraction, &Amara::Color::operator-,
             "normalize", [&lua](const Color& self) {
                 sol::table normalized = lua.create_table();
                 normalized[1] = self.r / 255.0f;
@@ -286,8 +280,32 @@ namespace Amara {
                 normalized[4] = self.a / 255.0f;
                 return normalized;
             },
-            sol::meta_function::addition, &Amara::Color::operator+,
-            sol::meta_function::subtraction, &Amara::Color::operator-,
+            sol::meta_function::addition, [](const Color& self, sol::object val) {
+                if (val.get_type() == sol::type::number) {
+                    float scalar = val.as<float>();
+                    return self + Amara::Color(scalar, scalar, scalar, 255);
+                }
+                else if (val.is<Color>() || val.is<sol::table>() || val.is<std::string>()) {
+                    const Color& other = val;
+                    return self + other;
+                }
+                else {
+                    fatal_error("Error: Invalid type for Color addition");
+                }
+            },
+            sol::meta_function::subtraction, [](const Color& self, sol::object val) {
+                if (val.get_type() == sol::type::number) {
+                    float scalar = val.as<float>();
+                    return self - Amara::Color(scalar, scalar, scalar, 255);
+                }
+                else if (val.is<Color>() || val.is<sol::table>() || val.is<std::string>()) {
+                    const Color& other = val;
+                    return self - other;
+                }
+                else {
+                    fatal_error("Error: Invalid type for Color subtraction");
+                }
+            },
             sol::meta_function::multiplication, [](const Color& self, sol::object val) {
                 if (val.get_type() == sol::type::number) {
                     float scalar = val.as<float>();

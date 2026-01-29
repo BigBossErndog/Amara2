@@ -226,10 +226,54 @@ namespace Amara {
         Vector3 operator* (float scalar) const {
             return Vector3(x * scalar, y * scalar, z * scalar);
         }
+        Vector3 operator* (const Vector3& other) const {
+            return Vector3(x * other.x, y * other.y, z * other.z);
+        }
+        Vector3 operator* (const Vector2& other) const {
+            return Vector3(x * other.x, y * other.y, z);
+        }
+        Vector3 operator/ (float scalar) const {
+            return Vector3(x / scalar, y / scalar, z / scalar);
+        }
+        Vector3 operator/ (const Vector3& other) const {
+            return Vector3(x / other.x, y / other.y, z / other.z);
+        }
+        Vector3 operator/ (const Vector2& other) const {
+            return Vector3(x / other.x, y / other.y, z);
+        }
+        
         Vector3& operator*= (float scalar) {
             x *= scalar;
             y *= scalar;
             z *= scalar;
+            return *this;
+        }
+        Vector3& operator*= (const Vector3& other) {
+            x *= other.x;
+            y *= other.y;
+            z *= other.z;
+            return *this;
+        }
+        Vector3& operator*= (const Vector2& other) {
+            x *= other.x;
+            y *= other.y;
+            return *this;
+        }
+        Vector3& operator/= (float scalar) {
+            x /= scalar;
+            y /= scalar;
+            z /= scalar;
+            return *this;
+        }
+        Vector3& operator/= (const Vector3& other) {
+            x /= other.x;
+            y /= other.y;
+            z /= other.z;
+            return *this;
+        }
+        Vector3& operator/= (const Vector2& other) {
+            x /= other.x;
+            y /= other.y;
             return *this;
         }
 
@@ -330,11 +374,43 @@ namespace Amara {
         Vector4 operator* (float scalar) const {
             return Vector4(x * scalar, y * scalar, z * scalar, w * scalar);
         }
+        Vector4 operator* (const Vector4& other) const {
+            return Vector4(x * other.x, y * other.y, z * other.z, w * other.w);
+        }
+        
+        Vector4 operator/ (float scalar) const {
+            return Vector4(x / scalar, y / scalar, z / scalar, w / scalar);
+        }
+        Vector4 operator/ (const Vector4& other) const {
+            return Vector4(x / other.x, y / other.y, z / other.z, w / other.w);
+        }
+        
         Vector4& operator*= (float scalar) {
             x *= scalar;
             y *= scalar;
             z *= scalar;
             w *= scalar;
+            return *this;
+        }
+        Vector4& operator*= (const Vector4& other) {
+            x *= other.x;
+            y *= other.y;
+            z *= other.z;
+            w *= other.w;
+            return *this;
+        }
+        Vector4& operator/= (float scalar) {
+            x /= scalar;
+            y /= scalar;
+            z /= scalar;
+            w /= scalar;
+            return *this;
+        }
+        Vector4& operator/= (const Vector4& other) {
+            x /= other.x;
+            y /= other.y;
+            z /= other.z;
+            w /= other.w;
             return *this;
         }
 
@@ -437,68 +513,52 @@ namespace Amara {
             sol::constructors<Vector2(), Vector2(float, float)>(),
             "x", &Vector2::x,
             "y", &Vector2::y,
-            sol::meta_function::addition, &Vector2::operator+,
-            "add", sol::overload(
-                &Vector2::operator+=,
-                [](Vector2& v, float _x, float _y) -> Vector2* {
-                    v.x += _x;
-                    v.y += _y;
-                    return &v;
-                }
-            ),
-            "move", sol::overload(
-                &Vector2::operator+=,
-                [](Vector2& v, float _x, float _y) -> Vector2* {
-                    v.x += _x;
-                    v.y += _y;
-                    return &v;
-                }
-            ),
-            sol::meta_function::subtraction, &Vector2::operator-,
-            "subtract", sol::overload(
-                &Vector2::operator-=,
-                [](Vector2& v, float _x, float _y) -> Vector2* {
-                    v.x -= _x;
-                    v.y -= _y;
-                    return &v;
-                }
-            ),
-            sol::meta_function::multiplication, sol::overload(
-                sol::resolve<Vector2(float) const>(&Vector2::operator*),
-                sol::resolve<Vector2(const Vector2&) const>(&Vector2::operator*)
-            ),
-            "multiply", sol::overload(
-                sol::resolve<Vector2&(float)>(&Vector2::operator*=),
-                sol::resolve<Vector2&(const Vector2&)>(&Vector2::operator*=),
-                [](Vector2& v, float _x, float _y) -> Vector2* {
-                    v.x *= _x;
-                    v.y *= _y;
-                    return &v;
-                }
-            ),
-            sol::meta_function::division, sol::overload(
-                sol::resolve<Vector2(float) const>(&Vector2::operator/),
-                sol::resolve<Vector2(const Vector2&) const>(&Vector2::operator/)
-            ),
-            "divide", sol::overload(
-                sol::resolve<Vector2&(float)>(&Vector2::operator/=),
-                sol::resolve<Vector2&(const Vector2&)>(&Vector2::operator/=),
-                [](Vector2& v, float _x, float _y) -> Vector2* {
-                    v.x /= _x;
-                    v.y /= _y;
-                    return &v;
-                }
-            ),
-            "cross", &Vector2::cross,
-            "dot", &Vector2::dot,
-            sol::meta_function::equal_to, &Vector2::operator==,
-            sol::meta_function::to_string, [](const Vector2& v) {
-                return std::string(v);
+            sol::meta_function::addition, [](Vector2& v, sol::object val) {
+                Vector2 other = val;
+                return v + other;
             },
+            "move", [](Vector2& v, sol::object val) {
+                Vector2 other = val;
+                v.x += other.x;
+                v.y += other.y;
+            },
+            sol::meta_function::subtraction, [](Vector2& v, sol::object val) {
+                Vector2 other = val;
+                return v - other;
+            },
+            sol::meta_function::multiplication, [](Vector2& v, sol::object val) {
+                Vector2 other = val;
+                return v * other;
+            },
+            sol::meta_function::division, [](Vector2& v, sol::object val) {
+                Vector2 other = val;
+                return v / other;
+            },
+            "cross", [](Vector2& v, sol::object val) {
+                Vector2 other = val;
+                return v.cross(other);
+            },
+            "dot", [](Vector2& v, sol::object val) {
+                Vector2 other = val;
+                return v.dot(other);
+            },
+            "length", sol::property([](const Vector2& v) {
+                return v.length();
+            }),
+            "magnitude", sol::property([](const Vector2& v) {
+                return v.magnitude();
+            }),
             "normalized", sol::property([](const Vector2& v) {
                 return v.normalized();
             }),
-            "string", [](const Vector2& v) {
+            "string", sol::property([](const Vector2& v) {
+                return std::string(v);
+            }),
+            sol::meta_function::equal_to, [](const Vector2& v, sol::object val) {
+                Vector2 other = val;
+                return v == other;
+            },
+            sol::meta_function::to_string, [](const Vector2& v) {
                 return std::string(v);
             }
         );
@@ -506,66 +566,39 @@ namespace Amara {
             sol::constructors<Vector3(), Vector3(float, float, float), Vector3(const Vector2&, float)>(),
             sol::base_classes, sol::bases<Vector2>(),
             "z", &Vector3::z,
-            sol::meta_function::addition, sol::overload(
-                sol::resolve<Vector3(const Vector3&) const>(&Vector3::operator+),
-                sol::resolve<Vector3(const Vector2&) const>(&Vector3::operator+)
-            ),
-            "add", sol::overload(
-                sol::resolve<Vector3&(const Vector3&)>(&Vector3::operator+=),
-                sol::resolve<Vector3&(const Vector2&)>(&Vector3::operator+=),
-                [](Vector3& v, float _x, float _y) -> Vector3* {
-                    v.x += _x;
-                    v.y += _y;
-                    return &v;
-                },
-                [](Vector3& v, float _x, float _y, float _z) -> Vector3* {
-                    v.x += _x;
-                    v.y += _y;
-                    v.z += _z;
-                    return &v;
-                } 
-            ),
-            "move", sol::overload(
-                sol::resolve<Vector3&(const Vector3&)>(&Vector3::operator+=),
-                sol::resolve<Vector3&(const Vector2&)>(&Vector3::operator+=),
-                [](Vector3& v, float _x, float _y) -> Vector3* {
-                    v.x += _x;
-                    v.y += _y;
-                    return &v;
-                },
-                [](Vector3& v, float _x, float _y, float _z) -> Vector3* {
-                    v.x += _x;
-                    v.y += _y;
-                    v.z += _z;
-                    return &v;
-                } 
-            ),
-            sol::meta_function::subtraction, sol::overload(
-                sol::resolve<Vector3(const Vector3&) const>(&Vector3::operator-),
-                sol::resolve<Vector3(const Vector2&) const>(&Vector3::operator-)
-            ),
-            "subtract", sol::overload(
-                sol::resolve<Vector3&(const Vector3&)>(&Vector3::operator-=),
-                sol::resolve<Vector3&(const Vector2&)>(&Vector3::operator-=),
-                [](Vector3& v, float _x, float _y) -> Vector3* {
-                    v.x -= _x;
-                    v.y -= _y;
-                    return &v;
-                },
-                [](Vector3& v, float _x, float _y, float _z) -> Vector3* {
-                    v.x -= _x;
-                    v.y -= _y;
-                    v.z -= _z;
-                    return &v;
-                } 
-            ),
-            sol::meta_function::equal_to, &Vector3::operator==,
+            sol::meta_function::addition, [](const Vector3& v, sol::object val) {
+                Vector3 other = val;
+                return v + other;
+            },
+            "move", [](Vector3& v, sol::object val) {
+                Vector3 other = val;
+                v.x += other.x;
+                v.y += other.y;
+                v.z += other.z;
+                return &v;
+            },
+            sol::meta_function::subtraction, [](const Vector3& v, sol::object val) {
+                Vector3 other = val;
+                return v - other;
+            },
+            sol::meta_function::multiplication, [](const Vector3& v, sol::object val) {
+                Vector3 other = val;
+                return v * other;
+            },
+            sol::meta_function::division, [](Vector3& v, sol::object val) {
+                Vector3 other = val;
+                return v / other;
+            },
+            sol::meta_function::equal_to, [](const Vector3& v, sol::object val) {
+                Vector3 other = val;
+                return v == other;
+            },
             sol::meta_function::to_string, [](const Vector3& v) {
                 return std::string(v);
             },
-            "string", [](const Vector3& v) {
+            "string", sol::property([](const Vector3& v) {
                 return std::string(v);
-            }
+            })
         );
         
         lua.new_usertype<Vector4>("Vector4",
@@ -574,10 +607,26 @@ namespace Amara {
             "y", &Vector4::y,
             "z", &Vector4::z,
             "w", &Vector4::w,
-            sol::meta_function::addition, &Vector4::operator+,
-            sol::meta_function::subtraction, &Vector4::operator-,
-            sol::meta_function::multiplication, &Vector4::operator*,
-            sol::meta_function::equal_to, &Vector4::operator==,
+            sol::meta_function::addition, [](Vector4& v, sol::object val) {
+                Vector4 other = val;
+                return v + other;
+            },
+            sol::meta_function::subtraction, [](Vector4& v, sol::object val) {
+                Vector4 other = val;
+                return v - other;
+            },
+            sol::meta_function::multiplication, [](Vector4& v, sol::object val) {
+                Vector4 scalar = val;
+                return v * scalar;
+            },
+            sol::meta_function::division, [](Vector4& v, sol::object val) {
+                Vector4 scalar = val;
+                return v / scalar;
+            },
+            sol::meta_function::equal_to, [](const Vector4& v, sol::object val) {
+                Vector4 other = val;
+                return v == other;
+            },
             sol::meta_function::to_string, [](const Vector4& v) {
                 return std::string(v);
             }
