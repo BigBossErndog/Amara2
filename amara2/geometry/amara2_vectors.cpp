@@ -284,7 +284,7 @@ namespace Amara {
                 {"z", z}
             });
         }
-
+        
         Vector3& operator= (nlohmann::json config) {
             if (config.is_array()) {
                 if (config.size() == 3) {

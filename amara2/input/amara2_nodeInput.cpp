@@ -65,8 +65,13 @@ namespace Amara {
             }
         }
 
-        void queueInput(const Amara::Shape& _shape, Rectangle _viewport, nlohmann::json _data) {
-            gameProps->inputManager->queueInput({ this, _shape, _viewport, _data });
+        void queueInput(Amara::Shape _shape, Rectangle _viewport, nlohmann::json _data) {
+            gameProps->inputManager->queueInput({
+                this,
+                _shape.scale(gameProps->passOn.input_scale),
+                _viewport*gameProps->passOn.input_scale,
+                _data
+            });
         }
         
         void run(double deltaTime) {

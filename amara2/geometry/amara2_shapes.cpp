@@ -41,11 +41,25 @@ namespace Amara {
             return 2 * (w + h);
         }
 
-        bool operator==(const Rectangle& other) const {
+        bool operator== (const Rectangle& other) const {
             return x == other.x && y == other.y && w == other.w && h == other.h;
         }
-        bool operator !=(const Rectangle& other) const {
+        bool operator!= (const Rectangle& other) const {
             return x != other.x || y != other.y || w != other.w || h != other.h;
+        }
+        
+        Rectangle operator* (const Vector2& v) {
+            Rectangle rect = *this;
+            rect *= v;
+            return rect;
+        }
+        
+        Rectangle& operator*= (const Vector2& v) {
+            x *= v.x;
+            y *= v.y;
+            w *= v.x;
+            h *= v.y;
+            return *this;
         }
         
         explicit operator std::string() const {
@@ -590,6 +604,65 @@ namespace Amara {
                 Vector2 v2 = as<Vector2>();
                 v2.x += v.x;
                 v2.y += v.y;
+
+                return v;
+            }
+            return *this;
+        }
+        
+        Shape scale(const Vector2& v) {
+            if (is<Rectangle>()) {
+                Rectangle r = as<Rectangle>();
+                r.x *= v.x;
+                r.y *= v.y;
+                r.w *= v.x;
+                r.h *= v.y;
+
+                return r;
+            }
+            else if (is<Circle>()) {
+                Circle c = as<Circle>();
+                c.x *= v.x;
+                c.y *= v.y;
+                c.radius *= v.x;
+
+                return c;
+            }
+            else if (is<Quad>()) {
+                Quad q = as<Quad>();
+                q.p1 *= v;
+                q.p2 *= v;
+                q.p3 *= v;
+                q.p4 *= v;
+
+                return q;
+            }
+            else if (is<Triangle>()) {
+                Triangle t = as<Triangle>();
+                t.p1 *= v;
+                t.p2 *= v;
+                t.p3 *= v;
+
+                return t;
+            }
+            else if (is<Line>()) {
+                Line l = as<Line>();
+                l.start *= v;
+                l.end *= v;
+
+                return l;
+            }
+            else if (is<Vector3>()) {
+                Vector3 v3 = as<Vector3>();
+                v3.x *= v.x;
+                v3.y *= v.y;
+                
+                return v3;
+            }
+            else if (is<Vector2>()) {
+                Vector2 v2 = as<Vector2>();
+                v2.x *= v.x;
+                v2.y *= v.y;
 
                 return v;
             }

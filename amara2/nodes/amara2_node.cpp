@@ -392,8 +392,8 @@ namespace Amara {
         virtual void update(double deltaTime) {}
         virtual void update_properties() {}
         virtual void pass_on_properties() {
-            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
-                gameProps->passOn.reset();
+            if (fixedToCamera && !gameProps->passOn.texturePropsLock) {
+                gameProps->passOn.reset(true);
             }
             passOn = gameProps->passOn;
             
@@ -519,8 +519,8 @@ namespace Amara {
             drawObjects(v);
         }
         virtual void drawObjects(const Rectangle& v) {
-            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
-                gameProps->passOn.reset();
+            if (fixedToCamera && !gameProps->passOn.texturePropsLock) {
+                gameProps->passOn.reset(true);
             }
             passOn = gameProps->passOn;
 

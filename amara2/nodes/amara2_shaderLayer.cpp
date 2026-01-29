@@ -1,20 +1,64 @@
 namespace Amara {
     class ShaderLayer: public Amara::ShaderContainer {
     public:
+        bool resolutionLocked = true;
+        Vector2 render_scale = Vector2(1, 1);
+        
         ShaderLayer(): Amara::ShaderContainer() {
             set_base_node_id("ShaderLayer");
         }
+        
+        virtual Amara::Node* configure(nlohmann::json config) override {
+            if (config.contains("resolution")) {
+                resolutionLocked = false;
+                nlohmann::json& res_data = config["resolution"];
+                if (res_data.is_array()) {
+                    if (res_data.size() == 2) {
+                        width = floor((float)res_data[0]);
+                        height = floor((float)res_data[1]);
+                    }
+                    else if (res_data.size() == 4) {
+                        width = floor((float)res_data[2]);
+                        height = floor((float)res_data[3]);
+                    }
+                }
+                else if (res_data.is_object()) {
+                    if (json_has_any(res_data, "width", "height", "w", "h")) {
+                        Amara::Rectangle rect = Amara::Rectangle(res_data);
+                        width = floor(rect.w);
+                        height = floor(rect.h);
+                    }
+                    else if (json_has_any(res_data, "x", "y")) {
+                        Amara::Vector2 vec = Amara::Vector2(res_data);
+                        width = floor(vec.x);
+                        height = floor(vec.y);
+                    }
+                }
+            }
+            return Amara::ShaderContainer::configure(config);
+        }
 
         virtual void drawObjects(const Rectangle& v) override {
-            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
-                gameProps->passOn.reset();
+            if (fixedToCamera && !gameProps->passOn.texturePropsLock) {
+                gameProps->passOn.reset(true);
             }
             passOn = gameProps->passOn;
             
-            width = ceil(v.w);
-            height = ceil(v.h);
+            pos = Vector2(0, 0);
+            
+            if (resolutionLocked) {
+                width = ceil(v.w);
+                height = ceil(v.h);
+                render_scale = Vector2(1, 1);
+            }
+            else {
+                render_scale = Vector2(
+                    v.w / width,
+                    v.h / height
+                );
+            }
             rotation = 0;
-
+            
             if (rec_width != width || rec_height != height) {
                 createCanvas(width, height);
             }
@@ -45,10 +89,10 @@ namespace Amara {
             SDL_FRect srcRect;
             SDL_FRect destRect;
             
-            destRect.x = 0;
-            destRect.y = 0;
-            destRect.w = width;
-            destRect.h = height;
+            destRect.x = (v.w - (width * render_scale.x))/2.0;
+            destRect.y = (v.h - (height * render_scale.y))/2.0;
+            destRect.w = width * render_scale.x;
+            destRect.h = height * render_scale.y;
 
             SDL_FPoint dorigin = { 0, 0 };
             
@@ -109,8 +153,13 @@ namespace Amara {
 
         virtual void drawChildren(const Rectangle& v) override {
             PassOnProps rec_props = gameProps->passOn;
-
+            
             passOn.insideTextureContainer = true;
+            passOn.texturePropsLock = false;
+            if (!resolutionLocked) {
+                passOn.window_zoom /= render_scale;
+                passOn.input_scale *= render_scale;
+            }
             gameProps->passOn = passOn;
 
             Amara::Node::drawChildren(v);
@@ -120,8 +169,8 @@ namespace Amara {
         }
 
         virtual void pass_on_properties() override {
-            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
-                gameProps->passOn.reset();
+            if (fixedToCamera && !gameProps->passOn.texturePropsLock) {
+                gameProps->passOn.reset(true);
             }
             passOn = gameProps->passOn;
             
@@ -132,7 +181,23 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<ShaderLayer>("ShaderLayer",
-                sol::base_classes, sol::bases<Amara::ShaderContainer, Amara::TextureContainer, Amara::Node>()
+                sol::base_classes, sol::bases<Amara::ShaderContainer, Amara::TextureContainer, Amara::Node>(),
+                "resolution", sol::property(
+                    [] (ShaderLayer& self) {
+                        return Vector2(self.width, self.height);
+                    },
+                    [] (ShaderLayer& self, sol::object val) {
+                        if (val.valid()) {
+                            nlohmann::json j = lua_to_json(val);
+                            self.configure(nlohmann::json::object({
+                                { "resolution", j }
+                            }));
+                        }
+                        else {
+                            self.resolutionLocked = true;
+                        }
+                    }
+                )
             );
         }
     };

@@ -7,10 +7,15 @@ namespace Amara {
 
         virtual void drawChildren(const Rectangle& v) override {
             PassOnProps rec_props = gameProps->passOn;
-
+            
             passOn.insideTextureContainer = true;
+            passOn.texturePropsLock = false;
+            if (!resolutionLocked) {
+                passOn.window_zoom /= render_scale;
+                passOn.input_scale *= render_scale;
+            }
             gameProps->passOn = passOn;
-
+            
             children_copy_list = camera->parent->children;
 
             Amara::Node* child;
@@ -94,6 +99,11 @@ namespace Amara {
             if (config.find("blendMode") != config.end()) {
                 cont->blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
             }
+            if (config.find("resolution") != config.end()) {
+                cont->configure(nlohmann::json::object({
+                    { "resolution", config["resolution"] }
+                }));
+            }
 
             return Amara::Camera::configure(config);
         }
@@ -158,7 +168,7 @@ namespace Amara {
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<ShaderCamera>("ShaderCamera",
-                sol::base_classes, sol::bases<Amara::Camera>(),
+                sol::base_classes, sol::bases<Amara::Camera, Amara::Node>(),
                 "repeats", sol::property(
                     [](Amara::ShaderCamera& sc) -> int {
                         if (sc.cont) {
@@ -214,6 +224,19 @@ namespace Amara {
                     [](Amara::ShaderCamera& sc, sol::object val) {
                         if (sc.cont) {
                             sc.cont->luaAddShaderPass(val);
+                        }
+                    }
+                ),
+                "resolution", sol::property(
+                    [](Amara::ShaderCamera& sc) -> sol::object {
+                        if (sc.cont) {
+                            return sc.cont->get_lua_object().as<sol::table>()["resolution"];
+                        }
+                        return sol::nil;
+                    },
+                    [](Amara::ShaderCamera& sc, sol::object val) {
+                        if (sc.cont) {
+                            sc.cont->get_lua_object().as<sol::table>()["resolution"] = val;
                         }
                     }
                 )

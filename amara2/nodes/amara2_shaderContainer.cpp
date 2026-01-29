@@ -254,6 +254,7 @@ namespace Amara {
 
             PassOnProps new_props;
             new_props.insideTextureContainer = true;
+            new_props.texturePropsLock = true;
 
             #ifdef AMARA_OPENGL
             for (int i = 0; i < repeats; i++) {

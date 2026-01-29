@@ -438,8 +438,8 @@ namespace Amara {
         }
 
         virtual void drawObjects(const Rectangle& v) override {
-            if (fixedToCamera && !gameProps->passOn.insideTextureContainer) {
-                gameProps->passOn.reset();
+            if (fixedToCamera && !gameProps->passOn.texturePropsLock) {
+                gameProps->passOn.reset(true);
             }
             passOn = gameProps->passOn;
             

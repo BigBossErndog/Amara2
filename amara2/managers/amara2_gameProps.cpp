@@ -65,19 +65,31 @@ namespace Amara {
         Vector2 zoom = { 1, 1 };
 
         Vector2 window_zoom = { 1, 1 };
-
+        
+        Vector2 input_scale = { 1, 1 };
+        
         bool insideTextureContainer = false;
+        bool texturePropsLock = false;
         bool inputDisabled = false;
         bool insideCamera = false;
         
-        void reset() {
+        void reset(bool keep_texture_state) {
             PassOnProps new_props;
             new_props.window_zoom = window_zoom;
 
+            if (keep_texture_state) {
+                new_props.insideTextureContainer = insideTextureContainer;
+                new_props.texturePropsLock = texturePropsLock;
+                new_props.input_scale = input_scale;
+            }
+            
             *this = new_props;
         }
+        void reset() {
+            reset(false);
+        }
     };
-
+    
     class GameProps {
     public:
         sol::state lua;
