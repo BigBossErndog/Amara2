@@ -157,7 +157,8 @@ namespace Amara {
                 "pointer", sol::property([](Amara::NodeInput& n) {
                     return n.gameProps->inputManager->generalPointer;
                 }),
-                "state", &Amara::NodeInput::state
+                "state", &Amara::NodeInput::state,
+                "configure", sol::resolve<void(sol::object)>(&NodeInput::configure)
             );
         }
     };
