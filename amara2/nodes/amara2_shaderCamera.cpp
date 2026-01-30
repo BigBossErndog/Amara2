@@ -4,6 +4,18 @@ namespace Amara {
         Amara::Camera* camera = nullptr;
 
         ShaderCamera_Container() : Amara::ShaderLayer() {}
+        
+        virtual void pass_on_properties() override {
+            if (fixedToCamera && !gameProps->passOn.texturePropsLock) {
+                gameProps->passOn.reset(true);
+            }
+            
+            passOn = gameProps->passOn;
+            
+            if (passOnPropsEnabled) {
+                gameProps->passOn = passOn;
+            }
+        }
 
         virtual void drawChildren(const Rectangle& v) override {
             PassOnProps rec_props = gameProps->passOn;

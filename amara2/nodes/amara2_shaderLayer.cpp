@@ -44,8 +44,6 @@ namespace Amara {
             }
             passOn = gameProps->passOn;
             
-            pos = Vector2(0, 0);
-            
             if (resolutionLocked) {
                 width = ceil(v.w);
                 height = ceil(v.h);
@@ -57,7 +55,6 @@ namespace Amara {
                     v.h / height
                 );
             }
-            rotation = 0;
             
             if (rec_width != width || rec_height != height) {
                 createCanvas(width, height);
@@ -169,14 +166,7 @@ namespace Amara {
         }
 
         virtual void pass_on_properties() override {
-            if (fixedToCamera && !gameProps->passOn.texturePropsLock) {
-                gameProps->passOn.reset(true);
-            }
-            passOn = gameProps->passOn;
-            
-            if (passOnPropsEnabled) {
-                gameProps->passOn = passOn;
-            }
+            Amara::Node::pass_on_properties();
         }
 
         static void bind_lua(sol::state& lua) {
