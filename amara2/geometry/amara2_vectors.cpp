@@ -10,7 +10,11 @@ namespace Amara {
         Vector2(sol::object obj) {
             *this = obj;
         }
-
+        Vector2(const SDL_Vertex& vert) {
+            x = vert.position.x;
+            y = vert.position.y;
+        }
+        
         float x = 0;
         float y = 0;
 

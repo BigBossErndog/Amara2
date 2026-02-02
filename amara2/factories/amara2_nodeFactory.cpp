@@ -262,6 +262,9 @@ namespace Amara {
             registerNode<Amara::Container>("Container");
 
             registerNode<Amara::TextureContainer>("TextureContainer");
+            
+            registerNode<Amara::QuadSprite>("QuadSprite");
+            
             #ifdef AMARA_OPENGL
             registerNode<Amara::ShaderContainer>("ShaderContainer");
             registerNode<Amara::ShaderLayer>("ShaderLayer");
@@ -334,6 +337,9 @@ namespace Amara {
             Amara::Container::bind_lua(lua);
             
             Amara::TextureContainer::bind_lua(lua);
+            
+            Amara::QuadSprite::bind_lua(lua);
+                        
             #ifdef AMARA_OPENGL
             Amara::ShaderContainer::bind_lua(lua);
             Amara::ShaderLayer::bind_lua(lua);

@@ -130,7 +130,7 @@ namespace Amara {
     }
 
     std::string lua_to_string(sol::object obj) {
-        if (obj.is<sol::nil_t>()) return "nil";
+        if (obj.is<sol::lua_nil_t>()) return "nil";
         if (obj.is<std::string>()) return obj.as<std::string>();
         if (obj.is<sol::function>()) return "(function)";
 
