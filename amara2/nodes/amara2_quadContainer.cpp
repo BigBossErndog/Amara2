@@ -9,6 +9,19 @@ namespace Amara {
             set_base_node_id("QuadContainer");
         }
         
+        virtual void create() override {
+            Amara::TextureContainer::create();
+            if (!points_initialized) {
+                def = Quad(
+                    Vector2(-width/2, -height/2),
+                    Vector2(width/2, -height/2),
+                    Vector2(width/2, height/2),
+                    Vector2(-width/2, height/2)
+                );
+                points_initialized = true;
+            }
+        }
+        
         virtual void drawObjects(const Rectangle& v) override {
             if (fixedToCamera && !gameProps->passOn.texturePropsLock) {
                 gameProps->passOn.reset(true);

@@ -31,7 +31,7 @@ namespace Amara {
         float right = 0;
         float top = 0;
         float bottom = 0;
-
+        
         int cropLeft = 0;
         int cropRight = 0;
         int cropTop = 0;

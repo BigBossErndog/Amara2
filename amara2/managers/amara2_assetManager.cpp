@@ -66,6 +66,27 @@ namespace Amara {
 
         void createTexture(std::string key, sol::table luaconfig);
         void updateTexture(std::string key, sol::table luaconfig);
+        
+        sol::object getTextureData(std::string key) {
+            if (has(key)) {
+                Amara::ImageAsset* image = get(key)->as<Amara::ImageAsset*>();
+                if (image == nullptr) {
+                    fatal_error("Error: Asset \"", key, "\" is not a valid texture.");
+                }
+                nlohmann::json details = nlohmann::json::object();
+                details["key"] = key;
+                details["width"] = image->width;
+                details["height"] = image->height;
+                
+                Amara::SpritesheetAsset* spritesheet = image->as<Amara::SpritesheetAsset*>();
+                if (spritesheet != nullptr) {
+                    details["frameWidth"] = spritesheet->frameWidth;
+                    details["frameHeight"] = spritesheet->frameHeight;
+                }
+                return json_to_lua(gameProps->lua, details);
+            }
+            return sol::nil;
+        }
 
         void setDefaultFont(std::string key) {
             if (has(key)) {
@@ -131,7 +152,8 @@ namespace Amara {
                         }
                     }
                     return sol::nil;
-                }
+                },
+                "getTextureData", &Amara::AssetManager::getTextureData
             );
         }
     };
