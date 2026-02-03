@@ -71,6 +71,10 @@ namespace Amara {
     Vector2 rotateAroundAnchor(const Vector2& v, float rotation) {
         return rotateAroundAnchor(Vector2(0, 0), v, rotation);
     }
+    
+    double Amara::Line::angle() {
+        return angleBetween(start, end);
+    }
 
     Vector2 centerOf(const Rectangle& rect) {
         return {

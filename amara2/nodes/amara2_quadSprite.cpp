@@ -1,67 +1,24 @@
 namespace Amara {
     class QuadSprite: public Amara::Sprite {
     public:
-        std::array<Amara::Vector2, 4> points;
+        Amara::Quad def;
         SDL_Vertex draw_vertices[8];
         bool points_initialized = false;
         
-        sol::table points_tbl;
-        
         QuadSprite(): Amara::Sprite() {
             set_base_node_id("QuadSprite");
-        }
-        
-        virtual void init() override {
-            Amara::Sprite::init();
-            
-            if (!points_tbl.valid()) {
-                points_tbl = gameProps->lua.create_table();
-                sol::table points_meta = gameProps->lua.create_table();
-                points_meta["__newindex"] = [this](sol::table tbl, sol::object key, sol::object val) {
-                    if (key.is<int>()) {
-                        int index = key.as<int>();
-                        if (index < 1 || index > 4) {
-                            fatal_error("Error: QuadSprite.points can only be indexed from 1 - 4. Received ", index, ".");
-                        }
-                        points[index] = Amara::Vector2(val);
-                    }
-                };
-                points_meta["__index"] = [this](sol::table tbl, sol::object key) -> sol::object {
-                    if (key.is<int>()) {
-                        int index = key.as<int>();
-                        if (index < 1 || index > 4) {
-                            fatal_error("Error: QuadSprite.points can only be indexed from 1 - 4. Received ", index, ".");
-                        }
-                        return sol::make_object(gameProps->lua, &(points[index]));
-                    }
-                    return sol::nil;
-                };
-            }
         }
         
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Sprite::configure(config);
             
             if (json_has(config, "points")) {
-                nlohmann::json points_data = config["points"];
-                
-                if (points_data.is_array()) {
-                    if (points_data.size() != 4) {
-                        fatal_error("Error: QuadSprite points requires 4 points.");
-                    }
-                    for (int i = 0; i < 4; i++) {
-                        points[i] = Amara::Vector2(points_data[i]);
-                    }
-                    points_initialized = true;
-                }
-                else if (points_data.is_object()) {
-                    Amara::Quad quad = Amara::Quad(points_data);
-                    points[0] = quad.p1;
-                    points[1] = quad.p2;
-                    points[2] = quad.p3;
-                    points[3] = quad.p4;
-                    points_initialized = true;
-                }
+                def = config["points"];
+                points_initialized = true;
+            }
+            if (json_has(config, "quad")) {
+                def = config["quad"];
+                points_initialized = true;
             }
             
             return this;
@@ -70,10 +27,12 @@ namespace Amara {
         virtual bool setTexture(std::string key) override {
             if (Amara::Sprite::setTexture(key)) {
                 if (!points_initialized) {
-                    points[0] = Amara::Vector2(-frameWidth/2.0, -frameHeight/2.0);
-                    points[1] = Amara::Vector2(frameWidth/2.0, -frameHeight/2.0);
-                    points[2] = Amara::Vector2(frameWidth/2.0, frameHeight/2.0);
-                    points[3] = Amara::Vector2(-frameWidth/2.0, frameHeight/2.0);
+                    def = Amara::Quad(
+                        Amara::Vector2(-frameWidth/2.0, -frameHeight/2.0),
+                        Amara::Vector2(frameWidth/2.0, -frameHeight/2.0),
+                        Amara::Vector2(frameWidth/2.0, frameHeight/2.0),
+                        Amara::Vector2(-frameWidth/2.0, frameHeight/2.0)
+                    );
                     points_initialized = true;
                 }
                 return true;
@@ -110,6 +69,11 @@ namespace Amara {
             );
             
             SDL_FRect srcRect, destRect;
+            Quad drawQuad = rotateQuad(
+                def,
+                Vector2::Origin,
+                passOn.rotation + rotation
+            );
             
             if (spritesheet) {
                 int maxFrames = (int)floor(((float)image->width / (float)spritesheet->frameWidth) * ((float)image->height / (float)spritesheet->frameHeight));
@@ -131,8 +95,8 @@ namespace Amara {
             
             for (int i = 0; i < 4; ++i) {
                 SDL_Vertex& vertex = draw_vertices[i];
-                vertex.position.x = vcenter.x + (anchoredPos.x + (points[i].x * scale.x * passOn.scale.x)) * totalZoom.x;
-                vertex.position.y = vcenter.y + (anchoredPos.y - anchoredPos.z + (points[i].y * scale.y * passOn.scale.y)) * totalZoom.y;
+                vertex.position.x = vcenter.x + (anchoredPos.x + (drawQuad[i].x * scale.x * passOn.scale.x)) * totalZoom.x;
+                vertex.position.y = vcenter.y + (anchoredPos.y - anchoredPos.z + (drawQuad[i].y * scale.y * passOn.scale.y)) * totalZoom.y;
                 
                 vertex.color = { 1, 1, 1, 1 };
                 
@@ -157,12 +121,11 @@ namespace Amara {
             }
             
             if (input.active && !passOn.inputDisabled) {
-                Quad inputQuad = rotateQuad(
-                    Quad(destRect),
-                    anchoredPos,
-                    passOn.rotation + rotation
-                );
-                input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nullptr);
+                input.queueInput(moveQuad(
+                    Quad(Vector2(draw_vertices[0]), Vector2(draw_vertices[1]), Vector2(draw_vertices[2]), Vector2(draw_vertices[3])),
+                    v.x, v.y
+                ), 
+                v, nullptr);
             }
 
             if (image->texture && gameProps->renderer) {
@@ -187,11 +150,11 @@ namespace Amara {
                     { (srcRect.x+srcRect.w)/textureWidth, (srcRect.y+srcRect.h)/textureHeight },
                     { srcRect.x/textureWidth, (srcRect.y+srcRect.h)/textureHeight }
                 );
-                Quad destQuad = glTranslateQuad(v, rotateQuad(
-                    Quad(points[0], points[1], points[2], points[3]),
-                    anchoredPos,
-                    passOn.rotation + rotation
-                ), passOn.insideTextureContainer);
+                Quad destQuad = glTranslateQuad(
+                    v,
+                    Amara::Quad(draw_vertices[0], draw_vertices[1], draw_vertices[2], draw_vertices[3]), 
+                    passOn.insideTextureContainer
+                );
 
                 vertices = {
                     destQuad.p1.x, destQuad.p1.y, srcQuad.p1.x, srcQuad.p1.y,
@@ -214,7 +177,34 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<QuadSprite>("QuadSprite",
                 sol::base_classes, sol::bases<Amara::Sprite, Amara::Node>(),
-                "points", &Amara::QuadSprite::points
+                "quad", sol::property(
+                    [](Amara::QuadSprite& sprite) -> Amara::Quad& {
+                        return sprite.def;
+                    },
+                    [](Amara::QuadSprite& sprite, sol::object val) {
+                        sprite.def = val;
+                    }
+                ),
+                "points", sol::property(
+                    [](Amara::QuadSprite& sprite) -> Amara::Quad& {
+                        return sprite.def;
+                    },
+                    [](Amara::QuadSprite& sprite, sol::object val) {
+                        sprite.def = val;
+                    }
+                ),
+                1, [](Amara::QuadSprite& sprite) {
+                    sprite.def = sprite.def[0];
+                },
+                2, [](Amara::QuadSprite& sprite) {
+                    sprite.def = sprite.def[1];
+                },
+                3, [](Amara::QuadSprite& sprite) {
+                    sprite.def = sprite.def[2];
+                },
+                4, [](Amara::QuadSprite& sprite) {
+                    sprite.def = sprite.def[3];
+                }
             );
         }
     };

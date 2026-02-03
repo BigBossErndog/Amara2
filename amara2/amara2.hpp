@@ -246,6 +246,7 @@
     #include "nodes/amara2_textureContainer.cpp"
     
     #include "nodes/amara2_quadSprite.cpp"
+    #include "nodes/amara2_quadContainer.cpp"
 
     #ifdef AMARA_OPENGL
     #include "nodes/amara2_shaderContainer.cpp"

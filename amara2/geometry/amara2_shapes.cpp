@@ -233,6 +233,16 @@ namespace Amara {
         Vector2 p3;
         Vector2 p4;
         
+        Vector2& operator[](int index) {
+            switch (index) {
+                case 0: return p1;
+                case 1: return p2;
+                case 2: return p3;
+                case 3: return p4;
+                default: throw std::out_of_range("Index out of range");
+            }
+        }
+        
         Vector2 getCenter() const {
             return (p1 + p2 + p3 + p4) / 4;
         }
@@ -296,12 +306,20 @@ namespace Amara {
                 if (json_has(config, "p2")) p2 = config["p2"];
                 if (json_has(config, "p3")) p3 = config["p3"];
                 if (json_has(config, "p4")) p4 = config["p4"];
+                if (json_has(config, "a", "b", "c", "d")) {
+                    p1 = config["a"];
+                    p2 = config["b"];
+                    p3 = config["c"];
+                    p4 = config["d"];
+                }
             }
             else {
                 fatal_error("Error: Invalid Quad assignment.");
             }
             return *this;
         }
+        
+        Quad& operator= (sol::object);
     };
     
     struct Triangle {
@@ -322,6 +340,15 @@ namespace Amara {
         Vector2 p1 = {0, 0};
         Vector2 p2 = {0, 0};
         Vector2 p3 = {0, 0};
+        
+        Vector2& operator[](int index) {
+            switch (index) {
+                case 0: return p1;
+                case 1: return p2;
+                case 2: return p3;
+                default: throw std::out_of_range("Index out of range");
+            }
+        }
 
         Triangle& operator= (const nlohmann::json& config) {
             if (config.is_array()) {
@@ -383,6 +410,14 @@ namespace Amara {
 
         Vector2 start = Vector2( 0, 0 );
         Vector2 end = Vector2( 0, 0 );
+        
+        Vector2& operator[](int index) {
+            switch (index) {
+                case 0: return start;
+                case 1: return end;
+                default: throw std::out_of_range("Index out of range");
+            }
+        }
 
         std::vector<Vector2> split(int num) {
             std::vector<Vector2> points;
@@ -398,6 +433,8 @@ namespace Amara {
                 start.y + (end.y - start.y) * t
             );
         }
+        
+        double angle();
         
         bool intersects(const Line& other) const {
             Vector2 p1 = start;
@@ -1069,19 +1106,51 @@ namespace Amara {
         lua.new_usertype<Quad>("Quad",
             sol::constructors<Quad(), Quad(const Rectangle&)>(),
             "p1", sol::property(
-                [](const Quad& q) { return q.p1; },
+                [](Quad& q) -> Vector2& { return q.p1; },
                 [](Quad& q, sol::object v) { q.p1 = v; }
             ),
             "p2", sol::property(
-                [](const Quad& q) { return q.p2; },
+                [](Quad& q) -> Vector2& { return q.p2; },
                 [](Quad& q, sol::object v) { q.p2 = v; }
             ),
             "p3", sol::property(
-                [](const Quad& q) { return q.p3; },
+                [](Quad& q) -> Vector2& { return q.p3; },
                 [](Quad& q, sol::object v) { q.p3 = v; }
             ),
             "p4", sol::property(
-                [](const Quad& q) { return q.p4; },
+                [](Quad& q) -> Vector2& { return q.p4; },
+                [](Quad& q, sol::object v) { q.p4 = v; }
+            ),
+            "a", sol::property(
+                [](Quad& q) -> Vector2& { return q.p1; },
+                [](Quad& q, sol::object v) { q.p1 = v; }
+            ),
+            "b", sol::property(
+                [](Quad& q) -> Vector2& { return q.p2; },
+                [](Quad& q, sol::object v) { q.p2 = v; }
+            ),
+            "c", sol::property(
+                [](Quad& q) -> Vector2& { return q.p3; },
+                [](Quad& q, sol::object v) { q.p3 = v; }
+            ),
+            "d", sol::property(
+                [](Quad& q) -> Vector2& { return q.p4; },
+                [](Quad& q, sol::object v) { q.p4 = v; }
+            ),
+            1, sol::property(
+                [](Quad& q) -> Vector2& { return q.p1; },
+                [](Quad& q, sol::object v) { q.p1 = v; }
+            ),
+            2, sol::property(
+                [](Quad& q) -> Vector2& { return q.p2; },
+                [](Quad& q, sol::object v) { q.p2 = v; }
+            ),
+            3, sol::property(
+                [](Quad& q) -> Vector2& { return q.p3; },
+                [](Quad& q, sol::object v) { q.p3 = v; }
+            ),
+            4, sol::property(
+                [](Quad& q) -> Vector2& { return q.p4; },
                 [](Quad& q, sol::object v) { q.p4 = v; }
             ),
             "center", sol::property(&Quad::getCenter),
@@ -1099,15 +1168,39 @@ namespace Amara {
         lua.new_usertype<Triangle>("Triangle",
             sol::constructors<Triangle(), Triangle(Vector2, Vector2, Vector2)>(),
             "p1", sol::property(
-                [](const Triangle& t) { return t.p1; },
+                [](Triangle& t) -> Vector2& { return t.p1; },
                 [](Triangle& t, sol::object v) { t.p1 = v; }
             ),
             "p2", sol::property(
-                [](const Triangle& t) { return t.p2; },
+                [](Triangle& t) -> Vector2& { return t.p2; },
                 [](Triangle& t, sol::object v) { t.p2 = v; }
             ),
             "p3", sol::property(
-                [](const Triangle& t) { return t.p3; },
+                [](Triangle& t) -> Vector2& { return t.p3; },
+                [](Triangle& t, sol::object v) { t.p3 = v; }
+            ),
+            "a", sol::property(
+                [](Triangle& t) -> Vector2& { return t.p1; },
+                [](Triangle& t, sol::object v) { t.p1 = v; }
+            ),
+            "b", sol::property(
+                [](Triangle& t) -> Vector2& { return t.p2; },
+                [](Triangle& t, sol::object v) { t.p2 = v; }
+            ),
+            "c", sol::property(
+                [](Triangle& t) -> Vector2& { return t.p3; },
+                [](Triangle& t, sol::object v) { t.p3 = v; }
+            ),
+            1, sol::property(
+                [](Triangle& t) -> Vector2& { return t.p1; },
+                [](Triangle& t, sol::object v) { t.p1 = v; }
+            ),
+            2, sol::property(
+                [](Triangle& t) -> Vector2& { return t.p2; },
+                [](Triangle& t, sol::object v) { t.p2 = v; }
+            ),
+            3, sol::property(
+                [](Triangle& t) -> Vector2& { return t.p3; },
                 [](Triangle& t, sol::object v) { t.p3 = v; }
             )
         );
@@ -1130,7 +1223,24 @@ namespace Amara {
                     return l.split(static_cast<int>(_n.as<double>()));
                 }
                 return std::vector<Vector2>();
-            }
+            },
+            1, sol::property(
+                [](Line& l) -> Vector2& { return l.start; },
+                [](Line& l, sol::object v) { l.start = v; }
+            ),
+            2, sol::property(
+                [](Line& l) -> Vector2& { return l.end; },
+                [](Line& l, sol::object v) { l.end = v; }
+            ),
+            "a", sol::property(
+                [](Line& l) -> Vector2& { return l.start; },
+                [](Line& l, sol::object v) { l.start = v; }
+            ),
+            "b", sol::property(
+                [](Line& l) -> Vector2& { return l.end; },
+                [](Line& l, sol::object v) { l.end = v; }
+            ),
+            "angle", sol::property(&Line::angle)
         );
 
         lua.new_usertype<Shape>("shape",

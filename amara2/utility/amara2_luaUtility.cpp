@@ -136,7 +136,7 @@ namespace Amara {
 
         if (obj.is<double>()) {
             double val = obj.as<double>();
-            if (floor(val) == val) return std::to_string((int)val);
+            if (floor(val) == val) return std::to_string((int)floor(val));
             else return std::to_string(val);
         }
         if (obj.is<int>()) return std::to_string(obj.as<int>());
@@ -311,6 +311,11 @@ namespace Amara {
     }
     Rectangle& Rectangle::operator= (sol::object obj) {
         if (obj.is<Rectangle>()) *this = obj.as<Rectangle>();
+        else *this = lua_to_json(obj);
+        return *this;
+    }
+    Quad& Quad::operator= (sol::object obj) {
+        if (obj.is<Quad>()) *this = obj.as<Quad>();
         else *this = lua_to_json(obj);
         return *this;
     }
