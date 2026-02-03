@@ -436,7 +436,9 @@ namespace Amara {
         math_metatable.set_function("ease", sol::overload(
             sol::resolve<double(double, double, double, Amara::Ease)>(&Amara::ease),
             sol::resolve<double(double, double, double)>(&Amara::ease),
-            sol::resolve<Amara::Color(const Amara::Color&, const Amara::Color&, double, Amara::Ease)>(&Amara::ease)
+            sol::resolve<Amara::Color(const Amara::Color&, const Amara::Color&, double, Amara::Ease)>(&Amara::ease),
+            sol::resolve<Amara::Vector2(const Amara::Vector2&, const Amara::Vector2&, double, Amara::Ease)>(&Amara::ease),
+            sol::resolve<Amara::Vector2(const Amara::Vector2&, const Amara::Vector2&, double)>(&Amara::ease)
         ));
         
         sol::table table_metatable = lua["table"];

@@ -1,4 +1,6 @@
 namespace Amara {
+    struct Vector2;
+    
     enum class Ease {
         Linear,
         SineIn,
@@ -223,6 +225,8 @@ namespace Amara {
     Amara::Color ease(const Amara::Color& startColor, const Amara::Color& endColor, double progress) {
         return ease(startColor, endColor, progress, Ease::Linear);
     }
+    Amara::Vector2 ease(const Amara::Vector2& startVector, const Amara::Vector2& endVector, double progress, Amara::Ease easing);
+    Amara::Vector2 ease(const Amara::Vector2& startVector, const Amara::Vector2& endVector, double progress);
 
     void bind_lua_Easing(sol::state& lua) {
         lua.new_enum("Ease",

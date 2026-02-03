@@ -140,7 +140,7 @@ namespace Amara {
 
         Vector2& operator= (nlohmann::json config);
         Vector2& operator= (sol::object obj);
-
+        
         Vector2 round() {
             return Vector2(std::round(x), std::round(y));
         }
@@ -175,6 +175,16 @@ namespace Amara {
     Vector2 Vector2::BottomLeft = Vector2(0, 1);
     Vector2 Vector2::BottomRight = Vector2(1, 1);
     Vector2 Vector2::Center = Vector2(0.5, 0.5);
+    
+    Amara::Vector2 ease(const Amara::Vector2& startVector, const Amara::Vector2& endVector, double progress, Amara::Ease easing) {
+        return Amara::Vector2(
+            ease(startVector.x, endVector.x, progress, easing),
+            ease(startVector.y, endVector.y, progress, easing)
+        );
+    }
+    Amara::Vector2 ease(const Amara::Vector2& startVector, const Amara::Vector2& endVector, double progress) {
+        return ease(startVector, endVector, progress, Ease::Linear);
+    }
 
     struct Vector3: public Vector2 {
         Vector3() = default;
