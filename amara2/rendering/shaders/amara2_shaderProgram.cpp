@@ -20,7 +20,7 @@ namespace Amara {
         >;
 
         std::unordered_map<std::string, UniformType> uniforms;
-        std::unordered_map<std::string, GLenum> int_check;
+        std::unordered_map<std::string, GLenum> type_check;
         std::unordered_map<std::string, GLint> locations;
         
         sol::object lua_object;
@@ -86,28 +86,30 @@ namespace Amara {
             if (programID != 0) {
                 glUseProgram(programID);
             }
+            GLenum type;
             for (auto& uniform : uniforms) {
                 GLint location = getLocation(uniform.first);
                 if (location == -1) {
                     debug_log("Warning: Uniform \"", uniform.first, "\" not found in shader program \"", key, "\".");
                     continue;
                 }
+                
+                if (type_check.find(uniform.first) == type_check.end()) {
+                    GLuint index;
+                    const GLchar* namePtr = uniform.first.c_str();
+                    glGetUniformIndices(programID, 1, &namePtr, &index);
+                    GLint size;
+                    glGetActiveUniform(programID, index, 0, nullptr, &size, &type, nullptr);
+                    type_check[uniform.first] = type;
+                }
+                else {
+                    type = type_check[uniform.first];
+                }
+                
                 if (isUniform<bool>(uniform.second)) {
                     glUniform1i(location, getUniform<bool>(uniform.second) ? 1 : 0);
                 }
                 else if (isUniform<int>(uniform.second)) {
-                    GLenum type;
-                    if (int_check.find(uniform.first) == int_check.end()) {
-                        GLuint index;
-                        const GLchar* namePtr = uniform.first.c_str();
-                        glGetUniformIndices(programID, 1, &namePtr, &index);
-                        GLint size;
-                        glGetActiveUniform(programID, index, 0, nullptr, &size, &type, nullptr);
-                        int_check[uniform.first] = type;
-                    }
-                    else {
-                        type = int_check[uniform.first];
-                    }
                     if (type == GL_INT || type == GL_BOOL) {
                         glUniform1i(location, getUniform<int>(uniform.second));
                     }
@@ -116,7 +118,12 @@ namespace Amara {
                     }
                 }
                 else if (isUniform<float>(uniform.second)) {
-                    glUniform1f(location, getUniform<float>(uniform.second));
+                    if (type == GL_INT || type == GL_BOOL) {
+                        glUniform1i(location, static_cast<int>(round(getUniform<float>(uniform.second))));
+                    }
+                    else if (type == GL_FLOAT) {
+                        glUniform1f(location, getUniform<float>(uniform.second));
+                    }
                 }
                 else if (isUniform<Vector2>(uniform.second)) {
                     Vector2 vec = getUniform<Vector2>(uniform.second);
