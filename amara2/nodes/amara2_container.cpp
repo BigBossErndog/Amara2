@@ -10,7 +10,7 @@ namespace Amara {
         float bottom = 0;
 
         Vector2 origin = { 0.5, 0.5 };
-
+        
         Container(): Amara::Node() {
             set_base_node_id("Container");
         }

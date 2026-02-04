@@ -85,16 +85,7 @@ namespace Amara {
         }
 
         Rectangle getMainDisplay() {
-            SDL_Rect rect;
-            if (SDL_GetDisplayBounds(0, &rect)) {
-                return { 
-                    static_cast<float>(rect.x),
-                    static_cast<float>(rect.y), 
-                    static_cast<float>(rect.w),
-                    static_cast<float>(rect.h)
-                };
-            }
-            return Rectangle( -1, -1, -1, -1 );
+            return getDisplayBounds(1);
         }
 
         static void bind_lua(sol::state& lua) {

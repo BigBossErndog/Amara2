@@ -118,7 +118,7 @@ namespace Amara {
         if (table.size() == 0) return false;
         
         int expected_key = 1;
-
+        
         for (const auto& pair : table) {
             if (!pair.first.is<int>() || pair.first.as<int>() != expected_key) {
                 return false;
@@ -128,10 +128,20 @@ namespace Amara {
 
         return true;
     }
-
-    std::string lua_to_string(sol::object obj) {
+    
+    std::string lua_to_string(sol::object obj, bool printing, const std::string& indent, const std::string& current_string) {
         if (obj.is<sol::lua_nil_t>()) return "nil";
-        if (obj.is<std::string>()) return obj.as<std::string>();
+        if (obj.is<bool>()) {
+            return obj.as<bool>() ? "true" : "false";
+        }
+        if (obj.is<std::string>()) {
+            if (printing) {
+                return "\"" + obj.as<std::string>() + "\"";
+            }
+            else {
+                return obj.as<std::string>();
+            }
+        }
         if (obj.is<sol::function>()) return "(function)";
 
         if (obj.is<double>()) {
@@ -147,18 +157,79 @@ namespace Amara {
         if (obj.is<Line>()) return std::string(obj.as<Line>());
         if (obj.is<Vector3>()) return std::string(obj.as<Vector3>());
         if (obj.is<Vector2>()) return std::string(obj.as<Vector2>());
-
+        
         if (obj.is<Color>()) return std::string(obj.as<Color>());
 
         if (is_node(obj)) return node_to_string(obj);
 
         if (obj.is<sol::table>()) {
-            nlohmann::json j = lua_to_json(obj);
-            if (lua_object_is_table_array(obj)) return j.dump();
-            else return j.dump(2);
+            sol::table tbl = obj.as<sol::table>();
+            if (lua_object_is_table_array(obj)) {
+                std::vector<std::string> items;
+                int width = 0;
+                
+                std::string result = std::string("{");
+                for (auto& item : tbl) {
+                    std::string item_str = lua_to_string(item.second, printing, indent + std::string("  "), String::last_line(result));
+                    items.push_back(item_str);
+                    width += String::longest_string(item_str) + 2;
+                }
+                
+                width += indent.size() + current_string.size() + 2;
+                bool oversized = width > 32;
+                if (!oversized) result += std::string(" ");
+                else result += std::string("\n");
+                
+                for (int i = 0; i < items.size(); i++) {
+                    if (oversized) result += indent + std::string("  ") + items[i];
+                    else result += items[i];
+                    if (i < items.size() - 1) {
+                        if (oversized) result += std::string(",\n");
+                        else result += std::string(", ");
+                    }
+                }
+                
+                if (oversized) result += std::string("\n") + indent + std::string("}");
+                else result += std::string(" }");
+                
+                return result;
+            }
+            else {
+                std::vector<std::string> items;
+                int width = 0;
+                
+                std::string result = "{";
+                for (auto& item : tbl) {
+                    std::string item_str = item.first.as<std::string>() + std::string(" = ");
+                    item_str += lua_to_string(item.second, printing, indent + std::string("  "), String::last_line(result + item_str));
+                    items.push_back(item_str);
+                    width += String::longest_string(item_str) + 2;
+                }
+                
+                width += indent.size() + current_string.size() + 2;
+                bool oversized = width > 32;
+                if (!oversized) result += std::string(" ");
+                else result += std::string("\n");
+                
+                for (int i = 0; i < items.size(); i++) {
+                    if (oversized) result += indent + std::string("  ") + items[i];
+                    else result += items[i];
+                    if (i < items.size() - 1) {
+                        if (oversized) result += std::string(",\n");
+                        else result += std::string(", ");
+                    }
+                }
+                if (oversized) result += std::string("\n") + indent + std::string("}");
+                else result += std::string(" }");
+                
+                return result;
+            }
         }
-
-        return lua_to_json(obj).dump(2);
+        
+        return "UNRECOGNIZED_OBJECT";
+    }
+    std::string lua_to_string(sol::object obj) {
+        return lua_to_string(obj, false, "", "");
     }
 
     sol::object string_to_lua_object(sol::state& lua, const std::string& luaString) {
@@ -185,24 +256,30 @@ namespace Amara {
         return lua_table;
     }
 
-    std::string lua_string_concat(sol::variadic_args args) {
+    std::string lua_string_concat(sol::variadic_args args, bool printing) {
         std::ostringstream ss;
         for (auto arg : args) {
-            ss << lua_to_string(arg);
+            ss << lua_to_string(arg, printing, "", "");
         }
         return ss.str();
     }
+    std::string lua_string_concat(sol::variadic_args args) {
+        return lua_string_concat(args, false);
+    }
     
-    std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args) {
+    std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args, bool printing) {
         std::ostringstream ss;
         bool first = true;
         
         for (auto arg : args) {
-            ss << (first ? "" : separator) << lua_to_string(arg);
+            ss << (first ? "" : separator) << lua_to_string(arg, printing, "", "");
             first = false;
         }
     
         return ss.str();
+    }
+    std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args) {
+        return lua_string_sep_concat(separator, args, false);
     }
 
     sol::table lua_shallow_copy(sol::state& lua, sol::table tbl) {
@@ -219,7 +296,7 @@ namespace Amara {
     sol::table lua_deep_copy(sol::state& lua, sol::table src) {
         if (src.is<sol::userdata>()) return src;
         if (!src.is<sol::table>()) return src;
-
+        
         sol::table dst(lua, sol::create);
 
         for (auto& kv : src) {
@@ -269,7 +346,7 @@ namespace Amara {
     void lua_debug_log(sol::variadic_args args) {
         std::ostringstream ss;
         for (auto arg : args) {
-            ss << lua_to_string(arg);
+            ss << lua_to_string(arg, true, "", "");
         }
         debug_log(ss.str());
     }
@@ -360,10 +437,10 @@ namespace Amara {
 
         lua["lua_print"] = lua["print"];
         lua.set_function("print", [](sol::variadic_args args) {
-            debug_log(lua_string_sep_concat(" ", args));
+            debug_log(lua_string_sep_concat(" ", args, true));
         });
 
-        lua.set_function("object_to_string", &Amara::lua_to_string);
+        lua.set_function("object_to_string", sol::resolve<std::string(sol::object)>(&Amara::lua_to_string));
         
         sol::table string_metatable = lua["string"];
         string_metatable.set_function("starts_with", [](sol::object self, sol::object check) -> bool {
@@ -384,8 +461,8 @@ namespace Amara {
             }
             return String::contains(self, check);
         });
-        string_metatable.set_function("concat", &Amara::lua_string_concat);
-        string_metatable.set_function("sep_concat", &Amara::lua_string_sep_concat);
+        string_metatable.set_function("concat", sol::resolve<std::string(sol::variadic_args)>(Amara::lua_string_concat));
+        string_metatable.set_function("sep_concat", sol::resolve<std::string(const std::string&, sol::variadic_args)>(Amara::lua_string_sep_concat));
         string_metatable.set_function("json_string", [](sol::object obj) {
             return lua_to_json(obj).dump();
         });
@@ -406,7 +483,7 @@ namespace Amara {
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("round", [](sol::object num) -> int {
             if (!num.is<double>() && !num.is<int>()) {
-            fatal_error("Error: math.round() expected a number argument.");
+                fatal_error("Error: math.round() expected a number argument.");
             }
             return std::round(num.as<double>());
         });

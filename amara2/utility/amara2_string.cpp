@@ -235,5 +235,31 @@ namespace Amara {
                 return wstrTo;
             #endif
         }
+        
+        static int longest_string(const std::string& str) {
+            int max_length = 0;
+            int count = 0;
+            for (char c : str) {
+                count += 1;
+                if (c == '\n') {
+                    max_length = std::max(max_length, count);
+                    count = 0;
+                }
+            }
+            return std::max(max_length, count);
+        }
+        
+        static std::string last_line(const std::string& str) {
+            std::string last_line;
+            bool found_newline = false;
+            for (int i = str.size() - 1; i >= 0; --i) {
+                if (str[i] == '\n') {
+                    found_newline = true;
+                    break;
+                }
+                last_line += str[i];
+            }
+            return found_newline ? last_line : str;
+        }
     };
 }

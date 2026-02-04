@@ -4,11 +4,11 @@ namespace Amara {
         SDL_Process* process = nullptr;
         SDL_IOStream* io = nullptr;
         
-        char buffer[256] = {0};
+        char buffer[4096] = {0};
         std::string partial_line;
         
         std::vector<nlohmann::json> output;
-
+        
         std::vector<std::string> args;
 
         bool finished = false;
