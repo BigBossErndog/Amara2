@@ -142,7 +142,7 @@ namespace Amara {
                 { "visible", visible },
                 { "sortable", sortable },
                 { "depthSortChildrenEnabled", depthSortChildrenEnabled },
-                { "depthSortChildren", depthSortChildrenEnabled },
+                { "ignoreChildren", ignoreChildren },
                 { "props", lua_to_json(props) }
             });
 
@@ -240,7 +240,8 @@ namespace Amara {
             if (json_has(config, "sortable")) sortable = config["sortable"];
             if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
             if (json_has(config, "depthSortChildren")) depthSortChildrenEnabled = config["depthSortChildren"];
-
+            if (json_has(config, "ignoreChildren")) ignoreChildren = config["ignoreChildren"];
+            
             if (json_has(config, "speed")) {
                 if (config["speed"].is_number()) {
                     speed = config["speed"];
@@ -462,7 +463,7 @@ namespace Amara {
 
             if (finishedLoading()) {
                 update(deltaTime);
-
+                
                 if (!destroyed && funcs.hasFunction("onUpdate")) {
                     funcs.callFunction("onUpdate", deltaTime);
                 }

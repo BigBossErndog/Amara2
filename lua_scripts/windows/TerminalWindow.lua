@@ -6,7 +6,8 @@ Nodes:define("TerminalWindow", "UIWindow", {
     input = true,
 
     props = {
-        titleText = "title_printLog"
+        titleText = "title_printLog",
+        poolSize = 256
     },
 
     onConfigure = function(self, config)
@@ -62,7 +63,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         self.get.paddingLeft = 8
         self.get.paddingRight = 8
         self.get.paddingTop = 22
-        self.get.paddingBottom = 8
+        self.get.paddingBottom = 4
 
         self.get.marginLeft = 2
         self.get.marginRight = 2
@@ -70,10 +71,6 @@ Nodes:define("TerminalWindow", "UIWindow", {
         self.get.marginBottom = 2
 
         self.get.bottomLocked = true
-
-        if not self.get.poolSize then
-            self.get.poolSize = 32
-        end
 
         if self.get.gameProcess then
             self.get.log = self.get.gameProcess.output
@@ -103,6 +100,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         self.get.pool = self.get.cont:createChild("NodePool", {
             x = self.get.cont.left + self.get.marginLeft,
             y = self.get.cont.top + self.get.marginTop,
+            ignoreChildren = true
         })
         self.get.activePool = {}
         
@@ -205,27 +203,43 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
         
         self.get.scrollBar = self.get.content:createChild("FillRect", {
-            color = { 80, 80, 80 },
-            width = 2,
+            color = { 70, 70, 70 },
+            width = 4,
             origin = 0,
             visible = false,
+            alpha = 0.5,
+            
+            input = {
+                active = true,
+                onPointerDown = function()
+                    self.get.scrollDragged = true
+                end,
+                onPointerHover = function()
+                    self.get.scrollBar.alpha = 0.9
+                end,
+                onPointerExit = function()
+                    if not self.get.scrollDragged then
+                        self.get.scrollBar.alpha = 0.6
+                    end
+                end
+            },
             
             onCreate = function(scrollBar)
                 scrollBar.get.pos = scrollBar:createChild("FillRect", {
-                    color = { 200, 200, 200 },
-                    width = 2,
+                    color = { 120, 120, 120 },
+                    width = scrollBar.width,
                     height = 1,
                     origin = 0
                 })
-
             end,
+            
             manageScrollPosition = function(scrollBar)
                 scrollBar.visible = true
 
-                scrollBar.x = self.get.cont.x + self.get.cont.width + scrollBar.width - 1
+                scrollBar.x = self.get.cont.x + self.get.cont.width + scrollBar.width - 4
                 scrollBar.y = self.get.cont.y + 2
                 
-                scrollBar.height = self.get.cont.height - 4
+                scrollBar.height = self.get.cont.height - 2
 
                 local pos = scrollBar.get.pos
                 
@@ -459,6 +473,27 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
             if self.input.mouse.wheel.y ~= 0 and self.get.wallHeight > (self.get.cont.height - self.get.marginBottom - self.get.marginTop) then
                 self.get.bottomLocked = false
+            end
+        end
+        
+        if self.get.scrollDragged then
+            if self.input.pointer.isDown then
+                self.get.scrollBar.alpha = 0.9
+                local firstItem = self.get.activePool[1]
+                local lastItem = self.get.activePool[#self.get.activePool]
+                
+                local per = (self.input.pointer.y - self.get.scrollBar.worldPos.y) / self.get.scrollBar.height
+                local top = self.get.cont.top + self.get.marginTop - firstItem.y
+                local bottom = self.get.cont.bottom - self.get.marginBottom - lastItem.y - lastItem.height
+                
+                self.get.pool.y = top + per * (bottom - top)
+                
+                if self.get.wallHeight > (self.get.cont.height - self.get.marginBottom - self.get.marginTop) then
+                    self.get.bottomLocked = false
+                end
+            else
+                self.get.scrollDragged = false
+                self.get.scrollBar.alpha = 0.6
             end
         end
 

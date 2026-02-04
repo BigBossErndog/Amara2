@@ -75,21 +75,15 @@ Creator:createWorld({
     onCreate = function(world)
         world:fitToDisplay()
         math.randomseed(os.time())
-
+        
         local props = world.props;
         
-        props.windowShadows = world:createChild("TextureContainer", {
-            alpha = 0.5,
-            tint = Colors.Black,
-            onCreate = function(self)
-                self.size = self.world.view
-            end,
-            onUpdate = function(self)
-                self.size = self.world.view
-            end
+        props.windowShadows = world:createChild("ShaderLayer", {
+            alpha = 0.75,
+            tint = Colors.Black
         })
 
-        props.windows = world:createChild("Group", {
+        props.windows = world:createChild("ShaderLayer", {
             closeAll = function(self, _onEnd)
                 for _, child in ipairs(self.children) do
                     if child.func.closeWindow then
@@ -110,7 +104,7 @@ Creator:createWorld({
         
         props.windowShadows_copy = props.windowShadows:createChild("CopyNode", {
             target = props.windows,
-            x = -6, y = 8
+            x = -2, y = 2
         })
 
         props.toolTips = world:createChild("ToolTips")

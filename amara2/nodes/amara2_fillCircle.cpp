@@ -5,7 +5,7 @@ namespace Amara {
 
         float radius = 1.0f;
         int baseSegments = 32;
-
+        
         std::vector<SDL_Vertex> verts;
         std::vector<int> indices;
 
