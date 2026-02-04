@@ -215,7 +215,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
                     self.get.scrollDragged = true
                 end,
                 onPointerHover = function()
-                    self.get.scrollBar.alpha = 0.9
+                    self.get.scrollBar.alpha = 1
                 end,
                 onPointerExit = function()
                     if not self.get.scrollDragged then
@@ -236,7 +236,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
             manageScrollPosition = function(scrollBar)
                 scrollBar.visible = true
 
-                scrollBar.x = self.get.cont.x + self.get.cont.width + scrollBar.width - 4
+                scrollBar.x = self.get.cont.x + self.get.cont.width + scrollBar.width - 5
                 scrollBar.y = self.get.cont.y + 2
                 
                 scrollBar.height = self.get.cont.height - 2
@@ -478,11 +478,13 @@ Nodes:define("TerminalWindow", "UIWindow", {
         
         if self.get.scrollDragged then
             if self.input.pointer.isDown then
-                self.get.scrollBar.alpha = 0.9
+                self.get.scrollBar.alpha = 1
                 local firstItem = self.get.activePool[1]
                 local lastItem = self.get.activePool[#self.get.activePool]
                 
-                local per = (self.input.pointer.y - self.get.scrollBar.worldPos.y) / self.get.scrollBar.height
+                local barHeight = (self.get.scrollBar.height - self.get.scrollBar.get.pos.height)
+                local per = (self.input.pointer.y - self.get.scrollBar.worldPos.y) / barHeight - (self.get.scrollBar.get.pos.height/2 / barHeight)
+                
                 local top = self.get.cont.top + self.get.marginTop - firstItem.y
                 local bottom = self.get.cont.bottom - self.get.marginBottom - lastItem.y - lastItem.height
                 
