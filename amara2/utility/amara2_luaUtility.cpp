@@ -514,6 +514,7 @@ namespace Amara {
             sol::resolve<double(double, double, double, Amara::Ease)>(&Amara::ease),
             sol::resolve<double(double, double, double)>(&Amara::ease),
             sol::resolve<Amara::Color(const Amara::Color&, const Amara::Color&, double, Amara::Ease)>(&Amara::ease),
+            sol::resolve<Amara::Color(const Amara::Color&, const Amara::Color&, double)>(&Amara::ease),
             sol::resolve<Amara::Vector2(const Amara::Vector2&, const Amara::Vector2&, double, Amara::Ease)>(&Amara::ease),
             sol::resolve<Amara::Vector2(const Amara::Vector2&, const Amara::Vector2&, double)>(&Amara::ease)
         ));
@@ -764,6 +765,19 @@ namespace Amara {
             
             int index = index_obj.as<int>();
             index = ((index - 1) % tbl_size + tbl_size) % tbl_size + 1; 
+            
+            return tbl[index];
+        });
+        table_metatable.set_function("random", [&lua](sol::object obj) -> sol::object {
+            if (!lua_object_is_table_array(obj)) {
+                fatal_error("Error: table.random() expected an array-like table argument.");
+            }
+            
+            sol::table tbl = obj.as<sol::table>();
+            int tbl_size = (int)tbl.size();
+            if (tbl_size == 0) return sol::nil;
+            
+            int index = static_cast<int>(lua_random(lua) * tbl_size) + 1;
             
             return tbl[index];
         });

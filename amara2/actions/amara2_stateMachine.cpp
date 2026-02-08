@@ -333,6 +333,9 @@ namespace Amara {
         void release() {
             holdCount -= 1;
         }
+        void release(int count) {
+            holdCount -= count;
+        }
         
         nlohmann::json getStack() {
             nlohmann::json data = nlohmann::json::array();
@@ -422,10 +425,13 @@ namespace Amara {
                     
                     return sm.hold(repeats);
                 },
+                "release", sol::overload(
+                    sol::resolve<void()>(&StateMachine::release),
+                    sol::resolve<void(int)>(&StateMachine::release)
+                ),
                 "once", &StateMachine::once,
                 "nextEvent", &StateMachine::nextEvent,
                 "nextEventOn", &StateMachine::nextEventOn,
-                "release", &StateMachine::release,
                 "wait", sol::overload(
                     sol::resolve<bool(double, bool)>(&StateMachine::wait),
                     sol::resolve<bool(float)>(&StateMachine::wait)

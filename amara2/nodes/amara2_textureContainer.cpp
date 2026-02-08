@@ -559,8 +559,8 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<TextureContainer>("TextureContainer",
                 sol::base_classes, sol::bases<Amara::Node>(),
-                "tint", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.tint; }, [](Amara::TextureContainer& t, sol::object v) { t.tint = v; }),
-                "fill", sol::property([](Amara::TextureContainer& t) -> Amara::Color { return t.fill; }, [](Amara::TextureContainer& t, sol::object v) { t.fill = v; }),
+                "tint", sol::property([](Amara::TextureContainer& t) -> Amara::Color& { return t.tint; }, [](Amara::TextureContainer& t, sol::object v) { t.tint = v; }),
+                "fill", sol::property([](Amara::TextureContainer& t) -> Amara::Color& { return t.fill; }, [](Amara::TextureContainer& t, sol::object v) { t.fill = v; }),
                 "blendMode", &TextureContainer::blendMode,
                 "w", sol::property([](Amara::TextureContainer& t) -> int { return t.width; }, [](Amara::TextureContainer& t, double v) { t.setWidth(v); }),
                 "h", sol::property([](Amara::TextureContainer& t) -> int { return t.height; }, [](Amara::TextureContainer& t, double v) { t.setHeight(v); }),

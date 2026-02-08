@@ -495,7 +495,9 @@ Nodes:define("TerminalWindow", "UIWindow", {
                 end
             else
                 self.get.scrollDragged = false
-                self.get.scrollBar.alpha = 0.6
+                if not self.get.scrollBar.input.hovered then
+                    self.get.scrollBar.alpha = 0.6
+                end
             end
         end
 

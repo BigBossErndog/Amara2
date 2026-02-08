@@ -9,7 +9,7 @@ namespace Amara {
         sol::table luatable;
         Particle* keep = nullptr;
 
-        Amara::Vector2 pos;
+        Amara::Vector2 pos = Vector2(0, 0);
         Amara::Vector2 scale = 1.0f;
         Amara::Vector2 origin = 0.5f;
         float rotation = 0;
@@ -19,8 +19,8 @@ namespace Amara {
 
         Amara::Color tint = Color::White;
 
-        Amara::Vector2 velocity;
-        Amara::Vector2 acceleration;
+        Amara::Vector2 velocity = Vector2(0, 0);
+        Amara::Vector2 acceleration = Vector2(0, 0);
 
         float rotationalVelocity = 0;
 
@@ -28,7 +28,7 @@ namespace Amara {
 
         Vector2 endScale = Vector2(1);
         bool end_scale_set = false;
-
+        
         bool in_use = false;
         
         double progress = 0;
