@@ -52,6 +52,10 @@ namespace Amara {
             SDL_FRect srcRect, destRect;
             srcRect = { 0, 0, 1, 1 };
             destRect = { 0, 0, v.w, v.h };
+            
+            if (input.active && !passOn.inputDisabled) {
+                input.queueInput(moveQuad(Quad(destRect), v.x, v.y), v, nullptr);
+            }
 
             if (image->texture && gameProps->renderer) {
                 // 2D Rendering

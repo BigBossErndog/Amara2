@@ -157,7 +157,7 @@ namespace Amara {
 
                 Amara::Action::prepare();
 
-                if (funcs.hasFunction("onStart")) funcs.callFunction(actor, "onStart", get_lua_object());
+                if (!start_delay && funcs.hasFunction("onStart")) funcs.callFunction(actor, "onStart", get_lua_object());
             }
         }
 
