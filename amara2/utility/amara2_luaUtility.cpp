@@ -768,6 +768,71 @@ namespace Amara {
             
             return tbl[index];
         });
+        table_metatable.set_function("remove_duplicates", [&lua](sol::object tbl_obj, sol::object check) {
+        
+                if (!lua_object_is_table_array(tbl_obj)) {
+                    fatal_error("Error: table.remove_duplicates() expected an array-style table argument.");
+                }
+        
+                sol::table tbl = tbl_obj.as<sol::table>();
+                sol::state_view lua_state(lua.lua_state());
+                sol::table new_table = lua_state.create_table();
+        
+                sol::function comparator;
+                bool use_custom_compare = false;
+        
+                if (check.is<sol::function>()) {
+                    comparator = check.as<sol::function>();
+                    use_custom_compare = true;
+                }
+        
+                std::size_t new_index = 1;
+        
+                for (std::size_t i = 1;; ++i) {
+                    sol::object value = tbl.raw_get<sol::object>(i);
+                    
+                    if (!value.valid()) break;
+        
+                    bool is_duplicate = false;
+        
+                    for (std::size_t j = 1; j < new_index; ++j) {
+                        sol::object existing = new_table.raw_get<sol::object>(j);
+        
+                        bool equal = false;
+        
+                        if (use_custom_compare) {
+                            sol::protected_function_result result = comparator(value, existing);
+                            if (!result.valid()) {
+                                sol::error err = result;
+                                fatal_error(std::string("Error: ") + err.what());
+                            }
+                            equal = result.get<bool>();
+                        }
+                        else {
+                            sol::protected_function_result result = lua_state["rawequal"](value, existing);
+        
+                            if (!result.valid()) {
+                                sol::error err = result;
+                                fatal_error(std::string("Error: ") + err.what());
+                            }
+        
+                            equal = result.get<bool>();
+                        }
+        
+                        if (equal) {
+                            is_duplicate = true;
+                            break;
+                        }
+                    }
+        
+                    if (!is_duplicate) {
+                        new_table.raw_set(new_index++, value);
+                    }
+                }
+        
+                return new_table;
+            }
+        );
         table_metatable.set_function("random", [&lua](sol::object obj) -> sol::object {
             if (!lua_object_is_table_array(obj)) {
                 fatal_error("Error: table.random() expected an array-like table argument.");
