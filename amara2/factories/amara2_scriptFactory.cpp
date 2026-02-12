@@ -109,7 +109,8 @@ namespace Amara {
             lua.new_usertype<ScriptFactory>("ScriptFactory",
                 "load", &ScriptFactory::load,
                 "get", &ScriptFactory::get,
-                "run", &ScriptFactory::run
+                "run", &ScriptFactory::run,
+                "include", &ScriptFactory::run
             );
         }
 

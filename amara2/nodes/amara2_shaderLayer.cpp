@@ -34,6 +34,10 @@ namespace Amara {
                         height = floor(vec.y);
                     }
                 }
+                else if (res_data.is_number()) {
+                    width = round(res_data.get<float>() * (gameProps->master_viewport.w / gameProps->master_viewport.h));
+                    height = round(res_data.get<float>());
+                }
             }
             return Amara::ShaderContainer::configure(config);
         }
