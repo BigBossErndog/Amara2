@@ -210,6 +210,7 @@ namespace Amara {
             if (json_has(config, "id")) id = config["id"];
 
             if (json_has(config, "pos")) pos = config["pos"];
+            if (json_has(config, "position")) pos = config["position"];
             if (json_has(config, "x")) pos.x = config["x"];
             if (json_has(config, "y")) pos.y = config["y"];
             if (json_has(config, "z")) pos.z = config["z"];
@@ -961,6 +962,7 @@ namespace Amara {
                 "getClass", &Node::getClassFunctions,
                 "classes", &Node::funcs,
                 "pos", sol::property([](Node& e, sol::object val) { e.pos = val; }, [](Node& e) -> Vector2& { return e.pos; }),
+                "position", sol::property([](Node& e, sol::object val) { e.pos = val; }, [](Node& e) -> Vector2& { return e.pos; }),
                 "worldPos", sol::readonly(&Node::worldPos),
                 "x", sol::property([](Node& e, float val) { e.pos.x = val; }, [](Node& e) { return e.pos.x; }),
                 "y", sol::property([](Node& e, float val) { e.pos.y = val; }, [](Node& e) { return e.pos.y; }),

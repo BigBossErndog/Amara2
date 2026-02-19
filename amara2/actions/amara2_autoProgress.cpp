@@ -49,7 +49,7 @@ namespace Amara {
             if (has_started) {
                 timer += deltaTime * speed;
                 if (!completed && funcs.hasFunction("skipCondition")) {
-                    sol::object obj = funcs.callFunction(actor, "skipCondition");
+                    sol::object obj = funcs.callFunction(actor, "skipCondition", get_lua_object());
                     if (obj.is<bool>() && obj.as<bool>()) {
                         skip();
                     }

@@ -74,7 +74,7 @@ namespace Amara {
             if (!contents.empty() && nlohmann::json::accept(contents)) {
                 return nlohmann::json::parse(contents);
             }
-            fatal_error("Warning: Invalid JSON file read from \"", removeBasePath(getRelativePath(path)), "\".");
+            fatal_error("Error: Invalid JSON file read from \"", removeBasePath(getRelativePath(path)), "\".");
             return nullptr;
         }
         sol::object luaReadJSON(const std::string& path) {
