@@ -92,12 +92,15 @@ namespace Amara {
                     if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                         ShaderProgram* shaderProgram = gameProps->shaders->createShaderProgram(task.key, task.config);
                         if (shaderProgram) success = true;
+                        else {
+                            debug_log("Error: Failed to load shader program \"", task.key, "\" from the following:\n", task.key, " = ", task.path);
+                        }
                     }
                     else {
-                        debug_log("Error: Could not load shader program. Graphics.OpenGL is not set.");
+                        debug_log("Error: Could not load shader program \"", task.key, "\". Graphics.OpenGL is not set.");
                     }
                     #else
-                    debug_log("Error: Could not load shader program. OpenGL is not enabled this build.");
+                    debug_log("Error: Could not load shader program \"", task.key, "\". OpenGL is not enabled this build.");
                     #endif
                     break;
                 }
@@ -112,7 +115,11 @@ namespace Amara {
                     break;
             }
 
-            if (!success && !task.in_progress) debug_log("Error: Failed to load asset \"", task.key, "\" from ", task.path);
+            if (!success && !task.in_progress) {
+                if (task.type != (int)AssetEnum::ShaderProgram) {
+                    debug_log("Error: Failed to load asset \"", task.key, "\" from ", task.path);
+                }
+            }
             return success;
         }
 

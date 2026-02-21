@@ -6,6 +6,7 @@ namespace Amara {
         
         char buffer[4096] = {0};
         std::string partial_line;
+        std::string delimiter = "\n";
         
         std::vector<nlohmann::json> output;
         
@@ -19,6 +20,9 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
+            if (json_has(config, "delimiter")) {
+                delimiter = config["delimiter"].get<std::string>();
+            }
             if (json_has(config, "arguments")) {
                 nlohmann::json arg_config = config["arguments"];
 
@@ -74,10 +78,15 @@ namespace Amara {
                             buffer[bytes_read] = '\0';
                             partial_line.append(buffer, bytes_read);
 
-                            size_t newline_pos;
-                            while ((newline_pos = partial_line.find('\n')) != std::string::npos) {
-                                logOutput(partial_line.substr(0, newline_pos));
-                                partial_line.erase(0, newline_pos + 1);
+                            if (delimiter.empty()) {
+                                logOutput(partial_line);
+                                partial_line.clear();
+                            } else {
+                                size_t delim_pos;
+                                while ((delim_pos = partial_line.find(delimiter)) != std::string::npos) {
+                                    logOutput(partial_line.substr(0, delim_pos));
+                                    partial_line.erase(0, delim_pos + delimiter.length());
+                                }
                             }
                             found_output = true;
                         }
@@ -135,6 +144,7 @@ namespace Amara {
                     if (p.output.size() == 0) return sol::nil;
                     return Amara::json_to_lua(p.gameProps->lua, p.output);
                 }),
+                "delimiter", &ProcessNode::delimiter,
                 "finished", sol::readonly(&ProcessNode::finished),
                 "exitCode", sol::readonly(&ProcessNode::exitCode)
             );

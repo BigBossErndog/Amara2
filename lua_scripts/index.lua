@@ -1,6 +1,6 @@
 version_major = 0
 version_minor = 2
-version_patch = 12
+version_patch = 13
 
 version_string = version_major .. "." .. version_minor .. "." .. version_patch
 
@@ -147,64 +147,9 @@ Creator:createWorld({
             end
         })
 
-        local windowMovementSpeed = 100
-
-        world:createChild("Hotkey", {
-            config = {
-                { Key.LeftShift, Key.LeftAlt, Key.Left },
-                { Key.RightShift, Key.RightAlt, Key.Left },
-                { Key.LeftShift, Key.LeftAlt, Key.A },
-                { Key.RightShift, Key.RightAlt, Key.A }
-            },
-            whilePressed = function(self, deltaTime)
-                if world.get.focusedWindow then
-                    world.get.focusedWindow.x = world.get.focusedWindow.x - windowMovementSpeed * deltaTime
-                end
-            end
-        })
-        world:createChild("Hotkey", {
-            config = {
-                { Key.LeftShift, Key.LeftAlt, Key.Right },
-                { Key.RightShift, Key.RightAlt, Key.Right },
-                { Key.LeftShift, Key.LeftAlt, Key.D },
-                { Key.RightShift, Key.RightAlt, Key.D }
-            },
-            whilePressed = function(self, deltaTime)
-                if world.get.focusedWindow then
-                    world.get.focusedWindow.x = world.get.focusedWindow.x + windowMovementSpeed * deltaTime
-                end
-            end
-        })
-        world:createChild("Hotkey", {
-            config = {
-                { Key.LeftShift, Key.LeftAlt, Key.Up },
-                { Key.RightShift, Key.RightAlt, Key.Up },
-                { Key.LeftShift, Key.LeftAlt, Key.W },
-                { Key.RightShift, Key.RightAlt, Key.W }
-            },
-            whilePressed = function(self, deltaTime)
-                if world.get.focusedWindow then
-                    world.get.focusedWindow.y = world.get.focusedWindow.y - windowMovementSpeed * deltaTime
-                end
-            end
-        })
-        world:createChild("Hotkey", {
-            config = {
-                { Key.LeftShift, Key.LeftAlt, Key.Down },
-                { Key.RightShift, Key.RightAlt, Key.Down },
-                { Key.LeftShift, Key.LeftAlt, Key.S },
-                { Key.RightShift, Key.RightAlt, Key.S }
-            },
-            whilePressed = function(self, deltaTime)
-                if world.get.focusedWindow then
-                    world.get.focusedWindow.y = world.get.focusedWindow.y + windowMovementSpeed * deltaTime
-                end
-            end
-        })
-
         Game.targetFPS = 0
     end,
-
+    
     getSettings = function(self, forceLoad)
         if forceLoad or not self.get.settings then
             if System:exists("files/settings.json") then

@@ -64,12 +64,12 @@ Nodes:define("TerminalWindow", "UIWindow", {
         self.get.paddingRight = 8
         self.get.paddingTop = 22
         self.get.paddingBottom = 4
-
+        
         self.get.marginLeft = 2
-        self.get.marginRight = 2
+        self.get.marginRight = 8
         self.get.marginTop = 2
         self.get.marginBottom = 2
-
+        
         self.get.bottomLocked = true
 
         if self.get.gameProcess then
@@ -99,8 +99,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
         self.get.pool = self.get.cont:createChild("NodePool", {
             x = self.get.cont.left + self.get.marginLeft,
-            y = self.get.cont.top + self.get.marginTop,
-            ignoreChildren = true
+            y = self.get.cont.top + self.get.marginTop
         })
         self.get.activePool = {}
         
@@ -200,7 +199,6 @@ Nodes:define("TerminalWindow", "UIWindow", {
                 self.world.func:saveSettings()
             end
         })
-
         
         self.get.scrollBar = self.get.content:createChild("FillRect", {
             color = { 70, 70, 70 },
@@ -245,7 +243,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
                 
                 local firstItem = self.get.activePool[1]
                 local lastItem = self.get.activePool[#self.get.activePool]
-
+                
                 pos.height = scrollBar.height * ((self.get.cont.height - self.get.marginBottom - self.get.marginTop) / (self.get.wallHeight + self.get.marginBottom + self.get.marginTop - firstItem.y))
                 pos.y = -(scrollBar.height - pos.height) * ((-self.get.pool.y + self.get.cont.top + self.get.marginTop - firstItem.y) / ((self.get.cont.bottom - self.get.marginBottom - lastItem.y - lastItem.height) - (self.get.cont.top + self.get.marginTop - firstItem.y)))
             end
@@ -258,12 +256,13 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
     checkForError  = function(self, msg, item)
         local ret = false
-        
+        local lineNumber = nil
         if string.contains(msg, "[string ") then
             item.color = Colors.Red
             local filename, details = string.match(msg, '%[string "([^"]+)"]:(.*)')
             if filename and details then
                 item.text = string.format('Error in "%s" at line %s', filename, details)
+                lineNumber = tonumber(details:match("%d+"))
             end
             item.text = string.gsub(item.text, "%[string ", "[")
             ret = true
@@ -311,7 +310,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
                     item.input:activate()
                     item.input.cursor = Cursor.Pointer
                     item.input:listen("onPointerUp", function(txt)
-                        OpenCodeEditor(settings, self.get.projectPath, targetPath)
+                        OpenCodeEditor(settings, self.get.projectPath, targetPath, lineNumber)
 
                         txt.color = txt.get.isError and Colors.White or "#82adc2"
                         txt.tween:to({
@@ -322,25 +321,25 @@ Nodes:define("TerminalWindow", "UIWindow", {
                             end
                         })
                     end)
-                    item.input:listen("onPointerHover", function(txt)
-                        if txt.get.isError then
-                            txt.color = "#ff4646"
-                        else
-                            txt.color = "#c5ecff"
-                        end
-                        txt.get.defColor = txt.color
-                    end)
-                    item.input:listen("onPointerExit", function(txt)
-                        if txt.get.isError then
-                            txt.color = Colors.Red
-                        else
-                            txt.color = Colors.White
-                        end
-                        txt.get.defColor = txt.color
-                    end)
                 else
                     item.input:stopListening("onPointerUp")
                 end
+                item.input:listen("onPointerHover", function(txt)
+                    if txt.get.isError then
+                        txt.color = "#ff4646"
+                    else
+                        txt.color = "#c5ecff"
+                    end
+                    txt.get.defColor = txt.color
+                end)
+                item.input:listen("onPointerExit", function(txt)
+                    if txt.get.isError then
+                        txt.color = Colors.Red
+                    else
+                        txt.color = Colors.White
+                    end
+                    txt.get.defColor = txt.color
+                end)
             end
         end
 
@@ -348,7 +347,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
     end,
 
     pipeMessage = function(self, msg)
-        if string.starts_with(msg, "\t[C") or string.starts_with(msg, "stack tr") then
+        if string.starts_with(msg, "stack traceback") then
             return;
         end
         if string.starts_with(msg, "\t[") and not self.get.allowTrace then
@@ -375,7 +374,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         if item.wrapWidth ~= wrapWidth then
             item.wrapWidth = wrapWidth
         end
-
+        
         if self.get.wallHeight > 0 then
             self.get.wallHeight = self.get.wallHeight + self.get.lineSpacing
         end

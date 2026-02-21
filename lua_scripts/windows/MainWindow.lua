@@ -12,7 +12,20 @@ Nodes:define("MainWindow", "UIWindow", {
             font = "defaultFont",
             text = Localize:get("title_windowTitle") .. " v" .. version_string,
             color = "#a8bee0",
-            origin = 0
+            origin = 0,
+            input = {
+                active = true,
+                cursor = Cursor.Pointer,
+                onPointerHover = function(txt)
+                    print("POINTER HOVER")
+                end,
+                onPointerUp = function(txt)
+                    print("POINTER UP")
+                end,
+                onPointerExit = function(txt)
+                    print("POINTER EXIT")
+                end
+            }
         })
 
         local recentProjectsTitle = self.get.content:createChild("Text", {

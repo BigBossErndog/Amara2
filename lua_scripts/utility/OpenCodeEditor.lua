@@ -1,19 +1,19 @@
-function OpenCodeEditor(settings, projectPath, filePath)
+function OpenCodeEditor(settings, projectPath, filePath, lineNumber)
     local editorConfigs = {
-        ["codeEditor_VSCode"]         = { cmd = "code",          project = true, file_flag = "-g" },
-        ["codeEditor_VSCodeInsiders"] = { cmd = "code-insiders", project = true, file_flag = "-g" },
-        ["codeEditor_CodeOSS"]        = { cmd = "code-oss",      project = true, file_flag = "-g" },
-        ["codeEditor_Atom"]           = { cmd = "atom",          project = true, file_flag = nil  },
-        ["codeEditor_Sublime"]        = { cmd = "subl",          project = true, file_flag = nil  },
-        ["codeEditor_Sublime-Text"]   = { cmd = "sublime_text",  project = true, file_flag = nil  },
-        ["codeEditor_Notepad"]        = { cmd = "notepad",       project = false, file_flag = nil },
-        ["codeEditor_CLion"]          = { cmd = "clion",         project = true,  file_flag = nil  },
-        ["codeEditor_Cursor"]         = { cmd = "cursor",        project = true,  file_flag = "-g" },
-        ["codeEditor_Zed"]            = { cmd = "zed",           project = true,  file_flag = nil  },
+        ["codeEditor_VSCode"]         = { cmd = "code",          project = true, file_flag = "-g", lineNumberSupported = true },
+        ["codeEditor_VSCodeInsiders"] = { cmd = "code-insiders", project = true, file_flag = "-g", lineNumberSupported = true },
+        ["codeEditor_CodeOSS"]        = { cmd = "code-oss",      project = true, file_flag = "-g", lineNumberSupported = true },
+        ["codeEditor_Atom"]           = { cmd = "atom",          project = true, file_flag = nil, lineNumberSupported = true },
+        ["codeEditor_Sublime"]        = { cmd = "subl",          project = true, file_flag = nil, lineNumberSupported = true },
+        ["codeEditor_Sublime-Text"]   = { cmd = "sublime_text",  project = true, file_flag = nil, lineNumberSupported = true },
+        ["codeEditor_Notepad"]        = { cmd = "notepad",       project = false, file_flag = nil, lineNumberSupported = true },
+        ["codeEditor_CLion"]          = { cmd = "clion",         project = true,  file_flag = nil, lineNumberSupported = true },
+        ["codeEditor_Cursor"]         = { cmd = "cursor",        project = true,  file_flag = "-g", lineNumberSupported = true },
+        ["codeEditor_Zed"]            = { cmd = "zed",           project = true,  file_flag = nil, lineNumberSupported = true  },
         ["codeEditor_Figma"]          = { cmd = "figma",         project = false, file_flag = nil  },
         ["codeEditor_VSCodium"]       = { cmd = "codium",        project = true,  file_flag = "-g" },
         ["codeEditor_Geany"]          = { cmd = "geany",         project = true,  file_flag = nil  },
-        ["codeEditor_Windsurf"]       = { cmd = "windsurf",      project = true,  file_flag = nil  },
+        ["codeEditor_Windsurf"]       = { cmd = "windsurf",      project = true,  file_flag = nil, lineNumberSupported = true  },
         ["codeEditor_LiteXL"]         = { cmd = "lite-xl",       project = true,  file_flag = nil  }
     }
 
@@ -40,6 +40,9 @@ function OpenCodeEditor(settings, projectPath, filePath)
     end
 
     if fileToOpen then
+        if lineNumber and config.lineNumberSupported then
+            fileToOpen = fileToOpen .. ":" .. tostring(lineNumber)
+        end
         if config.file_flag then
             table.insert(args, config.file_flag)
             table.insert(args, '"' .. fileToOpen .. '"')
