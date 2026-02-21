@@ -52,7 +52,7 @@ function OpenCodeEditor(settings, projectPath, filePath, lineNumber)
     end
 
     local command = table.concat(args, " ")
-    System:execute(command)
+    System:executeDettached(command)
 
     if isUninitiated then
         projectData.uninitiated = nil
