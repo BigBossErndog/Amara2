@@ -347,7 +347,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
     end,
 
     pipeMessage = function(self, msg)
-        if string.starts_with(msg, "stack traceback") then
+        if string.starts_with(msg, "stack traceback") or string.starts_with(msg, "\t[C]:") then
             return;
         end
         if string.starts_with(msg, "\t[") and not self.get.allowTrace then
