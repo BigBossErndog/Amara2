@@ -1437,7 +1437,12 @@ namespace Amara {
 
     std::unordered_map<std::string, bool> Amara::Node::in_order_props = {
         { "origin", true },
+        { "originPosition", true },
+        { "originPositionX", true },
+        { "originPositionY", true },
         { "scale", true },
+        { "scaleX", true },
+        { "scaleY", true },
         { "size", true },
         { "rect", true },
         { "view", true },
