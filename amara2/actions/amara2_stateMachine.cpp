@@ -452,8 +452,14 @@ namespace Amara {
                 "resetEvent", &StateMachine::resetEvent,
                 "inState", &StateMachine::inState,
                 "state", &StateMachine::state,
-                "currentState", sol::readonly(&StateMachine::currentState),
-                "lastState", sol::readonly(&StateMachine::lastState),
+                "currentState", sol::property([&lua](StateMachine& sm) -> sol::object {
+                    if (sm.currentState.empty()) return sol::nil;
+                    return sol::make_object(lua, sm.currentState);
+                }),
+                "lastState", sol::property([&lua](StateMachine& sm) -> sol::object {
+                    if (sm.lastState.empty()) return sol::nil;
+                    return sol::make_object(lua, sm.lastState);
+                }),
                 "stack", sol::property([](StateMachine& stateMachine) -> sol::object {
                     if (stateMachine.stateRecords.size() == 0) {
                         return sol::nil;
