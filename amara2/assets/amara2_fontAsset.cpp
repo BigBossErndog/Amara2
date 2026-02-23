@@ -8,7 +8,7 @@ namespace Amara {
         Rectangle src;
         int xoffset, yoffset;
         int xadvance;
-
+        
         bool renderable = true;
         
         bool is_config = false;
@@ -458,13 +458,13 @@ namespace Amara {
 
                         glyph.renderable = false;
                         word.glyphs.push_back(glyph);
-
+                        
                         line->merge(word);
                         
                         word = TextLine();
-
+                        
                         cursorX = 0;
-                        cursorY += fontSize + lineSpacing;
+                        cursorY += lineHeight + lineSpacing;
                         line = &layout.newLine();
                         line->height = lineHeight;
                         line->y = cursorY;
