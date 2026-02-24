@@ -368,6 +368,9 @@ namespace Amara {
                 }
             }
         }
+        void spawn(sol::object lua_config) {
+            burst(1, lua_config);
+        }
         
         void clearAll() {
             for (int i = 0; i <= end_particle; i++) {
@@ -660,6 +663,7 @@ namespace Amara {
                 "spawnRate", &Amara::ParticleEmitter::spawnRate,
                 "spawning", &Amara::ParticleEmitter::spawning,
                 "burst", &Amara::ParticleEmitter::burst,
+                "spawn", &Amara::ParticleEmitter::spawn,
                 "spawnedCount", sol::readonly(&Amara::ParticleEmitter::spawnedCount),
                 "clearAll", &Amara::ParticleEmitter::clearAll
             );
