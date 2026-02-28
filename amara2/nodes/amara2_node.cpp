@@ -961,6 +961,7 @@ namespace Amara {
                 }),
                 "getClass", &Node::getClassFunctions,
                 "classes", &Node::funcs,
+                "super", &Node::funcs,
                 "pos", sol::property([](Node& e, sol::object val) { e.pos = val; }, [](Node& e) -> Vector2& { return e.pos; }),
                 "position", sol::property([](Node& e, sol::object val) { e.pos = val; }, [](Node& e) -> Vector2& { return e.pos; }),
                 "worldPos", sol::readonly(&Node::worldPos),

@@ -388,6 +388,7 @@ namespace Amara {
     }
     Rectangle& Rectangle::operator= (sol::object obj) {
         if (obj.is<Rectangle>()) *this = obj.as<Rectangle>();
+        else if (obj.is<Vector2>()) *this = Rectangle(obj.as<Vector2>());
         else *this = lua_to_json(obj);
         return *this;
     }

@@ -48,6 +48,34 @@ namespace Amara {
             return x != other.x || y != other.y || w != other.w || h != other.h;
         }
         
+        Rectangle operator+ (const Rectangle& other) const {
+            Rectangle rect = *this;
+            rect += other;
+            return rect;
+        }
+        
+        Rectangle operator+= (const Rectangle& other) {
+            x += other.x;
+            y += other.y;
+            w += other.w;
+            h += other.h;
+            return *this;
+        }
+        
+        Rectangle operator- (const Rectangle& other) const {
+            Rectangle rect = *this;
+            rect -= other;
+            return rect;
+        }
+        
+        Rectangle operator-= (const Rectangle& other) {
+            x -= other.x;
+            y -= other.y;
+            w -= other.w;
+            h -= other.h;
+            return *this;
+        }
+        
         Rectangle operator* (const Vector2& v) {
             Rectangle rect = *this;
             rect *= v;
@@ -55,10 +83,32 @@ namespace Amara {
         }
         
         Rectangle& operator*= (const Vector2& v) {
-            x *= v.x;
-            y *= v.y;
             w *= v.x;
             h *= v.y;
+            return *this;
+        }
+        
+        Rectangle operator+ (const Vector2& v) const {
+            Rectangle rect = *this;
+            rect += v;
+            return rect;
+        }
+        
+        Rectangle& operator+= (const Vector2& v) {
+            x += v.x;
+            y += v.y;
+            return *this;
+        }
+        
+        Rectangle operator- (const Vector2& v) {
+            Rectangle rect = *this;
+            rect -= v;
+            return rect;
+        }
+        
+        Rectangle& operator-= (const Vector2& v) {
+            x -= v.x;
+            y -= v.y;
             return *this;
         }
         
@@ -116,14 +166,14 @@ namespace Amara {
             else if (config.is_object()) {
                 if (json_has(config, "x")) x = config["x"];
                 if (json_has(config, "y")) y = config["y"];
-
+                
                 if (json_has(config, "w")) w = config["w"];
                 else if (json_has(config, "width")) w = config["width"];
                 
                 if (json_has(config, "h")) h = config["h"];
                 else if (json_has(config, "height")) h = config["height"];
-
-                if (!json_has_any(config, "w", "h", "width", "height")) {
+                
+                if (!json_has_any(config, "x", "y", "w", "h", "width", "height")) {
                     fatal_error("Error: Invalid Rectangle assignment.");
                 }
             }
@@ -168,6 +218,56 @@ namespace Amara {
         }
         friend std::ostream& operator<<(std::ostream& os, const Circle& v) {
             return os << static_cast<std::string>(v);
+        }
+        
+        Circle operator+ (const Circle& other) const {
+            Circle circle = *this;
+            circle += other;
+            return circle;
+        }
+        
+        Circle operator+= (const Circle& other) {
+            x += other.x;
+            y += other.y;
+            radius += other.radius;
+            return *this;
+        }
+        
+        Circle operator- (const Circle& other) const {
+            Circle circle = *this;
+            circle -= other;
+            return circle;
+        }
+        
+        Circle operator-= (const Circle& other) {
+            x -= other.x;
+            y -= other.y;
+            radius -= other.radius;
+            return *this;
+        }
+        
+        Circle operator+ (const Vector2& v) {
+            Circle circle = *this;
+            circle += v;
+            return circle;
+        }
+        
+        Circle& operator+= (const Vector2& v) {
+            x += v.x;
+            y += v.y;
+            return *this;
+        }
+        
+        Circle operator- (const Vector2& v) {
+            Circle circle = *this;
+            circle -= v;
+            return circle;
+        }
+        
+        Circle& operator-= (const Vector2& v) {
+            x -= v.x;
+            y -= v.y;
+            return *this;
         }
 
         nlohmann::json toJSON() {
@@ -1100,7 +1200,15 @@ namespace Amara {
             "center", sol::property(&Rectangle::getCenter),
             "diagonal", sol::property(&Rectangle::diagonal),
             "area", sol::property(&Rectangle::area),
-            "perimeter", sol::property(&Rectangle::perimeter)
+            "perimeter", sol::property(&Rectangle::perimeter),
+            sol::meta_function::addition, [](const Rectangle& r, sol::object val) -> Rectangle {
+                Rectangle o = val;
+                return r + o;
+            },
+            sol::meta_function::subtraction, [](const Rectangle& r, sol::object val) -> Rectangle {
+                Rectangle o = val;
+                return r - o;
+            }
         );
 
         lua.new_usertype<Quad>("Quad",
@@ -1162,7 +1270,15 @@ namespace Amara {
         lua.new_usertype<Circle>("Circle",
             sol::constructors<Circle(), Circle(float), Circle(float, float, float), Circle(Vector2), Circle(Vector2, float)>(),
             sol::base_classes, sol::bases<Vector2>(),
-            "radius", &Circle::radius
+            "radius", &Circle::radius,
+            sol::meta_function::addition, [](const Circle& c1, sol::object v) -> Circle {
+                Circle other = v;
+                return c1 + other;
+            },
+            sol::meta_function::subtraction, [](const Circle& c1, sol::object v) -> Circle {
+                Circle other = v;
+                return c1 - other;
+            }
         );
         
         lua.new_usertype<Triangle>("Triangle",

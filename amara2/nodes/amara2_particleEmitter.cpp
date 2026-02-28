@@ -86,6 +86,9 @@ namespace Amara {
         
         nlohmann::json start_data;
         nlohmann::json end_data;
+        
+        sol::table from_table;
+        sol::table to_table;
 
         bool updated_this_frame = false;
         
@@ -141,6 +144,35 @@ namespace Amara {
             }
             
             return Amara::Sprite::configure(config);
+        }
+        
+        virtual void init() override {
+            Amara::Sprite::init();
+            
+            sol::state& lua = gameProps->lua;
+            
+            from_table = lua.create_table();
+            sol::table from_meta = lua.create_table();
+            
+            from_meta["__index"] = [&lua, this](sol::table tbl, sol::string_view key) {
+                return json_to_lua(lua, this->start_data[key]);
+            };
+            from_meta["__newindex"] = [&lua, this](sol::table tbl, sol::object key, sol::object val) {
+                this->start_data[key.as<std::string>()] = lua_to_json(val);
+            };
+            
+            to_table = lua.create_table();
+            sol::table to_meta = lua.create_table();
+            
+            to_meta["__index"] = [&lua, this](sol::table tbl, sol::string_view key) {
+                return json_to_lua(lua, this->end_data[key]);
+            };  
+            to_meta["__newindex"] = [&lua, this](sol::table tbl, sol::object key, sol::object val) {
+                this->end_data[key.as<std::string>()] = lua_to_json(val);
+            };
+            
+            to_table[sol::metatable_key] = to_meta;
+            from_table[sol::metatable_key] = from_meta;
         }
 
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
@@ -394,7 +426,7 @@ namespace Amara {
             float imgw = (spritesheet ? frameWidth : textureWidth);
             float imgh = (spritesheet ? frameHeight : textureHeight);
 
-            Vector2 render_pos = pos + particle.pos;
+            Vector2 render_pos = pos + rotateAroundAnchor(Vector2::Origin, particle.pos, rotation);
             if (renderPixelPerfect) render_pos = render_pos.round();
 
             Vector3 anchoredPos = Vector3(
@@ -665,7 +697,15 @@ namespace Amara {
                 "burst", &Amara::ParticleEmitter::burst,
                 "spawn", &Amara::ParticleEmitter::spawn,
                 "spawnedCount", sol::readonly(&Amara::ParticleEmitter::spawnedCount),
-                "clearAll", &Amara::ParticleEmitter::clearAll
+                "clearAll", &Amara::ParticleEmitter::clearAll,
+                "to", sol::property(
+                    [](Amara::ParticleEmitter& p) { return p.to_table; },
+                    [](Amara::ParticleEmitter& p, sol::object val) { p.start_data = lua_to_json(val); }
+                ),
+                "from", sol::property(
+                    [](Amara::ParticleEmitter& p) { return p.from_table; },
+                    [](Amara::ParticleEmitter& p, sol::object val) { p.end_data = lua_to_json(val); }
+                )
             );
         }
     };
