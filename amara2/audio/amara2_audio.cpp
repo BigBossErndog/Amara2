@@ -8,7 +8,7 @@ namespace Amara {
         float panning = 0;
         float pitch = 1.0f;
         float rec_pitch = 1.0f;
-
+        
         bool playing = false;
         bool loop = false;
 
@@ -32,6 +32,8 @@ namespace Amara {
         int totalFrames = 0;
         int sampleRate = 0;
         int channels = 0;
+        
+        bool temporary = false;
 
         Audio(): Amara::Node() {
             set_base_node_id("Audio");
@@ -48,6 +50,8 @@ namespace Amara {
             if (json_has(config, "pitch")) setPitch(config["pitch"]);
             if (json_has(config, "position")) setPosition(config["position"]);
             if (json_is(config, "playing")) play();
+            if (json_has(config, "temporary")) temporary = config["temporary"];
+            
             return Amara::Node::configure(config);
         }
 
@@ -98,6 +102,7 @@ namespace Amara {
                         setPosition(0);
                         playing = false;
                         if (funcs.hasFunction("onComplete")) funcs.callFunction("onComplete");
+                        if (temporary) destroy();
                     }
                     break;
                 }
@@ -134,6 +139,8 @@ namespace Amara {
                     if (funcs.hasFunction("onLoop")) funcs.callFunction("onLoop");
                 }
             }
+            
+            update_group();
         }
 
         bool setAudio(std::string key) {
@@ -243,10 +250,10 @@ namespace Amara {
 
         void update_group();
 
-        virtual void play() {
+        virtual sol::object play() {
             if (!audio) {
                 fatal_error("Error: Attempted to play audio node without an audio asset.");
-                return;
+                return sol::nil;
             }
             if (!stream) createAudioStream();
 
@@ -260,12 +267,15 @@ namespace Amara {
             playing = true;
             paused = false;
             update_group();
+            
+            return get_lua_object();
         }
 
         virtual void stop() {
             setPosition(0);
             playing = false;
             update_group();
+            if (temporary) destroy();
         }
 
         virtual void restart() {
@@ -295,7 +305,9 @@ namespace Amara {
         }
 
         virtual void destroy() override {
+            playing = false;
             destroyAudioStream();
+            update_group();
             Amara::Node::destroy();
         }
 
@@ -319,7 +331,8 @@ namespace Amara {
                 "setAudio", sol::resolve<bool(std::string)>(&Audio::setAudio),
                 "play", &Audio::play,
                 "stop", &Audio::stop,
-                "restart", &Audio::restart
+                "restart", &Audio::restart,
+                "temporary", &Audio::temporary
             );
         }
     };

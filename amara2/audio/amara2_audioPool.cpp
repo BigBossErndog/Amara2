@@ -47,8 +47,8 @@ namespace Amara {
             return Amara::Audio::configure(config);
         }
 
-        virtual void play() override {
-            play_from_pool();
+        virtual sol::object play() override {
+            return play_from_pool();
         }
 
         sol::object play_from_pool() {

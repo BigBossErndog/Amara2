@@ -8,12 +8,13 @@ namespace Amara {
             is_audio_group = true;
         }
 
-        virtual void play() override {
+        virtual sol::object play() override {
             if (currentlyPlaying) {
-                currentlyPlaying->play();
+                return currentlyPlaying->play();
             }
+            return sol::nil;
         }
-        void play(std::string gid) {
+        sol::object play(std::string gid) {
             paused = false;
             Amara::Node* node = getChild(gid);
             if (node) {
@@ -21,11 +22,34 @@ namespace Amara {
                 if (audio) {
                     audio->play();
                     playing = true;
-                    return;
+                    return audio->get_lua_object();
+                }
+            }
+            
+            if (gameProps->assets->has(gid)) {
+                Amara::AudioAsset* asset = gameProps->assets->get(gid)->as<Amara::AudioAsset*>();
+                if (asset) {
+                    Amara::Audio* audio = createChild("Audio")->as<Amara::Audio*>();
+                    audio->temporary = true;
+                    audio->setAudio(gid);
+                    audio->play();
+                    playing = true;
+                    return audio->get_lua_object();
                 }
             }
             fatal_error("Error: Audio child \"", gid, "\" of group \"", id, "\" not found.");
+            return sol::nil;
         }
+        
+        sol::object play(sol::table config) {
+            Amara::Audio* audio = createChild("Audio")->as<Amara::Audio*>();
+            audio->temporary = true;
+            audio->luaConfigure(config);
+            audio->play();
+            playing = true;
+            return audio->get_lua_object();
+        }
+        
         void playAll() {
             paused = false;
             for (Amara::Node* child : children) {
@@ -120,8 +144,9 @@ namespace Amara {
             lua.new_usertype<AudioGroup>("AudioGroup", 
                 sol::base_classes, sol::bases<Amara::Audio, Amara::Node>(),
                 "play", sol::overload(
-                    sol::resolve<void()>(&AudioGroup::play),
-                    sol::resolve<void(std::string)>(&AudioGroup::play)
+                    sol::resolve<sol::object()>(&AudioGroup::play),
+                    sol::resolve<sol::object(std::string)>(&AudioGroup::play),
+                    sol::resolve<sol::object(sol::table)>(&AudioGroup::play)
                 ),
                 "isPlaying", &AudioGroup::isPlaying,
                 "pause", sol::overload(
@@ -152,8 +177,13 @@ namespace Amara {
         if (parent && parent->is_audio_group) {
             Amara::AudioGroup* group = parent->as<Amara::AudioGroup*>();
             if (group) {
-                if (playing) group->currentlyPlaying = this;
-                else if (group->currentlyPlaying == this) group->currentlyPlaying = nullptr;
+                if (playing) {
+                    group->playing = true;
+                    group->currentlyPlaying = this;
+                }
+                else if (group->currentlyPlaying == this) {
+                    group->currentlyPlaying = nullptr;
+                }
             }
         }
     }
