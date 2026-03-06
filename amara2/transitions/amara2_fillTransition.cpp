@@ -143,7 +143,9 @@ namespace Amara {
             lua.new_usertype<FillTransition>("FillTransition",
                 sol::base_classes, sol::bases<Amara::Transition, Amara::Node>(),
                 "color", sol::property([](Amara::FillTransition& t) -> Amara::Color { return t.tint; }, [](Amara::FillTransition& t, sol::object c) { t.tint = c; }),
-                "tint", sol::property([](Amara::FillTransition& t) -> Amara::Color { return t.tint; }, [](Amara::FillTransition& t, sol::object c) { t.tint = c; })
+                "tint", sol::property([](Amara::FillTransition& t) -> Amara::Color { return t.tint; }, [](Amara::FillTransition& t, sol::object c) { t.tint = c; }),
+                "fadeIn", &Amara::FillTransition::fadeIn,
+                "fadeOut", &Amara::FillTransition::fadeOut
             );
         }
     };

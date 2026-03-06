@@ -34,25 +34,33 @@ namespace Amara {
             if (json_has(config, "next")) {
                 if (config["next"].is_string()) {
                     next_key = json_extract(config, "next");
+                    next_config = sol::make_object(gameProps->lua, sol::nil);
                 }
             }
             return Amara::Action::configure(config);
         }
         virtual sol::object luaConfigure(std::string key, sol::object val) override {
             if (String::equal(key, "next")) {
-                if (val.is<sol::table>()) {
+                if (val.is<Amara::Node>()) {
+                    next_node = val.as<Amara::Node*>();
+                    next_key.clear();
+                }
+                else if (val.is<sol::table>()) {
                     sol::table t = val.as<sol::table>();
                     if (t["node"].valid()) {
                         sol::object node = t["node"];
                         if (node.is<std::string>()) {
                             next_key = node.as<std::string>();
+                            next_node = nullptr;
+                            t["node"] = sol::nil;
+                        }
+                        else if (node.is<Amara::Node>()) {
+                            next_node = node.as<Amara::Node*>();
+                            next_key.clear();
                             t["node"] = sol::nil;
                         }
                     }
                     next_config = t;
-                }
-                else if (val.is<Amara::Node>()) {
-                    next_node = val.as<Amara::Node*>();
                 }
             }
             return Amara::Action::luaConfigure(key, val);
@@ -63,17 +71,27 @@ namespace Amara {
         virtual void doTransition() {
             Amara::Node* prev_parent = parent;
             
-            if (funcs.hasFunction("onTransition")) {
-                funcs.callFunction(actor, "onTransition", get_lua_object());
-            }
-            
             if (!next_key.empty()) {
-                if (parent && parent->parent) {
-                    sol::object lua_node = parent->parent->luaCreateChild(next_key, next_config);
-                    if (lua_node.is<Amara::Node>()) {
-                        next_node = lua_node.as<Amara::Node*>();
-                        next_node->deactivate();
+                if (!next_node) {
+                    if (parent && parent->parent) {
+                        sol::object lua_node = parent->parent->luaCreateChild(next_key, next_config);
+                        if (lua_node.is<Amara::Node>()) {
+                            next_node = lua_node.as<Amara::Node*>();
+                            next_node->deactivate();
+                        }
                     }
+                }
+                else {
+                    next_key.clear();
+                }
+            }
+                
+            if (funcs.hasFunction("onTransition")) {
+                if (next_node) {
+                    funcs.callFunction(actor, "onTransition", get_lua_object(), next_node->get_lua_object());
+                }
+                else {
+                    funcs.callFunction(actor, "onTransition", get_lua_object());
                 }
             }
 
@@ -123,7 +141,34 @@ namespace Amara {
                     return self.transitionFinished();
                 }),
                 "interim", &Amara::Transition::interim,
-                "complete", &Amara::Transition::complete
+                "complete", &Amara::Transition::complete,
+                "next", sol::property(
+                    [](Amara::Transition& t) -> sol::object {
+                        if (t.next_node) {
+                            return t.next_node->get_lua_object();
+                        }
+                        else if (!t.next_key.empty()) {
+                            return sol::make_object(t.gameProps->lua, t.next_key);
+                        }
+                        return sol::nil;
+                    },
+                    [](Amara::Transition& tr, sol::object val) {
+                        if (val.is<Amara::Node>()) {
+                            tr.next_node = val.as<Amara::Node*>();
+                        }
+                        else if (val.is<sol::table>()) {
+                            sol::table t = val.as<sol::table>();
+                            if (t["node"].valid()) {
+                                sol::object node = t["node"];
+                                if (node.is<std::string>()) {
+                                    tr.next_key = node.as<std::string>();
+                                    t["node"] = sol::nil;
+                                }
+                            }
+                            tr.next_config = t;
+                        }
+                    }
+                )
             );
 
             sol::usertype<Amara::Node> node_type = lua["Node"];

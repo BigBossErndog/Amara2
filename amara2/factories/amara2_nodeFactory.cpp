@@ -177,7 +177,7 @@ namespace Amara {
                 }
             }
             
-            fatal_error("Error: Node with key \"", key, "\" was not found.");
+            fatal_error("Error: NodeID \"", key, "\" was not found.");
             gameProps->breakWorld();
             return nullptr;
         }
