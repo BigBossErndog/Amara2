@@ -460,7 +460,8 @@ namespace Amara {
                     }
                     case ScreenModeEnum::BorderlessFullscreen: {
                         SDL_SetWindowBordered(window, false);
-                        SDL_SetWindowFullscreen(window, true);
+                        SDL_SetWindowFullscreen(window, false);
+                        fitToDisplay();
                         break;
                     }
                     default:

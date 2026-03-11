@@ -115,7 +115,8 @@ namespace Amara {
             "Windowed", Amara::ScreenModeEnum::Windowed,
             "BorderlessWindowed", Amara::ScreenModeEnum::BorderlessWindowed,
             "Fullscreen", Amara::ScreenModeEnum::Fullscreen,
-            "BorderlessFullscreen", Amara::ScreenModeEnum::BorderlessFullscreen
+            "BorderlessFullscreen", Amara::ScreenModeEnum::BorderlessFullscreen,
+            "WindowedFullscreen", Amara::ScreenModeEnum::BorderlessFullscreen
         );
 
         lua.new_enum("BlendMode",

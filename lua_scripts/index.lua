@@ -47,7 +47,7 @@ Creator:createWorld({
         alwaysOnTop = true,
         vsync = true,
         graphics = Graphics.Render2D,
-        screenMode = ScreenMode.BorderlessFullscreen,
+        screenMode = ScreenMode.Fullscreen,
     },
     
     onPreload = function(world)
