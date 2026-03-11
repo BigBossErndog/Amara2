@@ -117,7 +117,7 @@ namespace Amara {
                 displayID = SDL_GetDisplayForWindow(window);
                 if (displayID != rec_displayID) {
                     SDL_Rect displayBounds;
-                    if (SDL_GetDisplayUsableBounds(displayID, &displayBounds)) {
+                    if (SDL_GetDisplayBounds(displayID, &displayBounds)) {
                         display = Rectangle(
                             static_cast<float>(displayBounds.x), 
                             static_cast<float>(displayBounds.y),
