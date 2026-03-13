@@ -129,13 +129,13 @@ namespace Amara {
         return true;
     }
     
-    std::string lua_to_string(sol::object obj, bool printing, const std::string& indent, const std::string& current_string) {
+    std::string lua_to_string(sol::object obj, bool within_table, const std::string& indent, const std::string& current_string) {
         if (obj.is<sol::lua_nil_t>()) return "nil";
         if (obj.is<bool>()) {
             return obj.as<bool>() ? "true" : "false";
         }
         if (obj.is<std::string>()) {
-            if (printing) {
+            if (within_table) {
                 return "\"" + obj.as<std::string>() + "\"";
             }
             else {
@@ -170,7 +170,7 @@ namespace Amara {
                 
                 std::string result = std::string("{");
                 for (auto& item : tbl) {
-                    std::string item_str = lua_to_string(item.second, printing, indent + std::string("  "), String::last_line(result));
+                    std::string item_str = lua_to_string(item.second, true, indent + std::string("  "), String::last_line(result));
                     items.push_back(item_str);
                     width += String::longest_string(item_str) + 2;
                 }
@@ -201,7 +201,7 @@ namespace Amara {
                 std::string result = "{";
                 for (auto& item : tbl) {
                     std::string item_str = item.first.as<std::string>() + std::string(" = ");
-                    item_str += lua_to_string(item.second, printing, indent + std::string("  "), String::last_line(result + item_str));
+                    item_str += lua_to_string(item.second, true, indent + std::string("  "), String::last_line(result + item_str));
                     items.push_back(item_str);
                     width += String::longest_string(item_str) + 2;
                 }
@@ -256,10 +256,10 @@ namespace Amara {
         return lua_table;
     }
 
-    std::string lua_string_concat(sol::variadic_args args, bool printing) {
+    std::string lua_string_concat(sol::variadic_args args, bool within_table) {
         std::ostringstream ss;
         for (auto arg : args) {
-            ss << lua_to_string(arg, printing, "", "");
+            ss << lua_to_string(arg, within_table, "", "");
         }
         return ss.str();
     }
@@ -267,12 +267,12 @@ namespace Amara {
         return lua_string_concat(args, false);
     }
     
-    std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args, bool printing) {
+    std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args, bool within_table) {
         std::ostringstream ss;
         bool first = true;
         
         for (auto arg : args) {
-            ss << (first ? "" : separator) << lua_to_string(arg, printing, "", "");
+            ss << (first ? "" : separator) << lua_to_string(arg, within_table, "", "");
             first = false;
         }
     
@@ -346,7 +346,7 @@ namespace Amara {
     void lua_debug_log(sol::variadic_args args) {
         std::ostringstream ss;
         for (auto arg : args) {
-            ss << lua_to_string(arg, true, "", "");
+            ss << lua_to_string(arg, false, "", "");
         }
         debug_log(ss.str());
     }
