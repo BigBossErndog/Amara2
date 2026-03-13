@@ -438,7 +438,7 @@ namespace Amara {
 
         lua["lua_print"] = lua["print"];
         lua.set_function("print", [](sol::variadic_args args) {
-            debug_log(lua_string_sep_concat(" ", args, true));
+            debug_log(lua_string_sep_concat(" ", args));
         });
 
         lua.set_function("object_to_string", sol::resolve<std::string(sol::object)>(&Amara::lua_to_string));
