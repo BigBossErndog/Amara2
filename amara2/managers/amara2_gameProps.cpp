@@ -128,7 +128,7 @@ namespace Amara {
 
         bool glFunctionsLoaded = false;
 
-        #if AMARA_OPENGL
+        #ifdef AMARA_OPENGL
         ShaderProgram* currentShaderProgram = nullptr;
         ShaderProgram* defaultShaderProgram = nullptr;
         #endif

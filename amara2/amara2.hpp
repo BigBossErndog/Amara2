@@ -101,9 +101,7 @@
     #endif
 
     #define LUA_IMPLEMENTATION
-    #ifdef AMARA_ENGINE_TOOLS
-        #define SOL_ALL_SAFETIES_ON 1
-    #endif
+    #define SOL_ALL_SAFETIES_ON 1
         
     #include <lua_single.h>
     #include <sol/sol.hpp>

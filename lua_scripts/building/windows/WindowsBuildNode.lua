@@ -52,7 +52,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local sdl3Path = System:join(buildModule, "resources/libs/SDL3-3.2.16")
 
         local nlohmannPath = System:join(buildModule, "resources/libs/json/include")
-        local murmurhash3Path = System:join(buildModule, "resources/libs/murmurhash3")
         local luaPath = System:join(buildModule, "resources/libs/lua")
         local sol2Path = System:join(buildModule, "resources/libs/sol2")
         local stbPath = System:join(buildModule, "resources/libs/stb")
@@ -70,7 +69,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             System:join(buildModule, "resources/dlls/win64"),
             buildDir
         )
-
+        
         if not config.iconPath then
             local defaultIcon = System:getRelativePath("assets/icons/icon.png")
             if System:exists(defaultIcon) then
@@ -85,7 +84,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.get.resOutputFile = System:join(buildDir, "icon.res")
         end
 
-        local compilerPath = fix_path(System:join(clangLLVMPath, "bin/clang.exe"))
+        local compilerPath = fix_path(System:join(clangLLVMPath, "bin/clang++.exe"))
         
         -- table.insert(args, compilerPath)
         table.insert(args, fix_path(System:getRelativePath("amara2/main/main.cpp")))
@@ -103,7 +102,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         -- OTHER_LIB_PATHS
         table.insert(args, "-Isrc")
         table.insert(args, "-I" .. fix_path(nlohmannPath))
-        table.insert(args, "-I" .. fix_path(murmurhash3Path))
         table.insert(args, "-I" .. fix_path(luaPath))
         table.insert(args, "-I" .. fix_path(sol2Path))
         table.insert(args, "-I" .. fix_path(stbPath))
@@ -111,7 +109,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-I" .. fix_path(tinyxml2Path))
         table.insert(args, "-I" .. fix_path(minimp3Path))
         table.insert(args, "-I" .. fix_path(pfdPath))
-        table.insert(args, "-I" .. fix_path(tinyxml2Path))
 
         -- SDL_PATHS_WIN64
         table.insert(args, "-I" .. fix_path(System:join(sdl3Path, "include")))
@@ -137,6 +134,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             table.insert(args, "-DAMARA_PLUGINS")
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
+        -- Add flags from Makefile's EXTRA_OPTIONS
+        -- table.insert(args, "-DAMARA_DEBUGGING")
+        -- table.insert(args, "-DAMARA_ENGINE_TOOLS")
 
         if self.get.projectData.encryption then
             table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.get.projectData.encryption["key"]))
