@@ -282,6 +282,11 @@ Nodes:define("TerminalWindow", "UIWindow", {
             item.color = Colors.Red
             self.get.allowTrace = true
             ret = true
+        elseif string.starts_with(msg, "attempt to index a nil value") then
+            item.text = "Error: Attempt to index a nil value."
+            item.color = Colors.Red
+            self.get.allowTrace = true
+            ret = true
         else
             if msg == "Program aborted unexpectedly." then
                 item.color = "#5d00ff"
