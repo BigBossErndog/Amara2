@@ -524,7 +524,7 @@ namespace Amara {
 
     void bind_lua_Vectors(sol::state& lua) {
         lua.new_usertype<Vector2>("Vector2",
-            sol::constructors<Vector2(), Vector2(float, float)>(),
+            sol::constructors<Vector2(), Vector2(float, float), Vector2(sol::object)>(),
             "x", &Vector2::x,
             "y", &Vector2::y,
             sol::meta_function::addition, [](Vector2& v, sol::object val) {
@@ -581,7 +581,7 @@ namespace Amara {
             }
         );
         lua.new_usertype<Vector3>("Vector3",
-            sol::constructors<Vector3(), Vector3(float, float, float), Vector3(const Vector2&, float)>(),
+            sol::constructors<Vector3(), Vector3(float, float, float), Vector3(const Vector2&, float), Vector3(sol::object)>(),
             sol::base_classes, sol::bases<Vector2>(),
             "z", &Vector3::z,
             sol::meta_function::addition, [](const Vector3& v, sol::object val) {
@@ -620,7 +620,7 @@ namespace Amara {
         );
         
         lua.new_usertype<Vector4>("Vector4",
-            sol::constructors<Vector4(), Vector4(float, float, float, float)>(),
+            sol::constructors<Vector4(), Vector4(float, float, float, float), Vector4(sol::object)>(),
             "x", &Vector4::x,
             "y", &Vector4::y,
             "z", &Vector4::z,
