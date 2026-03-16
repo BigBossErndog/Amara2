@@ -17,8 +17,8 @@ namespace Amara {
         std::vector<GLuint> glTextures;
         #endif
         
-        int batch_size = 100;
-
+        int batch_size = 32;
+        
         bool debug = false;
 
         Amara::GameProps* gameProps = nullptr;

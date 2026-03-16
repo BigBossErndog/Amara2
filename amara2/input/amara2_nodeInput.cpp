@@ -23,6 +23,8 @@ namespace Amara {
         InputDef lastInteraction;
         
         Amara::Button state;
+        
+        bool activeClickZone = true;
 
         NodeInput() = default;
 
@@ -46,6 +48,9 @@ namespace Amara {
                 if (json_has(config, "cursor")) {
                     cursor = config["cursor"];
                 }
+                if (json_has(config, "activeClickZone")) {
+                    activeClickZone = config["activeClickZone"];
+                }
             }
         }
         void configure(sol::object config) {
@@ -66,6 +71,8 @@ namespace Amara {
         }
 
         void queueInput(Amara::Shape _shape, Rectangle _viewport, nlohmann::json _data) {
+            if (!activeClickZone) return;
+            
             gameProps->inputManager->queueInput({
                 this,
                 _shape.scale(gameProps->passOn.input_scale),
@@ -158,7 +165,8 @@ namespace Amara {
                     return n.gameProps->inputManager->generalPointer;
                 }),
                 "state", &Amara::NodeInput::state,
-                "configure", sol::resolve<void(sol::object)>(&NodeInput::configure)
+                "configure", sol::resolve<void(sol::object)>(&NodeInput::configure),
+                "activeClickZone", &NodeInput::activeClickZone
             );
         }
     };

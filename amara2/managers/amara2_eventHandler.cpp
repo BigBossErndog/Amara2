@@ -33,6 +33,13 @@ namespace Amara {
                 SDL_SetCursor(gameProps->cursor_default);
             }
         }
+        
+        void changeControlMode(Amara::InputMode mode) {
+            if (gameProps->controlMode != mode) {
+                gameProps->controlMode = mode;
+                gameProps->messages->send("onControlModeChange", sol::make_object(gameProps->lua, mode));
+            }
+        }
 
         void handleEvents(
             std::vector<Amara::World*>& worlds,
@@ -122,7 +129,7 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_MOUSE_MOTION: {
-                        gameProps->controlMode = InputMode::Mouse;
+                        changeControlMode(InputMode::Mouse);
 
                         for (auto w: worlds) {
                             if (e.motion.which == SDL_TOUCH_MOUSEID) {
@@ -135,7 +142,7 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
-                        gameProps->controlMode = InputMode::Mouse;
+                        changeControlMode(InputMode::Mouse);
 
                         for (auto w: worlds) {
                             if (e.button.which == SDL_TOUCH_MOUSEID) {
@@ -165,7 +172,7 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_MOUSE_BUTTON_UP: {
-                        gameProps->controlMode = InputMode::Mouse;
+                        changeControlMode(InputMode::Mouse);
 
                         for (auto w: worlds) {
                             if (e.button.which == SDL_TOUCH_MOUSEID) {
@@ -190,7 +197,7 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_MOUSE_WHEEL: {
-                        gameProps->controlMode = InputMode::Mouse;
+                        changeControlMode(InputMode::Mouse);
 
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.wheel.windowID) {
@@ -199,7 +206,7 @@ namespace Amara {
                         }
                     }
                     case SDL_EVENT_FINGER_DOWN: {
-                        gameProps->controlMode = InputMode::Touch;
+                        changeControlMode(InputMode::Touch);
 
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.tfinger.windowID) {
@@ -209,7 +216,7 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_FINGER_UP: {
-                        gameProps->controlMode = InputMode::Touch;
+                        changeControlMode(InputMode::Touch);
 
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.tfinger.windowID) {
@@ -219,7 +226,7 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_FINGER_MOTION: {
-                        gameProps->controlMode = InputMode::Touch;
+                        changeControlMode(InputMode::Touch);
 
                         for (auto w: worlds) {
                             if (w->window != nullptr && w->windowID == e.tfinger.windowID) {
@@ -229,7 +236,7 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_KEY_DOWN:
-                        gameProps->controlMode = InputMode::Keyboard;
+                        changeControlMode(InputMode::Keyboard);
 
                         keyboard.press(e.key.key);
                         game.gameProps->messages->send(nullptr, "keyboarddown", sol::make_object(game.gameProps->lua, e.key.key));
@@ -243,13 +250,13 @@ namespace Amara {
                         }
                         break;
                     case SDL_EVENT_KEY_UP:
-                        gameProps->controlMode = InputMode::Keyboard;
+                        changeControlMode(InputMode::Keyboard);
 
                         keyboard.release(e.key.key);
                         game.gameProps->messages->send(nullptr, "keyboardup", sol::make_object(game.gameProps->lua, e.key.key));
                         break;
                     case SDL_EVENT_GAMEPAD_ADDED: {
-                        gameProps->controlMode = InputMode::Gamepad;
+                        changeControlMode(InputMode::Gamepad);
 
                         Amara::Gamepad* gamepad = gamepads.connectGamepad(e.gdevice.which);
                         if (gamepad) {
@@ -265,14 +272,14 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_GAMEPAD_BUTTON_DOWN: {
-                        gameProps->controlMode = InputMode::Gamepad;
+                        changeControlMode(InputMode::Gamepad);
 
                         Amara::Gamepad* gamepad = gamepads.getGamepadByID(e.gbutton.which);
                         if (gamepad) gamepad->activateSDLButton((SDL_GamepadButton)e.gbutton.button, true);
                         break;
                     }
                     case SDL_EVENT_GAMEPAD_BUTTON_UP: {
-                        gameProps->controlMode = InputMode::Gamepad;
+                        changeControlMode(InputMode::Gamepad);
                         
                         Amara::Gamepad* gamepad = gamepads.getGamepadByID(e.gbutton.which);
                         if (gamepad) gamepad->activateSDLButton((SDL_GamepadButton)e.gbutton.button, false);
