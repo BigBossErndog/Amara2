@@ -184,13 +184,61 @@ namespace Amara {
                         }
                     }
                 ),
-
+                
                 "addButton", &ControlScheme::addButton,
                 "setButton", &ControlScheme::setButton,
                 "addButtons", &ControlScheme::addButtons,
                 "setButtons", &ControlScheme::setButtons,
                 "removeButton", &ControlScheme::removeButton,
                 "clearButtons", &ControlScheme::clearButtons,
+
+                "button", sol::property(
+                    [](ControlScheme& t) -> sol::optional<int> {
+                        if (!t.gamepadButtons.empty()) {
+                            return static_cast<int>(t.gamepadButtons[0]);
+                        }
+                        return sol::nullopt;
+                    },
+                    [](ControlScheme& t, sol::object v) {
+                        t.clearButtons();
+                        if (v.is<int>()) {
+                            t.addButton(static_cast<Amara::GamepadButton>(v.as<int>()));
+                        }
+                        else if (v.is<sol::table>()) {
+                            sol::table buttons = v.as<sol::table>();
+                            for (auto& pair : buttons) {
+                                sol::object obj = pair.second;
+                                if (obj.is<int>()) {
+                                    t.addButton(static_cast<Amara::GamepadButton>(obj.as<int>()));
+                                }
+                            }
+                        }
+                    }
+                ),
+                "buttons", sol::property(
+                    [](ControlScheme& t) -> sol::object {
+                        sol::table buttons = t.gameProps->lua.create_table();
+                        for (Amara::GamepadButton b : t.gamepadButtons) {
+                            buttons.add(static_cast<int>(b));
+                        }
+                        return buttons;
+                    },
+                    [](ControlScheme& t, sol::object v) {
+                        t.clearButtons();
+                        if (v.is<int>()) {
+                            t.addButton(static_cast<Amara::GamepadButton>(v.as<int>()));
+                        }
+                        else if (v.is<sol::table>()) {
+                            sol::table buttons = v.as<sol::table>();
+                            for (auto& pair : buttons) {
+                                sol::object obj = pair.second;
+                                if (obj.is<int>()) {
+                                    t.addButton(static_cast<Amara::GamepadButton>(obj.as<int>()));
+                                }
+                            }
+                        }
+                    }
+                ),
 
                 "clearAll", &ControlScheme::clearAll,
 

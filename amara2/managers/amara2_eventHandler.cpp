@@ -239,13 +239,13 @@ namespace Amara {
                         changeControlMode(InputMode::Keyboard);
 
                         keyboard.press(e.key.key);
-                        game.gameProps->messages->send(nullptr, "keyboarddown", sol::make_object(game.gameProps->lua, e.key.key));
+                        game.gameProps->messages->send(nullptr, "onKeyDown", sol::make_object(game.gameProps->lua, e.key.key));
                         
                         if(e.key.key == SDLK_V && SDL_GetModState() & SDL_KMOD_CTRL) {
                             char* tempText{ SDL_GetClipboardText() };
                             gameProps->text_input = tempText;
                             SDL_free( tempText );
-
+                            
                             gameProps->text_input_type = TextInputEnum::Text;
                         }
                         break;
@@ -253,7 +253,7 @@ namespace Amara {
                         changeControlMode(InputMode::Keyboard);
 
                         keyboard.release(e.key.key);
-                        game.gameProps->messages->send(nullptr, "keyboardup", sol::make_object(game.gameProps->lua, e.key.key));
+                        game.gameProps->messages->send(nullptr, "onKeyUp", sol::make_object(game.gameProps->lua, e.key.key));
                         break;
                     case SDL_EVENT_GAMEPAD_ADDED: {
                         changeControlMode(InputMode::Gamepad);
