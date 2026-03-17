@@ -1250,7 +1250,7 @@ namespace Amara {
     }
 
     void Amara::AssetManager::createTexture(std::string key, sol::table luaconfig) {
-        int w = 128, h = 12;
+        int w = 128, h = 128;
         
         nlohmann::json config = lua_to_json(luaconfig);
         if (json_has(config, "width")) w = config["width"];
