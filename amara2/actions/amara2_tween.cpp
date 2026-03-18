@@ -5,7 +5,7 @@ namespace Amara {
         nlohmann::json target_data = nullptr;
 
         sol::table lua_actor_table;
-
+        
         float tween_duration = 0;
         double progress = 0;
 

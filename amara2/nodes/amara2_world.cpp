@@ -1,6 +1,11 @@
 namespace Amara {
     class Demiurge;
     
+    enum class WindowActionEnum {
+        FitToDisplay = 1,
+        SetWindowSize = 2
+    };
+    
     class World: public Node {
     public:
         Amara::Demiurge* demiurge = nullptr;
@@ -23,6 +28,10 @@ namespace Amara {
         float windowW = 640;
         float windowH = 360;
         Rectangle window_dim = { pos.x, pos.y, windowW, windowH };
+        
+        std::vector<Amara::WindowActionEnum> window_actions;
+        float resize_window_w = -1;
+        float resize_window_h = -1;
 
         bool windowMoved = false;
         bool windowResized = false;
@@ -61,6 +70,7 @@ namespace Amara {
         bool resizable = 0;
         bool transparent = false;
         bool alwaysOnTop = false;
+        bool hiddenOnStart = false;
 
         bool clickThrough = false;
         bool clickThroughState = false;
@@ -354,6 +364,9 @@ namespace Amara {
             if (json_has(config, "alwaysOnTop")) {
                 setAlwaysOnTop(config["alwaysOnTop"]);
             }
+            if (json_has(config, "hiddenOnStart")) {
+                hiddenOnStart = config["hiddenOnStart"];
+            }
             if (json_has(config, "clickThrough")) {
                 setClickThrough(config["clickThrough"]);
             }
@@ -443,11 +456,17 @@ namespace Amara {
                     case ScreenModeEnum::Windowed: {
                         SDL_SetWindowFullscreen(window, false);
                         SDL_SetWindowBordered(window, true);
+                        resize_window_w = windowW;
+                        resize_window_h = windowH;
+                        window_actions.push_back(Amara::WindowActionEnum::SetWindowSize);
                         break;
                     }
                     case ScreenModeEnum::BorderlessWindowed: {
                         SDL_SetWindowFullscreen(window, false);
                         SDL_SetWindowBordered(window, false);
+                        resize_window_w = windowW;
+                        resize_window_h = windowH;
+                        window_actions.push_back(Amara::WindowActionEnum::SetWindowSize);
                         break;
                     }
                     case ScreenModeEnum::Fullscreen: {
@@ -462,6 +481,7 @@ namespace Amara {
                         SDL_SetWindowBordered(window, false);
                         SDL_SetWindowFullscreen(window, false);
                         fitToDisplay();
+                        window_actions.push_back(Amara::WindowActionEnum::FitToDisplay);
                         break;
                     }
                     default:
@@ -919,7 +939,7 @@ namespace Amara {
                     setClickThrough(true);
                 }
                 setAlwaysOnTop(alwaysOnTop);
-
+                
                 if (vsync != 0) setVsync(vsync);
 
                 assets.init(gameProps);
@@ -929,9 +949,14 @@ namespace Amara {
                 if (gameProps->targetDisplayID > 0) {
                     goToDisplay(gameProps->targetDisplayID);
                 }
-
-                showWindow();
-                restoreWindow();
+                
+                if (hiddenOnStart) {
+                    hideWindow();
+                }
+                else {
+                    showWindow();
+                    restoreWindow();
+                }
             }
             else if (graphics == GraphicsEnum::None && gameProps->current_window != nullptr) {
                 pos.x = (gameProps->master_viewport.w - windowW) / 2.0f;
@@ -1007,6 +1032,21 @@ namespace Amara {
         }
 
         virtual void run(double deltaTime) override {
+            if (window_actions.size() > 0) {
+                for (Amara::WindowActionEnum val: window_actions) {
+                    switch (val) {
+                        case Amara::WindowActionEnum::FitToDisplay:
+                            fitToDisplay();
+                            break;
+                        case Amara::WindowActionEnum::SetWindowSize:
+                            resizeWindow(resize_window_w, resize_window_h);
+                            centerWindow();
+                            break;
+                    }
+                }
+                window_actions.clear();
+            }
+            
             basePassOnProps();
             checkClickThrough();
 

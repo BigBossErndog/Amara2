@@ -160,6 +160,7 @@ namespace Amara {
                     debug_log(*this, ": return state \"", currentState, "\".");
                 }
             }
+            skipEvent = true;
         }
 
         bool returnStateEvent() {
@@ -172,6 +173,9 @@ namespace Amara {
         
         void restartState() {
             currentEvent = 1;
+            holdCount = 0;
+            jumpFlag.clear();
+            skipEvent = true;
             if (debug) {
                 debug_log(*this, ": restart state \"", currentState, "\".");
             }
@@ -192,7 +196,7 @@ namespace Amara {
                     skipEvent = false;
                     return false;
                 }
-
+                
                 return true;
             }
             return false;
@@ -236,10 +240,10 @@ namespace Amara {
                     waitCounter = 0;
                     nextEvent();
                 }
-
+                
                 ret = true;
             }
-
+            
             return ret;
         }
         bool wait(float time) {
@@ -425,6 +429,7 @@ namespace Amara {
                     
                     return sm.hold(repeats);
                 },
+                "holdCount", sol::readonly(&Amara::StateMachine::holdCount),
                 "release", sol::overload(
                     sol::resolve<void()>(&StateMachine::release),
                     sol::resolve<void(int)>(&StateMachine::release)
