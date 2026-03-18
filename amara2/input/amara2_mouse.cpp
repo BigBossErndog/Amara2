@@ -51,9 +51,15 @@ namespace Amara {
                 "moved", sol::readonly(&Mouse::moved),
                 "show", &Mouse::show,
                 "hide", &Mouse::hide,
-                "visible", sol::property([](Amara::Mouse& m) {
-                    return SDL_CursorVisible();
-                }),
+                "visible", sol::property(
+                    [](Amara::Mouse& m) {
+                        return SDL_CursorVisible();
+                    },
+                    [](Amara::Mouse& m, bool visible) {
+                        if (visible) m.show();
+                        else m.hide();
+                    }
+                ),
                 "lock", &Mouse::lock,
                 "unlock", &Mouse::unlock,
                 "locked", sol::property([](Amara::Mouse& m) {
