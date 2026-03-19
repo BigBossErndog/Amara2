@@ -684,6 +684,16 @@ namespace Amara {
             if (child) return child->get_lua_object();
             return sol::nil;
         }
+        sol::object luaGetChildren() {
+            if (children.size() > 0) {
+                sol::table result = gameProps->lua.create_table();
+                for (int i = 0; i < children.size(); i++) {
+                    result[i + 1] = children[i]->get_lua_object();
+                }
+                return result;
+            }
+            return sol::nil;
+        }
 
         bool isProp(std::string key) {
             sol::object p = props[key];
@@ -729,14 +739,17 @@ namespace Amara {
             gameProps->queue_garbage(this);
         }
         void destroyChildren() {
-            Amara::Node* child;
-            for (auto it = children.begin(); it != children.end();) {
-                child = *it;
-                if (child && child->parent == this && !child->destroyed) {
-                    child->destroy();
-                }
-				++it;
-			}
+            if (children.size() > 0) {
+                Amara::Node* child;
+                for (auto it = children.begin(); it != children.end();) {
+                    child = *it;
+                    if (child && child->parent == this && !child->destroyed) {
+                        child->destroy();
+                    }
+    				++it;
+    			}
+                children.clear();
+            }
         }
 
         sol::object bringToFront() {
@@ -1076,111 +1089,8 @@ namespace Amara {
                 "input", sol::readonly(&Node::input)
             );
 
-            lua.new_usertype<std::vector<Amara::Node*>>("NodeVector",
-                "size", &std::vector<Amara::Node*>::size,
-                sol::meta_function::length, &std::vector<Amara::Node*>::size,
-                sol::meta_function::index, [](std::vector<Amara::Node*>& vec, sol::object getter) -> sol::object {
-                    if (getter.is<size_t>()) {
-                        size_t index = getter.as<size_t>();
-                        if (index > 0 && index <= vec.size()) {
-                            return vec[index-1]->get_lua_object();
-                        }
-                    }
-                    else if (getter.is<std::string>()) {
-                        std::string gid = getter.as<std::string>();
-                        std::string findKey;
-                        std::string nextKey;
-                        bool forwardSlash = false;
-
-                        for (char c: gid) {
-                            if (forwardSlash) {
-                                nextKey += c;
-                            }
-                            else if (c == '/') {
-                                forwardSlash = true;
-                            }
-                            else findKey += c;
-                        }
-
-                        if (String::equal(findKey, ".")) {
-                            if (forwardSlash && !nextKey.empty()) {
-                                std::string new_gid = nextKey;
-                                findKey.clear();
-                                nextKey.clear();
-                                forwardSlash = false;
-
-                                for (char c: new_gid) {
-                                    if (forwardSlash) {
-                                        nextKey += c;
-                                    }
-                                    else if (c == '/') {
-                                        forwardSlash = true;
-                                    }
-                                    else findKey += c;
-                                }
-                            }
-                        }
-
-                        Amara::Node* found = nullptr;
-                        for (Amara::Node* node: vec) {
-                            if (node->destroyed) continue;
-                            if (String::equal(node->id, findKey)) {
-                                found = node;
-                            }
-                        }
-                        if (found != nullptr) {
-                            if (forwardSlash && !nextKey.empty()) {
-                                Amara::Node* child = found->getChild(nextKey);
-                                if (child) return child->get_lua_object();
-                            }
-                            else return found->get_lua_object();
-                        }
-                    }
-                    return sol::nil;
-                }, 
-                "push", [](std::vector<Amara::Node*>& vec, Amara::Node* node) {
-                    vec.push_back(node);
-                },
-                "get", [](std::vector<Amara::Node*>& vec, size_t index) -> sol::object {
-                    if (index > 0 && index <= vec.size()) {
-                        return vec[index-1]->get_lua_object();
-                    }
-                    return sol::nil;
-                },
-                "find", [](std::vector<Amara::Node*>& vec, std::string gid) -> sol::object {
-                    for (Amara::Node* node: vec) {
-                        if (node->destroyed) continue;
-                        if (String::equal(node->id, gid)) {
-                            return node->get_lua_object();
-                        }
-                    }
-                    return sol::nil;
-                },
-                "string", [](std::vector<Amara::Node*>& vec) -> std::string {
-                    std::string output;
-                    for (int i = 0; i < vec.size(); i++) {
-                        output += std::string(*vec[i]);
-                        if (i < vec.size()-1) {
-                            output += "\n";
-                        }
-                    }
-                    return output;
-                },
-                sol::meta_function::to_string, [](std::vector<Amara::Node*>& vec) -> std::string {
-                    std::string output = "{";
-                    for (int i = 0; i < vec.size(); i++) {
-                        output += std::string(*vec[i]);
-                        if (i < vec.size()-1) {
-                            output += ", ";
-                        }
-                    }
-                    output += '}';
-                    return output;
-                }
-            );
-
-            node_type["children"] = sol::readonly(&Node::children);
-            node_type["child"] = sol::readonly(&Node::children);
+            node_type["children"] = sol::property(&Node::luaGetChildren);
+            node_type["child"] = sol::property(&Node::luaGetChildren);
         }
     };
 

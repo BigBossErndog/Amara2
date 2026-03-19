@@ -10,6 +10,9 @@ namespace Amara {
         double lifeTime = 0;
 
         std::string platform;
+        bool desktop = false;
+        bool mobile = false;
+        bool console = false;
 
         std::vector<nlohmann::json> arguments;
         nlohmann::json argmap = nlohmann::json::object();
@@ -28,15 +31,20 @@ namespace Amara {
                 platform = "web";
             #elif defined(_WIN32)
                 platform = "windows";
+                desktop = true;
             #elif defined(__linux__)
                 platform = "linux";
+                desktop = true;
             #elif defined(__ANDROID__)
                 platform = "android";
+                desktop = true;
             #elif defined(__APPLE__)
                 #if TARGET_OS_IPHONE
                     platform = "iOS";
+                    mobile = true;
                 #else
                     platform = "macOS";
+                    desktop = true;
                 #endif
             #else
                 platform = "unknown";
@@ -103,6 +111,8 @@ namespace Amara {
                 "uncapFPS", &GameManager::uncapFPS,
                 "deltaTime", sol::readonly(&GameManager::deltaTime),
                 "platform", sol::readonly(&GameManager::platform),
+                "desktop", sol::readonly(&GameManager::desktop),
+                "mobile", sol::readonly(&GameManager::mobile),
                 "get_lua_stack_size", &GameManager::get_lua_stack_size,
                 "executable", sol::readonly(&GameManager::executable),
                 "arguments", sol::property([](const GameManager& g) -> sol::object {

@@ -8,7 +8,7 @@ namespace Amara {
         DirectX_Legacy,
         VulkanMetalDirectX
     };
-
+    
     enum class ScreenModeEnum {
         Invalid = 1,
         Windowed = 2,
