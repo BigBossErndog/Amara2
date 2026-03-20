@@ -58,4 +58,15 @@ namespace Amara {
     nlohmann::json string_to_json(const std::string& input) {
         return string_to_json(input, true);
     }
+    
+    template <typename T>
+    T json_get(const nlohmann::json& obj, const std::string& key) {
+        try {
+            T prop = obj[key];
+            return prop;
+        }
+        catch (const nlohmann::json::exception& e) {
+            fatal_error(e.what(), ". For property \"", key, "\"");
+        }
+    }
 }

@@ -276,9 +276,10 @@ Nodes:define("TerminalWindow", "UIWindow", {
             self.get.allowTrace = true
             ret = true
         elseif string.starts_with(msg, "[json.exception.type_error.302]") then
-            local details = string.match(msg, '%[json.exception.type_error.302] type(.*)')
+            local details = string.match(msg, '%[json.exception.type_error.302] type must be (.*)')
             details = string.gsub(details, "null", "object")
-            item.text = "Error: Type" .. details
+            details = string.gsub(details, "object", "table")
+            item.text = "Error: Expected " .. details .. "."
             item.color = Colors.Red
             self.get.allowTrace = true
             ret = true

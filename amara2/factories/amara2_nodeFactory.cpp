@@ -141,6 +141,7 @@ namespace Amara {
                 node->gameProps = gameProps;
                 
                 if (node) {
+                    node->nodeID = key;
                     if (!desc.data.is_null()) node->configure(desc.data);
                     if (desc.definition.valid()) {
                         node->luaConfigure(lua_deep_copy(gameProps->lua, desc.definition));
@@ -171,6 +172,7 @@ namespace Amara {
                     Amara::Node* node = create(desc.baseNodeID);
                     node->gameProps = gameProps;
                     if (node) {
+                        node->nodeID = key;
                         node->configure(desc.data);
                         return prepNode(node, key);
                     }

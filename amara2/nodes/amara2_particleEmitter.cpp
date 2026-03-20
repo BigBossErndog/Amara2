@@ -89,6 +89,8 @@ namespace Amara {
         
         sol::table from_table;
         sol::table to_table;
+        
+        Amara::Particle test_particle;
 
         bool updated_this_frame = false;
         
@@ -129,9 +131,11 @@ namespace Amara {
             }
             if (json_has(config, "from")) {
                 start_data = config["from"];
+                test_data(start_data);
             }
             if (json_has(config, "to")) {
                 end_data = config["to"];
+                test_data(end_data);
             }
             if (json_has(config, "lifeTime")) {
                 particle_lifetime = config["lifeTime"];
@@ -195,24 +199,36 @@ namespace Amara {
             updated_this_frame = false;
         }
         
+        void test_data(const nlohmann::json& config) {
+            initParticle(test_particle);
+            for (auto it = config.begin(); it != config.end(); ++it) {
+                setProperty(test_particle, it.key(), convertProperty(test_particle, it.key(), it.value()));
+            }
+        }
+        
         void setProperty(Particle& p, std::string key, const nlohmann::json& data) {
-            if (p.luatable[key].is<int>()) {
-                p.luatable[key] = static_cast<int>(std::floor(data.get<double>()));
+            try {
+                if (p.luatable[key].is<int>()) {
+                    p.luatable[key] = static_cast<int>(std::floor(data.get<double>()));
+                }
+                else if (p.luatable[key].is<double>()) {
+                    p.luatable[key] = (float)data.get<double>();
+                }
+                else if (p.luatable[key].is<Amara::Vector2>()) {
+                    Vector2 val = data; 
+                    p.luatable[key] = val;
+                }
+                else if (p.luatable[key].is<Amara::Rectangle>()) {
+                    Rectangle val = data;
+                    p.luatable[key] = val;
+                }
+                else if (p.luatable[key].is<Amara::Color>()) {
+                    Color val = data;
+                    p.luatable[key] = val;
+                }
             }
-            else if (p.luatable[key].is<double>()) {
-                p.luatable[key] = (float)data.get<double>();
-            }
-            else if (p.luatable[key].is<Amara::Vector2>()) {
-                Vector2 val = data; 
-                p.luatable[key] = val;
-            }
-            else if (p.luatable[key].is<Amara::Rectangle>()) {
-                Rectangle val = data;
-                p.luatable[key] = val;
-            }
-            else if (p.luatable[key].is<Amara::Color>()) {
-                Color val = data;
-                p.luatable[key] = val;
+            catch (const nlohmann::json::exception& e) {
+                fatal_error(e.what(), ". For particle property \"", key, "\"");
             }
         }
         
@@ -309,7 +325,7 @@ namespace Amara {
         void initParticle(Particle& particle, const nlohmann::json& config) {
             particle.lifeTime = 0;
             particle.progress = 0;
-
+            
             particle.pos = Vector2(0);
             particle.frame = frame;
             particle.origin = Vector2(0.5);
@@ -330,17 +346,21 @@ namespace Amara {
                 particle.keep = &particle;
             }
             
-            for (auto it = config.begin(); it != config.end(); ++it) {
-                setProperty(particle, it.key(), convertProperty(particle, it.key(), it.value()));
-            }
-            
-            particle.start_data = nlohmann::json::object();
-            for (auto it = end_data.begin(); it != end_data.end(); ++it) {
-                particle.end_data[it.key()] = convertProperty(particle, it.key(), it.value());
-                particle.start_data[it.key()] = lua_to_json(particle.luatable[it.key()]);
+            if (!config.is_null()) {
+                for (auto it = config.begin(); it != config.end(); ++it) {
+                    setProperty(particle, it.key(), convertProperty(particle, it.key(), it.value()));
+                }
+                
+                particle.start_data = nlohmann::json::object();
+                for (auto it = end_data.begin(); it != end_data.end(); ++it) {
+                    particle.end_data[it.key()] = convertProperty(particle, it.key(), it.value());
+                    particle.start_data[it.key()] = lua_to_json(particle.luatable[it.key()]);
+                }
             }
         }
-        
+        void initParticle(Particle& particle) {
+            initParticle(particle, nullptr);
+        }
         virtual void create() override {
             Amara::Sprite::create();
             resizeParticles();
@@ -360,7 +380,7 @@ namespace Amara {
 
         void burst(double amount, sol::object lua_config) {
             sol::function onSpawn = funcs.getFunction("onParticleSpawn");
-
+            
             nlohmann::json new_config = start_data;
             if (lua_config.is<sol::table>()) {
                 new_config.update(lua_to_json(lua_config));
