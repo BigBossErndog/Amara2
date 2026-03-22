@@ -69,6 +69,7 @@ namespace Amara {
         bool headless = true;
         bool resizable = 0;
         bool transparent = false;
+        bool antialiasing = true;
         bool alwaysOnTop = false;
         bool hiddenOnStart = false;
 
@@ -360,6 +361,9 @@ namespace Amara {
                     transparent = config["transparent"];
                     backgroundColor = Amara::Color::Transparent;
                 }
+            }
+            if (json_has(config, "antialiasing")) {
+                antialiasing = json_get<bool>(config, "antialiasing");
             }
             if (json_has(config, "alwaysOnTop")) {
                 setAlwaysOnTop(config["alwaysOnTop"]);
@@ -850,7 +854,11 @@ namespace Amara {
                         
                         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
                         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-
+                        
+                        if (antialiasing) {
+                            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+                        }
+                        
                         if (create_graphics_window(SDL_WINDOW_OPENGL)) {
                             glContext = SDL_GL_CreateContext(window);
                             renderer_created = true;
@@ -885,6 +893,10 @@ namespace Amara {
 
                                 glEnable(GL_BLEND);
                                 glEnable(GL_TEXTURE_2D);
+                                
+                                if (antialiasing) {
+                                    glEnable(GL_MULTISAMPLE);
+                                }
 
                                 gameProps->renderBatch = &renderBatch;
                                 renderBatch.init();

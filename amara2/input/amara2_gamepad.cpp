@@ -266,6 +266,11 @@ namespace Amara {
 
         void update(double deltaTime) {
             if (gamepad == nullptr) return;
+            
+            for (auto it = buttons.begin(); it != buttons.end(); it++) {
+                Button& button = it->second;
+                button.update(deltaTime);
+            }
 
             leftStick.x = (double)SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX) / (double)SDL_JOYSTICK_AXIS_MAX;
             leftStick.y = (double)SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTY) / (double)SDL_JOYSTICK_AXIS_MAX;
@@ -302,11 +307,6 @@ namespace Amara {
             
             if (rightTrigger > rightTriggerDeadzone) press(Amara::GamepadButton::RightTrigger);
             else release(Amara::GamepadButton::RightTrigger);
-
-            for (auto it = buttons.begin(); it != buttons.end(); it++) {
-                Button& button = it->second;
-                button.update(deltaTime);
-            }
         }
 
         static void bind_lua(sol::state& lua) {

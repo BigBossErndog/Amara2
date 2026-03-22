@@ -184,7 +184,7 @@ namespace Amara {
             for (auto it = children_copy_list.begin(); it != children_copy_list.end();) {
                 if (destroyed) break;
                 update_properties();
-
+                
                 Amara::Node* child = *it;
                 if (!child || child->destroyed || child->parent != this || child->paused) {
                     ++it;

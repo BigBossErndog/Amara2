@@ -4,11 +4,7 @@ namespace Amara {
     class StateMachine;
     class Loader;
     class Transition;
-    class Node;
     
-    template <typename T>
-    T json_get(Amara::Node* node, const nlohmann::json& obj, const std::string& key);
-
     class Node {
     public:
         Amara::GameProps* gameProps = nullptr;
@@ -1106,17 +1102,6 @@ namespace Amara {
     }
     std::string node_to_short_string(sol::object obj) {
         return std::string(obj.as<Amara::Node*>()->shortString());
-    }
-    
-    template <typename T>
-    T json_get(Amara::Node* node, const nlohmann::json& obj, const std::string& key) {
-        try {
-            T prop = obj[key];
-            return prop;
-        }
-        catch (const nlohmann::json::exception& e) {
-            fatal_error(e.what(), ". For property \"", key, "\" in node ", (std::string)(*node));
-        }
     }
     
     struct sort_entities_by_depth {

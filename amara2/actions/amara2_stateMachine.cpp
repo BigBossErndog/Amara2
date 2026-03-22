@@ -302,6 +302,7 @@ namespace Amara {
                     currentEvent = eventLooker;
                     nextEvent();
                     toReturn = true;
+                    holdCount = 0;
                 }
             }
 
