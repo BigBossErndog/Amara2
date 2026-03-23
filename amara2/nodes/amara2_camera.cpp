@@ -57,32 +57,32 @@ namespace Amara {
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Node::configure(config);
             
-            if (json_has(config, "scrollX")) scroll.x = config["scrollX"];
-            if (json_has(config, "scrollY")) scroll.y = config["scrollY"];
-            if (json_has(config, "scroll")) scroll = config["scroll"];
+            if (json_has(config, "scrollX")) scroll.x = json_get<float>(config, "scrollX");
+            if (json_has(config, "scrollY")) scroll.y = json_get<float>(config, "scrollY");
+            if (json_has(config, "scroll")) scroll = json_get<Vector2>(config, "scroll");
 
-            if (json_has(config, "zoomX")) zoom.x = config["zoomX"];
-            if (json_has(config, "zoomY")) zoom.y = config["zoomY"];
-            if (json_has(config, "zoom")) zoom = config["zoom"];
+            if (json_has(config, "zoomX")) zoom.x = json_get<float>(config, "zoomX");
+            if (json_has(config, "zoomY")) zoom.y = json_get<float>(config, "zoomY");
+            if (json_has(config, "zoom")) zoom = json_get<Vector2>(config, "zoom");
 
-            if (json_has(config, "originX")) origin.x = config["originX"];
-            if (json_has(config, "originY")) origin.y = config["originY"];
-            if (json_has(config, "origin")) origin = config["origin"];
+            if (json_has(config, "originX")) origin.x = json_get<float>(config, "originX");
+            if (json_has(config, "originY")) origin.y = json_get<float>(config, "originY");
+            if (json_has(config, "origin")) origin = json_get<Vector2>(config, "origin");
 
-            if (json_has(config, "lerpX")) lerp.x = config["lerpX"];
-            if (json_has(config, "lerpY")) lerp.y = config["lerpY"];
-            if (json_has(config, "lerp")) lerp = config["lerp"];
+            if (json_has(config, "lerpX")) lerp.x = json_get<float>(config, "lerpX");
+            if (json_has(config, "lerpY")) lerp.y = json_get<float>(config, "lerpY");
+            if (json_has(config, "lerp")) lerp = json_get<Vector2>(config, "lerp");
             
-            if (json_has(config, "width")) setWidth(config["width"]);
-            else if (json_has(config, "w")) setWidth(config["w"]);
+            if (json_has(config, "width")) setWidth(json_get<float>(config, "width"));
+            else if (json_has(config, "w")) setWidth(json_get<float>(config, "w"));
             
-            if (json_has(config, "height")) setHeight(config["height"]);
-            else if (json_has(config, "h")) setHeight(config["h"]);
+            if (json_has(config, "height")) setHeight(json_get<float>(config, "height"));
+            else if (json_has(config, "h")) setHeight(json_get<float>(config, "h"));
             
             if (json_has(config, "size")) {
-                setSize(config["size"]);
+                setSize(json_get<Rectangle>(config, "size"));
             }
-            if (json_has(config, "bounds")) setBounds(config["bounds"]);
+            if (json_has(config, "bounds")) setBounds(json_get<Rectangle>(config, "bounds"));
             
             update_bounds();
 

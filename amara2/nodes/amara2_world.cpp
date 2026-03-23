@@ -256,31 +256,31 @@ namespace Amara {
 
             create_window_on_start = !gameProps->integrate_new_windows;
             if (json_has(config, "w")) {
-                windowW = config["w"];
+                windowW = json_get<float>(config, "w");
                 resizeWindow = true;
             }
             if (json_has(config, "h")) {
-                windowH = config["h"];
+                windowH = json_get<float>(config, "h");
                 resizeWindow = true;
             }
             if (json_has(config, "width")) {
-                windowW = config["width"];
+                windowW = json_get<float>(config, "width");
                 resizeWindow = true;
             }
             if (json_has(config, "height")) {
-                windowH = config["height"];
+                windowH = json_get<float>(config, "height");
                 resizeWindow = true;
             }
             if (json_has(config, "virtualWidth")) {
-                virtualWidth = config["virtualWidth"];
+                virtualWidth = json_get<float>(config, "virtualWidth");
             }
             if (json_has(config, "virtualHeight")) {
-                virtualHeight = config["virtualHeight"];
+                virtualHeight = json_get<float>(config, "virtualHeight");
             }
             if (json_has(config, "virtualSize")) {
                 if (config["virtualSize"].is_number()) {
-                    virtualWidth = config["virtualSize"];
-                    virtualHeight = config["virtualSize"];
+                    virtualWidth = json_get<float>(config, "virtualSize");
+                    virtualHeight = json_get<float>(config, "virtualSize");
                 }
                 else if (config["virtualSize"].is_object()) {
                     nlohmann::json size = config["virtualSize"];
