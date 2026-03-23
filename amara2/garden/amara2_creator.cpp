@@ -326,10 +326,16 @@ namespace Amara {
                 main_loop();
             }
             #endif
-
-            destroy();
+            
+            for (Amara::World* world: worlds) {
+                world->destroy();
+            }
             cleanDestroyedWorlds();
-
+            
+            garbageCollector.clearImmediately();
+            
+            destroy();
+            
             garbageCollector.clearImmediately();
 
             SDL_Quit();

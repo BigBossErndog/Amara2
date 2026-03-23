@@ -946,6 +946,10 @@ namespace Amara {
         sol::object getClassFunctions(std::string key) {
             return funcs.getClassTable(key);
         }
+        
+        virtual void memory_clean_up() {
+            props = sol::object(sol::nil);
+        }
 
         virtual ~Node() {}
 

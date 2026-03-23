@@ -421,8 +421,16 @@ namespace Amara {
         }
        
         void centerWindow() {
-            pos.x = display.x + (display.w-windowW)/2;
-            pos.y = display.y + (display.h-windowH)/2;
+            if (screenMode == ScreenModeEnum::Windowed || screenMode == ScreenModeEnum::BorderlessWindowed) {
+                SDL_Rect rect;
+                SDL_GetDisplayUsableBounds(displayID, &rect);
+                pos.x = rect.x + (rect.w-windowW)/2;
+                pos.y = rect.y + (rect.h-windowH)/2;
+            }
+            else {
+                pos.x = display.x + (display.w-windowW)/2;
+                pos.y = display.y + (display.h-windowH)/2;
+            }
         }
 
         void resizeWindow(float _w, float _h) {
@@ -1292,13 +1300,13 @@ namespace Amara {
             renderBatch.destroy();
             
             gameProps->lua["Mouse"] = sol::nil;
-            inputManager.mouse.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+            inputManager.mouse.luaobject = sol::object(sol::nil);
 
             gameProps->lua["Touch"] = sol::nil;
-            inputManager.touch.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+            inputManager.touch.luaobject = sol::object(sol::nil);
 
             gameProps->lua["Assets"] = sol::nil;
-            assets.luaobject = sol::make_object(gameProps->lua, sol::lua_nil);
+            assets.luaobject = sol::object(sol::nil);
             
             #ifdef AMARA_OPENGL
             if (glContext != NULL) {

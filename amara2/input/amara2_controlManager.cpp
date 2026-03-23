@@ -108,12 +108,25 @@ namespace Amara {
 
         void removeScheme(std::string key) {
             if (controls.find(key) != controls.end()) {
+                ControlScheme* scheme = controls[key];
+                scheme->luaobject = sol::object(sol::nil);
+                delete scheme;
                 controls.erase(key);
             }
         }
 
         void clearAllSchemes() {
+            for (const auto& pair: controls) {
+                ControlScheme* scheme = pair.second;
+                scheme->luaobject = sol::object(sol::nil);
+                delete scheme;
+            }
             controls.clear();
+        }
+        
+        void clean_up() {
+            clearAllSchemes();
+            if (props.valid()) props = sol::nil;
         }
 
         bool isDown(std::string key) {
