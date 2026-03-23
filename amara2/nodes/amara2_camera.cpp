@@ -56,7 +56,7 @@ namespace Amara {
 
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Node::configure(config);
-
+            
             if (json_has(config, "scrollX")) scroll.x = config["scrollX"];
             if (json_has(config, "scrollY")) scroll.y = config["scrollY"];
             if (json_has(config, "scroll")) scroll = config["scroll"];

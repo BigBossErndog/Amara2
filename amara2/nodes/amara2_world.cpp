@@ -284,10 +284,10 @@ namespace Amara {
                 }
                 else if (config["virtualSize"].is_object()) {
                     nlohmann::json size = config["virtualSize"];
-                    if (json_has(config, "w")) virtualWidth = config["virtualSize"]["w"];
-                    if (json_has(config, "h")) virtualHeight = config["virtualSize"]["h"];
-                    if (json_has(config, "width")) virtualWidth = config["virtualSize"]["width"];
-                    if (json_has(config, "height")) virtualHeight = config["virtualSize"]["height"];
+                    if (json_has(config, "w")) virtualWidth = json_get<float>(size, "w");
+                    if (json_has(config, "h")) virtualHeight = json_get<float>(size, "h");
+                    if (json_has(config, "width")) virtualWidth = json_get<float>(size, "width");
+                    if (json_has(config, "height")) virtualHeight = json_get<float>(size, "height");
                 }
                 else if (config["virtualSize"].is_array())  {
                     virtualWidth = config["virtualSize"][0];
@@ -295,17 +295,17 @@ namespace Amara {
                 }
             }
             if (json_has(config, "resizable")) {
-                resizable = config["resizable"];
+                resizable = json_get<bool>(config, "resizable");
                 if (window) SDL_SetWindowResizable(window, resizable);
             }
             if (json_is(config, "singleWindowApplication")) {
                 gameProps->integrate_new_windows = true;
             }
             if (json_has(config, "headless")) {
-                create_window_on_start = !config["headless"].get<bool>();
+                create_window_on_start = !json_get<bool>(config, "headless");
             }
             if (json_has(config, "title")) {
-                windowTitle = config["title"];
+                windowTitle = json_get<std::string>(config, "title");
                 if (window) SDL_SetWindowTitle(window, windowTitle.c_str());
                 if (id.empty()) id = windowTitle;
             }
@@ -318,7 +318,7 @@ namespace Amara {
                     }
                 }
                 else if (config["graphics"].is_number()) {
-                    graphics_priority = { config["graphics"] };
+                    graphics_priority = { static_cast<Amara::GraphicsEnum>(json_get<int>(config, "graphics")) };
                 }
                 else {
                     fatal_error("Error: Invalid graphics setting.");
@@ -353,12 +353,12 @@ namespace Amara {
                     gameProps->breakWorld();
                 }
                 else {
-                    setScreenMode(config["screenMode"]);
+                    setScreenMode(static_cast<Amara::ScreenModeEnum>(json_get<int>(config, "screenMode")));
                 }
             }
             if (json_has(config, "transparent")) {
                 if (window == nullptr) {
-                    transparent = config["transparent"];
+                    transparent = json_get<bool>(config, "transparent");
                     backgroundColor = Amara::Color::Transparent;
                 }
             }
@@ -366,25 +366,25 @@ namespace Amara {
                 antialiasing = json_get<bool>(config, "antialiasing");
             }
             if (json_has(config, "alwaysOnTop")) {
-                setAlwaysOnTop(config["alwaysOnTop"]);
+                setAlwaysOnTop(json_get<bool>(config, "alwaysOnTop"));
             }
             if (json_has(config, "hiddenOnStart")) {
-                hiddenOnStart = config["hiddenOnStart"];
+                hiddenOnStart = json_get<bool>(config, "hiddenOnStart");
             }
             if (json_has(config, "clickThrough")) {
-                setClickThrough(config["clickThrough"]);
+                setClickThrough(json_get<bool>(config, "clickThrough"));
             }
             if (json_has(config, "forcedClickThrough")) {
-                setForcedClickThrough(config["forcedClickThrough"]);
+                setForcedClickThrough(json_get<bool>(config, "forcedClickThrough"));
             }
             if (json_has(config, "backgroundColor")) {
-                backgroundColor = config["backgroundColor"];
+                backgroundColor = json_get<Amara::Color>(config, "backgroundColor");
             }
-            if (json_has(config, "x")) pos.x = config["x"];
-            if (json_has(config, "y")) pos.y = config["y"];
-            if (json_has(config, "pos")) pos = config["pos"];
+            if (json_has(config, "x")) pos.x = json_get<float>(config, "x");
+            if (json_has(config, "y")) pos.y = json_get<float>(config, "y");
+            if (json_has(config, "pos")) pos = json_get<Vector3>(config, "pos");
 
-            if (json_has(config, "errorCapturing")) errorCapturing = config["errorCapturing"];
+            if (json_has(config, "errorCapturing")) errorCapturing = json_get<bool>(config, "errorCapturing");
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
@@ -395,12 +395,12 @@ namespace Amara {
             }
 
             if (json_has(config, "basePath")) {
-                base_dir_path = config["basePath"];
+                base_dir_path = json_get<std::string>(config, "basePath");
                 gameProps->system->setBasePath(base_dir_path);
             }
             
             if (json_has(config, "scene")) {
-                entryScenes.push_back(config["scene"]);
+                entryScenes.push_back(json_get<std::string>(config, "scene"));
             }
             if (json_has(config, "scenes")) {
                 nlohmann::json keys = config["scenes"];
@@ -411,10 +411,10 @@ namespace Amara {
                 }
             }
             if (json_has(config, "backgroundColor")) {
-                backgroundColor = config["backgroundColor"];
+                backgroundColor = json_get<Amara::Color>(config, "backgroundColor");
             }
             if (json_has(config, "errorCapturing")) {
-                errorCapturing = config["errorCapturing"];
+                errorCapturing = json_get<bool>(config, "errorCapturing");
             }
 
             return this;

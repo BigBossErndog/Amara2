@@ -71,12 +71,12 @@ namespace Amara {
 
         double leftTrigger = 0;
         double rightTrigger = 0;
-
-        float leftStickDeadzone = 0.2;
-        float rightStickDeadzone = 0.2;
-
-        float leftTriggerDeadzone = 0.2;
-        float rightTriggerDeadzone = 0.2;
+        
+        float leftStickDeadzone = 0.25;
+        float rightStickDeadzone = 0.25;
+        
+        float leftTriggerDeadzone = 0.25;
+        float rightTriggerDeadzone = 0.25;
 
         Gamepad() {
             reset();

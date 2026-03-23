@@ -114,14 +114,14 @@ namespace Amara {
                     temp_props.set(this);
                 }
                 else {
-                    if (json_has(config, "offsetX")) temp_props.offsetX = config["offsetX"];
-                    if (json_has(config, "offsetY")) temp_props.offsetY = config["offsetY"];
-                    if (json_has(config, "alpha")) temp_props.alpha = config["alpha"];
-                    if (json_has(config, "tint")) temp_props.color = config["tint"];
-                    if (json_has(config, "color")) temp_props.color = config["color"];
-                    if (json_has(config, "blendMode")) temp_props.blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
+                    if (json_has(config, "offsetX")) temp_props.offsetX = json_get<float>(config, "offsetX");
+                    if (json_has(config, "offsetY")) temp_props.offsetY = json_get<float>(config, "offsetY");
+                    if (json_has(config, "alpha")) temp_props.alpha = json_get<float>(config, "alpha");
+                    if (json_has(config, "tint")) temp_props.color = json_get<Amara::Color>(config, "tint");
+                    if (json_has(config, "color")) temp_props.color = json_get<Amara::Color>(config, "color");
+                    if (json_has(config, "blendMode")) temp_props.blendMode = static_cast<Amara::BlendMode>(json_get<int>(config, "blendMode"));
                     if (json_has(config, "manipulator")) {
-                        std::string manipulator_name = config["manipulator"];
+                        std::string manipulator_name = json_get<std::string>(config, "manipulator");
                         if (manipulators.find(manipulator_name) != manipulators.end()) {
                             temp_props.manipulator = manipulators[manipulator_name];
                         }
@@ -136,24 +136,24 @@ namespace Amara {
 
             if (config.is_string()) setManipulator(config);
             
-            if (json_has(config, "tint")) tint = config["tint"];
-            if (json_has(config, "color")) tint = config["color"];
-            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
+            if (json_has(config, "tint")) tint = json_get<Amara::Color>(config, "tint");
+            if (json_has(config, "color")) tint = json_get<Amara::Color>(config, "color");
+            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(json_get<int>(config, "blendMode"));
             
             if (json_has(config, "wrapWidth")) {
-                setWrapWidth(config["wrapWidth"]);
+                setWrapWidth(json_get<double>(config, "wrapWidth"));
             }
             if (json_has(config, "wrapMode")) {
-                setWrapMode(config["wrapMode"]);
+                setWrapMode(static_cast<Amara::WrapModeEnum>(json_get<int>(config, "wrapMode")));
             }
 
-            if (json_has(config, "lineSpacing")) setLineSpacing(config["lineSpacing"]);
+            if (json_has(config, "lineSpacing")) setLineSpacing(json_get<int>(config, "lineSpacing"));
 
-            if (json_has(config, "alignment")) align(static_cast<Amara::AlignmentEnum>(config["alignment"]));
+            if (json_has(config, "alignment")) align(static_cast<Amara::AlignmentEnum>(json_get<int>(config, "alignment")));
             
             if (json_has(config, "font")) setFont(config["font"]);
             if (json_has(config, "text")) {
-                if (config["text"].is_string()) setText(config["text"].get<std::string>());
+                if (config["text"].is_string()) setText(json_get<std::string>(config, "text"));
                 else if (config["text"].is_number()) {
                     if (config["text"].is_number_integer()) setText(std::to_string(config["text"].get<int>()));
                     else setText(std::to_string(config["text"].get<double>()));
@@ -161,23 +161,23 @@ namespace Amara {
                 else setText(std::string(config["text"].dump()));
             }
 
-            if (json_has(config, "originX")) origin.x = config["originX"];
-            if (json_has(config, "originY")) origin.y = config["originY"];
-            if (json_has(config, "origin")) origin = config["origin"];
+            if (json_has(config, "originX")) origin.x = json_get<float>(config, "originX");
+            if (json_has(config, "originY")) origin.y = json_get<float>(config, "originY");
+            if (json_has(config, "origin")) origin = json_get<Vector2>(config, "origin");
 
             if (json_has(config, "originPosition")) {
-                origin = Vector2(config["originPosition"]) / Vector2(textWidth, textHeight);
+                origin = json_get<Vector2>(config, "originPosition") / Vector2(textWidth, textHeight);
             }
             if (json_has(config, "originPositionX")) {
-                origin.x = config["originPositionX"].get<float>() / textWidth;
+                origin.x = json_get<float>(config, "originPositionX") / textWidth;
             }
             if (json_has(config, "originPositionY")) {
-                origin.y = config["originPositionY"].get<float>() / textHeight;
+                origin.y = json_get<float>(config, "originPositionY") / textHeight;
             }
 
-            if (json_has(config, "progress")) progress = config["progress"];
+            if (json_has(config, "progress")) progress = json_get<int>(config, "progress");
 
-            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
+            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = json_get<bool>(config, "renderPixelPerfect");
 
             return this;
         }
