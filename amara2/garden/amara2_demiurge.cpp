@@ -90,7 +90,7 @@ namespace Amara {
             system.gameProps = gameProps;
             system.luaobject = sol::make_object(gameProps->lua, &system);
 
-            controls.gameProps = gameProps;
+            controls.init(gameProps);
             controls.luaobject = sol::make_object(gameProps->lua, &controls);
 
             system.getBasePath();

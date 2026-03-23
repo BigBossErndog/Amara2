@@ -64,6 +64,13 @@ namespace Amara {
             }
             return 0;
         }
+        
+        double timeSinceHeld(SDL_Keycode code) {
+            if (keys.find(code) != keys.end()) {
+                return keys[code].timeSinceHeld;
+            }
+            return 0;
+        }
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<KeyboardManager>("Keyboard",

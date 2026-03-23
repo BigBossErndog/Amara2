@@ -6,7 +6,7 @@ namespace Amara {
         Amara::Button middle;
 
         Amara::Vector2 wheel;
-
+        
         bool moved = false;
 
         GameProps* gameProps = nullptr;

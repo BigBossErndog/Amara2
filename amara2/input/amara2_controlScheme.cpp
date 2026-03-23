@@ -2,15 +2,34 @@ namespace Amara {
     class ControlScheme {
     public:
         Amara::GameProps* gameProps = nullptr;
+        sol::object luaobject;
 
         std::string id;
         std::vector<SDL_Keycode> keys;
         std::vector<Amara::GamepadButton> gamepadButtons;
-
+        
         ControlScheme() {}
         ControlScheme(std::string _id, Amara::GameProps* _gameProps) {
             id = _id;
             gameProps = _gameProps;
+        }
+        
+        nlohmann::json toData() {
+            nlohmann::json config = nlohmann::json::object();
+            
+            nlohmann::json keyList = nlohmann::json::array();
+            for (auto key: keys) {
+                keyList.push_back((int)key);
+            }
+            config["keys"] = keyList;
+            
+            nlohmann::json buttonList = nlohmann::json::array();
+            for (auto button: gamepadButtons) {
+                buttonList.push_back((int)button);
+            }
+            config["buttons"] = buttonList;
+            
+            return config;
         }
         
         void addKey(SDL_Keycode _k) {
@@ -115,21 +134,27 @@ namespace Amara {
             return result;
         }
         double timeHeld() {
-            double t = 0;
+            double t = 0, c = 0;
             double check;
             for (SDL_Keycode k: keys) {
-                check = gameProps->keyboard->timeHeld(k);
-                if (check > t) t = check;
+                check = gameProps->keyboard->timeSinceHeld(k);
+                if (check < c) {
+                    c = check;
+                    t = gameProps->keyboard->timeHeld(k);
+                }
             }
             for (Amara::GamepadButton b: gamepadButtons) {
-                check = gameProps->gamepads->timeHeld(b);
-                if (check > t) t = check;
+                check = gameProps->gamepads->timeSinceHeld(b);
+                if (check < c) {
+                    c = check;
+                    t = gameProps->gamepads->timeHeld(b);
+                }
             }
             return t;
         }
 
         static void bind_lua(sol::state& lua) {
-            lua.new_usertype<ControlScheme>("ControlScheme", 
+            lua.new_usertype<ControlScheme>("ControlScheme",
                 "addKey", &ControlScheme::addKey,
                 "setKey", &ControlScheme::setKey,
                 "addKeys", &ControlScheme::addKey,
@@ -242,10 +267,10 @@ namespace Amara {
 
                 "clearAll", &ControlScheme::clearAll,
 
-                "isDown", &ControlScheme::isDown,
-                "justPressed", &ControlScheme::justPressed,
-                "justReleased", &ControlScheme::justReleased,
-                "timeHeld", &ControlScheme::timeHeld
+                "isDown", sol::property(&ControlScheme::isDown),
+                "justPressed", sol::property(&ControlScheme::justPressed),
+                "justReleased", sol::property(&ControlScheme::justReleased),
+                "timeHeld", sol::property(&ControlScheme::timeHeld)
             );
         }
     };

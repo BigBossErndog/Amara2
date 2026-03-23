@@ -263,6 +263,13 @@ namespace Amara {
             }
             return 0;
         }
+        
+        double timeSinceHeld(Amara::GamepadButton _buttoncode) {
+            if (buttons.find(_buttoncode) != buttons.end()) {
+                return buttons[_buttoncode].timeSinceHeld;
+            }
+            return 0;
+        }
 
         void update(double deltaTime) {
             if (gamepad == nullptr) return;
@@ -476,12 +483,27 @@ namespace Amara {
         }
 
         double timeHeld(Amara::GamepadButton _buttoncode) {
+            double t = 0, c = 0;
+            double check;
+            for (Amara::Gamepad& gamepad : gamepads) {
+                if (gamepad.active) {
+                    check = gamepad.timeSinceHeld(_buttoncode);
+                    if (check < c) {
+                        c = check;
+                        t = gamepad.timeHeld(_buttoncode);
+                    }
+                }
+            }
+            return t;
+        }
+        
+        double timeSinceHeld(Amara::GamepadButton _buttoncode) {
             double t = 0;
             double check;
             for (Amara::Gamepad& gamepad : gamepads) {
                 if (gamepad.active) {
-                    check = gamepad.timeHeld(_buttoncode);
-                    if (check > t) t = check;
+                    check = gamepad.timeSinceHeld(_buttoncode);
+                    if (check < t) t = check;
                 }
             }
             return t;
@@ -521,6 +543,7 @@ namespace Amara {
                 "justPressed", &Amara::GamepadManager::justPressed,
                 "justReleased", &Amara::GamepadManager::justReleased,
                 "timeHeld", &Amara::GamepadManager::timeHeld,
+                "timeSinceHeld", &Amara::GamepadManager::timeSinceHeld,
                 sol::meta_function::length, [](Amara::GamepadManager& manager) {
                     return manager.connectedGamepadsCount;
                 }
