@@ -112,6 +112,10 @@ namespace Amara {
                 debug_log("Note: Gamepad connected \"", SDL_GetGamepadName(gamepad), "\" (ID: ", _gamepadID, ")");
             }
         }
+        
+        bool buttonInitialized(Amara::GamepadButton _buttoncode) {
+            return buttons.find(_buttoncode) != buttons.end();
+        }
 
         void press(Amara::GamepadButton _buttoncode) {
             if (buttons.find(_buttoncode) == buttons.end()) {
@@ -452,6 +456,15 @@ namespace Amara {
             }
             return nullptr;
         }
+        
+        bool buttonInitialized(Amara::GamepadButton _buttoncode) {
+            for (Amara::Gamepad& gamepad : gamepads) {
+                if (gamepad.buttonInitialized(_buttoncode)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         bool isDown(Amara::GamepadButton _buttoncode) {
             for (Amara::Gamepad& gamepad : gamepads) {
@@ -483,12 +496,13 @@ namespace Amara {
         }
 
         double timeHeld(Amara::GamepadButton _buttoncode) {
-            double t = 0, c = 0;
+            double t = 0, c = -1;
             double check;
             for (Amara::Gamepad& gamepad : gamepads) {
                 if (gamepad.active) {
+                    if (!gamepad.buttonInitialized(_buttoncode)) continue;
                     check = gamepad.timeSinceHeld(_buttoncode);
-                    if (check < c) {
+                    if (c == -1 || check < c) {
                         c = check;
                         t = gamepad.timeHeld(_buttoncode);
                     }
@@ -498,15 +512,16 @@ namespace Amara {
         }
         
         double timeSinceHeld(Amara::GamepadButton _buttoncode) {
-            double t = 0;
+            double t = -1;
             double check;
             for (Amara::Gamepad& gamepad : gamepads) {
                 if (gamepad.active) {
+                    if (!gamepad.buttonInitialized(_buttoncode)) continue;
                     check = gamepad.timeSinceHeld(_buttoncode);
-                    if (check < t) t = check;
+                    if (t == -1 || check < t) t = check;
                 }
             }
-            return t;
+            return (t == -1) ? 0 : t;
         }
         
         void update(double deltaTime) {

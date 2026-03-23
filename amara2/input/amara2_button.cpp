@@ -15,6 +15,7 @@ namespace Amara {
             justPressed = false;
             justReleased = false;
             timeHeld = 0;
+            timeSinceHeld = 0;
         }
 
         bool press() {

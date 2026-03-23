@@ -207,45 +207,45 @@ namespace Amara {
                 return this;
             }
 
-            if (json_has(config, "id")) id = config["id"];
+            if (json_has(config, "id")) id = json_get<std::string>(config, "id");
 
-            if (json_has(config, "pos")) pos = config["pos"];
-            if (json_has(config, "position")) pos = config["position"];
-            if (json_has(config, "x")) pos.x = config["x"];
-            if (json_has(config, "y")) pos.y = config["y"];
-            if (json_has(config, "z")) pos.z = config["z"];
+            if (json_has(config, "pos")) pos = json_get<Vector3>(config, "pos");
+            if (json_has(config, "position")) pos = json_get<Vector3>(config, "position");
+            if (json_has(config, "x")) pos.x = json_get<float>(config, "x");
+            if (json_has(config, "y")) pos.y = json_get<float>(config, "y");
+            if (json_has(config, "z")) pos.z = json_get<float>(config, "z");
             
-            if (json_has(config, "scaleX")) scale.x = config["scaleX"];
-            if (json_has(config, "scaleY")) scale.y = config["scaleY"];
-            if (json_has(config, "scale")) scale = config["scale"];
+            if (json_has(config, "scaleX")) scale.x = json_get<float>(config, "scaleX");
+            if (json_has(config, "scaleY")) scale.y = json_get<float>(config, "scaleY");
+            if (json_has(config, "scale")) scale = json_get<Vector2>(config, "scale");
             
-            if (json_has(config, "rotation")) rotation = config["rotation"];
+            if (json_has(config, "rotation")) rotation = json_get<float>(config, "rotation");
 
-            if (json_has(config, "alpha")) alpha = config["alpha"];
-            if (json_has(config, "depth")) depth = config["depth"];
+            if (json_has(config, "alpha")) alpha = json_get<float>(config, "alpha");
+            if (json_has(config, "depth")) depth = json_get<float>(config, "depth");
             
-            if (json_has(config, "paused")) paused = config["paused"];
+            if (json_has(config, "paused")) paused = json_get<bool>(config, "paused");
 
             if (json_has(config, "active")) {
-                if (config["active"]) activate();
+                if (json_get<bool>(config, "active")) activate();
                 else deactivate();
             }
 
-            if (json_has(config, "visible")) visible = config["visible"];
+            if (json_has(config, "visible")) visible = json_get<bool>(config, "visible");
 
-            if (json_has(config, "fixedToCamera")) fixedToCamera = config["fixedToCamera"];
-            if (json_has(config, "cameraFollowOffset")) cameraFollowOffset = config["cameraFollowOffset"];
-            if (json_has(config, "cameraFollowOffsetX")) cameraFollowOffset.x = config["cameraFollowOffsetX"];
-            if (json_has(config, "cameraFollowOffsetY")) cameraFollowOffset.y = config["cameraFollowOffsetY"];
+            if (json_has(config, "fixedToCamera")) fixedToCamera = json_get<bool>(config, "fixedToCamera");
+            if (json_has(config, "cameraFollowOffset")) cameraFollowOffset = json_get<Vector2>(config, "cameraFollowOffset");
+            if (json_has(config, "cameraFollowOffsetX")) cameraFollowOffset.x = json_get<float>(config, "cameraFollowOffsetX");
+            if (json_has(config, "cameraFollowOffsetY")) cameraFollowOffset.y = json_get<float>(config, "cameraFollowOffsetY");
 
-            if (json_has(config, "sortable")) sortable = config["sortable"];
-            if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = config["depthSortChildrenEnabled"];
-            if (json_has(config, "depthSortChildren")) depthSortChildrenEnabled = config["depthSortChildren"];
-            if (json_has(config, "ignoreChildren")) ignoreChildren = config["ignoreChildren"];
+            if (json_has(config, "sortable")) sortable = json_get<bool>(config, "sortable");
+            if (json_has(config, "depthSortChildrenEnabled")) depthSortChildrenEnabled = json_get<bool>(config, "depthSortChildrenEnabled");
+            if (json_has(config, "depthSortChildren")) depthSortChildrenEnabled = json_get<bool>(config, "depthSortChildren");
+            if (json_has(config, "ignoreChildren")) ignoreChildren = json_get<bool>(config, "ignoreChildren");
             
             if (json_has(config, "speed")) {
                 if (config["speed"].is_number()) {
-                    speed = config["speed"];
+                    speed = json_get<double>(config, "speed");
                 }
                 else if (config["speed"].is_null()) {
                     speed = 1;
@@ -259,10 +259,10 @@ namespace Amara {
             }
             
             #ifdef AMARA_OPENGL
-            if (json_has(config, "shaderProgram")) setShaderProgram(config["shaderProgram"]);
+            if (json_has(config, "shaderProgram")) setShaderProgram(json_get<std::string>(config, "shaderProgram"));
             #endif
             
-            if (json_has(config, "input")) input.configure(config["input"]);
+            if (json_has(config, "input")) input.configure(json_get<nlohmann::json>(config, "input"));
             
             return this;
         }
@@ -592,9 +592,6 @@ namespace Amara {
                 return false;
             }
             return true;
-        }
-        Amara::ShaderProgram* createShaderProgram() {
-
         }
         #endif
 

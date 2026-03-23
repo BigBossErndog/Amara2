@@ -134,23 +134,44 @@ namespace Amara {
             return result;
         }
         double timeHeld() {
-            double t = 0, c = 0;
+            double t = 0, c = -1;
             double check;
             for (SDL_Keycode k: keys) {
+                if (!gameProps->keyboard->keyInitialized(k)) continue;
                 check = gameProps->keyboard->timeSinceHeld(k);
-                if (check < c) {
+                if (c == -1 || check < c) {
                     c = check;
                     t = gameProps->keyboard->timeHeld(k);
                 }
             }
             for (Amara::GamepadButton b: gamepadButtons) {
+                if (!gameProps->gamepads->buttonInitialized(b)) continue;
                 check = gameProps->gamepads->timeSinceHeld(b);
-                if (check < c) {
+                if (c == -1 || check < c) {
                     c = check;
                     t = gameProps->gamepads->timeHeld(b);
                 }
             }
             return t;
+        }
+        double timeSinceHeld() {
+            double c = -1;
+            double check;
+            for (SDL_Keycode k: keys) {
+                if (!gameProps->keyboard->keyInitialized(k)) continue;
+                check = gameProps->keyboard->timeSinceHeld(k);
+                if (c == -1 || check < c) {
+                    c = check;
+                }
+            }
+            for (Amara::GamepadButton b: gamepadButtons) {
+                if (!gameProps->gamepads->buttonInitialized(b)) continue;
+                check = gameProps->gamepads->timeSinceHeld(b);
+                if (c == -1 || check < c) {
+                    c = check;
+                }
+            }
+            return (c == -1) ? 0 : c;
         }
 
         static void bind_lua(sol::state& lua) {

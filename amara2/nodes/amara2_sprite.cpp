@@ -11,7 +11,7 @@ namespace Amara {
 
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
         Amara::Color tint = Amara::Color::White;
-
+        
         Vector2 origin = { 0.5, 0.5 };
         
         int textureWidth = 0;
@@ -183,45 +183,45 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "tint")) tint = config["tint"];
-            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
+            if (json_has(config, "tint")) tint = json_get<Amara::Color>(config, "tint");
+            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(json_get<int>(config, "blendMode"));
 
-            if (json_has(config, "texture")) setTexture(config["texture"]);
-            if (json_has(config, "tempTexture")) setTempTexture(config["tempTexture"]);
+            if (json_has(config, "texture")) setTexture(json_get<std::string>(config, "texture"));
+            if (json_has(config, "tempTexture")) setTempTexture(json_get<nlohmann::json>(config, "tempTexture"));
             
-            if (json_has(config, "frame")) frame = config["frame"];
-            if (json_has(config, "animation")) animate(config["animation"]);
+            if (json_has(config, "frame")) frame = json_get<int>(config, "frame");
+            if (json_has(config, "animation")) animate(json_get<nlohmann::json>(config, "animation"));
 
-            if (json_has(config, "originX")) origin.x = config["originX"];
-            if (json_has(config, "originY")) origin.y = config["originY"];
-            if (json_has(config, "origin")) origin = config["origin"];
+            if (json_has(config, "originX")) origin.x = json_get<float>(config, "originX");
+            if (json_has(config, "originY")) origin.y = json_get<float>(config, "originY");
+            if (json_has(config, "origin")) origin = json_get<Vector2>(config, "origin");
 
             if (json_has(config, "originPosition")) {
-                Vector2 originPosition = config["originPosition"];
+                Vector2 originPosition = json_get<Vector2>(config, "originPosition");
                 origin = originPosition / Vector2(
                     spritesheet ? frameWidth : textureWidth,
                     spritesheet ? frameHeight : textureHeight
                 );
             }
             if (json_has(config, "originPositionX")) {
-                origin.x = config["originPositionX"].get<float>() / (spritesheet ? frameWidth : textureWidth);
+                origin.x = json_get<float>(config, "originPositionX") / (spritesheet ? frameWidth : textureWidth);
             }
             if (json_has(config, "originPositionY")) {
-                origin.y = config["originPositionY"].get<float>() / (spritesheet ? frameHeight : textureHeight);
+                origin.y = json_get<float>(config, "originPositionY") / (spritesheet ? frameHeight : textureHeight);
             }
             
-            if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
-            if (json_has(config, "cropRight")) cropRight = config["cropRight"];
-            if (json_has(config, "cropTop")) cropTop = config["cropTop"];
-            if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
+            if (json_has(config, "cropLeft")) cropLeft = json_get<int>(config, "cropLeft");
+            if (json_has(config, "cropRight")) cropRight = json_get<int>(config, "cropRight");
+            if (json_has(config, "cropTop")) cropTop = json_get<int>(config ,"cropTop");
+            if (json_has(config, "cropBottom")) cropBottom = json_get<int>(config, "cropBottom");
 
-            if (json_has(config, "width")) setWidth(config["width"]);
-            if (json_has(config, "height")) setHeight(config["height"]);
+            if (json_has(config, "width")) setWidth(json_get<float>(config, "width"));
+            if (json_has(config, "height")) setHeight(json_get<float>(config, "height"));
 
-            if (json_has(config, "rect")) stretchTo(config["rect"]);
-            if (json_has(config, "size")) stretchTo(config["size"]);
+            if (json_has(config, "rect")) stretchTo(json_get<Rectangle>(config, "rect"));
+            if (json_has(config, "size")) stretchTo(json_get<Rectangle>(config, "size"));
             
-            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
+            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = json_get<bool>(config, "renderPixelPerfect");
 
             return Amara::Node::configure(config);
         }

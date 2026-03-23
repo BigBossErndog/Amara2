@@ -66,7 +66,7 @@ namespace Amara {
             return prop;
         }
         catch (const nlohmann::json::exception& e) {
-            fatal_error(e.what(), ". For property \"", key, "\"");
+            fatal_error(e.what(), " - for property \"", key, "\"");
         }
     }
 }

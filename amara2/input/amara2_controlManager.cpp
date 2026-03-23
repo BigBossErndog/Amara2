@@ -56,8 +56,8 @@ namespace Amara {
                 return;
             }
             
-            if (json_has(config, "keys")) {
-                nlohmann::json keys = config["keys"];
+            if (json_has_any(config, "keys", "key")) {
+                nlohmann::json keys = json_has(config, "keys") ? config["keys"] : config["key"];
                 if (keys.is_array()) {
                     scheme->clearKeys();
                     for (const auto& val: keys) {
@@ -69,8 +69,8 @@ namespace Amara {
                 }
             }
             
-            if (json_has(config, "buttons")) {
-                nlohmann::json buttons = config["buttons"];
+            if (json_has_any(config, "buttons", "button")) {
+                nlohmann::json buttons = json_has(config, "buttons") ? config["buttons"] : config["button"];
                 if (buttons.is_array()) {
                     scheme->clearButtons();
                     for (const auto& val: buttons) {
@@ -114,7 +114,7 @@ namespace Amara {
                 controls.erase(key);
             }
         }
-
+        
         void clearAllSchemes() {
             for (const auto& pair: controls) {
                 ControlScheme* scheme = pair.second;
