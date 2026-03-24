@@ -14,9 +14,9 @@ namespace Amara {
             Amara::Node::update_properties();
         }
 
-        virtual void create() override {
+        virtual void init() override {
+            Amara::Node::init();
             setMainCamera(createChild("Camera")->as<Amara::Camera*>());
-            Amara::Node::create();
         }
 
         void runCameras(double deltaTime) {

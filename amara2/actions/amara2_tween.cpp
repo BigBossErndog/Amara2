@@ -276,7 +276,18 @@ namespace Amara {
                 "from", &Tween::from,
                 "to", &Tween::to,
                 "set", &Tween::from,
-                "finishTween", &Tween::finishTween
+                "finishTween", &Tween::finishTween,
+                "target", sol::property(
+                    [](Tween& t) -> sol::object {
+                        if (t.lua_actor_table.valid()) return t.lua_actor_table;
+                        return sol::nil;
+                    },
+                    [](Tween& t, sol::object val) {
+                        if (val.is<sol::userdata>() || val.is<sol::table>()) {
+                            t.lua_actor_table = val.as<sol::table>();
+                        }
+                    }
+                )
             );
 
             sol::usertype<Amara::Node> node_type = lua["Node"];
