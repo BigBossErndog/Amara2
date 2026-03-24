@@ -11,9 +11,9 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "color")) tint = config["color"];
-            if (json_has(config, "width")) setWidth(json_extract(config, "width"));
-            if (json_has(config, "height")) setHeight(json_extract(config, "height"));
+            if (json_has(config, "color")) tint = json_get<Amara::Color>(config, "color");
+            if (json_has(config, "width")) setWidth(json_strict_extract<float>(config, "width"));
+            if (json_has(config, "height")) setHeight(json_strict_extract<float>(config, "height"));
 
             return Amara::Sprite::configure(config);
         }

@@ -21,7 +21,7 @@ namespace Amara {
 
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "delimiter")) {
-                delimiter = config["delimiter"].get<std::string>();
+                delimiter = json_get<std::string>(config, "delimiter");
             }
             if (json_has(config, "arguments")) {
                 nlohmann::json arg_config = config["arguments"];

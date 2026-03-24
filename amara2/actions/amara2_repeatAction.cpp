@@ -11,8 +11,8 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "interim")) interim = config["interim"];
-            if (json_has(config, "repeats")) repeats = config["repeats"];
+            if (json_has(config, "interim")) interim = json_get<double>(config, "interim");
+            if (json_has(config, "repeats")) repeats = json_get<double>(config, "repeats");
             if (json_has(config, "delay")) {
                 nlohmann::json& delay = config["delay"];
                 if (delay.is_boolean()) {

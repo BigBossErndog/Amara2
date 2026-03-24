@@ -41,16 +41,16 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "id")) id = json_extract(config, "id");
-            if (json_has(config, "loop")) loop = config["loop"];
-            if (json_has(config, "audio")) setAudio(config["audio"]);
-            if (json_has(config, "volume")) setVolume(config["volume"]);
-            if (json_has(config, "masterVolume")) setMasterVolume(config["masterVolume"]);
-            if (json_has(config, "panning")) setPanning(config["panning"]);
-            if (json_has(config, "pitch")) setPitch(config["pitch"]);
-            if (json_has(config, "position")) setPosition(config["position"]);
+            if (json_has(config, "id")) id = json_strict_extract<std::string>(config, "id");
+            if (json_has(config, "loop")) loop = json_get<bool>(config, "loop");
+            if (json_has(config, "audio")) setAudio(json_get<std::string>(config, "audio"));
+            if (json_has(config, "volume")) setVolume(json_get<float>(config, "volume"));
+            if (json_has(config, "masterVolume")) setMasterVolume(json_get<float>(config, "masterVolume"));
+            if (json_has(config, "panning")) setPanning(json_get<float>(config, "panning"));
+            if (json_has(config, "pitch")) setPitch(json_get<float>(config, "pitch"));
+            if (json_has(config, "position")) setPosition(json_get<int>(config, "position"));
             if (json_is(config, "playing")) play();
-            if (json_has(config, "temporary")) temporary = config["temporary"];
+            if (json_has(config, "temporary")) temporary = json_get<bool>(config, "temporary");
             
             return Amara::Node::configure(config);
         }

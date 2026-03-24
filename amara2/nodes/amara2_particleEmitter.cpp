@@ -101,14 +101,11 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "spawning")) {
-                spawning = config["spawning"];
-            }
             if (json_has(config, "ease")) {
-                easing = config["ease"];
+                easing = static_cast<Amara::Ease>(json_get<int>(config, "ease"));
             }
             if (json_has(config, "poolSize")) {
-                int _poolSize = config["poolSize"];
+                int _poolSize = json_get<int>(config, "poolSize");
                 if (_poolSize != poolSize) {
                     if (particles.size() > _poolSize) {
                         for (int i = particles.size() - 1; i >= _poolSize; i--) {
@@ -124,27 +121,27 @@ namespace Amara {
                 }
             }
             if (json_has(config, "spawnRate")) {
-                spawnRate = config["spawnRate"];
+                spawnRate = json_get<double>(config, "spawnRate");
             }
             if (json_has(config, "spawning")) {
-                spawning = config["spawning"];
+                spawning = json_get<bool>(config, "spawning");
             }
             if (json_has(config, "from")) {
-                start_data = config["from"];
+                start_data = json_get<nlohmann::json>(config, "from");
                 test_data(start_data);
             }
             if (json_has(config, "to")) {
-                end_data = config["to"];
+                end_data = json_get<nlohmann::json>(config, "to");
                 test_data(end_data);
             }
             if (json_has(config, "lifeTime")) {
-                particle_lifetime = config["lifeTime"];
+                particle_lifetime = json_get<double>(config, "lifeTime");
             }
             if (json_has(config, "duration")) {
-                particle_lifetime = config["duration"];
+                particle_lifetime = json_get<double>(config, "duration");
             }
             if (json_has(config, "yoyo")) {
-                yoyo = config["yoyo"];
+                yoyo = json_get<bool>(config, "yoyo");
             }
             
             return Amara::Sprite::configure(config);

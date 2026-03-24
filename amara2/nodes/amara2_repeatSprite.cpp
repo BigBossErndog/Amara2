@@ -7,6 +7,12 @@ namespace Amara {
         RepeatSprite(): Amara::Sprite() {
             set_base_node_id("RepeatSprite");
         }
+        
+        Amara::Node* configure(nlohmann::json config) override {
+            if (json_has(config, "offset")) offset = json_get<Vector2>(config, "offset");
+            if (json_has(config, "spacing")) spacing = json_get<Vector2>(config, "spacing");
+            return Amara::Sprite::configure(config);
+        }
 
         void drawTile(const Rectangle& v, Vector2 gOffset) {
             if (image == nullptr) return;

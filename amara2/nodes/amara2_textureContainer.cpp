@@ -77,40 +77,40 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "tint")) tint = config["tint"];
-            if (json_has(config, "fill")) fill = config["fill"];
-            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
+            if (json_has(config, "tint")) tint = json_get<Amara::Color>(config, "tint");
+            if (json_has(config, "fill")) fill = json_get<Amara::Color>(config, "fill");
+            if (json_has(config, "blendMode")) blendMode = static_cast<Amara::BlendMode>(json_get<int>(config, "blendMode"));
 
-            if (json_has(config, "w")) width = config["w"];
-            if (json_has(config, "h")) height = config["h"];
-            if (json_has(config, "width")) width = config["width"];
-            if (json_has(config, "height")) height = config["height"];
-            if (json_has(config, "size")) resize(config["size"]);
-            if (json_has(config, "rect")) stretchTo(config["rect"]);
-            if (json_has(config, "canvasLocked")) canvasLocked = config["canvasLocked"];
+            if (json_has(config, "w")) width = json_get<int>(config, "w");
+            if (json_has(config, "h")) height = json_get<int>(config, "h");
+            if (json_has(config, "width")) width = json_get<int>(config, "width");
+            if (json_has(config, "height")) height = json_get<int>(config, "height");
+            if (json_has(config, "size")) resize(json_get<Rectangle>(config, "size"));
+            if (json_has(config, "rect")) stretchTo(json_get<Rectangle>(config, "rect"));
+            if (json_has(config, "canvasLocked")) canvasLocked = json_get<bool>(config, "canvasLocked");
 
-            if (json_has(config, "originX")) origin.x = config["originX"];
-            if (json_has(config, "originY")) origin.y = config["originY"];
-            if (json_has(config, "origin")) origin = config["origin"];
+            if (json_has(config, "originX")) origin.x = json_get<float>(config, "originX");
+            if (json_has(config, "originY")) origin.y = json_get<float>(config, "originY");
+            if (json_has(config, "origin")) origin = json_get<Vector2>(config, "origin");
 
             if (json_has(config, "originPosition")) {
-                origin = Vector2(config["originPosition"]) / Vector2(width, height);
+                origin = json_get<Vector2>(config, "originPosition") / Vector2(width, height);
             }
             if (json_has(config, "originPositionX")) {
-                origin.x = config["originPositionX"].get<float>() / width;
+                origin.x = json_get<float>(config, "originPositionX") / width;
             }
             if (json_has(config, "originPositionY")) {
-                origin.y = config["originPositionY"].get<float>() / height;
+                origin.y = json_get<float>(config, "originPositionY") / height;
             }
 
-            if (json_has(config, "cropLeft")) cropLeft = config["cropLeft"];
-            if (json_has(config, "cropRight")) cropRight = config["cropRight"];
-            if (json_has(config, "cropTop")) cropTop = config["cropTop"];
-            if (json_has(config, "cropBottom")) cropBottom = config["cropBottom"];
+            if (json_has(config, "cropLeft")) cropLeft = json_get<int>(config, "cropLeft");
+            if (json_has(config, "cropRight")) cropRight = json_get<int>(config, "cropRight");
+            if (json_has(config, "cropTop")) cropTop = json_get<int>(config, "cropTop");
+            if (json_has(config, "cropBottom")) cropBottom = json_get<int>(config, "cropBottom");
 
-            if (json_has(config, "clearOnDraw")) clearOnDraw = config["clearOnDraw"];
+            if (json_has(config, "clearOnDraw")) clearOnDraw = json_get<bool>(config, "clearOnDraw");
             
-            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = config["renderPixelPerfect"];
+            if (json_has(config, "renderPixelPerfect")) renderPixelPerfect = json_get<bool>(config, "renderPixelPerfect");
 
             update_size();
             

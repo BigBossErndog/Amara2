@@ -12,7 +12,7 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "interim")) interim = config["interim"];
+            if (json_has(config, "interim")) interim = json_get<double>(config, "interim");
             return Amara::Action::configure(config);
         }
 

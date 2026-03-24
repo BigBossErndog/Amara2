@@ -52,11 +52,11 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "width")) setWidth(config["width"]);
-            if (json_has(config, "height")) setHeight(config["height"]);
+            if (json_has(config, "width")) setWidth(json_get<float>(config, "width"));
+            if (json_has(config, "height")) setHeight(json_get<float>(config, "height"));
 
             if (json_has(config, "origin")) {
-                origin = config["origin"];
+                origin = json_get<Vector2>(config, "origin");
             }
 
             return Amara::Node::configure(config);

@@ -15,9 +15,9 @@ namespace Amara {
         }
 
         Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "rate")) speed = config["rate"];
-            if (json_has(config, "start")) startIndex = config["start"];
-            if (json_has(config, "until")) until = config["until"];
+            if (json_has(config, "rate")) speed = json_get<double>(config, "rate");
+            if (json_has(config, "start")) startIndex = json_get<int>(config, "start");
+            if (json_has(config, "until")) until = json_get<int>(config, "until");
 
             return Action::configure(config);
         }

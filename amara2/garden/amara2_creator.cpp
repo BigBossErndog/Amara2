@@ -8,7 +8,7 @@ namespace Amara {
         std::vector<World*> copy_worlds_list;
 
         std::vector<World*> new_worlds;
-
+        
         MessageQueue messages;
         GarbageCollector garbageCollector;
         EventHandler eventHandler;

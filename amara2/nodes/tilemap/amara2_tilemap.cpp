@@ -38,9 +38,9 @@ namespace Amara {
         virtual Amara::Node* configure(nlohmann::json config) override {
             Amara::Group::configure(config);
 
-            if (json_has(config, "origin")) origin = config["origin"];
-            if (json_has(config, "texture")) setTexture(config["texture"]);
-            if (json_has(config, "tilemap")) createTilemap(config["tilemap"]);
+            if (json_has(config, "origin")) origin = json_get<Vector2>(config, "origin");
+            if (json_has(config, "texture")) setTexture(json_get<std::string>(config, "texture"));
+            if (json_has(config, "tilemap")) createTilemap(json_get<std::string>(config, "tilemap"));
 
             update_size();
 

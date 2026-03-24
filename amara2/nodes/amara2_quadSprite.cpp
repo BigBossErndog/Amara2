@@ -13,11 +13,11 @@ namespace Amara {
             Amara::Sprite::configure(config);
             
             if (json_has(config, "points")) {
-                def = config["points"];
+                def = json_get<Amara::Quad>(config, "points");
                 points_initialized = true;
             }
             if (json_has(config, "quad")) {
-                def = config["quad"];
+                def = json_get<Amara::Quad>(config, "quad");
                 points_initialized = true;
             }
             

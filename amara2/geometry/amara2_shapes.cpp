@@ -327,6 +327,12 @@ namespace Amara {
             p3 = _p3;
             p4 = _p4;
         }
+        Quad(nlohmann::json config) {
+            *this = config;
+        }
+        Quad(sol::object obj) {
+            *this = obj;
+        }
 
         Vector2 p1;
         Vector2 p2;

@@ -7,18 +7,18 @@ namespace Amara {
         bool randomOrder = false;
 
         virtual Amara::Node* configure(nlohmann::json config) {
-            if (json_has(config, "id")) id = json_extract(config, "id");
+            if (json_has(config, "id")) id = json_strict_extract<std::string>(config, "id");
 
-            if (json_has(config, "randomOrder")) randomOrder = config["randomOrder"];
+            if (json_has(config, "randomOrder")) randomOrder = json_get<bool>(config, "randomOrder");
 
             bool play_now = false;
             if (json_has(config, "playing")) {
-                play_now = json_extract(config, "playing");
+                play_now = json_strict_extract<bool>(config, "playing");
             }
             
             if (json_has(config, "audio")) {
                 if (config["audio"].is_string()) {
-                    std::string key = json_extract(config, "audio");
+                    std::string key = json_strict_extract<std::string>(config, "audio");
                     if (setAudio(key)) {
                         int poolSize = 1;
                         if (json_has(config, "poolSize")) poolSize = config["poolSize"];

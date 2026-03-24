@@ -107,15 +107,15 @@ namespace Amara {
                 }
             }
             else if (json_has(config, "frame")) {
-                int frame = config["frame"];
+                int frame = json_get<int>(config, "frame");
                 anim.frames.push_back(frame);
                 anim.numFrames = 1;
             }
             else if (json_has(config, "startFrame")) {
-                int startFrame = config["startFrame"];
+                int startFrame = json_get<int>(config, "startFrame");
                 
                 if (json_has(config, "endFrame")) {
-                    int endFrame = config["endFrame"];
+                    int endFrame = json_get<int>(config, "endFrame");
                     if (endFrame > startFrame) {
                         for (int i = startFrame; i <= endFrame; i++) {
                             anim.frames.push_back(i);
@@ -130,7 +130,7 @@ namespace Amara {
                     }
                 }
                 else if (json_has(config, "numFrames")) {
-                    int numFrames = config["numFrames"];
+                    int numFrames = json_get<int>(config, "numFrames");
                     for (int i = 0; i < numFrames; i++) {
                         anim.frames.push_back(startFrame + i);
                     }
@@ -149,7 +149,7 @@ namespace Amara {
             }
 
             if (json_has(config, "frameRate")) {
-                anim.frameRate = config["frameRate"];
+                anim.frameRate = json_get<float>(config, "frameRate");
                 if (anim.frameRate <= 0) {
                     fatal_error("Error: Animation couldn't be created from ", config.dump(), "\nNote: frameRate must be more than 0.");
                     gameProps->breakWorld();
@@ -158,14 +158,14 @@ namespace Amara {
             }
 
             if (json_has(config, "repeats")) {
-                anim.repeats = config["repeats"];
+                anim.repeats = json_get<int>(config, "repeats");
             }
             if (json_is(config, "loop")) {
                 anim.repeats = -1;
             }
             
             if (json_has(config, "yoyo")) {
-                anim.yoyo = config["yoyo"];
+                anim.yoyo = json_get<bool>(config, "yoyo");
             }
 
             return anim;

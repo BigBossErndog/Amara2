@@ -39,17 +39,17 @@ namespace Amara {
             }
             else if (config.is_object()) {
                 if (json_has(config, "active")) {
-                    if (config["active"]) activate();
+                    if (json_get<bool>(config, "active")) activate();
                     else deactivate();
                 }
                 if (json_has(config, "draggable")) {
-                    draggable = config["draggable"];
+                    draggable = json_get<bool>(config, "draggable");
                 }
                 if (json_has(config, "cursor")) {
-                    cursor = config["cursor"];
+                    cursor = static_cast<CursorEnum>(json_get<int>(config, "cursor"));
                 }
                 if (json_has(config, "activeClickZone")) {
-                    activeClickZone = config["activeClickZone"];
+                    activeClickZone = json_get<bool>(config, "activeClickZone");
                 }
             }
         }

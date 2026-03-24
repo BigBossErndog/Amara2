@@ -100,16 +100,16 @@ namespace Amara {
                 });
             }
             if (config.find("repeats") != config.end()) {
-                cont->repeats = config["repeats"];
+                cont->repeats = json_get<int>(config, "repeats");
             }
             if (config.find("tint") != config.end()) {
-                cont->tint = config["tint"];
+                cont->tint = json_get<Amara::Color>(config, "tint");
             }
             if (config.find("fill") != config.end()) {
-                cont->fill = config["fill"];
+                cont->fill = json_get<Amara::Color>(config, "fill");
             }
             if (config.find("blendMode") != config.end()) {
-                cont->blendMode = static_cast<Amara::BlendMode>(config["blendMode"].get<int>());
+                cont->blendMode = static_cast<Amara::BlendMode>(json_get<int>(config, "blendMode"));
             }
             if (config.find("resolution") != config.end()) {
                 cont->configure(nlohmann::json::object({

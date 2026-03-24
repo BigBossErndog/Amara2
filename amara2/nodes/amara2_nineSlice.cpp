@@ -26,20 +26,20 @@ namespace Amara {
 
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "maxWidth")) {
-                width = json_extract(config, "maxWidth");
+                width = json_strict_extract<int>(config, "maxWidth");
                 drawWidth = width;
             }
             if (json_has(config, "maxHeight")) {
-                height = json_extract(config, "maxHeight");
+                height = json_strict_extract<int>(config, "maxHeight");
                 drawHeight = height;
             }
 
             if (json_has(config, "width")) {
-                drawWidth = json_extract(config, "width");
+                drawWidth = json_strict_extract<int>(config, "width");
                 if (width < drawWidth) width = drawWidth;
             }
             if (json_has(config, "height")) {
-                drawHeight = json_extract(config, "height");
+                drawHeight = json_strict_extract<int>(config, "height");
                 if (height < drawHeight) height = drawHeight;
             }
 
@@ -51,10 +51,10 @@ namespace Amara {
             
             if (json_has(config, "frame")) frame = config["frame"];
             
-            if (json_has(config, "marginLeft")) marginLeft = json_extract(config, "marginLeft");
-            if (json_has(config, "marginRight")) marginRight = json_extract(config, "marginRight");
-            if (json_has(config, "marginTop")) marginTop = json_extract(config, "marginTop");
-            if (json_has(config, "marginBottom")) marginBottom = json_extract(config, "marginBottom");
+            if (json_has(config, "marginLeft")) marginLeft = json_strict_extract<float>(config, "marginLeft");
+            if (json_has(config, "marginRight")) marginRight = json_strict_extract<float>(config, "marginRight");
+            if (json_has(config, "marginTop")) marginTop = json_strict_extract<float>(config, "marginTop");
+            if (json_has(config, "marginBottom")) marginBottom = json_strict_extract<float>(config, "marginBottom");
 
             if (json_has(config, "margin")) {
                 nlohmann::json j_margin = json_extract(config, "margin");

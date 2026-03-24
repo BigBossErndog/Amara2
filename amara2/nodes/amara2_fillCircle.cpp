@@ -14,12 +14,12 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "color")) tint = config["color"];
-            if (json_has(config, "radius")) setRadius(json_extract(config, "radius"));
-            if (json_has(config, "diameter")) setDiameter(json_extract(config, "diameter"));
-            if (json_has(config, "r")) setRadius(json_extract(config, "r"));
-            if (json_has(config, "d")) setDiameter(json_extract(config, "d"));
-            if (json_has(config, "segments")) baseSegments = json_extract(config, "segments");
+            if (json_has(config, "color")) tint = json_get<Amara::Color>(config, "color");
+            if (json_has(config, "radius")) setRadius(json_strict_extract<float>(config, "radius"));
+            if (json_has(config, "diameter")) setDiameter(json_strict_extract<float>(config, "diameter"));
+            if (json_has(config, "r")) setRadius(json_strict_extract<float>(config, "r"));
+            if (json_has(config, "d")) setDiameter(json_strict_extract<float>(config, "d"));
+            if (json_has(config, "segments")) baseSegments = json_strict_extract<int>(config, "segments");
             
             if (json_has(config, "width")) json_extract(config, "width");
             if (json_has(config, "height")) json_extract(config, "height");

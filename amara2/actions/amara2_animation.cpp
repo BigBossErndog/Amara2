@@ -59,7 +59,7 @@ namespace Amara {
                             animKey.clear();
                             return;
                         }
-
+                        
                         frames = animData->frames;
                         repeats = animData->repeats;
                         frameRate = animData->frameRate;

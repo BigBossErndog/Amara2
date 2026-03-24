@@ -37,6 +37,30 @@ namespace Amara {
         return nullptr;
     }
     
+    template <typename T>
+    T json_get(const nlohmann::json& obj, const std::string& key) {
+        try {
+            T prop = obj[key];
+            return prop;
+        }
+        catch (const nlohmann::json::exception& e) {
+            fatal_error(e.what(), ". For property \"", key, "\"");
+        }
+        catch (const std::exception& e) {
+            fatal_error(e.what(), " For property \"", key, "\".");
+        }
+    }
+    
+    template <typename T>
+    T json_strict_extract(nlohmann::json& data, std::string key) {
+        if (json_has(data, key)) {
+            T value = json_get<T>(data, key);
+            data.erase(key);
+            return value;
+        }
+        fatal_error("Error: Table does not contain \"", key, "\".");
+    }
+    
     nlohmann::json string_to_json(const std::string& input, bool allow_null) {
         if (input.size() == 0) return allow_null ? nullptr : std::string("");
         
@@ -57,19 +81,5 @@ namespace Amara {
     }
     nlohmann::json string_to_json(const std::string& input) {
         return string_to_json(input, true);
-    }
-    
-    template <typename T>
-    T json_get(const nlohmann::json& obj, const std::string& key) {
-        try {
-            T prop = obj[key];
-            return prop;
-        }
-        catch (const nlohmann::json::exception& e) {
-            fatal_error(e.what(), ". For property \"", key, "\"");
-        }
-        catch (const std::exception& e) {
-            fatal_error(e.what(), " For property \"", key, "\".");
-        }
     }
 }

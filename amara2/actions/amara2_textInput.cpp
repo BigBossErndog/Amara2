@@ -11,7 +11,7 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "text")) setText(config["text"].get<std::string>());
+            if (json_has(config, "text")) setText(json_get<std::string>(config, "text"));
             if (json_is(config, "startInput")) startInput();
             if (json_is(config, "stopInput")) stopInput();
             if (json_is(config, "clear")) clear();

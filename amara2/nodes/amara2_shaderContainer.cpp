@@ -30,16 +30,8 @@ namespace Amara {
                     addShaderPass(*it);
                 }
             }
-            it = config.find("shaderPass");
-            if (it != config.end()) {
-                if (it->is_string()) {
-                    addShaderPass(*it);
-                }
-            }
-            it = config.find("repeats");
-            if (it != config.end() && it->is_number_integer() && *it > 0) {
-                repeats = *it;
-            }
+            if (json_has(config, "shaderPass")) addShaderPass(json_get<std::string>(config, "shaderPass"));
+            if (json_has(config, "repeats")) repeats = json_get<int>(config, "repeats");
             return Amara::TextureContainer::configure(config);
         }
 

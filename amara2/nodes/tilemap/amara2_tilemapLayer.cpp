@@ -42,15 +42,15 @@ namespace Amara {
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
-            if (json_has(config, "tileWidth")) tileWidth = config["tileWidth"];
-            if (json_has(config, "tileHeight")) tileHeight = config["tileHeight"];
+            if (json_has(config, "tileWidth")) tileWidth = json_get<int>(config, "tileWidth");
+            if (json_has(config, "tileHeight")) tileHeight = json_get<int>(config, "tileHeight");
 
-            if (json_has(config, "width")) mapWidth = json_extract(config, "width");
-            if (json_has(config, "height")) mapHeight = json_extract(config, "height");
-            if (json_has(config, "w")) mapWidth = json_extract(config, "w");
-            if (json_has(config, "h")) mapHeight = json_extract(config, "h");
+            if (json_has(config, "width")) mapWidth = json_strict_extract<int>(config, "width");
+            if (json_has(config, "height")) mapHeight = json_strict_extract<int>(config, "height");
+            if (json_has(config, "w")) mapWidth = json_strict_extract<int>(config, "w");
+            if (json_has(config, "h")) mapHeight = json_strict_extract<int>(config, "h");
             
-            if (json_has(config, "rotatedCollisions")) rotatedCollisions = json_extract(config, "rotatedCollisions");
+            if (json_has(config, "rotatedCollisions")) rotatedCollisions = json_strict_extract<bool>(config, "rotatedCollisions");
 
             Amara::TextureContainer::configure(config);
 
@@ -80,7 +80,7 @@ namespace Amara {
             widthInPixels = width;
             heightInPixels = height;
 
-            if (json_has(config, "texture")) setTexture(config["texture"]);
+            if (json_has(config, "texture")) setTexture(json_get<std::string>(config, "texture"));
 
             update_canvas = true;
 
