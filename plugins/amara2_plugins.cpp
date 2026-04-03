@@ -40,7 +40,7 @@ namespace Amara {
              * Return true on success and 
              */
             switch (task.type) {
-
+                
             }
         }
     };

@@ -53,9 +53,9 @@ Nodes:define("IncludeFolders", "FillRect", {
         end
 
         local invalidFolders = {
-            build = {},
-            lua_scripts = {},
-            assets = {}
+            build = true,
+            lua_scripts = true,
+            assets = true
         }
 
         local found = System:getSubDirectories(self.get.projectPath)
@@ -72,8 +72,9 @@ Nodes:define("IncludeFolders", "FillRect", {
 
         for i, v in ipairs(self.get.directories) do
             local opt = self.get.root:createChild("FillRect", {
-                x = 0, y = (i - 1)*16,
-                width = self.width,
+                x = 0,
+                y = (i - 1) * 16,
+                width = self.get.content.width - 8,
                 height = 16,
                 color = "#111d27",
                 origin = 0,
@@ -83,13 +84,17 @@ Nodes:define("IncludeFolders", "FillRect", {
                 onCreate = function(backer)
                     backer.get.ticker = backer:createChild("Sprite", {
                         origin = 0,
-                        x = 8, y = 4,
+                        x = 8,
+                        y = 4,
                         texture = "tickBox",
                         frame = self.get.tempData[backer.get.dirName] and 2 or 1
                     })
                     backer.get.txt = backer:createChild("Text", {
-                        x = backer.get.ticker.x + backer.get.ticker.width + 4, y = 2, origin = 0,
-                        font = "defaultFont", color = Colors.White,
+                        x = backer.get.ticker.x + backer.get.ticker.width + 4,
+                        y = 2,
+                        origin = 0,
+                        font = "defaultFont",
+                        color = Colors.White,
                         text = v,
                         alpha = self.get.tempData[backer.get.dirName] and 1 or 0.5
                     })
@@ -109,39 +114,80 @@ Nodes:define("IncludeFolders", "FillRect", {
             end
         end
 
-        self.get.scrollBar = self.get.content:createChild("FillRect", {
+        self.get.scrollBar = self.parent:createChild("FillRect", {
             color = { 80, 80, 80 },
-            width = 2,
+            width = 4,
             origin = 0,
             visible = false,
+            alpha = 0.5,
             
             onCreate = function(scrollBar)
                 scrollBar.get.pos = scrollBar:createChild("FillRect", {
                     color = { 200, 200, 200 },
-                    width = 2,
+                    width = scrollBar.width,
                     height = 1,
                     origin = 0
                 })
-
             end,
+            
+            handleScrolling = function(scrollBar)
+                local pos = scrollBar.get.pos
+                pos.height = scrollBar.height * (self.get.content.height/self.get.wallHeight)
+                
+                self.get.root.y = self.get.root.y + self.input.mouse.wheel.y * 5
+                
+                if self.get.scrollDragged then
+                    if self.input.pointer.isDown then
+                        self.get.scrollBar.alpha = 1
+                    else
+                        self.get.scrollDragged = false
+                        if not self.get.scrollBar.input.hovered then
+                            self.get.scrollBar.alpha = 0.5
+                        end
+                    end
+                    local barHeight = (self.get.scrollBar.height - self.get.scrollBar.get.pos.height)
+                    local per = (self.input.pointer.y - self.get.scrollBar.worldPos.y) / barHeight
+                    self.get.root.y = self.get.content.top - per * (self.get.wallHeight - self.get.content.height)
+                end
+                
+                if self.get.root.y > self.get.content.top then
+                    self.get.root.y = self.get.content.top
+                elseif self.get.content.height/2 - self.get.root.y > self.get.wallHeight then
+                    self.get.root.y = self.get.content.height/2 - self.get.wallHeight
+                end
+            end,
+            
             manageScrollPosition = function(scrollBar)
                 scrollBar.visible = true
 
-                scrollBar.x = self.get.content.x + self.get.content.width + scrollBar.width - 1
-                scrollBar.y = self.get.content.y + 2
+                scrollBar.x = self.x + self.get.content.x + self.get.content.width - scrollBar.width - 1
+                scrollBar.y = self.y + self.get.content.y + 2
                 
                 scrollBar.height = self.get.content.height - 4
 
-                local pos = scrollBar.get.pos
-
-                pos.height = scrollBar.height * ((self.get.content.height - self.get.margin.bottom - self.get.margin.top) / (self.get.wallHeight + self.get.margin.bottom + self.get.margin.top))
-                pos.y = -(scrollBar.height - pos.height) * ((-self.get.root.y + self.get.content.top + self.get.margin.top) / ((self.get.content.bottom - self.get.margin.bottom - self.get.wallHeight) - (self.get.content.top + self.get.margin.top)))
-            end
+                scrollBar.get.pos.y = scrollBar.height * ((self.get.content.top - self.get.root.y)/self.get.wallHeight)
+            end,
+            
+            input = {
+                active = true,
+                onPointerDown = function()
+                    self.get.scrollDragged = true
+                end,
+                onPointerHover = function()
+                    self.get.scrollBar.alpha = 1
+                end,
+                onPointerExit = function()
+                    if not self.get.scrollDragged then
+                        self.get.scrollBar.alpha = 0.6
+                    end
+                end
+            }
         })
     end,
 
     onUpdate = function(self, deltaTime)
         if self.get.wallHeight > (self.get.content.height - self.get.margin.bottom - self.get.margin.top) then
+            self.get.scrollBar.func:handleScrolling()
             self.get.scrollBar.func:manageScrollPosition()
         else
             self.get.scrollBar.visible = false
