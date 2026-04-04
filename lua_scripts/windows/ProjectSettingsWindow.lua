@@ -12,7 +12,7 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
     end,
 
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
         local projectData = System:readJSON(System:join(self.get.oldProjectPath, "project.json"))
 
         self.get.folderPath = System:getDirectoryOf(self.get.oldProjectPath)
@@ -106,7 +106,6 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
                         projectPath = self.get.oldProjectPath,
                         exampleProject = self.get.exampleProject
                     })
-                    newWindow.func:openWindow()
                     
                     self:destroy()
                 end)

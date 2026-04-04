@@ -25,7 +25,7 @@ Nodes:define("CodeEditorButton", "UIButton", {
             self.get.toolTip = "toolTip_noCodeEditor"
         end
 
-        self.classes.UIButton.func:onCreate()
+        self.super.UIButton.func:onCreate()
     end,
 
     onPress = function(self)

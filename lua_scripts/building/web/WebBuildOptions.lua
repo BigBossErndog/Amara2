@@ -6,12 +6,15 @@ Nodes:define("WebBuildOptions", "UIWindow", {
         if config.projectPath then
             self.get.projectPath = config.projectPath
         end
+        if config.exampleProject then
+            self.get.exampleProject = config.exampleProject
+        end
     end,
 
     onCreate = function(self)
         self.get.projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
 
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         local title = self.get.content:createChild("Text", {
             x = 10, y = 6,
@@ -35,9 +38,9 @@ Nodes:define("WebBuildOptions", "UIWindow", {
                 button.get.enabled = false
                 self.func:closeWindow(function(b)
                     local newWindow = self.parent:createChild("ProjectWindow", {
-                        projectPath = self.get.projectPath
+                        projectPath = self.get.projectPath,
+                        exampleProject = self.get.exampleProject
                     })
-                    newWindow.func:openWindow()
                     
                     self:destroy()
                 end)

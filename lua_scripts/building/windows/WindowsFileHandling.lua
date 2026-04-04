@@ -1,4 +1,4 @@
-local props = Game.argtable["-props"]
+local props = Game.argtable["props"]
 local projectData = props.projectData
 
 if props.iconDest then

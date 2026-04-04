@@ -184,7 +184,6 @@ Nodes:define("WebBuildNode", "ProcessNode", {
                     local newWindow = self.world.get.windows:createChild("ProjectWindow", {
                         projectPath = self.get.projectPath
                     })
-                    newWindow.func:openWindow()
                     
                     if self.get.gameProcess then
                         System:remove(self.get.gameProcess.get.batchFilePath)

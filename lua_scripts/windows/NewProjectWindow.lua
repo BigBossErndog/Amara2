@@ -1,9 +1,9 @@
 Nodes:define("NewProjectWindow", "UIWindow", {
     width = 256,
     height = 120,
-
+    
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         local settings = self.world.func:getSettings()
 
@@ -29,6 +29,7 @@ Nodes:define("NewProjectWindow", "UIWindow", {
             x = 8, y = 28,
             width = self.get.targetWidth - 16,
             defaultText = Localize:get("label_projectName"),
+            infiniteLength = true,
             onChange = function(textField, txt)
                 self.get.folderField.func:setText(self.func:makePath(self.get.folderPath, txt))
             end,

@@ -3,7 +3,7 @@ Nodes:define("MainWindow", "UIWindow", {
     height = 156,
 
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         local settings = self.world.func:getSettings()
 
@@ -12,20 +12,7 @@ Nodes:define("MainWindow", "UIWindow", {
             font = "defaultFont",
             text = Localize:get("title_windowTitle") .. " v" .. version_string,
             color = "#a8bee0",
-            origin = 0,
-            input = {
-                active = true,
-                cursor = Cursor.Pointer,
-                onPointerHover = function(txt)
-                    print("POINTER HOVER")
-                end,
-                onPointerUp = function(txt)
-                    print("POINTER UP")
-                end,
-                onPointerExit = function(txt)
-                    print("POINTER EXIT")
-                end
-            }
+            origin = 0
         })
 
         local recentProjectsTitle = self.get.content:createChild("Text", {
@@ -90,7 +77,6 @@ Nodes:define("MainWindow", "UIWindow", {
                                 local newWindow = window.parent:createChild("ProjectWindow", {
                                     projectPath = self.get.projectPath
                                 })
-                                newWindow.func:openWindow()
                                 newWindow.func:openDefault()
                                 
                                 window:destroy()
@@ -302,7 +288,6 @@ Nodes:define("MainWindow", "UIWindow", {
                         projectPath = path
                     })
                     newWindow.func:openDefault()
-                    newWindow.func:openWindow()
                     
                     self:destroy()
                 end)

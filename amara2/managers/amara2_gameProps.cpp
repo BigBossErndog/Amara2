@@ -15,7 +15,7 @@ namespace Amara {
     class ShaderManager;
 
     class RenderBatch;
-
+    
     class Audio;
     class AudioMaster;
 
@@ -196,5 +196,9 @@ namespace Amara {
         CursorEnum current_cursor = CursorEnum::Default;
         SDL_Cursor* cursor_default = nullptr;
         SDL_Cursor* cursor_pointer = nullptr;
+        SDL_Cursor* cursor_text = nullptr;
+        SDL_Cursor* cursor_wait = nullptr;
+        SDL_Cursor* cursor_progress = nullptr;
+        SDL_Cursor* cursor_notAllowed = nullptr;
     };
 }

@@ -146,7 +146,7 @@ Nodes:define("IncludeFolders", "FillRect", {
                         end
                     end
                     local barHeight = (self.get.scrollBar.height - self.get.scrollBar.get.pos.height)
-                    local per = (self.input.pointer.y - self.get.scrollBar.worldPos.y) / barHeight
+                    local per = (self.input.pointer.y - self.get.scrollBar.get.pos.height/2 - self.get.scrollBar.worldPos.y) / barHeight
                     self.get.root.y = self.get.content.top - per * (self.get.wallHeight - self.get.content.height)
                 end
                 

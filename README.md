@@ -129,11 +129,11 @@ Nodes:define("MyScene", "Scene", { -- define MyScene from already existing node 
 ```
 You would then load it in within your *index.lua* or another script file via the following.
 ```lua
-Nodes:load("MyScene.lua") -- searches for "MyScene.lua" in the folder "lua_scripts"
+Scripts:include("MyScene.lua") -- searches for "MyScene.lua" in the folder "lua_scripts"
 
 -- Additionally, you can omit ".lua" to search for either ".lua" or a compiled ".luac".
 -- Handy for later when you are able to compile your lua scripts.
-Nodes:load("MyScene") -- searches for "lua_scripts/MyScene.lua" or "lua_scripts/MyScene.luac"
+Scripts:include("MyScene") -- searches for "lua_scripts/MyScene.lua" or "lua_scripts/MyScene.luac"
 ```
 
 You can now use this loaded Node from anywhere in your project.

@@ -675,6 +675,18 @@ namespace Amara {
                 case CursorEnum::Pointer:
                     SDL_SetCursor(gameProps->cursor_pointer);
                     break;
+                case CursorEnum::Text:
+                    SDL_SetCursor(gameProps->cursor_text);
+                    break;
+                case CursorEnum::Wait:
+                    SDL_SetCursor(gameProps->cursor_wait);
+                    break;
+                case CursorEnum::Progress:
+                    SDL_SetCursor(gameProps->cursor_progress);
+                    break;
+                case CursorEnum::NotAllowed:
+                    SDL_SetCursor(gameProps->cursor_notAllowed);
+                    break;
                 default:
                     fatal_error("Error: Unsupported cursor type.");
                     break;

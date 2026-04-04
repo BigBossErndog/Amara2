@@ -1,8 +1,8 @@
 local argtable = Game.argtable
 
 local buildModulePath
-if argtable["-buildmodule"] then
-    buildModulePath = argtable["-buildmodule"]
+if argtable["buildmodule"] then
+    buildModulePath = argtable["buildmodule"]
 end
 
 if not buildModulePath or not System:exists(buildModulePath) then

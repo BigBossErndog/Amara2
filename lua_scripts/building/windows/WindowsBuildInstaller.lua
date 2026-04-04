@@ -9,7 +9,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     end,
 
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         self.get.title = self.get.content:createChild("Text", {
             x = 10, y = 8,
@@ -45,7 +45,6 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                     local newWindow = self.parent:createChild("ProjectWindow", {
                         projectPath = self.get.projectPath
                     })
-                    newWindow.func:openWindow()
                     
                     self:destroy()
                 end)
@@ -169,7 +168,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                 disableSavePosition = true,
 
                 onCreate = function(self)
-                    self.classes.TerminalWindow.func:onCreate()
+                    self.super.TerminalWindow.func:onCreate()
                     self.func:startLoading()
 
                     self.get.gameProcess = self:createChild("ProcessNode", {
@@ -202,7 +201,6 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                         local newWindow = self.world.get.windows:createChild("ProjectWindow", {
                             projectPath = self.get.projectPath
                         })
-                        newWindow.func:openWindow()
                     else
                         local newWindow = self.world.get.windows:createChild("BuildPlatformMenu", {
                             projectPath = self.get.projectPath

@@ -29,6 +29,10 @@ namespace Amara {
             
             gameProps->cursor_default = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
             gameProps->cursor_pointer = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
+            gameProps->cursor_text = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
+            gameProps->cursor_wait = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+            gameProps->cursor_progress = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_PROGRESS);
+            gameProps->cursor_notAllowed = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED);
             if (gameProps->cursor_default) {
                 SDL_SetCursor(gameProps->cursor_default);
             }

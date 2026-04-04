@@ -15,7 +15,7 @@ Nodes:define("EncryptionOptions", "UIWindow", {
     end,
 
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         self.get.tempData = {}
         self.get.tempData["encrypt-lua-scripts"] = true
@@ -93,7 +93,7 @@ Nodes:define("EncryptionOptions", "UIWindow", {
             width = self.get.targetWidth - (keyTxt.x + keyTxt.width + 4) - 8,
             defaultText = Localize:get("label_enterEncryptionKey"),
             onCreate = function(self)
-                self.classes.TextField.func:onCreate(self)
+                self.super.TextField.func:onCreate(self)
                 self.get.maxTextWidth = self.width - 16
             end,
             onChange = function(textField, txt)

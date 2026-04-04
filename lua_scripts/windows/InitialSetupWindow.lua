@@ -3,7 +3,7 @@ Nodes:define("InitialSetupWindow", "UIWindow", {
     height = 42,
     
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         local txt = self.get.content:createChild("Text", {
             text = Localize:get("label_performingInitialSetup"),

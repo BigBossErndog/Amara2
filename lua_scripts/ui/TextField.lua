@@ -3,11 +3,16 @@ Nodes:define("TextField", "FillRect", {
     height = 18,
     origin = 0,
     color = "#111d27",
-    input = true,
+    input = {
+        active = true,
+        cursor = Cursor.Text
+    },
 
     props = {
-        defaultText = Localize:get("label_enterTextHere"),
+        defaultText = "label_enterTextHere",
         inputEnabled = true,
+        fixLengthToSize = true,
+        skip = false
     },
 
     onConfigure = function(self, config)
@@ -17,18 +22,41 @@ Nodes:define("TextField", "FillRect", {
         if config.inputEnabled ~= nil then
             self.get.inputEnabled = config.inputEnabled
         end
+        if config.fixLengthToSize ~= nil then
+            self.get.fixLengthToSize = config.fixLengthToSize
+        end
+        if config.maxTextWidth then
+            self.get.maxTextWidth = config.maxTextWidth
+        end
+        if config.infiniteLength then
+            self.get.infiniteLength = config.infiniteLength
+            self.get.fixLengthToSize = false
+        end
     end,
 
     onCreate = function(self)
         self.get.selected = false
         self.get.finalText = ""
-
-        if not self.get.maxTextWidth then
+        
+        if self.get.fixLengthToSize then
             self.get.maxTextWidth = self.width - 16
         end
         
-        self.get.txt = self:createChild("Text",{
-            x = 8, y = 2,
+        self.get.container = self:createChild("TextureContainer", {
+            x = 2,
+            y = 0,
+            width = self.width - 4,
+            height = self.height,
+            origin = 0
+        })
+        
+        self.get.root = self.get.container:createChild("Group", {
+            x = self.get.container.left,
+            y = self.get.container.top
+        })
+        
+        self.get.txt = self.get.root:createChild("Text",{
+            x = 6, y = 2,
             font = "defaultFont",
             origin = 0,
             wrapMode = WrapMode.ByWord,
@@ -42,7 +70,7 @@ Nodes:define("TextField", "FillRect", {
             y = 2,
             color = Colors.White,
             origin = 0,
-            onCreate = function(self) 
+            onCreate = function(self)
                 self.func:hide()
             end,
             onUpdate = function(self, deltaTime)
@@ -95,6 +123,7 @@ Nodes:define("TextField", "FillRect", {
             if self.func.onFocus then
                 self.func:onFocus(self.get.finalText)
             end
+            self.get.skip = true
         end
     end,
 
@@ -106,7 +135,7 @@ Nodes:define("TextField", "FillRect", {
                 self.get.txt.text = txt
                 self.get.txt.color = Colors.White
             else
-                self.get.txt.text = self.get.defaultText
+                self.get.txt.text = Localize:get(self.get.defaultText)
                 self.get.txt.color = "#515f73"
             end
         else
@@ -114,10 +143,12 @@ Nodes:define("TextField", "FillRect", {
             self.get.txt.color = Colors.White
 
             self.get.textInput.text = txt
-            while self.get.txt.width > self.get.maxTextWidth do
-                self.get.textInput:backspace()
-                self.get.txt.text = self.get.textInput.text
-                self.get.finalText = self.get.textInput.text
+            if self.get.maxTextWidth then
+                while self.get.txt.width > self.get.maxTextWidth do
+                    self.get.textInput:backspace()
+                    self.get.txt.text = self.get.textInput.text
+                    self.get.finalText = self.get.textInput.text
+                end
             end
         end
     end,
@@ -136,8 +167,22 @@ Nodes:define("TextField", "FillRect", {
     end,
 
     onUpdate = function(self)
+        if self.get.skip then
+            self.get.skip = false
+            return
+        end
+        self.input.cursor = self.get.inputEnabled and Cursor.Text or Cursor.Default
         if self.get.selected then
-            if self.func:deselect() then
+            local tabbed = false
+
+            if Keyboard:justPressed(Key.Tab) then
+                tabbed = true
+                if self.func.onTab then
+                    self.func:onTab(self.get.finalText)
+                end
+            end
+
+            if tabbed or self.func:deselect() then
                 self.get.selected = false
                 self.get.cursor.func:hide()
                 self.get.textInput:stopInput()
@@ -153,6 +198,16 @@ Nodes:define("TextField", "FillRect", {
                         self.func:onEnter(self.get.finalText)
                     end
                 end
+            end
+        end
+    end,
+    
+    onPreDraw = function(self)
+        if self.get.selected then
+            if self.get.txt.width > self.get.container.width - 12 then
+                self.get.txt.x = 6 - (self.get.txt.width - (self.get.container.width - 12))
+            else
+                self.get.txt.x = 6
             end
         end
     end

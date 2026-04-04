@@ -95,15 +95,15 @@ namespace Amara {
             float world_top_left_y = anchoredPos.y - anchoredPos.z + (-height*origin.y)*scale.y*passOn.scale.y;
 
             SDL_FRect destRect;
-            destRect.x = vcenter.x + world_top_left_x * totalZoom.x;
-            destRect.y = vcenter.y + world_top_left_y * totalZoom.y;
+            destRect.x = v.x + vcenter.x + world_top_left_x * totalZoom.x;
+            destRect.y = v.y + vcenter.y + world_top_left_y * totalZoom.y;
             destRect.w = width*scale.x*passOn.scale.x * totalZoom.x;
             destRect.h = height*scale.y*passOn.scale.y * totalZoom.y;
 
             float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
             if (!Shape::checkCollision(
                 Rectangle(destRect), Rectangle(
-                    -diag_distance, -diag_distance,
+                    v.x - diag_distance, v.y - diag_distance,
                     v.w + diag_distance*2, v.h + diag_distance*2
                 )
             )) return;

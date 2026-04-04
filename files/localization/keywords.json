@@ -14,7 +14,8 @@
     "title_encryptionOptions": "Encryption Options",
     "title_projectSettings": "Project Settings",
     "title_exampleProjects": "Example Projects",
-
+    "title_testArguments": "Test Arguments",
+    
     "toolTip_newProject": "New Project",
     "toolTip_exit": "Exit (Ctrl + Shift + F4)",
     "toolTip_exitOnly": "Exit",
@@ -51,6 +52,8 @@
     "toolTip_openInGeany": "Open In Geany (Alt + Shift + X)",
     "toolTip_openInLiteXL": "Open In Lite XL (Alt + Shift + X)",
     "toolTip_openInWindsurf": "Open In Windsurf (Alt + Shift + X)",
+
+    "toolTip_removeArgument": "Remove Argument",
     
     "toolTip_openPrintLog": "Open Print Log (Ctrl + Shift + M)",
     "toolTip_projectSettings": "Project Settings",
@@ -79,6 +82,12 @@
     "label_saveSettings": "Save Settings",
     "label_projectLocation": "Project Location",
     "label_searchExamples": "Search Examples...",
+    
+    "label_addArgument": "Add Argument",
+    "label_enterArgument": "Enter Argument...",
+    "label_noArguments": "No Arguments Set.",
+    "label_clearArguments": "Clear Arguments",
+    "label_true": "true",
 
     "label_downloadModule": "Download Module",
     "label_installVSBuildTools": "Install VS Build Tools",

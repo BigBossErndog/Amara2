@@ -1,4 +1,5 @@
 {
+    "executable-name": "Amara2",
     "project-name": "Amara2",
-    "executable-name": "Amara2"
+    "test_arguments": {}
 }

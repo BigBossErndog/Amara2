@@ -94,6 +94,9 @@ Nodes:define("UIWindow", "NineSlice", {
         return self
     end,
     openWindow = function(self, _onEnd)
+        if self.get.isOpen then
+            return
+        end
         self.visible = true
         self.get.isOpen = true
         
@@ -108,20 +111,27 @@ Nodes:define("UIWindow", "NineSlice", {
             scaleX = 1,
             scaleY = 1,
             ease = Ease.SineOut,
-            duration = self.get.speed,
-            onUpdate = function(self, progress)
-                print(self.scale)
-            end
+            duration = self.get.speed
         })
         self.tween:to({
             width = self.get.targetWidth,
             height = self.get.targetHeight,
             duration = self.get.speed,
             ease = Ease.SineOut,
-            onComplete = _onEnd
+            onComplete = function()
+                if _onEnd then
+                    _onEnd(self)
+                end
+                if self.func.onWindowOpen then
+                    self.func:onWindowOpen()
+                end
+            end
         })
     end,
     closeWindow = function(self, _onEnd)
+        if not self.get.isOpen then
+            return
+        end
         if _onEnd == nil then
             _onEnd = function(self) 
                 self.visible = false
@@ -142,7 +152,14 @@ Nodes:define("UIWindow", "NineSlice", {
             height = 0,
             duration = self.get.speed,
             ease = Ease.SineIn,
-            onComplete = _onEnd
+            onComplete = function()
+                if _onEnd then
+                    _onEnd(self)
+                end
+                if self.func.onWindowClose then
+                    self.func:onWindowClose()
+                end
+            end
         })
     end,
 

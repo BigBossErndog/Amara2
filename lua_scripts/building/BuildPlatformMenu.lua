@@ -9,7 +9,7 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
     end,
 
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         local title = self.get.content:createChild("Text", {
             x = 10, y = 6,
@@ -44,7 +44,6 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
                     local newWindow = self.parent:createChild("ProjectWindow", {
                         projectPath = self.get.projectPath
                     })
-                    newWindow.func:openWindow()
                     
                     self:destroy()
                 end)

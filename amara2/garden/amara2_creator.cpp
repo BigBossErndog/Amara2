@@ -128,10 +128,16 @@ namespace Amara {
                         }
                         #endif
                         else if (String::startsWith(arg, "-")) {
-                            std::string lbl = arg.get<std::string>();
-                            it++;
-                            if (it == game.arguments.end()) break;
-                            game.argmap[lbl] = *it;
+                            if (String::startsWith(arg, "-D")) {
+                                std::string lbl = arg.get<std::string>().substr(2);
+                                game.argmap[lbl] = true;
+                            }
+                            else {
+                                std::string lbl = arg.get<std::string>().substr(1);
+                                it++;
+                                if (it == game.arguments.end()) break;
+                                game.argmap[lbl] = *it;
+                            }
                         }
                     }
                     ++it;

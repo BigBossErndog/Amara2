@@ -184,7 +184,7 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
 
         self.get.pageCount = math.ceil(#self.get.examples / 8)
 
-        self.classes.PagedWindow.func:onCreate()
+        self.super.PagedWindow.func:onCreate()
 
         self.get.title = self.get.content:createChild("Text", {
             x = 10, y = 8,
@@ -314,7 +314,6 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
                     projectPath = sandboxPath
                 })
                 newWindow.func:openDefault()
-                newWindow.func:openWindow()
                 
                 self:destroy()
             end)

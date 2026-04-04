@@ -6,10 +6,13 @@ Nodes:define("ProjectWindow", "UIWindow", {
         if config.projectPath then
             self.get.projectPath = config.projectPath
         end
+        if config.playOnStart then
+            self.get.playOnStart = config.playOnStart
+        end
     end,
     
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
         local projectName = projectData["project-name"]
@@ -60,6 +63,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 left = { Key.LeftAlt, Key.LeftShift, Key.Enter },
                 right = { Key.RightAlt, Key.RightShift, Key.Enter }
             },
+            debugging = true,
             onPress = function()
                 if not self.get.gameProcess then
                     self.func:runGame()
@@ -67,23 +71,29 @@ Nodes:define("ProjectWindow", "UIWindow", {
                     self.func:stopGame()
                 end
             end,
-            input = {
-                onRightMouseDown = function(button)
-                    button.get.clicked = true
-                    if button.get.enabled then
-                        button.frame = 2
-                    end
-                end,
-                onRightMouseUp = function(button)
-                    button.frame = 1
-                    if not self.get.gameProcess then
-                        self.func:runGame()
-                    else 
-                        self.func:stopGame()
-                        self.func:runGame()
-                    end
+            onRightClick = function()
+                if self.get.gameProcess then
+                    self.func:stopGame()
                 end
-            }
+                if self.get.printLog then
+                    self.get.printLog.func:unbindGameProcess()
+                    self.get.printLog.func:closeWindow(function(self)
+                        self:destroy()
+                    end)
+                    self.get.printLog = nil
+                end
+                self.func:closeWindow(function(button)
+                    button.get.enabled = false
+                    
+                    local newWindow = self.parent:createChild("RunArgumentsWindow", {
+                        projectPath = self.get.projectPath,
+                        exampleProject = self.get.exampleProject
+                    })
+                    newWindow.func:openWindow()
+                    
+                    self:destroy()
+                end)
+            end
         })
 
         buttonPos.x = buttonPos.x + buttonSpacing
@@ -308,6 +318,10 @@ Nodes:define("ProjectWindow", "UIWindow", {
         if not self.get.exampleProject then
             self.world.func:registerProject(self.get.projectPath)
         end
+
+        if self.get.playOnStart then
+            self.get.playButton.func:onPress()
+        end
     end,
 
     savePosition = function(self)
@@ -351,15 +365,29 @@ Nodes:define("ProjectWindow", "UIWindow", {
                 exe = testBuild
             end
         end
+        
+        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        
+        local args = {
+            exe,
+            "-context", self.get.projectPath,
+            "-debugging",
+            "-script", "index.lua",
+            "-script", System:getScriptPath("utility/BringGameToFront.lua")
+        }
+        if projectData.test_arguments then
+            for key, value in pairs(projectData.test_arguments) do
+                if type(value) ~= "boolean" then
+                    table.insert(args, "-" .. key)
+                    table.insert(args, tostring(value))
+                else
+                    table.insert(args, "-D" .. key)
+                end
+            end
+        end
 
         self.get.gameProcess = self:createChild("ProcessNode", {
-            arguments = {
-                exe,
-                "-context", self.get.projectPath,
-                "-debugging",
-                "-script", "index.lua",
-                "-script", System:getScriptPath("utility/BringGameToFront.lua")
-            },
+            arguments = args,
             onOutput = function(process, msg)
                 if self.get.printLog then
                     self.get.printLog.func:handleMessage(msg)
@@ -411,12 +439,14 @@ Nodes:define("ProjectWindow", "UIWindow", {
             
             if not System:exists(System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm/bin/clang.exe")) then
                 local newWindow = self.world.get.windows:createChild("WindowsBuildInstaller", {
-                    projectPath = self.get.projectPath
+                    projectPath = self.get.projectPath,
+                    exampleProject = self.get.exampleProject
                 })
                 newWindow.func:openWindow()
             else
                 local newWindow = self.world.get.windows:createChild("BuildPlatformMenu", {
-                    projectPath = self.get.projectPath
+                    projectPath = self.get.projectPath,
+                    exampleProject = self.get.exampleProject
                 })
                 newWindow.func:openWindow()
             end

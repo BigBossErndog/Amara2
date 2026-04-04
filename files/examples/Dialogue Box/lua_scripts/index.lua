@@ -1,4 +1,4 @@
-Nodes:load("DialogueBox.lua")
+Scripts:include("DialogueBox.lua")
 
 Creator:createWorld({
     window = {

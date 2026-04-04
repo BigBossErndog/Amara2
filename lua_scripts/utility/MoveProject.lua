@@ -1,6 +1,6 @@
-local oldProjectDirectory = Game.argtable["-oldProjectDirectory"]
-local newProjectDirectory = Game.argtable["-newProjectDirectory"]
-local projectName = Game.argtable["-projectName"]
+local oldProjectDirectory = Game.argtable["oldProjectDirectory"]
+local newProjectDirectory = Game.argtable["newProjectDirectory"]
+local projectName = Game.argtable["projectName"]
 
 local oldProjectData = System:readJSON(System:join(oldProjectDirectory, "project.json"))
 

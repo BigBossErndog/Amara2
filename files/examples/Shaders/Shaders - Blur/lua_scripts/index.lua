@@ -1,6 +1,6 @@
 -- This example shows you usage of a shader together with a uniform variable you can manipulate.
 
-Nodes:load("Slider") -- Loads the Slider.lua file.
+Scripts:include("Slider") -- Loads the Slider.lua file.
 
 Creator:createWorld({
     window = {

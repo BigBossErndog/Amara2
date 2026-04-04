@@ -96,7 +96,11 @@ namespace Amara {
 
     enum class CursorEnum {
         Default = 1,
-        Pointer = 2
+        Pointer = 2,
+        Text = 3,
+        Wait = 4,
+        Progress = 5,
+        NotAllowed = 6
     };
 
     void bind_lua_Enums(sol::state& lua) {
@@ -184,7 +188,12 @@ namespace Amara {
 
         lua.new_enum("Cursor",
             "Default", Amara::CursorEnum::Default,
-            "Pointer", Amara::CursorEnum::Pointer
+            "Pointer", Amara::CursorEnum::Pointer,
+            "Text", Amara::CursorEnum::Text,
+            "NotAllowed", Amara::CursorEnum::NotAllowed,
+            "Forbidden", Amara::CursorEnum::NotAllowed,
+            "Wait", Amara::CursorEnum::Wait,
+            "Progress", Amara::CursorEnum::Progress
         );
 
         lua.new_enum("InputMode",

@@ -5,7 +5,7 @@ Nodes:define("PagedWindow", "UIWindow", {
     },
 
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         self.get.leftButton = self.get.content:createChild("UIButton", {
             x = 8, y = self.get.targetHeight - 16 - 8,

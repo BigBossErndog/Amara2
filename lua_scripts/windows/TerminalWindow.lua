@@ -58,7 +58,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
             }
         end
 
-        self.classes.UIWindow.func:onCreate(self, config)
+        self.super.UIWindow.func:onCreate(self, config)
         
         self.get.paddingLeft = 8
         self.get.paddingRight = 8
@@ -471,7 +471,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
     end,
 
     onUpdate = function(self)
-        self.classes.UIWindow.func:onUpdate(self)
+        self.super.UIWindow.func:onUpdate(self)
 
         if self.input.hovered then
             self.get.pool.y = self.get.pool.y + self.input.mouse.wheel.y * 5

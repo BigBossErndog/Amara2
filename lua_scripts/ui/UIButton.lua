@@ -12,7 +12,25 @@ Nodes:define("UIButton", "NineSlice", {
                 self.frame = 2
             end
         end,
-        onPointerUp = function(self, pointer)
+        onLeftMouseUp = function(self, pointer)
+            self.frame = 1
+            if self.get.enabled and self.func.onPress then
+                self.func:onPress()
+            end
+        end,
+        onRightMouseDown = function(self, pointer)
+            self.frame = 1
+            if self.get.enabled and self.func.onRightClick then
+                self.func:onRightClick()
+            end
+        end,
+        onTouchDown = function(self, pointer)
+            self.get.clicked = true
+            if self.get.enabled then
+                self.frame = 2
+            end
+        end,
+        onTouchUp = function(self, pointer)
             self.frame = 1
             if self.get.enabled and self.func.onPress then
                 self.func:onPress()

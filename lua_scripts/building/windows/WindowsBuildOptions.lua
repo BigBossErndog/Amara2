@@ -10,12 +10,15 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
         if config.projectPath then
             self.get.projectPath = config.projectPath
         end
+        if config.exampleProject then
+            self.get.exampleProject = config.exampleProject
+        end
     end,
 
     onCreate = function(self)
         self.get.projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
 
-        self.classes.PagedWindow.func:onCreate()
+        self.super.PagedWindow.func:onCreate()
         
         self.get.errorMessage = self.get.content:createChild("Text", {
             font = "defaultFont",
@@ -48,9 +51,9 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 button.get.enabled = false
                 self.func:closeWindow(function(b)
                     local newWindow = self.parent:createChild("ProjectWindow", {
-                        projectPath = self.get.projectPath
+                        projectPath = self.get.projectPath,
+                        exampleProject = self.get.exampleProject
                     })
-                    newWindow.func:openWindow()
                     
                     self:destroy()
                 end)
@@ -84,7 +87,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 defaultText = Localize:get("label_enterExecutableFileName"),
 
                 onCreate = function(self)
-                    self.classes.TextField.func:onCreate(self)
+                    self.super.TextField.func:onCreate(self)
 
                     self.get.exeTxt = self:createChild("Text", {
                         x = 8, y = 2,
@@ -122,7 +125,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 end,
 
                 onUpdate = function(self, deltaTime)
-                    self.classes.TextField.func:onUpdate(self, deltaTime)
+                    self.super.TextField.func:onUpdate(self, deltaTime)
                 end
             })
 
@@ -400,7 +403,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
         if self.get.errorMessage then
             self.get.errorMessage.visible = false
         end
-        return self.classes.PagedWindow.func:setPage(pageIndex)
+        return self.super.PagedWindow.func:setPage(pageIndex)
     end,
 
     truncatePath = function(self, _path)

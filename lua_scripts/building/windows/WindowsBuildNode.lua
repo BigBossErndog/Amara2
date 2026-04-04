@@ -223,7 +223,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                     local newWindow = self.world.get.windows:createChild("ProjectWindow", {
                         projectPath = self.get.projectPath
                     })
-                    newWindow.func:openWindow()
                     
                     if self.get.gameProcess then
                         self.get.gameProcess:destroy()

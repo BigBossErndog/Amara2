@@ -9,7 +9,7 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
     end,
 
     onCreate = function(self)
-        self.classes.UIWindow.func:onCreate()
+        self.super.UIWindow.func:onCreate()
 
         self.get.title = self.get.content:createChild("Text", {
             x = 10, y = 8,

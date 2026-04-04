@@ -1,4 +1,4 @@
-Nodes:load("Player")
+Scripts:include("Player")
 
 Nodes:define("GameScene", "Scene", {
     onCreate = function(self)
