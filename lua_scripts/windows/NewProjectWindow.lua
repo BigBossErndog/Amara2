@@ -216,17 +216,14 @@ Nodes:define("NewProjectWindow", "UIWindow", {
         System:createDirectory(System:join(self.get.projectPath, "files"))
 
         self.func:closeWindow(function()
-            self.func:closeWindow(function()
-                self.get.enabled = false
-
-                local newWindow = self.parent:createChild("ProjectWindow", {
-                    projectPath = self.get.projectPath
-                })
-                newWindow.func:openDefault()
-                newWindow.func:openWindow()
+            self.get.enabled = false
                 
-                self:destroy()
-            end)
+            local newWindow = self.parent:createChild("ProjectWindow", {
+                projectPath = self.get.projectPath
+            })
+            newWindow.func:openDefault()
+            
+            self:destroy()
         end)
     end
 })
