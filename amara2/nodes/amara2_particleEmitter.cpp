@@ -39,9 +39,12 @@ namespace Amara {
         
         nlohmann::json start_data;
         nlohmann::json end_data;
+        
+        int index = 0;
 
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Particle>("Particle",
+                "index", sol::readonly(&Amara::Particle::index),
                 "pos", sol::property([](Amara::Particle& t) -> Vector2& { return t.pos; }, [](Amara::Particle& t, sol::object v) { t.pos = v; }),
                 "x", sol::property([](Amara::Particle& t) -> double { return t.pos.x; }, [](Amara::Particle& t, double v) { t.pos.x = v; }),
                 "y", sol::property([](Amara::Particle& t) -> double { return t.pos.y; }, [](Amara::Particle& t, double v) { t.pos.y = v; }),
@@ -81,6 +84,7 @@ namespace Amara {
         
         bool spawning = false;
         int spawnedCount = 0;
+        int spawn_index = 0;
         int end_particle = -1;
         double particle_lifetime = 1;
         
@@ -174,21 +178,6 @@ namespace Amara {
             
             to_table[sol::metatable_key] = to_meta;
             from_table[sol::metatable_key] = from_meta;
-        }
-
-        virtual sol::object luaConfigure(std::string key, sol::object val) override {
-            if (val.is<sol::table>()) {
-                sol::table tbl = val.as<sol::table>();
-                if (tbl["onParticleUpdate"].valid()) {
-                    sol::object func = tbl["onParticleUpdate"];
-                    funcs.setFunction(nodeID, "onParticleUpdate", func.as<sol::function>());
-                }
-                if (tbl["onParticleSpawn"].valid()) {
-                    sol::object func = tbl["onParticleSpawn"];
-                    funcs.setFunction(nodeID, "onParticleSpawn", func.as<sol::function>());
-                }
-            }
-            return Amara::Sprite::luaConfigure(key, val);
         }
         
         virtual void update(double deltaTime) override {
@@ -323,6 +312,9 @@ namespace Amara {
             particle.lifeTime = 0;
             particle.progress = 0;
             
+            spawn_index += 1;
+            particle.index = spawn_index;
+            
             particle.pos = Vector2(0);
             particle.frame = frame;
             particle.origin = Vector2(0.5);
@@ -426,6 +418,7 @@ namespace Amara {
                 particles[i].in_use = false;
             }
             spawnedCount = 0;
+            spawn_index = 0;
             end_particle = -1;
         }
 
@@ -684,19 +677,20 @@ namespace Amara {
                 }
 
                 last_particle = i;
-
+                
                 drawParticle(v, particle);
 
                 if (!updated_this_frame && particle.delay == 0) {
                     particle.lifeTime += deltaTime;
-                    if (particle.lifeTime >= particle_lifetime) {
+                    if (particle_lifetime >= 0 && particle.lifeTime >= particle_lifetime) {
                         if (particle.waitingYoyo) {
                             particle.lifeTime -= particle_lifetime;
                             particle.waitingYoyo = false;
                         }
                     }
                 }
-                particle.progress = particle.lifeTime / particle_lifetime;
+                if (particle.lifeTime >= 0) particle.progress = particle.lifeTime / particle_lifetime;
+                else particle.progress = 0;
             }
             end_particle = last_particle;
 
