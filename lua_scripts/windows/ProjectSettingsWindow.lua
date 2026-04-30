@@ -215,54 +215,51 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
                 exampleProject = self.get.exampleProject
             })
             newWindow.func:openDefault()
-            newWindow.func:openWindow()
         end
         
         self.func:closeWindow(function()
-            self.func:closeWindow(function()
-                if oldProjectDirectory ~= newProjectDirectory then
-                    local newProcess = parent:createChild("ProcessNode", {
-                        arguments = {
-                            Game.executable,
-                            "-script", System:getScriptPath("utility/MoveProject.lua"),
-                            "-oldProjectDirectory",
-                            oldProjectDirectory,
-                            "-newProjectDirectory",
-                            newProjectDirectory,
-                            "-projectName",
-                            projectName
-                        },
-                        onExit = function(process, exitCode)
-                            if exitCode == 0 then
-                                returnWindow()
-                            else
-                                if System:exists(newProjectDirectory) then
-                                    System:remove(newProjectDirectory)
-                                end
-                                newProjectDirectory = oldProjectDirectory
-                                local newTerminal = parent:createChild("TerminalWindow", {
-                                    allowMinimize = true,
-                                    disableSavePosition = true,
-                                    onExit = function()
-                                        local newWindow = parent:createChild("ProjectSettingsWindow", {
-                                            projectPath = self.get.oldProjectPath,
-                                            exampleProject = self.get.exampleProject
-                                        })
-                                        newWindow.func:openWindow()
-                                    end
-                                })
-                                newTerminal.func:handleMessage(Localize:get("error_failedToMoveProject"))
-                                newTerminal.func:openWindow()
+            if oldProjectDirectory ~= newProjectDirectory then
+                local newProcess = parent:createChild("ProcessNode", {
+                    arguments = {
+                        Game.executable,
+                        "-script", System:getScriptPath("utility/MoveProject.lua"),
+                        "-oldProjectDirectory",
+                        oldProjectDirectory,
+                        "-newProjectDirectory",
+                        newProjectDirectory,
+                        "-projectName",
+                        projectName
+                    },
+                    onExit = function(process, exitCode)
+                        if exitCode == 0 then
+                            returnWindow()
+                        else
+                            if System:exists(newProjectDirectory) then
+                                System:remove(newProjectDirectory)
                             end
+                            newProjectDirectory = oldProjectDirectory
+                            local newTerminal = parent:createChild("TerminalWindow", {
+                                allowMinimize = true,
+                                disableSavePosition = true,
+                                onExit = function()
+                                    local newWindow = parent:createChild("ProjectSettingsWindow", {
+                                        projectPath = self.get.oldProjectPath,
+                                        exampleProject = self.get.exampleProject
+                                    })
+                                    newWindow.func:openWindow()
+                                end
+                            })
+                            newTerminal.func:handleMessage(Localize:get("error_failedToMoveProject"))
+                            newTerminal.func:openWindow()
                         end
-                    })
-                else
-                    onSuccess()
-                    returnWindow()
-                end
-                
-                self:destroy()
-            end)
+                    end
+                })
+            else
+                onSuccess()
+                returnWindow()
+            end
+            
+            self:destroy()
         end)
     end
 })

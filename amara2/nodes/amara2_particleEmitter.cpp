@@ -34,6 +34,8 @@ namespace Amara {
         double progress = 0;
         
         bool waitingYoyo = false;
+
+        bool doNotKill = false;
         
         double delay = 0;
         
@@ -67,6 +69,7 @@ namespace Amara {
                 "lifeTime", sol::readonly(&Amara::Particle::lifeTime),
                 "progress", sol::readonly(&Amara::Particle::progress),
                 "delay", &Amara::Particle::delay,
+                "doNotKill", &Amara::Particle::doNotKill,
                 "tint", sol::property([](Amara::Particle& t) -> Color& { return t.tint; }, [](Amara::Particle& t, sol::object v) { t.tint = v; })
             );
         }
@@ -87,6 +90,8 @@ namespace Amara {
         int spawn_index = 0;
         int end_particle = -1;
         double particle_lifetime = 1;
+
+        bool doNotKill = false;
         
         nlohmann::json start_data;
         nlohmann::json end_data;
@@ -146,6 +151,9 @@ namespace Amara {
             }
             if (json_has(config, "yoyo")) {
                 yoyo = json_get<bool>(config, "yoyo");
+            }
+            if (json_has(config, "doNotKill")) {
+                doNotKill = json_get<bool>(config, "doNotKill");
             }
             
             return Amara::Sprite::configure(config);
@@ -325,6 +333,7 @@ namespace Amara {
             particle.rotationalVelocity = 0;
             particle.alpha = 1;
             particle.delay = 0;
+            particle.doNotKill = doNotKill;
             particle.tint = Color::White;
             
             particle.waitingYoyo = yoyo;
@@ -601,7 +610,7 @@ namespace Amara {
                     else spawn_new = true;
                 }
                 else {
-                    if (particle.lifeTime >= particle_lifetime && !updated_this_frame) {\
+                    if (!particle.doNotKill && particle.lifeTime >= particle_lifetime && !updated_this_frame) {
                         spawnedCount -= 1;
                         if (spawn_count > 0) {
                             spawn_new = true;
