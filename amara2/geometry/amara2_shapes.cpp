@@ -156,8 +156,8 @@ namespace Amara {
                     h = config[3];
                 }
                 else if (config.size() == 2) {
-                    x = config[0];
-                    y = config[1];
+                    w = config[0];
+                    h = config[1];
                 }
                 else {
                     fatal_error("Error: Invalid Rectangle assignment.");

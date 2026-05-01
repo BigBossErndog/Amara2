@@ -1355,6 +1355,16 @@ namespace Amara {
                         world.windowH = rect.h;
                     }
                 ),
+                "size", sol::property(
+                    &Amara::World::getRect,
+                    [](Amara::World& world, sol::object val) {
+                        Amara::Rectangle rect = val;
+                        world.pos.x = rect.x;
+                        world.pos.y = rect.y;
+                        world.windowW = rect.w;
+                        world.windowH = rect.h;
+                    }
+                ),
                 "viewport", sol::readonly(&World::viewport),
                 "vw", &World::virtualWidth,
                 "vh", &World::virtualHeight,
