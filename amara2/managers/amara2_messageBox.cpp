@@ -16,7 +16,7 @@ namespace Amara {
             gameProps = _gameProps;
             node = _node;
         }
-    
+        
         void send(std::string _key, sol::object _msgData) {
             gameProps->messages->send(this, _key, _msgData);
         }

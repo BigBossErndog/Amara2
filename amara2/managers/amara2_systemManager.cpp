@@ -10,12 +10,53 @@ namespace Amara {
         
         bool exists(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
+
+            #if defined(__EMSCRIPTEN__)
+            {
+                std::string filePathStr = filePath.string();
+
+                int found = EM_ASM_INT({
+                    var key = UTF8ToString($0);
+                    if (window.localStorage.getItem(key) !== null) return 1;
+                    else return 0;
+                }, filePathStr.c_str());
+                if (found) return true;
+            }
+            #endif
+
             return std::filesystem::exists(filePath);
         }
 
         std::string readFile(const std::string& path) {
             std::filesystem::path filePath = getRelativePath(path);
             std::string pathForError = removeBasePath(filePath);
+
+            #if defined(__EMSCRIPTEN__)
+            {
+                char* lsValue = (char*)EM_ASM_PTR({
+                    var key = UTF8ToString($0);
+                    var value = window.localStorage.getItem(key);
+                    if (value === null) return 0;
+                    var len = lengthBytesUTF8(value) + 1;
+                    var buf = _malloc(len);
+                    stringToUTF8(value, buf, len);
+                    return buf;
+                }, filePath.string().c_str());
+
+                if (lsValue) {
+                    std::string contents(lsValue);
+                    free(lsValue);
+
+                    if (String::startsWith(contents, "_amara_encrypted_")) {
+                        #if defined(AMARA_ENCRYPTION_KEY)
+                        contents = decrypt(contents.substr(17), AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY));
+                        #endif
+                    }
+
+                    return contents;
+                }
+            }
+            #endif
 
             if (!std::filesystem::exists(filePath)) {
                 fatal_error("Error: File does not exist \"", pathForError, "\"");
@@ -89,12 +130,6 @@ namespace Amara {
         bool writeFile(std::string path, nlohmann::json input, std::string encryptionKey) {
             std::filesystem::path filePath = getRelativePath(path);
 
-            if (!exists(filePath.parent_path().string())) {
-                if (!createDirectory(filePath.parent_path().string())) {
-                    return false;
-                }
-            }
-
             std::string output_str;
             if (input.is_string()) {
                 output_str = input.get<std::string>();
@@ -111,9 +146,32 @@ namespace Amara {
             #if (defined(AMARA_ENCRYPT_OUTPUT) && defined(AMARA_ENCRYPTION_KEY))
             if (encryptionKey.empty()) encryptionKey = AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY);
             #endif
-            
+
             if (!encryptionKey.empty()) {
                 output_str = std::string("_amara_encrypted_") + encrypt(output_str, encryptionKey);
+            }
+
+            #if defined(__EMSCRIPTEN__)
+            {
+                const char* ls_key = filePath.string().c_str();
+                const char* ls_val = output_str.c_str();
+                EM_ASM({
+                    var key = UTF8ToString($0);
+                    var val = UTF8ToString($1);
+                    try {
+                        window.localStorage.setItem(key, val);
+                    } catch(e) {
+                        console.error("Failed to write to localStorage: ", key, e);
+                    }
+                }, ls_key, ls_val);
+            }
+            return true;
+            #endif
+
+            if (!exists(filePath.parent_path().string())) {
+                if (!createDirectory(filePath.parent_path().string())) {
+                    return false;
+                }
             }
 
             SDL_IOStream* rw = SDL_IOFromFile(filePath.string().c_str(), "wb");
@@ -128,16 +186,12 @@ namespace Amara {
             }
 
             SDL_CloseIO(rw);
-            
+
             if (bytesWritten != output_str.length()) {
                 fatal_error("Error: Failed to finish writing to \"", removeBasePath(filePath), "\".");
                 try { std::filesystem::remove(filePath); } catch(...) {}
                 return false;
             }
-
-            #if defined(__EMSCRIPTEN__)
-            flushPersistentFolder(filePath.parent_path().string());
-            #endif
 
             return true;
         }
@@ -159,6 +213,21 @@ namespace Amara {
 
         bool remove(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
+
+            #if defined(__EMSCRIPTEN__)
+            {
+                int found = EM_ASM_INT({
+                    var key = UTF8ToString($0);
+                    if (window.localStorage.getItem(key) !== null) {
+                        window.localStorage.removeItem(key);
+                        return 1;
+                    }
+                    return 0;
+                }, filePath.string().c_str());
+                if (found) return true;
+                else return false;
+            }
+            #endif
 
             if (!std::filesystem::exists(filePath)) {
                 fatal_error("Error: \"", removeBasePath(filePath), "\" does not exist.");
@@ -189,7 +258,7 @@ namespace Amara {
                 fatal_error("Error: Filesystem exception while deleting \"", removeBasePath(filePath), "\": ", e.what());
                 return false;
             }
-            catch (const std::exception& e) { // Catch other exceptions
+            catch (const std::exception& e) {
                 fatal_error("Error: General exception while deleting \"", removeBasePath(filePath), "\": ", e.what());
                 return false;
             }
@@ -214,14 +283,10 @@ namespace Amara {
                 fatal_error("Error: Filesystem exception while clearing directory \"", removeBasePath(dirPath), "\": ", e.what());
                 return false;
             }
-            catch (const std::exception& e) { // Catch other exceptions
+            catch (const std::exception& e) {
                 fatal_error("Error: General exception while clearing directory \"", removeBasePath(dirPath), "\": ", e.what());
                 return false;
             }
-
-            #if defined(__EMSCRIPTEN__)
-            flushPersistentFolder(dirPath.string());
-            #endif
 
             return true;
         }
@@ -253,71 +318,9 @@ namespace Amara {
                 }
                 return false;
             #else
-                std::filesystem::path dir = path;
-                setupPersistentDirectory(dir.string());
-
-                return true;
+                return false;
             #endif
         }
-
-        #if defined(__EMSCRIPTEN__)
-        void flushPersistentFolder(const std::string &path) {
-            std::filesystem::path dir(path);
-            std::filesystem::path parent = dir.parent_path();
-            std::string root = parent.empty() ? "/" : "/" + parent.begin()->string();
-
-            EM_ASM_({
-                var rootPath = UTF8ToString($0);
-                if (FS.analyzePath(rootPath).exists) {
-                    var done = false;
-                    FS.syncfs(false, function(err) {
-                        if (err) console.error("Flush error for", rootPath, err);
-                        done = true;
-                    });
-                    var start = Date.now();
-                    while (!done && Date.now() - start < 5000) {} // busy-wait
-                }
-            }, root.c_str());
-        }
-
-        void setupPersistentDirectory(const std::string &path) {
-            EM_ASM_({
-                var fullPath = UTF8ToString($0);
-                var parts = fullPath.split('/').filter(Boolean);
-                if (parts.length === 0) return;
-
-                var root = '/' + parts[0];
-
-                // Ensure root exists
-                if (!FS.analyzePath(root).exists) FS.mkdir(root);
-
-                // Mount IDBFS if not already
-                var rootInfo = FS.analyzePath(root);
-                var alreadyPersistent = rootInfo.object && rootInfo.object.mount &&
-                                        rootInfo.object.mount.type === FS.filesystems.IDBFS;
-
-                if (!alreadyPersistent) {
-                    FS.mount(FS.filesystems.IDBFS, {}, root);
-                    var done = false;
-                    FS.syncfs(true, function(err) {
-                        if (err) console.error("syncfs load error at", root, err);
-                        done = true;
-                    });
-                    var start = Date.now();
-                    while (!done && Date.now() - start < 5000) {} // busy-wait
-                }
-
-                // Create subfolders
-                var cur = root;
-                for (var i = 1; i < parts.length; i++) {
-                    cur += '/' + parts[i];
-                    if (!FS.analyzePath(cur).exists) FS.mkdir(cur);
-                }
-            }, path.c_str());
-
-            flushPersistentFolder(path);
-        }
-        #endif
 
         std::vector<std::string> getDirectoryContents(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
@@ -626,7 +629,6 @@ namespace Amara {
             #endif
         }
 
-        // Zips the contents of a directory into a zip file (Windows only)
         bool zip(std::string sourceDirectory, std::string targetDirectory, std::string zipFileName) {
             #if defined(_WIN32)
             std::filesystem::path srcDir = getRelativePath(sourceDirectory);
@@ -638,17 +640,14 @@ namespace Amara {
             if (!std::filesystem::exists(tgtDir)) {
                 std::filesystem::create_directories(tgtDir);
             }
-            // Ensure .zip extension
             std::string finalZipFileName = zipFileName;
             if (finalZipFileName.length() < 4 || finalZipFileName.substr(finalZipFileName.length() - 4) != ".zip") {
                 finalZipFileName += ".zip";
             }
             std::filesystem::path zipPath = tgtDir / finalZipFileName;
-            // Remove existing zip if present
             if (std::filesystem::exists(zipPath)) {
                 std::filesystem::remove(zipPath);
             }
-            // PowerShell Compress-Archive
             std::string cmd = "powershell.exe -Command \"Compress-Archive -Path '" + srcDir.string() + "\\*' -DestinationPath '" + zipPath.string() + "' -Force\"";
             int ret = std::system(cmd.c_str());
             if (ret != 0) {
@@ -986,9 +985,7 @@ namespace Amara {
 
                 debug_log("Executing command.");
 
-                // Compose the commands to send
                 std::string fullCmd;
-                // fullCmd += String::concat("echo ", "\"Executing Command\"", "\r\n");
                 fullCmd += command + "\r\nexit\r\n";
 
                 DWORD written;
@@ -1331,7 +1328,7 @@ namespace Amara {
                     CloseHandle(sei.hProcess);
 
                     return exitCode == 0;
-                #else // AMARA_DEBUG_BUILD on Windows
+                #else
                     result = std::system(command.c_str());
                     return result == 0;
                 #endif

@@ -12,7 +12,7 @@ namespace Amara {
         double timeHeld = false;
         bool draggable = false;
         bool dragging = false;
-
+        
         Vector2 drag = Vector2(0, 0);
 
         Vector2 rec_interact_pos;
@@ -70,8 +70,10 @@ namespace Amara {
             }
         }
 
+        bool paused();
+
         void queueInput(Amara::Shape _shape, Rectangle _viewport, nlohmann::json _data) {
-            if (!activeClickZone) return;
+            if (paused() || !activeClickZone) return;
             
             gameProps->inputManager->queueInput({
                 this,

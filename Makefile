@@ -126,14 +126,14 @@ EMSCRIPTEN_SERVER = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\emrun
 EMSCRIPTEN_BUILD_NAME = $(BUILD_NAME).html
 EMSCRIPTEN_BUILD_PATH = $(BUILD_PATH)/$(EMSCRIPTEN_BUILD_NAME)
 EMSCRIPTEN_INCLUDE = -I$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\system\include
-EMSCRIPTEN_SDL = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\SDl3\lib\libSDL3.a" -I$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\SDL3\include
+EMSCRIPTEN_SDL = "$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\SDL3\lib\libSDL3.a" -I$(WINDOWS_BUILDMODULE_PATH)\emsdk\upstream\emscripten\SDL3\include
 EMSCRIPTEN_COMPILER_FLAGS = -w -std=c++17 -s FULL_ES3=1 -s ALLOW_MEMORY_GROWTH=1 -s FORCE_FILESYSTEM=1 -s EXCEPTION_CATCHING_ALLOWED='["std::exception"]' -O2
-EMSCRIPTEN_PRELOADS = --preload-file assets --preload-file lua_scripts --preload-file data
+EMSCRIPTEN_PRELOADS = --preload-file assets --preload-file lua_scripts --preload-file files
 EMSCRIPTEN_EXTRA_OPTIONS = -DAMARA_ENGINE_TOOLS
 web:
 	if exist $(BUILD_PATH) ( rmdir /s /q $(BUILD_PATH) )
 	if not exist $(BUILD_PATH) md $(BUILD_PATH)
-	set EMSDK_PYTHON=$(RESOURCES)\emsdk\python\3.13.3_64bit\python.exe && \
+	set EMSDK_PYTHON=$(WINDOWS_BUILDMODULE_PATH)\emsdk\python\3.13.3_64bit\python.exe && \
     $(EMSCRIPTEN_COMPILER) $(ENTRY_FILES) $(EMSCRIPTEN_SDL) $(AMARA_PATH) $(OTHER_LIB) $(EMSCRIPTEN_COMPILER_FLAGS) $(EMSCRIPTEN_EXTRA_OPTIONS) $(EMSCRIPTEN_PRELOADS) -o $(EMSCRIPTEN_BUILD_PATH)
 
 play-web:

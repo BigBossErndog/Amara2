@@ -216,9 +216,8 @@ namespace Amara {
                     index += 3;
                 }
 
-                SDL_SetRenderDrawBlendMode(gameProps->renderer, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderDrawBlendMode(gameProps->renderer, Get_SDL_BlendMode(blendMode));
 
-                // Render geometry
                 SDL_RenderGeometry(
                     gameProps->renderer,
                     NULL,

@@ -93,7 +93,7 @@ namespace Amara {
     class GameProps {
     public:
         sol::state lua;
-        int lua_stack_size = 1000000;
+        int lua_stack_size = 1000000000;
 
         #ifdef AMARA_TEST_PATH
         std::string context_path = AMARA_TEST_PATH;

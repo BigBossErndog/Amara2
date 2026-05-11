@@ -16,12 +16,14 @@ namespace Amara {
         (ss << ... << args);
         std::string errorMessage = ss.str();
         
+        #ifndef __EMSCRIPTEN__
         // Write to error_log.txt
         std::ofstream errorLogFile("error_log.txt");
         if (errorLogFile.is_open()) {
             errorLogFile << errorMessage << std::endl;
             errorLogFile.close();
         }
+        #endif
 
         throw std::runtime_error(errorMessage);
     }

@@ -1347,6 +1347,10 @@ namespace Amara {
         #endif
     }
 
+    bool NodeInput::paused() {
+        return node->paused || !active;
+    }
+
     std::unordered_map<std::string, bool> Amara::Node::in_order_props = {
         { "origin", true },
         { "originPosition", true },

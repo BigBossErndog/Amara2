@@ -424,6 +424,8 @@ namespace Amara {
 
                     if (codepoint == U'\t' || codepoint == U' ') {
                         if (wrapWidth > 0 && (line->width + word.width) >= wrapWidth) {
+                            layout.width = fmax(layout.width, line->width);
+                            
                             layout.height += line->height + lineSpacing;
                             
                             cursorY += lineHeight + lineSpacing;
@@ -473,6 +475,8 @@ namespace Amara {
 
                     if (wrapWidth > 0 && word.width + glyph.xadvance >= wrapWidth) {
                         if (line->width > 0) {
+                            layout.width = fmax(layout.width, line->width);
+
                             layout.height += line->height + lineSpacing;
                             cursorY += lineHeight + lineSpacing;
                             line = &layout.newLine();
@@ -501,10 +505,10 @@ namespace Amara {
                     word.text += codepoint;
                     word.width += glyph.xadvance;
                     word.glyphs.push_back(glyph);
-
-                    layout.width = fmax(layout.width, line->width + word.width);
                 }
                 if (wrapWidth > 0 && (line->width + word.width) >= wrapWidth) {
+                    layout.width = fmax(layout.width, line->width);
+
                     layout.height += line->height + lineSpacing;
                     
                     cursorY += lineHeight + lineSpacing;
@@ -515,6 +519,7 @@ namespace Amara {
                     word.x = 0;
                 }
                 line->merge(word);
+                layout.width = fmax(layout.width, line->width);
                 layout.height += line->height;
             }
 

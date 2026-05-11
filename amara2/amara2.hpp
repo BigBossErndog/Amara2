@@ -112,6 +112,7 @@
     #include <SDL3/SDL.h>
 
     #ifdef __EMSCRIPTEN__
+        #include <emscripten.h>
         #include <emscripten/fetch.h>
     #endif
     #ifdef AMARA_WEB
@@ -140,8 +141,8 @@
     #include "utility/amara2_enums.cpp"
     #include "utility/amara2_string.cpp"
     #include "utility/amara2_encryption.cpp"
-    #include "utility/amara2_jsonUtility.cpp"
     #include "utility/amara2_utility.cpp"
+    #include "utility/amara2_jsonUtility.cpp"
     #include "utility/amara2_color.cpp"
     #include "utility/amara2_easing.cpp"
 

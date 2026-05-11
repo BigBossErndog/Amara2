@@ -78,4 +78,33 @@ namespace Amara {
                 break;
         }
     }
+
+    SDL_BlendMode Get_SDL_BlendMode(Amara::BlendMode blendMode) {
+        switch (blendMode) {
+            case BlendMode::Alpha:
+                return SDL_BLENDMODE_BLEND;
+                break;
+            case BlendMode::Additive:
+                return SDL_BLENDMODE_ADD;
+                break;
+            case BlendMode::Multiply:
+                return SDL_BLENDMODE_MUL;
+                break;
+            case BlendMode::PremultipliedAlpha:
+                return SDL_BLENDMODE_BLEND_PREMULTIPLIED;
+                break;
+            case BlendMode::Mask:
+                return AMARA_BLENDMODE_MASK;
+                break;
+            case BlendMode::Erase:
+                return AMARA_BLENDMODE_ERASER;
+                break;
+            case BlendMode::None:
+                return SDL_BLENDMODE_NONE;
+                break;
+            default:
+                return SDL_BLENDMODE_NONE;
+                break;
+        }
+    }
 }

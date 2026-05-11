@@ -28,12 +28,20 @@ namespace Amara {
         }
 
         sol::object lua_grab(sol::object config) {
-            Amara::Node* grabbed = grab();
-            if (grabbed) {
-                if (config.valid()) {
-                    grabbed->luaConfigure(config);
+            for (Amara::Node* child: children) {
+                if (!child->isActive() && !child->destroyed) {
+                    child->activate();
+
+                    if (config.valid()) {
+                        child->luaConfigure(config);
+                    }
+
+                    if (funcs.hasFunction("onGrab")) {
+                        funcs.callFunction(this, "onGrab", child->get_lua_object());
+                    }
+
+                    return child->get_lua_object();
                 }
-                return grabbed->get_lua_object();
             }
             return sol::nil;
         }

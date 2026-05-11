@@ -366,7 +366,7 @@ namespace Amara {
                     update_properties();
 
                     gameProps.lua_exception_thrown = false;
-
+                    
                     if (currentWorld->destroyed || currentWorld->paused) {
                         continue;
                     }

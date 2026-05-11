@@ -27,7 +27,9 @@ namespace Amara {
             sol::table shader_meta = lua.create_table();
             shader_meta["__index"] = [this](sol::table tbl, sol::object key) -> sol::object {
                 if (key.is<std::string>()) {
+                    #ifdef AMARA_OPENGL
                     return this->getShaderProgram(key.as<std::string>())->lua_object;
+                    #endif
                 }
                 return sol::nil;
             };
@@ -108,8 +110,10 @@ namespace Amara {
             assets.clear();
         }
 
+        #ifdef AMARA_OPENGL
         ShaderProgram* getShaderProgram(std::string key);
-        
+        #endif
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<AssetManager>("AssetManager",
                 "has", &AssetManager::has,
@@ -127,6 +131,7 @@ namespace Amara {
                         self.setDefaultFont(font);
                     }
                 ),
+                #ifdef AMARA_OPENGL
                 "getShaderProgram", [](Amara::AssetManager& a, sol::object key) -> sol::object {
                     if (key.is<std::string>()) {
                         ShaderProgram* shader = a.getShaderProgram(key.as<std::string>());
@@ -134,6 +139,7 @@ namespace Amara {
                     }
                     return sol::nil;
                 },
+                #endif
                 "shaderPrograms", sol::readonly(&Amara::AssetManager::shader_table),
                 "getTilemapData", [&lua](AssetManager* self, std::string key) -> sol::object {
                     if (self->has(key)) {
