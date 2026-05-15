@@ -72,6 +72,7 @@ Nodes:define("UIWindow", "NineSlice", {
         self.width = 0
         self.height = 0
         self.visible = false
+        self.get.isOpen = false
 
         return self
     end,
@@ -81,7 +82,8 @@ Nodes:define("UIWindow", "NineSlice", {
         self.visible = true
         self.get.content.visible = true
         self.get.contentRoot.scale = 1
-
+        self.get.isOpen = true
+        
         return self
     end,
     setTarget = function(self, _width, _height)
