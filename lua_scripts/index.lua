@@ -1,6 +1,6 @@
 version_major = 0
 version_minor = 2
-version_patch = 13
+version_patch = 14
 
 version_string = version_major .. "." .. version_minor .. "." .. version_patch
 
