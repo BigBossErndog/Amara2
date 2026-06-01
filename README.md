@@ -9,6 +9,8 @@ Built in C++ using SDL3, with exports to Windows and Web.
 
 [Click here for tutorials and documentation.](https://github.com/BigBossErndog/Amara2/wiki)
 
+I enter game jams using this engine, click [here](https://bigbosserndog.itch.io/) to check out my entries to previous game jams on itch.io!
+
 ## Features
 - Setting up a new project and running a test is easy as heck.
 - Game architecture inspired by my favorite elements of the Phaser framework, DragonRuby and the Godot Engine.
