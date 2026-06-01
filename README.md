@@ -9,7 +9,7 @@ Built in C++ using SDL3, with exports to Windows and Web.
 
 [Click here for tutorials and documentation.](https://github.com/BigBossErndog/Amara2/wiki)
 
-[Click here to check out my entries to game jams using this engine!]](https://bigbosserndog.itch.io/)
+[Click here to check out my entries to game jams using this engine!](https://bigbosserndog.itch.io/)
 
 ## Features
 - Setting up a new project and running a test is easy as heck.
