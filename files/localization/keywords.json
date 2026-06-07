@@ -122,6 +122,9 @@
 
     "label_includeFoldersDesc": "Choose optional directories to include.",
 
+    "label_pluginsDesc": "Select which plugins to include.",
+    "label_noPluginsFound": "No plugins found.",
+
     "label_doNotCloseCommandPrompt": "Warning: Do not close the external command prompt window. You may minimize it instead.",
 
     "error_emptyProjectName": "Error: Project Name cannot be empty.",

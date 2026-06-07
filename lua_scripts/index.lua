@@ -27,6 +27,7 @@ Scripts:include("windows/RunArgumentsWindow")
 
 Scripts:include("building/BuildPlatformMenu")
 Scripts:include("building/IncludeFolders")
+Scripts:include("building/IncludePlugins")
 Scripts:include("building/EncryptionOptions")
 
 Scripts:include("building/windows/VSBuildToolsInstaller")

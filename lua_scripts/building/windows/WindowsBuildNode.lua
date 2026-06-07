@@ -20,10 +20,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             return quote_if_needed(string.gsub(path, "\\", "/"))
         end
 
-        if config.installPlugins then
-            self.get.installPlugins = config.installPlugins
-        end
-
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
         if projectData then
             if projectData["executable-name"] then
@@ -95,8 +91,37 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         -- AMARA_PATH
         table.insert(args, "-Iamara2")
-        if self.get.installPlugins then
-            table.insert(args, "-I", fix_path(System:join(self.get.projectPath, "plugins")))
+        if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
+            local plugins_path = System:join(self.get.projectPath, "plugins")
+            table.insert(args, "-I" .. fix_path(plugins_path))
+
+            local plugins = self.get.projectData["plugin-directories"]
+            local plugin_template = System:readFile(System:getRelativePath("amara2/main/plugin_template.cpp"))
+            for i, plugin in ipairs(plugins) do
+                local plugin_path = System:join(plugins_path, plugin)
+                local plugin_data = System:readJSON(System:join(plugin_path, "plugin.json"))
+                if plugin_data then
+                    if plugin_data.compile_files then
+                        local compile_file_str = ""
+                        for _, file in ipairs(plugin_data.compile_files) do
+                            compile_file_str = compile_file_str .. "#include \"" .. System:join(plugin, file) .. "\"\n"
+                        end
+                        plugin_template = string.gsub(plugin_template, "// plugin_includes", compile_file_str)
+                    end
+                    if plugin_data.nodes then
+                        local bindings = ""
+                        local registrations = ""
+                        for _, node_data in ipairs(plugin_data.nodes) do
+                            bindings = bindings .. node_data.class .. "::bind_lua(lua);"
+                            registrations = registrations .. "registerNode<" .. node_data.class .. ">(\"" .. node_data.nodeID .. "\");"
+                        end
+                        plugin_template = string.gsub(plugin_template, "// plugin_lua_bindings", bindings)
+                        plugin_template = string.gsub(plugin_template, "// plugin_node_registrations", registrations)
+                    end
+                end
+            end
+
+            System:writeFile(System:join(plugins_path, "amara2_plugins.cpp"), plugin_template)
         end
 
         -- OTHER_LIB_PATHS
@@ -130,7 +155,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         -- table.insert(args, "-DAMARA_DEBUG_BUILD")
 
         -- EXTRA_OPTIONS
-        if self.get.installPlugins then
+        if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
             table.insert(args, "-DAMARA_PLUGINS")
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")

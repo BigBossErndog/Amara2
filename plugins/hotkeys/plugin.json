@@ -1,0 +1,12 @@
+{
+    "plugin_name": "Hotkeys",
+    "compile_files": [
+        "hotkey.cpp"
+    ],
+    "nodes": [
+        {
+            "class": "Hotkey",
+            "nodeID": "Hotkey"
+        }
+    ]
+}

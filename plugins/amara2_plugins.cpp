@@ -24,7 +24,7 @@ namespace Amara {
 
             Hotkey::bind_lua(lua);
         }
-
+        
         static void registerNodes() {
             // Insert your node registrations here.
 
@@ -34,14 +34,14 @@ namespace Amara {
 
             registerNode<Hotkey>("Hotkey");
         }
-
-        static bool load(const LoadTask& task) {
-            /* Insert loading your custom assets here.
-             * Return true on success and 
-             */
-            switch (task.type) {
+        
+        // static bool load(const LoadTask& task) {
+        //     /* Insert loading your custom assets here.
+        //      * Return true on success and 
+        //      */
+        //     switch (task.type) {
                 
-            }
-        }
+        //     }
+        // }
     };
 }

@@ -432,11 +432,11 @@ namespace Amara {
                 input->handleMessage({ nullptr, "onMouseDown", mouse.get_lua_object(gameProps) });
                 if (mouse.left.justPressed) {
                     input->held = true;
+                    input->state.press();
                     input->handleMessage({ nullptr, "onLeftMouseDown", mouse.get_lua_object(gameProps) });
                     input->handleMessage({ nullptr, "onPointerDown", mouse.get_lua_object(gameProps) });
 
                     input->rec_interact_pos = input->node->pos;
-                    input->state.press();
                 }
                 else if (mouse.right.justPressed) {
                     input->handleMessage({ nullptr, "onRightMouseDown", mouse.get_lua_object(gameProps) });
@@ -470,9 +470,9 @@ namespace Amara {
                 
                 input->handleMessage({ nullptr, "onMouseUp", mouse.get_lua_object(gameProps) });
                 if (mouse.left.justReleased) {
+                    input->state.release();
                     input->handleMessage({ nullptr, "onLeftMouseUp", mouse.get_lua_object(gameProps) });
                     input->handleMessage({ nullptr, "onPointerUp", mouse.get_lua_object(gameProps) });
-                    input->state.release();
                 }
                 else if (mouse.right.justReleased) {
                     input->handleMessage({ nullptr, "onRightMouseUp", mouse.get_lua_object(gameProps) });
@@ -500,10 +500,11 @@ namespace Amara {
             if (inputDef.shape.collidesWith(pos) && Shape::checkCollision(inputDef.viewport, pos)) {
                 inputDef.lastPointer = finger;
                 input->lastInteraction = inputDef;
-
+                
                 switch (eventType) {
                     case SDL_EVENT_FINGER_DOWN: {
                         input->hover.press();
+                        input->state.press();
                         input->handleMessage({ nullptr, "onPointerDown", finger->get_lua_object(gameProps) });
                         input->handleMessage({ nullptr, "onTouchDown", finger->get_lua_object(gameProps) });
                         if (input->hover.justPressed) {
@@ -513,7 +514,6 @@ namespace Amara {
                             
                             input->rec_interact_pos = input->node->pos;
                         }
-                        input->state.press();
                         break;
                     }
                     case SDL_EVENT_FINGER_UP: {

@@ -3,7 +3,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
     height = 140,
 
     props = {
-        pageCount = 5
+        pageCount = 6
     },
 
     onConfigure = function(self, config)
@@ -297,9 +297,24 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 origin = 0,
                 text = Localize:get("label_includeFoldersDesc"),
                 font = "defaultFont",
-                color = Colors.White,
+                color = Colors.White
             })
             self.get.includeFolders = self.get.pageContent:createChild("IncludeFolders", {
+                projectPath = self.get.projectPath,
+                projectData = self.get.projectData,
+                x = 10, y = 40,
+                width = self.get.targetWidth - 20,
+                height= self.get.targetHeight - 40 - 28
+            })
+        elseif pageIndex == 5 then
+            local txt = self.get.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                origin = 0,
+                text = Localize:get("label_pluginsDesc"),
+                font = "defaultFont",
+                color = Colors.White
+            })
+            self.get.includePlugins = self.get.pageContent:createChild("IncludePlugins", {
                 projectPath = self.get.projectPath,
                 projectData = self.get.projectData,
                 x = 10, y = 40,
@@ -398,6 +413,8 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             end
         elseif self.get.pageIndex == 4 then
             self.get.includeFolders.func:confirmOptions()
+        elseif self.get.pageIndex == 5 then
+            self.get.includePlugins.func:confirmOptions()
         end
 
         if self.get.errorMessage then

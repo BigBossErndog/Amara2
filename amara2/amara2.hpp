@@ -273,7 +273,7 @@
     #include "nodes/amara2_world.cpp"
 
     #ifdef AMARA_PLUGINS
-    #include <amara2_plugins.cpp>
+        #include <amara2_plugins.cpp>
     #endif
     
     #include "factories/amara2_nodeFactory.cpp"

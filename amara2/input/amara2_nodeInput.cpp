@@ -85,6 +85,7 @@ namespace Amara {
         
         void run(double deltaTime) {
             hover.update(deltaTime);
+            timeHeld = state.timeHeld;
             
             if (!messageBox.empty()) {
                 MessageQueue* messages = gameProps->messages;
@@ -128,6 +129,13 @@ namespace Amara {
             if (held) {
                 if (lastPointer == nullptr || !lastPointer->active || !lastPointer->state.isDown) {
                     held = false;
+                    state.release();
+                }
+                else {
+                    handleMessage({ nullptr, "whilePointerDown", sol::nil });
+                    if (hover_by_mouse) {
+                        handleMessage({ nullptr, "whileMouseDown", sol::nil });
+                    }
                 }
             }
 
@@ -136,9 +144,11 @@ namespace Amara {
         
         void post_run(double deltaTime) {
             state.update(deltaTime);
-            if (state.isDown && !hover.isDown) {
+            
+            if (state.isDown && (!hover.isDown || !held)) {
                 state.release();
             }
+            timeHeld = state.timeHeld;
         }
 
         virtual void deactivate() override {

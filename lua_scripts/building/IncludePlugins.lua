@@ -1,4 +1,4 @@
-Nodes:define("IncludeFolders", "FillRect", {
+Nodes:define("IncludePlugins", "FillRect", {
     color = "#111d27",
     origin = 0,
 
@@ -40,11 +40,13 @@ Nodes:define("IncludeFolders", "FillRect", {
             x = self.get.content.left, y = self.get.content.top
         })
 
+        local plugins_path = System:join(self.get.projectPath, "plugins")
+
         self.get.tempData = {}
         local init = false
-        if self.get.projectData["build-directories"] then
-            for i, v in ipairs(self.get.projectData["build-directories"]) do
-                if System:exists(System:join(self.get.projectPath, v)) then
+        if self.get.projectData["plugin-directories"] then
+            for i, v in ipairs(self.get.projectData["plugin-directories"]) do
+                if System:exists(System:join(plugins_path, v)) then
                     self.get.tempData[v] = true
                 end
             end
@@ -52,20 +54,20 @@ Nodes:define("IncludeFolders", "FillRect", {
             init = true
         end
 
-        local invalidFolders = {
-            build = true,
-            lua_scripts = true,
-            assets = true
-        }
-
-        local found = System:getSubDirectories(self.get.projectPath)
         self.get.directories = {}
-        for i, v in ipairs(found) do
-            local dirName = System:getDirectoryName(v)
-            if System:isDirectory(v) and (not string.starts_with(dirName, ".")) and (not invalidFolders[dirName]) then
-                table.insert(self.get.directories, dirName)
-                if init then
-                    self.get.tempData[dirName] = true
+
+        local found = nil
+        if System:exists(plugins_path) then
+            found = System:getSubDirectories(plugins_path)
+            for i, v in ipairs(found) do
+                local dirName = System:getDirectoryName(v)
+                if System:isDirectory(v) and (not string.starts_with(dirName, ".")) then
+                    if System:exists(System:join(v, "plugin.json")) then
+                        table.insert(self.get.directories, dirName)
+                        if init then
+                            self.get.tempData[dirName] = true
+                        end
+                    end
                 end
             end
         end
@@ -95,9 +97,11 @@ Nodes:define("IncludeFolders", "FillRect", {
                         origin = 0,
                         font = "defaultFont",
                         color = Colors.White,
-                        text = v,
+                        -- text = v,
                         alpha = self.get.tempData[backer.get.dirName] and 1 or 0.5
                     })
+                    local plugin_data = System:readJSON(System:join(plugins_path, backer.get.dirName, "plugin.json"))
+                    backer.get.txt.text = plugin_data.plugin_name
                 end,
                 input = {
                     active = true,
@@ -112,6 +116,17 @@ Nodes:define("IncludeFolders", "FillRect", {
             if opt.y + opt.height > self.get.wallHeight then
                 self.get.wallHeight = opt.y + opt.height
             end
+        end
+
+        if #self.get.directories == 0 then
+            self.get.root:createChild("Text", {
+                x = 8,
+                font = "defaultFont",
+                y = 2,
+                origin = 0,
+                color = Colors.White,
+                text = Localize:get("label_noPluginsFound")
+            })
         end
 
         self.get.scrollBar = self.parent:createChild("FillRect", {
@@ -195,10 +210,10 @@ Nodes:define("IncludeFolders", "FillRect", {
     end,
 
     confirmOptions = function(self)
-        self.get.projectData["build-directories"] = {}
+        self.get.projectData["plugin-directories"] = {}
         for k, v in pairs(self.get.tempData) do
             if v then
-                table.insert(self.get.projectData["build-directories"], k)
+                table.insert(self.get.projectData["plugin-directories"], k)
             end
         end
     end

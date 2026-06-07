@@ -191,16 +191,6 @@ namespace Amara {
             return get_lua_object();
         }
 
-        sol::object custom(std::string key, int type, sol::table config) {
-            LoadTask task;
-            task.key = key;
-            task.type = type;
-            task.config = config;
-
-            queueTask(task);
-            return get_lua_object();
-        }
-
         void queueTask(const LoadTask& task) {
             if (loadRate > 0) {
                 tasks.push_back(task);
@@ -276,7 +266,6 @@ namespace Amara {
                 "tilemap", &Loader::tilemap,
                 "shaderProgram", &Loader::shaderProgram,
                 "audio", &Loader::audio,
-                "custom", &Loader::custom,
                 "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
                 "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; }),
                 "loadProgress", sol::readonly(&Loader::loadProgress),

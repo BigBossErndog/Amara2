@@ -105,7 +105,7 @@ namespace Amara {
             }
             return false;
         }
-
+        
         bool state(std::string key) {
             if (currentState.empty()) {
                 currentState = key;
