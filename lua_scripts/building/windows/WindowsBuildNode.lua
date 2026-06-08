@@ -89,6 +89,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             table.insert(args, fix_path(self.get.resOutputFile))
         end
 
+        local static_libs = {}
+
         -- AMARA_PATH
         table.insert(args, "-Iamara2")
         if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
@@ -101,12 +103,12 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 local plugin_path = System:join(plugins_path, plugin)
                 local plugin_data = System:readJSON(System:join(plugin_path, "plugin.json"))
                 if plugin_data then
-                    if plugin_data.compile_files then
-                        local compile_file_str = ""
-                        for _, file in ipairs(plugin_data.compile_files) do
-                            compile_file_str = compile_file_str .. "#include \"" .. System:join(plugin, file) .. "\"\n"
+                    if plugin_data.includes then
+                        local includes_str = ""
+                        for _, file in ipairs(plugin_data.includes) do
+                            includes_str = includes_str .. "#include \"" .. System:join(plugin, file) .. "\"\n"
                         end
-                        plugin_template = string.gsub(plugin_template, "// plugin_includes", compile_file_str)
+                        plugin_template = string.gsub(plugin_template, "// plugin_includes", includes_str)
                     end
                     if plugin_data.nodes then
                         local bindings = ""
@@ -117,6 +119,47 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                         end
                         plugin_template = string.gsub(plugin_template, "// plugin_lua_bindings", bindings)
                         plugin_template = string.gsub(plugin_template, "// plugin_node_registrations", registrations)
+                    end
+                    if plugin_data.copy then
+                        for _, file in ipairs(plugin_data.copy) do
+                            System:copy(System:join(plugin_path, file), buildDir)
+                        end
+                    end
+                    
+                    if plugin_data["-I"] then
+                        for _, path in ipairs(plugin_data["-I"]) do
+                            table.insert(args, "-I" .. fix_path(System:join(plugin_path, path)))
+                        end
+                    end
+                    if plugin_data["-L"] then
+                        for _, path in ipairs(plugin_data["-L"]) do
+                            table.insert(args, "-L" .. fix_path(System:join(plugin_path, path)))
+                        end
+                    end
+                    if plugin_data["-l"] then
+                        for _, lib in ipairs(plugin_data["-l"]) do
+                            table.insert(args, "-l" .. lib)
+                        end
+                    end
+                    if plugin_data["-l:"] then
+                        for _, lib in ipairs(plugin_data["-l:"]) do
+                            table.insert(args, "-l:" .. lib)
+                        end
+                    end
+                    if plugin_data[".lib"] then
+                        for _, lib in ipairs(plugin_data[".lib"]) do
+                            if not string.ends_with(lib, ".lib") then
+                                lib = lib .. ".lib"
+                            end
+                            table.insert(static_libs, fix_path(System:join(plugin_path, lib)))
+                        end
+                    end
+                end
+                local copy_path = System:join(plugin_path, "copy")
+                if System:directoryExists(copy_path) then
+                    local contents = System:getDirectoryContents(copy_path)
+                    for _, file in ipairs(contents) do
+                        System:copy(file, buildDir)
                     end
                 end
             end
@@ -172,7 +215,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         -- LINKER_FLAGS_WIN64
         table.insert(args, "-fuse-ld=lld")
-        table.insert(args, "-stdlib=libc++")
         table.insert(args, "-L" .. fix_path(System:join(clangLLVMPath, "lib")))
         table.insert(args, "-pthread")
         table.insert(args, "-DAMARA_OPENGL")
@@ -186,7 +228,14 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-lole32")
         table.insert(args, "-loleaut32")
         table.insert(args, "-lversion")
+
         table.insert(args, "-static")
+
+        if #static_libs > 0 then
+            for _, lib in ipairs(static_libs) do
+                table.insert(args, lib)
+            end
+        end
 
         -- Output file
         table.insert(args, "-o")

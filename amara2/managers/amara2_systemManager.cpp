@@ -293,6 +293,9 @@ namespace Amara {
 
         bool isDirectory(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
+            if (!exists(filePath.string())) {
+                return false;
+            }
             return std::filesystem::is_directory(filePath);
         }
 

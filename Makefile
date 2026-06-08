@@ -33,12 +33,10 @@ SDL_INCLUDE_PATHS_LINUX = `sdl3-config --cflags`
 
 RENDERING_FLAGS = -DAMARA_OPENGL -lopengl32
 
-STDLIB_FLAG = -stdlib=libc++
-
 WINDOWS_SYSTEM_LIBS = -lshell32 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lversion # Add system libraries for Windows API
-LINKER_FLAGS_WIN64 = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) $(WINDOWS_SYSTEM_LIBS) -static
+LINKER_FLAGS_WIN64 = -fuse-ld=lld -L$(CLANG_LLVM_PATH)/lib -pthread $(RENDERING_FLAGS) $(SDL_LINKER_FLAGS_WIN64) $(WINDOWS_SYSTEM_LIBS) -static
 
-LINKER_FLAGS_LINUX = -fuse-ld=lld $(STDLIB_FLAG) -L$(CLANG_LLVM_PATH)/lib -pthread `sdl3-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
+LINKER_FLAGS_LINUX = -fuse-ld=lld -L$(CLANG_LLVM_PATH)/lib -pthread `sdl3-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
 
 OTHER_LIB_LINKS = 
 OTHER_LIB_PATHS = -Isrc -I$(RESOURCES)/libs/json/include -I$(RESOURCES)/libs/lua -I$(RESOURCES)/libs/sol2 -I$(RESOURCES)/libs/stb -I$(RESOURCES)/libs/glm -I$(RESOURCES)/libs/minimp3 -I$(RESOURCES)/libs/portable-file-dialogs -I$(RESOURCES)/libs/tinyxml2

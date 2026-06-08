@@ -255,7 +255,7 @@ namespace Amara {
             registerNode<Amara::RepeatSprite>("RepeatSprite");
             registerNode<Amara::ParticleEmitter>("ParticleEmitter");
             registerNode<Amara::Animation>("Animation");
-
+            
             registerNode<Amara::FillRect>("FillRect");
             registerNode<Amara::FillCircle>("FillCircle");
 

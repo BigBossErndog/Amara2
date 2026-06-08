@@ -1,6 +1,6 @@
 {
     "plugin_name": "Hotkeys",
-    "compile_files": [
+    "includes": [
         "hotkey.cpp"
     ],
     "nodes": [
