@@ -195,6 +195,10 @@ Nodes:define("ProjectWindow", "UIWindow", {
             onPress = function(button)
                 button.get.enabled = false
                 self.func:buildGame()
+            end,
+            onRightClick = function(button)
+                button.get.enabled = false
+                self.func:buildGame(true)
             end
         })
 
@@ -359,10 +363,13 @@ Nodes:define("ProjectWindow", "UIWindow", {
         self.func:stopGame()
 
         local exe = Game.executable
+        local testBuild = nil
         if Game.platform == "windows" then
-            local testBuild = System:join(self.get.projectPath, "build", "test", "Amara2.exe")
+            testBuild = System:join(self.get.projectPath, "build", "test")
             if System:exists(testBuild) then
-                exe = testBuild
+                exe = System:join(testBuild, "Amara2.exe")
+            else
+                testBuild = nil
             end
         end
         
@@ -388,6 +395,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
         self.get.gameProcess = self:createChild("ProcessNode", {
             arguments = args,
+            environment = testBuild,
             onOutput = function(process, msg)
                 if self.get.printLog then
                     self.get.printLog.func:handleMessage(msg)
@@ -427,7 +435,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
         self.get.playButton.func:setIcon(3)
     end,
 
-    buildGame = function(self)
+    buildGame = function(self, buildTest)
         self.func:stopGame()
         
         self.world.get.windows.func:closeAll(function(window)
@@ -443,6 +451,26 @@ Nodes:define("ProjectWindow", "UIWindow", {
                     exampleProject = self.get.exampleProject
                 })
                 newWindow.func:openWindow()
+            elseif buildTest then
+                local newWindow
+
+                if (not settings.vsBuildToolsInstalled) and (not System:VSBuildToolsInstalled()) then
+                    newWindow = self.world.get.windows:createChild("VSBuildToolsInstaller", {
+                        projectPath = self.get.projectPath,
+                        buildTest = true
+                    })
+                    newWindow.func:openWindow()
+                else
+                    if not settings.vsBuildToolsInstalled then
+                        settings.vsBuildToolsInstalled = true
+                    end
+                    newWindow = self.world.get.windows:createChild("WindowsBuildOptions", {
+                        projectPath = self.get.projectPath,
+                        buildTest = true
+                    })
+                    newWindow.func:openWindow()
+                end
+
             else
                 local newWindow = self.world.get.windows:createChild("BuildPlatformMenu", {
                     projectPath = self.get.projectPath,

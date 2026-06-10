@@ -148,7 +148,8 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         
         local batchFilePath = System:join(buildDir, "build_web.bat")
         self.get.batchFilePath = batchFilePath
-        local batchFileContent = pythonCommand .. " && " .. buildCommand .. " && exit"
+        local errorOutputPath = System:join(buildDir, "build_error.txt")
+        local batchFileContent = pythonCommand .. " && " .. buildCommand .. " > " .. fix_path(errorOutputPath) .. " 2>&1 && exit"
 
         System:writeFile(batchFilePath, batchFileContent)
 
@@ -222,12 +223,27 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         self.world.forcedClickThrough = true
         self.world:hideWindow()
 
+        local buildDir = System:join(self.get.projectPath, "build", "windows")
+        local errorOutputPath = System:join(buildDir, "build_error.txt")
+
         if exitCode == 0 then
+            if System:exists(errorOutputPath) then
+                System:remove(errorOutputPath)
+            end
+            
             System:rename(self.get.htmlPath, "index")
+
             -- Notify success
             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
             System:openDirectory(System:join(self.get.projectPath, "build", "web"))
         else
+            local error_message = nil
+            if System:exists(errorOutputPath) then
+                error_message = System:readFile(errorOutputPath)
+                self.get.printLog.func:handleMessage("Error: Build failed.\n" .. error_message)
+                System:remove(errorOutputPath)
+            end
+
             -- Notify failure
             self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
         end

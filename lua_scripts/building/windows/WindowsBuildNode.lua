@@ -39,13 +39,18 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local args = {}
 
         local buildDir = System:join(self.get.projectPath, "build", "windows")
+        if config.buildTest then
+            buildDir = System:join(self.get.projectPath, "build", "test")
+            self.get.executableName = "Amara2"
+            self.get.buildTest = true
+        end
         self.get.buildDir = buildDir
 
         local buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
         local clangLLVMPath = System:join(buildModule, "clang-llvm")
         self.get.clangLLVMPath = clangLLVMPath
         
-        local sdl3Path = System:join(buildModule, "resources/libs/SDL3-3.2.16")
+        local sdl3Path = System:join(buildModule, "resources/libs/SDL3-3.4.10")
 
         local nlohmannPath = System:join(buildModule, "resources/libs/json/include")
         local luaPath = System:join(buildModule, "resources/libs/lua")
@@ -201,12 +206,17 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
             table.insert(args, "-DAMARA_PLUGINS")
         end
-        table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
+        if not config.buildTest then
+            table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
+        else
+            table.insert(args, "-DAMARA_DEBUGGING")
+            table.insert(args, "-DAMARA_ENGINE_TOOLS")
+        end
         -- Add flags from Makefile's EXTRA_OPTIONS
         -- table.insert(args, "-DAMARA_DEBUGGING")
         -- table.insert(args, "-DAMARA_ENGINE_TOOLS")
 
-        if self.get.projectData.encryption then
+        if self.get.projectData.encryption and not config.buildTest then
             table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.get.projectData.encryption["key"]))
             if self.get.projectData.encryption["encrypt-write-output"] then
                 table.insert(args, "-DAMARA_ENCRYPT_OUTPUT")
@@ -247,7 +257,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         
         local batchFilePath = System:join(buildDir, "build_windows.bat")
         self.get.batchFilePath = batchFilePath
-        local batchFileContent = buildCommand .. " && exit"
+        local errorOutputPath = System:join(buildDir, "build_error.txt")
+        local batchFileContent = buildCommand .. " > " .. fix_path(errorOutputPath) .. " 2>&1 && exit"
 
         System:writeFile(batchFilePath, batchFileContent)
 
@@ -334,42 +345,75 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.world.forcedClickThrough = true
         self.world:hideWindow()
 
+        local buildDir = self.get.buildDir
+        local errorOutputPath = System:join(buildDir, "build_error.txt")
+
         if exitCode == 0 then
-            local newProcess = self.parent:createChild("ProcessNode", {
-                props = {
-                    projectPath = self.get.projectPath,
-                    printLog = self.get.printLog
-                },
-                arguments = {
-                    Game.executable,
-                    "-context", System:getBasePath(),
-                    "-script", System:getScriptPath("building/windows/WindowsFileHandling"),
-                    "-props", self.props
-                },
-                onOutput = function(self, msg)
-                    self.get.printLog.func:handleMessage(msg)
-                end,
-                onExit = function(self, exitCode)
-                    if self.get.printLog then
-                        self.get.printLog.func:unbindGameProcess()
-                        self.get.printLog.func:stopLoading()
+            if System:exists(errorOutputPath) then
+                System:remove(errorOutputPath)
+            end
+            if not self.get.buildTest then
+                local newProcess = self.parent:createChild("ProcessNode", {
+                    props = {
+                        projectPath = self.get.projectPath,
+                        printLog = self.get.printLog
+                    },
+                    arguments = {
+                        Game.executable,
+                        "-context", System:getBasePath(),
+                        "-script", System:getScriptPath("building/windows/WindowsFileHandling"),
+                        "-props", self.props
+                    },
+                    onOutput = function(self, msg)
+                        self.get.printLog.func:handleMessage(msg)
+                    end,
+                    onExit = function(self, exitCode)
+                        if self.get.printLog then
+                            self.get.printLog.func:unbindGameProcess()
+                            self.get.printLog.func:stopLoading()
+                        end
+                        
+                        if exitCode == 0 then
+                            System:openDirectory(System:join(self.get.projectPath, "build", "windows"))
+                            self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
+                        else
+                            System:remove(System:join(self.get.projectPath, "build", "windows"))
+                            self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
+                        end
                     end
-                    
-                    if exitCode == 0 then
-                        System:openDirectory(System:join(self.get.projectPath, "build", "windows"))
-                        self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
-                    else
-                        System:remove(System:join(self.get.projectPath, "build", "windows"))
-                        self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
-                    end
+                })
+                self.get.printLog.get.gameProcess = newProcess
+            else
+                if self.get.printLog then
+                    self.get.printLog.func:unbindGameProcess()
+                    self.get.printLog.func:stopLoading()
                 end
-            })
-            self.get.printLog.get.gameProcess = newProcess
+                System:openDirectory(System:join(self.get.buildDir))
+                self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
+
+                if self.get.iconDest then
+                    System:remove(self.get.iconDest)
+                end
+                if self.get.resFile then
+                    System:remove(self.get.resFile)
+                end
+                if self.get.resOutputFile then
+                    System:remove(self.get.resOutputFile)
+                end
+            end
+            
         else
             self.get.printLog.func:stopLoading()
-            -- System:remove(System:join(self.get.projectPath, "build", "windows"))
+
+            local error_message = nil
+            if System:exists(errorOutputPath) then
+                error_message = System:readFile(errorOutputPath)
+                self.get.printLog.func:handleMessage("Error: Build failed.\n" .. error_message)
+                System:remove(errorOutputPath)
+            end
             
             self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
+
             if not System:VSBuildToolsInstalled() then
                 self.get.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
             end

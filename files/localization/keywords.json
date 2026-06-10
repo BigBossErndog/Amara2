@@ -8,6 +8,7 @@
     "title_windowsBuilder": "Windows Builder",
     "title_copyProject": "Copy Project",
     "title_buildOptions": "Build Options",
+    "title_testBuildOptions": "Test Build Options",
     "title_executableFileName": "Executable File Name",
     "title_executableIcon": "Executable Icon (optional)",
     "title_choosePlatform": "Select Target Platform",
@@ -126,7 +127,7 @@
     "label_noPluginsFound": "No plugins found.",
 
     "label_doNotCloseCommandPrompt": "Warning: Do not close the external command prompt window. You may minimize it instead.",
-
+    
     "error_emptyProjectName": "Error: Project Name cannot be empty.",
     "error_emptyExecutableFileName": "Error: Executable File Name cannot be empty.",
     "error_directoryAlreadyExists": "Error: Directory Already Exists",

@@ -6,6 +6,9 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
         if config.projectPath then
             self.get.projectPath = config.projectPath
         end
+        if config.buildTest then
+            self.get.buildTest = config.buildTest
+        end
     end,
 
     onCreate = function(self)
@@ -45,7 +48,8 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
 
     continueBuilding = function(self)
         local newWindow = self.world.get.windows:createChild("WindowsBuildOptions", {
-            projectPath = self.get.projectPath
+            projectPath = self.get.projectPath,
+            buildTest = self.get.buildTest
         })
         newWindow.func:openWindow()
     end,

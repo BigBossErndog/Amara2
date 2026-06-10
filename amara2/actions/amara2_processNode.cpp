@@ -9,11 +9,13 @@ namespace Amara {
         std::string delimiter = "\n";
         
         std::vector<nlohmann::json> output;
-        
         std::vector<std::string> args;
 
         bool finished = false;
         int exitCode = 0;
+        
+        bool change_environment = false;
+        std::string environment_path;
         
         ProcessNode(): Amara::Action() {
             set_base_node_id("ProcessNode");
@@ -37,6 +39,10 @@ namespace Amara {
                     else args.push_back(arg_config.dump());
                 }
             }
+            if (json_has(config, "environment")) {
+                change_environment = true;
+                environment_path = json_get<std::string>(config, "environment");
+            }
             return Amara::Node::configure(config);
         }
 
@@ -49,7 +55,22 @@ namespace Amara {
             }
             c_args.push_back(nullptr);
 
-            process = SDL_CreateProcess(c_args.data(), true);
+            if (change_environment) {
+                SDL_PropertiesID props = SDL_CreateProperties();
+                SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, c_args.data());
+                SDL_SetStringProperty(props, SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING, environment_path.c_str());
+                
+                SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
+                
+                SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
+                SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_APP);
+                
+                process = SDL_CreateProcessWithProperties(props);
+                SDL_DestroyProperties(props);
+            }
+            else {
+                process = SDL_CreateProcess(c_args.data(), true);
+            }
             
             if (process) {
                 io = SDL_GetProcessOutput(process);
@@ -68,12 +89,15 @@ namespace Amara {
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
             
-            if (has_started) {
+            if (has_started && process) {
+                bool found_output = false;
+
                 if (io) {
-                    bool found_output = false;
-                    size_t bytes_read = 0;
-                    do {
-                        bytes_read = SDL_ReadIO(io, buffer, sizeof(buffer) - 1);
+                    Sint64 available = SDL_GetIOSize(io);
+                    if (available > 0) {
+                        size_t bytes_to_read = std::min((size_t)available, sizeof(buffer) - 1);
+                        size_t bytes_read = SDL_ReadIO(io, buffer, bytes_to_read);
+                        
                         if (bytes_read > 0) {
                             buffer[bytes_read] = '\0';
                             partial_line.append(buffer, bytes_read);
@@ -90,29 +114,29 @@ namespace Amara {
                             }
                             found_output = true;
                         }
-                    } while (bytes_read > 0);
-
-                    if (!found_output && SDL_WaitProcess(process, false, &exitCode)) {
-                        finished = true;
-                        if (!partial_line.empty()) {
-                            logOutput(partial_line);
-                            partial_line.clear();
-                        }
-                        io = nullptr;
-
-                        SDL_DestroyProcess(process);
-                        process = nullptr;
-
-                        complete();
-
-                        if (funcs.hasFunction("onExit")) {
-                            funcs.callFunction(this, "onExit", exitCode);
-                        }
                     }
                 }
-                else {
+
+                if (!found_output && SDL_WaitProcess(process, false, &exitCode)) {
+                    finished = true;
+                    if (!partial_line.empty()) {
+                        logOutput(partial_line);
+                        partial_line.clear();
+                    }
+                    io = nullptr;
+
+                    SDL_DestroyProcess(process);
+                    process = nullptr;
+
                     complete();
+
+                    if (funcs.hasFunction("onExit")) {
+                        funcs.callFunction(this, "onExit", exitCode);
+                    }
                 }
+            }
+            else if (has_started && !process) {
+                complete();
             }
         }
         
@@ -130,6 +154,7 @@ namespace Amara {
                 SDL_DestroyProcess(process);
                 process = nullptr;
             }
+            io = nullptr;
             if (!partial_line.empty()) {
                 output.push_back(partial_line);
                 partial_line.clear();

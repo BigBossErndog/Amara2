@@ -13,10 +13,18 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
         if config.exampleProject then
             self.get.exampleProject = config.exampleProject
         end
+        if config.buildTest then
+            self.get.buildTest = config.buildTest
+        end
     end,
 
     onCreate = function(self)
         self.get.projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+
+        if self.get.buildTest then
+            self.get.pageIndexOverride = { 5, 6 }
+            self.get.pageCount = #self.get.pageIndexOverride
+        end
 
         self.super.PagedWindow.func:onCreate()
         
@@ -31,8 +39,8 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
         self.get.title = self.get.content:createChild("Text", {
             x = 10, y = 8,
             font = "defaultFont",
-            text = Localize:get("title_buildOptions"),
-            color = Colors.White,
+            text = Localize:get(self.get.buildTest and "title_testBuildOptions" or "title_buildOptions"),
+            color = self.get.buildTest and Colors.Green or Colors.White,
             origin = 0,
             input = true
         })
@@ -71,6 +79,10 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
     end,
 
     onCreatePage = function(self, pageIndex)
+        if self.get.pageIndexOverride then
+            pageIndex = self.get.pageIndexOverride[pageIndex]
+        end
+
         if pageIndex == 1 then
             local exeNameTitle = self.get.pageContent:createChild("Text", {
                 x = 10, y = 24,
@@ -321,7 +333,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 width = self.get.targetWidth - 20,
                 height= self.get.targetHeight - 40 - 28
             })
-        elseif pageIndex == self.get.pageCount then
+        elseif pageIndex == 6 then
             local backer = self.get.pageContent:createChild("FillRect", {
                 x = 10, y = 26,
                 width = self.get.targetWidth - 20,
@@ -395,7 +407,8 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             
             self.world.get.windows:createChild("WindowsBuildNode", {
                 projectPath = self.get.projectPath,
-                iconPath = self.get.iconPath
+                iconPath = self.get.iconPath,
+                buildTest = self.get.buildTest
             })
 
             win:destroy()
@@ -405,15 +418,20 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
 
     setPage = function(self, pageIndex)
         System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
-        if self.get.pageIndex == 1 then
+        
+        local pageOverride = self.get.pageIndex
+        if self.get.pageIndexOverride then
+            pageOverride = self.get.pageIndexOverride[self.get.pageIndex]
+        end
+        if pageOverride == 1 then
             if self.get.exeNameField and self.get.exeNameField.get.finalText == "" then
                 self.get.errorMessage.text = Localize:get("error_emptyExecutableFileName")
                 self.get.errorMessage.visible = true
                 return false
             end
-        elseif self.get.pageIndex == 4 then
+        elseif pageOverride == 4 then
             self.get.includeFolders.func:confirmOptions()
-        elseif self.get.pageIndex == 5 then
+        elseif pageOverride == 5 then
             self.get.includePlugins.func:confirmOptions()
         end
 

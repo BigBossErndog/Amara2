@@ -55,7 +55,8 @@ Nodes:define("IncludeFolders", "FillRect", {
         local invalidFolders = {
             build = true,
             lua_scripts = true,
-            assets = true
+            assets = true,
+            plugins = true
         }
 
         local found = System:getSubDirectories(self.get.projectPath)
