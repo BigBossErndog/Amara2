@@ -81,7 +81,6 @@ namespace Amara {
                     return sol::nil;
                 }
             }
-            path = gameProps->system->getScriptPath(path);
             return gameProps->system->run(path);
         }
 

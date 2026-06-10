@@ -6,6 +6,8 @@ namespace Amara {
         Amara::GameProps* gameProps = nullptr;
         sol::object luaobject;
 
+        std::string current_file_directory;
+
         SystemManager() = default;
         
         bool exists(std::string path) {
@@ -448,6 +450,8 @@ namespace Amara {
         }
 
         std::string getScriptPath(std::string path) {
+            std::string rec_path = path;
+
             std::filesystem::path filePath;
             if (String::endsWith(path, ".lua") || String::endsWith(path, ".luac")) {
                 filePath = getRelativePath(gameProps->lua_script_path) / (std::filesystem::path)removeFileExtension(path);
@@ -464,6 +468,23 @@ namespace Amara {
                 path = filePath.string() + ".amara";
                 if (exists(path)) return path;
             }
+
+            if (!current_file_directory.empty()) {
+                if (String::endsWith(rec_path, ".lua") || String::endsWith(rec_path, ".luac")) {
+                    filePath = (std::filesystem::path)removeFileExtension(rec_path);
+                }
+                else {
+                    filePath = (std::filesystem::path)rec_path;
+                }
+                std::filesystem::path new_path = getRelativePath(current_file_directory) / filePath;
+                path = new_path.string() + ".luac";
+                if (exists(path)) return path;
+                path = new_path.string() + ".lua";
+                if (exists(path)) return path;
+                path = new_path.string() + ".amara";
+                if (exists(path)) return path;
+            }
+
             return filePath.string();
         }
 
@@ -696,6 +717,8 @@ namespace Amara {
         }
 
         sol::object run(std::string path) {
+            std::string rec_directory = current_file_directory;
+            
             std::filesystem::path filePath = getScriptPath(path);
             bool fileExists = std::filesystem::exists(filePath);
             if (!fileExists) {
@@ -728,6 +751,8 @@ namespace Amara {
             }
 
             try {
+                current_file_directory = getDirectoryOf(filePath.string());
+
                 sol::load_result loadResult;
                 if (String::endsWith(filePath.string(), ".luac")) {
                     loadResult = gameProps->lua.load(
@@ -760,6 +785,8 @@ namespace Amara {
                     gameProps->breakWorld();
                     return sol::nil;
                 }
+
+                current_file_directory = rec_directory;
 
                 return execResult;
             }
