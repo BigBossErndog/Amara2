@@ -13,7 +13,7 @@ namespace Amara {
 
         bool finished = false;
         int exitCode = 0;
-        
+
         bool change_environment = false;
         std::string environment_path;
         
@@ -61,7 +61,6 @@ namespace Amara {
                 SDL_SetStringProperty(props, SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING, environment_path.c_str());
                 
                 SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
-                
                 SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
                 SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_APP);
                 
@@ -93,32 +92,29 @@ namespace Amara {
                 bool found_output = false;
 
                 if (io) {
-                    Sint64 available = SDL_GetIOSize(io);
-                    if (available > 0) {
-                        size_t bytes_to_read = std::min((size_t)available, sizeof(buffer) - 1);
-                        size_t bytes_read = SDL_ReadIO(io, buffer, bytes_to_read);
-                        
-                        if (bytes_read > 0) {
-                            buffer[bytes_read] = '\0';
-                            partial_line.append(buffer, bytes_read);
+                    size_t bytes_read = SDL_ReadIO(io, buffer, sizeof(buffer) - 1);
+                    
+                    if (bytes_read > 0) {
+                        buffer[bytes_read] = '\0';
+                        partial_line.append(buffer, bytes_read);
 
-                            if (delimiter.empty()) {
-                                logOutput(partial_line);
-                                partial_line.clear();
-                            } else {
-                                size_t delim_pos;
-                                while ((delim_pos = partial_line.find(delimiter)) != std::string::npos) {
-                                    logOutput(partial_line.substr(0, delim_pos));
-                                    partial_line.erase(0, delim_pos + delimiter.length());
-                                }
+                        if (delimiter.empty()) {
+                            logOutput(partial_line);
+                            partial_line.clear();
+                        } else {
+                            size_t delim_pos;
+                            while ((delim_pos = partial_line.find(delimiter)) != std::string::npos) {
+                                logOutput(partial_line.substr(0, delim_pos));
+                                partial_line.erase(0, delim_pos + delimiter.length());
                             }
-                            found_output = true;
                         }
+                        found_output = true;
                     }
                 }
 
                 if (!found_output && SDL_WaitProcess(process, false, &exitCode)) {
                     finished = true;
+                    
                     if (!partial_line.empty()) {
                         logOutput(partial_line);
                         partial_line.clear();

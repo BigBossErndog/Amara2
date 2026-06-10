@@ -27,7 +27,7 @@ namespace Amara {
         
         static void registerNodes() {
             // Insert your node registrations here.
-
+            
             /*
              * e.g. registerNode<MyPlugin>("MyPlugin");
              */

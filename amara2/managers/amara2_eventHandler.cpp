@@ -8,7 +8,7 @@ namespace Amara {
         GamepadManager gamepads;
         
         Amara::GameProps* gameProps = nullptr;
-
+        
         Amara::Pointer globalPointer;
 
         double backspace_counter = 0;

@@ -73,6 +73,10 @@ namespace Amara {
         int get_lua_stack_size() {
             return lua_gettop(gameProps->lua.lua_state());
         }
+
+        void forceClose() {
+            hasQuit = true;
+        }
         
         Uint32 getDisplayIDForPoint(Vector2 p) {
             SDL_Point sp = { static_cast<int>(p.x), static_cast<int>(p.y) };
@@ -125,7 +129,8 @@ namespace Amara {
                 "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint,
                 "getDisplayBounds", &GameManager::getDisplayBounds,
                 "mainDisplay", sol::property(&GameManager::getMainDisplay),
-                "debugging", sol::readonly(&GameManager::debugging)
+                "debugging", sol::readonly(&GameManager::debugging),
+                "forceClose", &GameManager::forceClose
             );
         }
     };

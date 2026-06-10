@@ -1094,6 +1094,7 @@ namespace Amara {
             node_type["child"] = sol::property(&Node::luaGetChildren);
         }
     };
+    static void class_init() {}
 
     bool is_node(sol::object obj) {
         return obj.is<Amara::Node>();

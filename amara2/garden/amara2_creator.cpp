@@ -146,6 +146,10 @@ namespace Amara {
         }
 
         virtual World* createWorld(sol::object config) override {
+            if (game.hasQuit) {
+                return nullptr;
+            }
+
             std::string key = "World";
 
             if (config.is<std::string>()) key = config.as<std::string>();
@@ -298,6 +302,7 @@ namespace Amara {
                         debug_log(e.what());
                         gameProps.breakWorld();
                     }
+                    if (gameProps->hasQuit) break;
                 }
             }
             for (auto it = starting_scripts.begin(); it != starting_scripts.end(); it++) {
@@ -312,9 +317,10 @@ namespace Amara {
                     debug_log(e.what());
                     gameProps.breakWorld();
                 }
+                if (gameProps->hasQuit) break;
             }
             
-            game.hasQuit = gameProps.lua_exception_thrown || gameProps.error_code != 0;
+            game.hasQuit = gameProps.hasQuit || gameProps.lua_exception_thrown || gameProps.error_code != 0;
 
             cleanDestroyedWorlds();
             std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());

@@ -223,6 +223,8 @@ namespace Amara {
                 }
                 return sol::lua_nil;
             };
+
+            T:class_init();
         }
 
         void prepareNodes() {
@@ -400,12 +402,14 @@ namespace Amara {
     };
 
     Amara::Node* Node::createChild(std::string key) {
+        if (destroyed) return nullptr;
         Amara::Node* node = gameProps->factory->create(key);
         if (node) addChild(node);
         return node;
     }
 
     sol::object Node::luaCreateChild(std::string key, sol::object config) {
+        if (destroyed) return sol::nil;
         Amara::Node* node = gameProps->factory->create(key);
         if (node) {
             if (config.valid()) {
