@@ -448,7 +448,8 @@ Nodes:define("ProjectWindow", "UIWindow", {
             if not System:exists(System:getRelativePath("build_modules/amara2_windows_build_module/clang-llvm/bin/clang.exe")) then
                 local newWindow = self.world.get.windows:createChild("WindowsBuildInstaller", {
                     projectPath = self.get.projectPath,
-                    exampleProject = self.get.exampleProject
+                    exampleProject = self.get.exampleProject,
+                    buildTest = buildTest
                 })
                 newWindow.func:openWindow()
             elseif buildTest then

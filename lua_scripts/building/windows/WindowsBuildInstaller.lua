@@ -6,6 +6,9 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
         if config.projectPath then
             self.get.projectPath = config.projectPath
         end
+        if config.buildTest then
+            self.get.buildText = config.buildTest
+        end
     end,
 
     onCreate = function(self)
@@ -158,6 +161,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     end,
 
     continueBuilding = function(self)
+        local buildTest = self.get.buildTest
         local installerNode = self
         self.func:closeWindow(function(win)
             local printLog = self.world.get.windows:createChild("TerminalWindow", {
@@ -202,9 +206,18 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                             projectPath = self.get.projectPath
                         })
                     else
-                        local newWindow = self.world.get.windows:createChild("BuildPlatformMenu", {
-                            projectPath = self.get.projectPath
-                        })
+                        local newWindow
+                        if not self.get.buildTest then
+                            newWindow = self.world.get.windows:createChild("BuildPlatformMenu", {
+                                projectPath = self.get.projectPath,
+                                buildTest = buildTest
+                            })
+                        else
+                            newWindow = self.world.get.windows:createChild("WindowsBuildOptions", {
+                                projectPath = self.get.projectPath,
+                                buildTest = true
+                            })
+                        end
                         newWindow.func:openWindow()
                     end
                 end
