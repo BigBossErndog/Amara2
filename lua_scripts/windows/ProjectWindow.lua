@@ -365,9 +365,9 @@ Nodes:define("ProjectWindow", "UIWindow", {
         local exe = Game.executable
         local testBuild = nil
         if Game.platform == "windows" then
-            testBuild = System:join(self.get.projectPath, "build", "test")
+            testBuild = System:join(self.get.projectPath, "build", "test", "Amara2.exe")
             if System:exists(testBuild) then
-                exe = System:join(testBuild, "Amara2.exe")
+                exe = testBuild
             else
                 testBuild = nil
             end
@@ -395,7 +395,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
 
         self.get.gameProcess = self:createChild("ProcessNode", {
             arguments = args,
-            environment = testBuild,
+            environment = testBuild and System:getDirectoryOf(testBuild),
             onOutput = function(process, msg)
                 if self.get.printLog then
                     self.get.printLog.func:handleMessage(msg)
