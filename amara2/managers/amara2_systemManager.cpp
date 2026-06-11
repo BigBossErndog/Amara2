@@ -60,7 +60,19 @@ namespace Amara {
             }
             #endif
 
-            if (!std::filesystem::exists(filePath)) {
+            bool found = std::filesystem::exists(filePath);
+            if (!found) {
+                if (gameProps->define_org.empty() || gameProps->define_app.empty()) {
+                    std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                    std::filesystem::path newFilePath = prefPath / (std::filesystem::path)path;
+
+                    if (std::filesystem::exists(newFilePath)) {
+                        filePath = newFilePath;
+                        found = true;
+                    }
+                }
+            }
+            if (!found) {
                 fatal_error("Error: File does not exist \"", pathForError, "\"");
                 gameProps->breakWorld();
                 return "";
@@ -130,7 +142,16 @@ namespace Amara {
         }
 
         bool writeFile(std::string path, nlohmann::json input, std::string encryptionKey) {
-            std::filesystem::path filePath = getRelativePath(path);
+            std::filesystem::path prefPath;
+            std::filesystem::path filePath;
+            if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
+                prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                filePath = prefPath / (std::filesystem::path)path;
+            }
+            else {
+                filePath = getRelativePath(path);
+            }
+            
 
             std::string output_str;
             if (input.is_string()) {
@@ -485,11 +506,16 @@ namespace Amara {
                 if (exists(path)) return path;
             }
 
-            return filePath.string();
+            return getRelativePath(filePath.string());
         }
 
         std::string getAssetPath(std::string path) {
             std::filesystem::path filePath = getRelativePath(gameProps->assets_path) / (std::filesystem::path)path;
+            if (!exists(filePath.string()) && !gameProps->define_org.empty() && !gameProps->define_app.empty()) {
+                std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                std::filesystem::path newAssetPath = prefPath / (std::filesystem::path)path;
+                if (exists(newAssetPath.string())) return newAssetPath.string();
+            }
             return filePath.string();
         }
 
@@ -722,7 +748,7 @@ namespace Amara {
             std::filesystem::path filePath = getScriptPath(path);
             bool fileExists = std::filesystem::exists(filePath);
             if (!fileExists) {
-                fatal_error("Error: Script does not exist \"", removeBasePath(filePath), "\"");
+                fatal_error("Error: Script does not exist \"", path, "\".");
                 gameProps->breakWorld();
                 return sol::nil;
             }
@@ -1326,6 +1352,76 @@ namespace Amara {
         }
         #endif
 
+        #if defined(AMARA_ENGINE_TOOLS)
+        sol::table locate_android_sdk() {
+            nlohmann::json result = nlohmann::json::object();
+
+            std::vector<std::string> candidates;
+
+            #if defined(_WIN32)
+            const char* localAppData = std::getenv("LOCALAPPDATA");
+            const char* userProfile  = std::getenv("USERPROFILE");
+            if (localAppData)
+                candidates.push_back(std::string(localAppData) + "\\Android\\Sdk");
+            if (userProfile) {
+                candidates.push_back(std::string(userProfile) + "\\AppData\\Local\\Android\\Sdk");
+                candidates.push_back(std::string(userProfile) + "\\Android\\Sdk");
+            }
+            #endif
+
+            for (const char* var : {"ANDROID_HOME", "ANDROID_SDK_ROOT"}) {
+                const char* env = std::getenv(var);
+                if (env) candidates.insert(candidates.begin(), std::string(env));
+            }
+
+            std::string sdk;
+            for (const auto& path : candidates) {
+                bool exists = std::filesystem::exists(path);
+                bool isDir  = exists && std::filesystem::is_directory(path);
+                if (exists && isDir) {
+                    sdk = path;
+                    break;
+                }
+            }
+
+            if (sdk.empty()) {
+                return sol::nil;
+            }
+            result["sdk"] = sdk;
+
+            std::string ndkBaseDir = sdk + "\\ndk";
+
+            if (std::filesystem::exists(ndkBaseDir)) {
+                std::string ndkVersion;
+                for (const auto& entry : std::filesystem::directory_iterator(ndkBaseDir)) {
+                    if (entry.is_directory()) {
+                        ndkVersion = entry.path().filename().string();
+                        break;
+                    }
+                }
+
+                if (!ndkVersion.empty()) {
+                    std::string sep      = "\\";
+                    std::string host     = "windows-x86_64";
+                    std::string ext      = ".cmd";
+                    std::string ndk      = ndkBaseDir + sep + ndkVersion;
+                    std::string tc       = ndk + sep + "toolchains" + sep + "llvm" + sep + "prebuilt" + sep + host + sep + "bin" + sep;
+                    std::string compiler = tc + "aarch64-linux-android33-clang++" + ext;
+                    std::string linker   = compiler;
+                
+                    result["ndk"]         = ndk;
+                    result["ndk_version"] = ndkVersion;
+                    result["host"]        = host;
+                    result["tc"]          = tc;
+                    result["compiler"]    = compiler;
+                    result["linker"]      = linker;
+                }
+            }
+
+            return json_to_lua(gameProps->lua, result);
+        }
+        #endif
+
         bool programInstalled(std::string programName) {
             std::string command;
             int result;
@@ -1481,6 +1577,9 @@ namespace Amara {
                 #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
                 "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled,
                 "WriteICO", &SystemManager::WriteICO,
+                #endif
+                #if defined(AMARA_ENGINE_TOOLS)
+                "LocateAndroidSDK", &SystemManager::locate_android_sdk,
                 #endif
                 "programInstalled", &SystemManager::programInstalled,
                 "throwError", sol::overload(

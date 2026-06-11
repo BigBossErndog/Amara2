@@ -76,10 +76,13 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
         if Game.platform == "windows" then
             table.insert(platforms, "label_platform_windows")
             table.insert(platforms, "label_platform_web")
+            table.insert(platforms, "label_platform_android")
         elseif Game.platform == "linux" then
             table.insert(platforms, "label_platform_linux")
         elseif Game.platform == "mac" then
             table.insert(platforms, "label_platform_mac")
+            table.insert(platforms, "label_platform_web")
+            table.insert(platforms, "label_platform_ios")
         end
         
         self.get.platformMenu.func:createOptions(platforms)
@@ -118,6 +121,21 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
                     projectPath = self.get.projectPath
                 })
                 newWindow.func:openWindow()
+                
+            elseif platform == "label_platform_android" then
+                local android_sdk = System:LocateAndroidSDK()
+                if not android_sdk or not android_sdk.ndk then
+                    newWindow = self.world.get.windows:createChild("AndroidSDKInstaller", {
+                        projectPath = self.get.projectPath,
+                        sdk = android_sdk,
+                        ndk = android_sdk and android_sdk.ndk
+                    })
+                else
+                    newWindow = self.world.get.windows:createChild("AndroidBuildOptions", {
+                        projectPath = self.get.projectPath
+                    })
+                    newWindow.func:openWindow()
+                end
             end
 
             settings.lastBuildPlatform = platform

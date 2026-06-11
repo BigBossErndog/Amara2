@@ -15,6 +15,7 @@ Scripts:include("ui/CodeEditorButton")
 Scripts:include("ui/DropDownMenu")
 Scripts:include("ui/LoadingBar")
 Scripts:include("ui/PagedWindow")
+Scripts:include("ui/CheckingBox")
 
 Scripts:include("windows/InitialSetupWindow")
 Scripts:include("windows/MainWindow")
@@ -38,6 +39,10 @@ Scripts:include("building/windows/WindowsBuildNode")
 Scripts:include("building/web/WebBuildOptions")
 Scripts:include("building/web/WebBuildNode")
 
+Scripts:include("building/android/AndroidSDKInstaller")
+Scripts:include("building/android/AndroidBuildOptions")
+-- Scripts:include("building/android/AndroidBuildNode")
+
 Creator:createWorld({
     window = {
         width = 1280,
@@ -55,10 +60,10 @@ Creator:createWorld({
     onPreload = function(world)
         world:restoreWindow()
 
-        world.load:shaderProgram("boxBlur", {
-            vertex = "defaultVertex",
-            fragment = "shaders/boxBlur.frag"
-        })
+        -- world.load:shaderProgram("boxBlur", {
+        --     vertex = "defaultVertex",
+        --     fragment = "shaders/boxBlur.frag"
+        -- })
         
         world.load:image("uiBox", "ui/amara2_uiBox.png")
         world.load:spritesheet("terminalWindow", "ui/amara2_terminalWindow.png", 32, 32)

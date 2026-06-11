@@ -25,7 +25,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             self.get.pageIndexOverride = { 5, 6 }
             self.get.pageCount = #self.get.pageIndexOverride
         end
-
+        
         self.super.PagedWindow.func:onCreate()
         
         self.get.errorMessage = self.get.content:createChild("Text", {

@@ -103,6 +103,18 @@ namespace Amara {
         std::string lua_script_path = "./lua_scripts";
         std::string assets_path = "./assets";
 
+        #ifdef AMARA_DEF_ORG
+        std::string define_org = AMARA_ORG;
+        #else
+        std::string define_org = "";
+        #endif
+
+        #ifdef AMARA_DEF_APP
+        std::string define_app = AMARA_DEF_APP;
+        #else
+        std::string define_app = "";
+        #endif
+
         bool integrate_new_windows = false;
         bool transparent_window = false;
 

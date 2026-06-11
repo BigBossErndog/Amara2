@@ -18,8 +18,8 @@ namespace Amara {
         }
         
         bool loadImage(std::string _p) {
-            path = gameProps->system->getAssetPath(_p);
             clearTexture();
+            path = gameProps->system->getAssetPath(_p);
 
             std::string contents = gameProps->system->readFile(path);
             

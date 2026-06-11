@@ -29,6 +29,14 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
             onPress = function()
                 if System:VSBuildToolsInstalled() then
                     self.func:continueBuilding()
+                else
+                    self.func:closeWindow(function(win)
+                        local newWindow = self.world.get.windows:createChild("VSBuildToolsInstaller", {
+                            projectPath = self.get.projectPath
+                        })
+                        newWindow.func:openWindow()
+                        self:destroy()
+                    end)
                 end
             end
         })
@@ -37,7 +45,7 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
 
         local downloadButton = self.get.content:createChild("UIButton", {
             id = "downloadButton",
-            text = "label_downloadVSBuildTools",
+            text = Localize("label_installVSBuildTools"),
             onPress = function()
                 self.func:downloadVSBuildTools()
             end
@@ -47,11 +55,15 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
     end,
 
     continueBuilding = function(self)
-        local newWindow = self.world.get.windows:createChild("WindowsBuildOptions", {
-            projectPath = self.get.projectPath,
-            buildTest = self.get.buildTest
-        })
-        newWindow.func:openWindow()
+        self.func:closeWindow(function(win)
+            local newWindow = self.world.get.windows:createChild("WindowsBuildOptions", {
+                projectPath = self.get.projectPath,
+                buildTest = self.get.buildTest
+            })
+            newWindow.func:openWindow()
+
+            self:destroy()
+        end)
     end,
 
     downloadVSBuildTools = function(self)

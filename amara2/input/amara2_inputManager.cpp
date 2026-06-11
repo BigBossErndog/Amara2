@@ -44,6 +44,8 @@ namespace Amara {
 
         bool force_release_pointer = false;
 
+        active = false;
+
         Amara::InputMode pointerMode = Amara::InputMode::None;
 
         void init(Amara::GameProps* _gameProps, Amara::World* _world) {

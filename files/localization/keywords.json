@@ -92,6 +92,7 @@
 
     "label_downloadModule": "Download Module",
     "label_installVSBuildTools": "Install VS Build Tools",
+    "label_installAndroidSDK": "Install Android Studio",
     
     "label_windowsBuilderNotFound": "Amara2 Windows Build Module not found.",
     "label_windowsBuilderNotice": "Amara2 requires the Amara2 Windows build module.\nPlease download and open the .zip below.",
@@ -99,6 +100,11 @@
     "label_vsBuildToolsNotFound": "Visual Studio Build Tools not found.",
     "label_vsBuildToolsNotice": "Amara2 requires the Amara2 Windows build module.\nPlease download and open the .zip below.",
     
+    "label_androidSDKNotFound": "Android SDK not found.",
+    "label_androidNDKNotFound": "Android NDK not found.",
+    "label_androidSDKNotFound_desc": "Please install and setup Android Studio.",
+    "label_androidNDKNotFound_desc": "Open Android Studio. Click '${cyan}More Actions${end}' > '${cyan}SDK Manager${end}' > Open the '${cyan}SDK Tools${end}' tab > Check '${cyan}NDK (Side by Side)${end}' > Apply and install.",
+
     "label_windowsModuleFile": "amara2_windows_build_module.zip",
     "label_windowsWebModuleFile": "amara2_windows_web_build_module.zip",
 
@@ -106,6 +112,8 @@
     "label_platform_web": "Web",
     "label_platform_linux": "Linux",
     "label_platform_mac": "Mac",
+    "label_platform_android": "Android",
+    "label_platform_ios": "iOS",
 
     "label_compileCode": "Compile Code",
     "label_compilationDesc": "Compile your lua code for faster script loading and execution, however it will hamper the ability for other people to mod.",
