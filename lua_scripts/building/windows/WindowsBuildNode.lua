@@ -78,9 +78,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             end
         end
         self.get.iconPath = System:join(buildDir, "icon.png")
-        self.load:image("icon", config.iconPath)
+        self.load:image("exe_icon", config.iconPath)
         Assets:resizeTextureToPNG(
-            "icon",
+            "exe_icon",
             256, 256,
             self.get.iconPath
         )

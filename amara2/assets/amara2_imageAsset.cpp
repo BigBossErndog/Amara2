@@ -53,13 +53,12 @@ namespace Amara {
                 if (!texture) {
                     fatal_error("Error: Failed to create texture: ", SDL_GetError());
                     stbi_image_free(imageData);
+                    imageData = nullptr;
                     return false;
                 }
                 pitch = width * 4;
                 SDL_UpdateTexture(texture, NULL, imageData, pitch);
                 SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-                
-                stbi_image_free(imageData);
 
                 return true;
             }
@@ -70,6 +69,7 @@ namespace Amara {
                 if (glTextureID == 0) {
                     fatal_error("Error: Texture generation failed. ", path);
                     stbi_image_free(imageData);
+                    imageData = nullptr;
                     return false;
                 }
 
@@ -85,7 +85,6 @@ namespace Amara {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 
                 glBindTexture(GL_TEXTURE_2D, 0);
-                stbi_image_free(imageData);
                 
                 return true;
             }
@@ -163,8 +162,6 @@ namespace Amara {
 
                 SDL_GPUCommandBuffer* uploadCmdBuf = SDL_AcquireGPUCommandBuffer(gameProps->gpuDevice);
 	            SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(uploadCmdBuf);
-
-                stbi_image_free(imageData);
                 return true;
             }
             fatal_error("Error: Failed to load image, no graphics available. \"", path, "\"");
@@ -172,6 +169,10 @@ namespace Amara {
         }
 
         unsigned char* resize(int _w, int _h, bool keep) {
+            if (!imageData) {
+                fatal_error("Error: ImageAsset contains no image data.");
+                return nullptr;
+            }
             unsigned char* result_data = new unsigned char[_w * _h * channels];
 
             stbir_resize_uint8_linear(
@@ -204,6 +205,10 @@ namespace Amara {
                 glTextureID = 0;
             }
             #endif
+            if (imageData) {
+                stbi_image_free(imageData);
+                imageData = nullptr;
+            }
         }
 
         virtual void destroy() override {

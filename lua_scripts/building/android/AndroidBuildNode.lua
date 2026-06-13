@@ -38,7 +38,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             System:remove(buildDir)
         end
         System:createDirectory(buildDir)
-
+        
         local android_package = System:join(buildDir, "android_package")
         System:createDirectory(android_package)
         self.get.android_package = android_package
@@ -61,6 +61,9 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             System:join(sdl_path, "lib", "armeabi-v7a", "libSDL3.so"),
             System:join(android_package, "lib/armeabi-v7a", "libSDL3.so")
         )
+
+        self.func:generateManifest()
+        self.func:generateIcons()
 
         if config.printLog then
             self.get.printLog = config.printLog
@@ -213,8 +216,43 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         local batchFilePath = System:join(buildDir, "build_android.bat")
         self.get.batchFilePath = batchFilePath
 
-        local buildCommand = fix_path(sdk.compiler) .. " " .. arm64_v8a_build.argstr .. "\n" .. fix_path(errorOutputPath) .. " 2>&1\n" .. fix_path(sdk.compiler) .. " " .. arm_v7a_build.argstr .. " > " .. fix_path(errorOutputPath) .. " 2>&1\nexit"
+        local buildCommands = {
+            fix_path(sdk.compiler) .. " " .. arm64_v8a_build.argstr .. " > " .. fix_path(errorOutputPath) .. " 2>&1",
+            fix_path(sdk.compiler) .. " " .. arm_v7a_build.argstr .. " > " .. fix_path(errorOutputPath) .. " 2>&1"
+        }
+        
+        local sdl_jar = System:join(sdl_path, "shared", "java", "SDL3.jar")
+        table.insert(buildCommands,
+            fix_path(sdk["d8"]) .. " --output " .. fix_path(System:join(self.get.android_package, "dex")) .. " --min-api 24 " .. fix_path(sdl_jar) .. " > " .. fix_path(errorOutputPath) .. " 2>&1"
+        )
 
+        table.insert(buildCommands,
+            fix_path(sdk["aapt2"]) .. " compile --dir " .. fix_path(System:join(self.get.android_package, "res")) .. " -o " .. fix_path(System:join(self.get.android_package, "compiled_res"))
+        )
+
+        -- aapt2 link
+        -- -o build\android\base.apk
+        -- -I %ANDROID_SDK%\platforms\android-35\android.jar
+        -- --manifest build\android\AndroidManifest.xml
+        -- --min-sdk-version 24
+        -- --target-sdk-version 35
+        -- --version-code 1
+        -- --version-name "1.0.0"
+        -- build\android\compiled_res\*.flat
+
+        table.insert(buildCommands,
+            fix_path(sdk["aapt2"]) .. " link -o " .. fix_path(System:join(self.get.android_package, "base.apk")) .. " -I " .. fix_path(sdk.sysroot) .. " --manifest " .. fix_path(System:join(self.get.android_package, "AndroidManifest.xml")) .. " --min-sdk-version 24 --target-sdk-version 35 --version-code " .. self.get.manifest_config.VERSION_CODE .. " --version-name" .. self.get.manifest_config.VERSION_NAME .. " " .. fix_path(System:join(self.get.android_package, "compiled_res/*.flat"))
+        )
+
+        -- zipalign.exe -f 4 base.apk base-aligned.apk
+
+        table.insert(buildCommands,
+            fix_path(sdk["zipalign"]) .. " -f 4 " .. fix_path(System:join(self.get.android_package, "base.apk")) .. " " .. fix_path(System:join(self.get.android_package, "base-aligned.apk"))
+        )
+
+        table.insert(buildCommands, "exit")
+
+        local buildCommand = table.concat(buildCommands, "\n")
         System:writeFile(batchFilePath, buildCommand)
 
         local systemCommand = "System:exit(System:executeTerminal(" .. string.format("%q", quote_if_needed(batchFilePath)) .. "))"
@@ -247,6 +285,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             MAIN_LIBRARY_NAME = "main",
             DEPTH_SIZE = 0
         }
+        self.get.manifest_config = config
 
         local lines = {}
         for line in template:gmatch("[^\n]+") do
@@ -288,20 +327,15 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             icon_path = defaultIcon
         end
 
-        local str = ""
-
         self.load:image("app_icon", icon_path)
         for k, size in pairs(mimaps) do
             local path = System:join(self.get.android_package, "res", k, "ic_launcher.png")
-            local success = Assets:resizeTextureToPNG(
+            Assets:resizeTextureToPNG(
                 "app_icon",
                 size, size,
                 path
             )
-            str = str .. k .. ": " .. size .. " > " .. path .. (success and " SUCCESS" or " FAILED") .. "\n"
         end
-
-        System:writeFile(System:join(self.get.buildDir, "output.txt"), str)
     end,
 
     onPrepare = function(actor)
@@ -370,9 +404,6 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 System:remove(errorOutputPath)
             end
 
-            self.func:generateManifest()
-            self.func:generateIcons()
-
             -- local newProcess = self.parent:createChild("ProcessNode", {
             --     props = {
             --         projectPath = self.get.projectPath,
@@ -403,9 +434,11 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             --     end
             -- })
             -- self.get.printLog.get.gameProcess = newProcess
+
             System:openDirectory(System:join(self.get.projectPath, "build", "android"))
             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
             self.get.printLog.func:stopLoading()
+            self.get.printLog.func:unbindGameProcess()
         else
             self.get.printLog.func:stopLoading()
 

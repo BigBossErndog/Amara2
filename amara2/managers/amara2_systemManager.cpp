@@ -1459,6 +1459,7 @@ namespace Amara {
                     #else
                     result["apksigner"] = bt + sep + "apksigner";
                     #endif
+                    result["d8"] = bt + sep + "d8.bat";
                 }
             }
 
@@ -1482,6 +1483,43 @@ namespace Amara {
                         result["android_jar"]      = androidJar;
                         result["platform_version"] = bestPlatform.filename().string();
                     }
+                }
+            }
+
+            std::vector<std::string> javac_candidates;
+
+            #if defined(_WIN32)
+            const char* programFiles = std::getenv("PROGRAMFILES");
+            if (programFiles) {
+                javac_candidates.push_back(std::string(programFiles) + "\\Android\\Android Studio\\jbr\\bin\\javac.exe");
+                javac_candidates.push_back(std::string(programFiles) + "\\Android\\Android Studio\\jre\\bin\\javac.exe");
+            }
+            if (localAppData) {
+                javac_candidates.push_back(std::string(localAppData) + "\\Programs\\Android Studio\\jbr\\bin\\javac.exe");
+                javac_candidates.push_back(std::string(localAppData) + "\\Programs\\Android Studio\\jre\\bin\\javac.exe");
+            }
+            #elif defined(__APPLE__)
+            javac_candidates.push_back("/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/javac");
+            javac_candidates.push_back("/Applications/Android Studio.app/Contents/jre/Contents/Home/bin/javac");
+            #else
+            // Linux
+            const char* home = std::getenv("HOME");
+            if (home) {
+                javac_candidates.push_back(std::string(home) + "/android-studio/jbr/bin/javac");
+                javac_candidates.push_back(std::string(home) + "/android-studio/jre/bin/javac");
+            }
+            javac_candidates.push_back("/opt/android-studio/jbr/bin/javac");
+            #endif
+
+            // JAVA_HOME env override
+            const char* javaHome = std::getenv("JAVA_HOME");
+            if (javaHome)
+                javac_candidates.insert(javac_candidates.begin(), std::string(javaHome) + sep + "bin" + sep + "javac" + exe);
+
+            for (const auto& path : javac_candidates) {
+                if (std::filesystem::exists(path)) {
+                    result["javac"] = path;
+                    break;
                 }
             }
 
