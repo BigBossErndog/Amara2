@@ -91,7 +91,7 @@ namespace Amara {
             }
         }
         
-        void stop() {
+        virtual void stop() override {
             Amara::Audio::stop();
             for (Amara::Node* child : children) {
                 if (child == nullptr || child->destroyed || child->parent != this) continue;
@@ -126,7 +126,7 @@ namespace Amara {
             return false;
         }
 
-        void restart() {
+        virtual void restart() override {
             Amara::Audio::restart();
         }
         void restart(std::string gid) {

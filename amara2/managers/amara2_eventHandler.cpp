@@ -297,6 +297,7 @@ namespace Amara {
                         }
                         break;
                     }
+                    default:
                 }
             }
 

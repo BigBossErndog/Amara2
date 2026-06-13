@@ -34,7 +34,7 @@ namespace Amara {
         Amara::World* world = nullptr;
         
         std::vector<Amara::InputDef> queue;
-
+        
         Mouse mouse;
         TouchHandler touch;
 
@@ -43,8 +43,6 @@ namespace Amara {
         bool any_hovered = false;
 
         bool force_release_pointer = false;
-
-        active = false;
 
         Amara::InputMode pointerMode = Amara::InputMode::None;
 

@@ -21,6 +21,12 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
     onCreate = function(self)
         self.get.projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
 
+        if not self.get.projectData["executable-name"] then
+            if self.get.projectData["project-name"] then
+                self.get.projectData["executable-name"] = self.get.projectData["project-name"]
+            end
+        end
+
         if self.get.buildTest then
             self.get.pageIndexOverride = { 5, 6 }
             self.get.pageCount = #self.get.pageIndexOverride
@@ -118,7 +124,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
 
                 onChange = function(textField, txt)
                     textField.get.exeTxt.visible = true
-                    textField.get.exeTxt.x = textField.get.txt.x + textField.get.txt.width
+                    textField.get.exeTxt.x = textField.get.txt.x + textField.get.txt.width + 1
 
                     if string.len(txt) > 0 then
                         self.get.projectData["executable-name"] = self.get.exeNameField.get.finalText
@@ -127,7 +133,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
 
                 onFocus = function(self)
                     self.get.exeTxt.visible = true
-                    self.get.exeTxt.x = self.get.txt.x + self.get.txt.width
+                    self.get.exeTxt.x = self.get.txt.x + self.get.txt.width + 2
                 end,
 
                 onUnfocus = function(self)
@@ -379,22 +385,15 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
         end
         self.load:image("iconPreview", path)
         self.get.iconPreview.texture = "iconPreview"
-        if self.get.iconPreview.width == 256 and self.get.iconPreview.height == 256 then
-            self.get.iconPath = path
-            self.get.iconPreview.visible = true
-            self.get.iconPreview.rect = { 
-                self.get.iconPreview.x,
-                self.get.iconPreview.y,
-                32, 32
-            }
-            self.get.projectData["exe-icon"] = self.get.iconPath
-            return true
-        end
-        if self.get.errorMessage then
-            self.get.errorMessage.text = Localize:get("error_invalidIconSize")
-            self.get.errorMessage.visible = true
-        end
-        return false
+        self.get.iconPath = path
+        self.get.iconPreview.visible = true
+        self.get.iconPreview.rect = {
+            self.get.iconPreview.x,
+            self.get.iconPreview.y,
+            32, 32
+        }
+        self.get.projectData["exe-icon"] = self.get.iconPath
+        return true
     end,
 
     checkEncryption = function(self)
@@ -412,27 +411,28 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             })
 
             win:destroy()
-            
         end)
     end,
 
     setPage = function(self, pageIndex)
-        System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
-        
-        local pageOverride = self.get.pageIndex
-        if self.get.pageIndexOverride then
-            pageOverride = self.get.pageIndexOverride[self.get.pageIndex]
-        end
-        if pageOverride == 1 then
-            if self.get.exeNameField and self.get.exeNameField.get.finalText == "" then
-                self.get.errorMessage.text = Localize:get("error_emptyExecutableFileName")
-                self.get.errorMessage.visible = true
-                return false
+        if pageIndex > self.get.pageIndex then
+            local pageOverride = self.get.pageIndex
+            if self.get.pageIndexOverride then
+                pageOverride = self.get.pageIndexOverride[self.get.pageIndex]
             end
-        elseif pageOverride == 4 then
-            self.get.includeFolders.func:confirmOptions()
-        elseif pageOverride == 5 then
-            self.get.includePlugins.func:confirmOptions()
+            if pageOverride == 1 then
+                if self.get.exeNameField and self.get.exeNameField.get.finalText == "" then
+                    self.get.errorMessage.text = Localize:get("error_emptyExecutableFileName")
+                    self.get.errorMessage.visible = true
+                    return false
+                end
+            elseif pageOverride == 4 then
+                self.get.includeFolders.func:confirmOptions()
+            elseif pageOverride == 5 then
+                self.get.includePlugins.func:confirmOptions()
+            end
+
+            System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
         end
 
         if self.get.errorMessage then

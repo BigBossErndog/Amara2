@@ -219,7 +219,10 @@ namespace Amara {
             return true;
         }
         bool writeFile(std::string path, std::string input) {
-            return writeFile(path, nlohmann::json::parse(input), "");
+            if (nlohmann::json::accept(input)) {
+                return writeFile(path, nlohmann::json::parse(input), "");
+            }
+            return writeFile(path, input, "");
         }
         bool luaWriteFile(std::string path, sol::object input, std::string encryptionKey) {
             if (input.is<std::string>()) return writeFile(path, input.as<std::string>(), encryptionKey);
@@ -432,7 +435,11 @@ namespace Amara {
 
         std::string getBasePath() {
             if (basePath.empty()) {
+                #if defined(__ANDROID__)
+                const char* c_basePath = "";
+                #else
                 const char* c_basePath = SDL_GetBasePath();
+                #endif
                 std::filesystem::path exeDir = c_basePath;
                 std::filesystem::path contextPath = gameProps->context_path;
                 std::filesystem::path finalContext = exeDir / contextPath;
@@ -1384,13 +1391,24 @@ namespace Amara {
                 }
             }
 
-            if (sdk.empty()) {
+            if (sdk.empty())
                 return sol::nil;
-            }
+
             result["sdk"] = sdk;
 
-            std::string ndkBaseDir = sdk + "\\ndk";
-
+            #if defined(_WIN32)
+            const std::string sep  = "\\";
+            const std::string host = "windows-x86_64";
+            const std::string exe  = ".exe";
+            const std::string cmd  = ".cmd";
+            #else
+            const std::string sep  = "/";
+            const std::string host = "linux-x86_64";
+            const std::string exe  = "";
+            const std::string cmd  = "";
+            #endif
+            
+            std::string ndkBaseDir = sdk + sep + "ndk";
             if (std::filesystem::exists(ndkBaseDir)) {
                 std::string ndkVersion;
                 for (const auto& entry : std::filesystem::directory_iterator(ndkBaseDir)) {
@@ -1401,20 +1419,69 @@ namespace Amara {
                 }
 
                 if (!ndkVersion.empty()) {
-                    std::string sep      = "\\";
-                    std::string host     = "windows-x86_64";
-                    std::string ext      = ".cmd";
-                    std::string ndk      = ndkBaseDir + sep + ndkVersion;
-                    std::string tc       = ndk + sep + "toolchains" + sep + "llvm" + sep + "prebuilt" + sep + host + sep + "bin" + sep;
-                    std::string compiler = tc + "aarch64-linux-android33-clang++" + ext;
-                    std::string linker   = compiler;
-                
+                    std::string ndk = ndkBaseDir + sep + ndkVersion;
+                    std::string tc  = ndk + sep + "toolchains" + sep + "llvm" + sep
+                                    + "prebuilt" + sep + host + sep + "bin" + sep;
+
                     result["ndk"]         = ndk;
                     result["ndk_version"] = ndkVersion;
                     result["host"]        = host;
-                    result["tc"]          = tc;
-                    result["compiler"]    = compiler;
-                    result["linker"]      = linker;
+                    result["toolchains"]  = tc;
+                    result["compiler"]         = tc + "clang++" + exe;
+                    result["compiler_arm64"]   = tc + "aarch64-linux-android33-clang++" + cmd;
+                    result["compiler_arm32"]   = tc + "armv7a-linux-androideabi33-clang++" + cmd;
+                    result["linker"]           = tc + "aarch64-linux-android33-clang++" + cmd;
+                    result["linker_arm64"]     = tc + "aarch64-linux-android33-clang++" + cmd;
+                    result["linker_arm32"]     = tc + "armv7a-linux-androideabi33-clang++" + cmd;
+
+                    result["sysroot"] = ndk + sep + "toolchains" + sep + "llvm" + sep
+                                    + "prebuilt" + sep + host + sep + "sysroot";
+                }
+            }
+
+            std::string buildToolsBase = sdk + sep + "build-tools";
+            if (std::filesystem::exists(buildToolsBase)) {
+                std::filesystem::path best;
+                for (const auto& entry : std::filesystem::directory_iterator(buildToolsBase)) {
+                    if (entry.is_directory() && entry.path() > best)
+                        best = entry.path();
+                }
+
+                if (!best.empty()) {
+                    std::string bt = best.string();
+                    result["build_tools"]         = bt;
+                    result["build_tools_version"] = best.filename().string();
+                    result["aapt"]                = bt + sep + "aapt" + exe;
+                    result["aapt2"]               = bt + sep + "aapt2" + exe;
+                    result["zipalign"]            = bt + sep + "zipalign" + exe;
+                    #if defined(_WIN32)
+                    result["apksigner"] = bt + sep + "apksigner.bat";
+                    #else
+                    result["apksigner"] = bt + sep + "apksigner";
+                    #endif
+                }
+            }
+
+            std::string platformTools = sdk + sep + "platform-tools";
+            if (std::filesystem::exists(platformTools)) {
+                result["platform_tools"] = platformTools;
+                result["adb"]            = platformTools + sep + "adb" + exe;
+            }
+
+            std::string platformsBase = sdk + sep + "platforms";
+            if (std::filesystem::exists(platformsBase)) {
+                std::filesystem::path bestPlatform;
+                for (const auto& entry : std::filesystem::directory_iterator(platformsBase)) {
+                    if (entry.is_directory() && entry.path() > bestPlatform)
+                        bestPlatform = entry.path();
+                }
+
+                if (!bestPlatform.empty()) {
+                    std::string androidJar = bestPlatform.string() + sep + "android.jar";
+                    if (std::filesystem::exists(androidJar)) {
+                        result["android_jar"]      = androidJar;
+                        result["platform_version"] = bestPlatform.filename().string();
+                    }
                 }
             }
 

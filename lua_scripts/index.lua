@@ -41,7 +41,7 @@ Scripts:include("building/web/WebBuildNode")
 
 Scripts:include("building/android/AndroidSDKInstaller")
 Scripts:include("building/android/AndroidBuildOptions")
--- Scripts:include("building/android/AndroidBuildNode")
+Scripts:include("building/android/AndroidBuildNode")
 
 Creator:createWorld({
     window = {

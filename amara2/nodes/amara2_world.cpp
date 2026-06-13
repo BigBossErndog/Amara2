@@ -591,6 +591,7 @@ namespace Amara {
                 } else {
                     debug_log("Warning: Failed to get HWND for click-through setup.");
                 }
+            #elif defined(__ANDROID__)
             #elif defined(__linux__)
                 Display* display = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
                 Window xwindow = (Window)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);

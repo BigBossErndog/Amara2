@@ -27,13 +27,13 @@ namespace Amara {
             }
         }
 
-        virtual void run(double deltaTime) {
+        virtual void run(double deltaTime) override {
             gameProps->audioData.reset();
 
             Amara::AudioGroup::run(deltaTime);
         }
 
-        virtual void destroy() {
+        virtual void destroy() override {
             if (device != 0) {
                 SDL_CloseAudioDevice(device);
                 device = 0;

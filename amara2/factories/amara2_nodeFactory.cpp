@@ -516,7 +516,8 @@ namespace Amara {
 
     bool Amara::Loader::loadPlugins(const LoadTask& task) {
         #ifdef AMARA_PLUGINS
-        // Plugins::load(task);
+        // return Plugins::load(task);
         #endif
+        return true;
     }
 }

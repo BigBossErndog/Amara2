@@ -32,11 +32,11 @@ namespace Amara {
             #elif defined(_WIN32)
                 platform = "windows";
                 desktop = true;
-            #elif defined(__linux__)
-                platform = "linux";
-                desktop = true;
             #elif defined(__ANDROID__)
                 platform = "android";
+                desktop = true;
+            #elif defined(__linux__)
+                platform = "linux";
                 desktop = true;
             #elif defined(__APPLE__)
                 #if TARGET_OS_IPHONE

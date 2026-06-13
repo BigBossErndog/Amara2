@@ -12,9 +12,26 @@ namespace Amara {
         GLuint glTextureID = 0;
         #endif
 
+        unsigned char* imageData = nullptr;
+
         ImageAsset(Amara::GameProps* _gameProps): Amara::Asset(_gameProps) {
             type = AssetEnum::Image;
             typeKey = "ImageAsset";
+        }
+
+        ImageAsset(
+            Amara::GameProps* _gameProps,
+            unsigned char* _imageData,
+            int _width,
+            int _height,
+            int _channels,
+            int _pitch
+        ): ImageAsset(_gameProps) {
+            imageData = _imageData;
+            width = _width;
+            height = _height;
+            channels = _channels;
+            pitch = _pitch;
         }
         
         bool loadImage(std::string _p) {
@@ -24,7 +41,7 @@ namespace Amara {
             std::string contents = gameProps->system->readFile(path);
             
             stbi_set_flip_vertically_on_load(0);
-            unsigned char* imageData = stbi_load_from_memory((const unsigned char*)contents.data(), contents.size(), &width, &height, &channels, 4);
+            imageData = stbi_load_from_memory((const unsigned char*)contents.data(), contents.size(), &width, &height, &channels, 4);
 
             if (!imageData) {
                 fatal_error("Error: Failed to load image data: ", path);
@@ -135,7 +152,7 @@ namespace Amara {
                     gameProps->gpuDevice,
                     &transferBufferInfo
                 );
-
+                
                 Uint8* textureTransferPtr = static_cast<Uint8*>(SDL_MapGPUTransferBuffer(
                     gameProps->gpuDevice,
                     textureTransferBuffer,
@@ -152,6 +169,28 @@ namespace Amara {
             }
             fatal_error("Error: Failed to load image, no graphics available. \"", path, "\"");
             return false;
+        }
+
+        unsigned char* resize(int _w, int _h, bool keep) {
+            unsigned char* result_data = new unsigned char[_w * _h * channels];
+
+            stbir_resize_uint8_linear(
+                imageData, width, height, 0,
+                result_data, _w, _h, 0,
+                (stbir_pixel_layout)channels
+            );
+
+            if (keep) {
+                stbi_image_free(imageData);
+                imageData = result_data;
+                width = _w;
+                height = _h;
+            }
+            
+            return result_data;
+        }
+        unsigned char* resize(int _w, int _h) {
+            return resize(_w, _h, false);
         }
 
         virtual void clearTexture() {

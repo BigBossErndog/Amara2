@@ -49,6 +49,7 @@ namespace Amara {
         catch (const std::exception& e) {
             fatal_error(e.what(), " For property \"", key, "\".");
         }
+        throw std::runtime_error("unreachable");
     }
     
     template <typename T>
@@ -59,6 +60,7 @@ namespace Amara {
             return value;
         }
         fatal_error("Error: Table does not contain \"", key, "\".");
+        throw std::runtime_error("unreachable");
     }
     
     nlohmann::json string_to_json(const std::string& input, bool allow_null) {

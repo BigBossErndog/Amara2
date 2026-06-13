@@ -102,6 +102,88 @@ namespace Amara {
             }
         }
 
+        void resizeTexture(std::string key, int width, int height) {
+            if (has(key)) {
+                Amara::ImageAsset* image = get(key)->as<Amara::ImageAsset*>();
+                if (image == nullptr) {
+                    fatal_error("Error: Asset \"", key, "\" is not a valid texture.");
+                }
+                image->resize(width, height, true);
+            }
+            else {
+                fatal_error("Error: Asset \"", key, "\" was not found.");
+            }
+        }
+        bool resizeToPNG(std::string key, int width, int height, std::string path) {
+            if (!has(key)) {
+                fatal_error("Error: Asset \"", key, "\" was not found.");
+                return false;
+            }
+
+            Amara::ImageAsset* image = get(key)->as<Amara::ImageAsset*>();
+            if (image == nullptr) {
+                fatal_error("Error: Asset \"", key, "\" is not a valid texture.");
+                return false;
+            }
+
+            unsigned char* new_data = image->resize(width, height);
+            if (new_data == nullptr) {
+                fatal_error("Error: Failed to resize asset \"", key, "\".");
+                return false;
+            }
+
+            int png_len = 0;
+            int stride = width * image->channels;
+            unsigned char* png_data = stbi_write_png_to_mem(
+                new_data,
+                stride,
+                width,
+                height,
+                image->channels,
+                &png_len
+            );
+
+            delete[] new_data;
+
+            if (png_data == nullptr || png_len <= 0) {
+                fatal_error("Error: Failed to encode PNG for asset \"", key, "\".");
+                return false;
+            }
+
+            std::string result(reinterpret_cast<char*>(png_data), png_len);
+            STBI_FREE(png_data);
+
+            return gameProps->system->writeFile(path, result);
+        }
+        bool textureToPNG(std::string key, std::string path) {
+            if (has(key)) {
+                Amara::ImageAsset* image = get(key)->as<Amara::ImageAsset*>();
+                if (image == nullptr) {
+                    fatal_error("Error: Asset \"", key, "\" is not a valid texture.");
+                }
+                
+                int png_len = 0;
+                unsigned char* png_data = stbi_write_png_to_mem(
+                    image->imageData,
+                    image->width * image->channels,
+                    image->width,
+                    image->height,
+                    image->channels,
+                    &png_len
+                );
+
+                std::string result(reinterpret_cast<char*>(png_data), png_len);
+                STBI_FREE(png_data);
+
+                return gameProps->system->writeFile(path, result);
+            }
+            else {
+                fatal_error("Error: Asset \"", key, "\" was not found.");
+            }
+            return false;
+        }
+
+
         void clear() {
             for (auto it = assets.begin(); it != assets.end(); it++) {
                 Amara::Asset* a = it->second;
@@ -159,7 +241,10 @@ namespace Amara {
                     }
                     return sol::nil;
                 },
-                "getTextureData", &Amara::AssetManager::getTextureData
+                "getTextureData", &Amara::AssetManager::getTextureData,
+                "resizeTexture", &Amara::AssetManager::resizeTexture,
+                "resizeTextureToPNG", &Amara::AssetManager::resizeToPNG,
+                "textureToPNG", &Amara::AssetManager::textureToPNG
             );
         }
     };

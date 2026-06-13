@@ -84,7 +84,7 @@ namespace Amara {
             }
         }
 
-        virtual Amara::Node* addChild(Amara::Node* node) {
+        virtual Amara::Node* addChild(Amara::Node* node) override {
             if (!destroyed && node) {
                 Amara::Audio* audio = node->as<Amara::Audio*>();
                 if (audio) {

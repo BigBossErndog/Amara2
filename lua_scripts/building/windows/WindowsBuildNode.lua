@@ -77,13 +77,17 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 config.iconPath = defaultIcon
             end
         end
+        self.get.iconPath = System:join(buildDir, "icon.png")
+        self.load:image("icon", config.iconPath)
+        Assets:resizeTextureToPNG(
+            "icon",
+            256, 256,
+            self.get.iconPath
+        )
 
-        if config.iconPath then
-            self.get.iconPath = config.iconPath
-            self.get.iconDest = System:join(buildDir, "icon.ico")
-            self.get.resFile = System:join(buildDir, "icon.rc")
-            self.get.resOutputFile = System:join(buildDir, "icon.res")
-        end
+        self.get.iconDest = System:join(buildDir, "icon.ico")
+        self.get.resFile = System:join(buildDir, "icon.rc")
+        self.get.resOutputFile = System:join(buildDir, "icon.res")
 
         local compilerPath = fix_path(System:join(clangLLVMPath, "bin/clang++.exe"))
         
@@ -98,6 +102,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         -- AMARA_PATH
         table.insert(args, "-Iamara2")
+        
         if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
             local plugins_path = System:join(self.get.projectPath, "plugins")
             table.insert(args, "-I" .. fix_path(plugins_path))
@@ -258,6 +263,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local batchFilePath = System:join(buildDir, "build_windows.bat")
         self.get.batchFilePath = batchFilePath
         local errorOutputPath = System:join(buildDir, "build_error.txt")
+        self.get.errorOutputPath = errorOutputPath
         local batchFileContent = buildCommand .. " > " .. fix_path(errorOutputPath) .. " 2>&1 && exit"
 
         System:writeFile(batchFilePath, batchFileContent)
@@ -328,12 +334,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.get.printLog.func:handleMessage(Localize:get("label_doNotCloseCommandPrompt"))
     end,
 
-    -- onOutput = function(self, msg)
-    --     if self.get.printLog then
-    --         self.get.printLog.func:handleMessage(msg)
-    --     end
-    -- end,
-
     onExit = function(self, exitCode)
         System:remove(self.get.batchFilePath)
         System:remove(System:join(self.get.buildDir, "build_args.txt"))
@@ -346,7 +346,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.world:hideWindow()
 
         local buildDir = self.get.buildDir
-        local errorOutputPath = System:join(buildDir, "build_error.txt")
+        local errorOutputPath = self.get.errorOutputPath
 
         if exitCode == 0 then
             if System:exists(errorOutputPath) then
