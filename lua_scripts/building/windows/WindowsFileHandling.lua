@@ -1,6 +1,9 @@
 local props = Game.argtable["props"]
 local projectData = props.projectData
 
+if props.iconPath then
+    System:remove(props.iconPath)
+end
 if props.iconDest then
     System:remove(props.iconDest)
 end

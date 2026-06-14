@@ -11,6 +11,23 @@ namespace Amara {
         SystemManager() = default;
         
         bool exists(std::string path) {
+            #if defined(__ANDROID__)
+            SDL_Log("Note: Finding script: %s", path.c_str());
+            if (std::filesystem::exists(path)) {
+                SDL_Log("Note: Script found: %s", path.c_str());
+                return true;
+            }
+
+            SDL_IOStream* io = SDL_IOFromFile(path.c_str(), "rb");
+            if (io) {
+                SDL_Log("Note: Script found: %s", path.c_str());
+                SDL_CloseIO(io);
+                return true;
+            }
+            SDL_Log("Note: Script NOT found: %s", path.c_str());
+            return false;
+            #endif
+
             std::filesystem::path filePath = getRelativePath(path);
 
             #if defined(__EMSCRIPTEN__)
@@ -61,8 +78,9 @@ namespace Amara {
             #endif
 
             bool found = std::filesystem::exists(filePath);
+
             if (!found) {
-                if (gameProps->define_org.empty() || gameProps->define_app.empty()) {
+                if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
                     std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
                     std::filesystem::path newFilePath = prefPath / (std::filesystem::path)path;
 
@@ -72,6 +90,18 @@ namespace Amara {
                     }
                 }
             }
+
+            #if defined(__ANDROID__)
+            if (!found) {
+                SDL_IOStream* io = SDL_IOFromFile(path.c_str(), "rb");
+                if (io) {
+                    SDL_CloseIO(io);
+                    found = true;
+                    filePath = path;
+                }
+            }
+            #endif
+
             if (!found) {
                 fatal_error("Error: File does not exist \"", pathForError, "\"");
                 gameProps->breakWorld();
@@ -79,6 +109,7 @@ namespace Amara {
             }
 
             #if defined(_WIN32)
+            {
                 std::string filename_str = filePath.filename().string();
                 if (!filename_str.empty()) {
                     std::filesystem::path parent_dir = filePath.parent_path();
@@ -97,8 +128,9 @@ namespace Amara {
                         }
                     }
                 }
+            }
             #endif
-            
+
             SDL_IOStream *rw = SDL_IOFromFile(filePath.string().c_str(), "rb");
             if (!rw) {
                 fatal_error("Error: Failed to open file \"", pathForError, "\": ", SDL_GetError());
@@ -142,17 +174,22 @@ namespace Amara {
         }
 
         bool writeFile(std::string path, nlohmann::json input, std::string encryptionKey) {
-            std::filesystem::path prefPath;
             std::filesystem::path filePath;
+            
             if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
-                prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
-                filePath = prefPath / (std::filesystem::path)path;
+                char* rawPrefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                if (rawPrefPath) {
+                    filePath = std::filesystem::path(rawPrefPath) / path;
+                    SDL_free(rawPrefPath);
+                }
+                else {
+                    filePath = getRelativePath(path);
+                }
             }
             else {
                 filePath = getRelativePath(path);
             }
             
-
             std::string output_str;
             if (input.is_string()) {
                 output_str = input.get<std::string>();
@@ -191,10 +228,11 @@ namespace Amara {
             return true;
             #endif
 
-            if (!exists(filePath.parent_path().string())) {
-                if (!createDirectory(filePath.parent_path().string())) {
-                    return false;
-                }
+            try {
+                std::filesystem::create_directories(filePath.parent_path());
+            } catch (const std::exception& e) {
+                fatal_error("Error: Failed to create directories for: ", removeBasePath(filePath), " - ", e.what());
+                return false;
             }
 
             SDL_IOStream* rw = SDL_IOFromFile(filePath.string().c_str(), "wb");
@@ -478,6 +516,11 @@ namespace Amara {
         }
 
         std::string getScriptPath(std::string path) {
+            if (String::startsWith(path, "lua_scripts/")) {
+                path = path.substr(12);
+                return getScriptPath(path);
+            }
+
             std::string rec_path = path;
 
             std::filesystem::path filePath;
@@ -753,7 +796,7 @@ namespace Amara {
             std::string rec_directory = current_file_directory;
             
             std::filesystem::path filePath = getScriptPath(path);
-            bool fileExists = std::filesystem::exists(filePath);
+            bool fileExists = exists(filePath);
             if (!fileExists) {
                 fatal_error("Error: Script does not exist \"", path, "\".");
                 gameProps->breakWorld();
@@ -1407,7 +1450,7 @@ namespace Amara {
             const std::string exe  = "";
             const std::string cmd  = "";
             #endif
-            
+
             std::string ndkBaseDir = sdk + sep + "ndk";
             if (std::filesystem::exists(ndkBaseDir)) {
                 std::string ndkVersion;
@@ -1502,7 +1545,6 @@ namespace Amara {
             javac_candidates.push_back("/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/javac");
             javac_candidates.push_back("/Applications/Android Studio.app/Contents/jre/Contents/Home/bin/javac");
             #else
-            // Linux
             const char* home = std::getenv("HOME");
             if (home) {
                 javac_candidates.push_back(std::string(home) + "/android-studio/jbr/bin/javac");
@@ -1511,7 +1553,6 @@ namespace Amara {
             javac_candidates.push_back("/opt/android-studio/jbr/bin/javac");
             #endif
 
-            // JAVA_HOME env override
             const char* javaHome = std::getenv("JAVA_HOME");
             if (javaHome)
                 javac_candidates.insert(javac_candidates.begin(), std::string(javaHome) + sep + "bin" + sep + "javac" + exe);
@@ -1519,11 +1560,136 @@ namespace Amara {
             for (const auto& path : javac_candidates) {
                 if (std::filesystem::exists(path)) {
                     result["javac"] = path;
+
+                    std::filesystem::path java_home = std::filesystem::path(path).parent_path().parent_path();
+                    result["java_home"] = java_home.string();
+
+                    std::filesystem::path keytool = java_home / "bin" / ("keytool" + exe);
+                    if (std::filesystem::exists(keytool)) {
+                        result["keytool"] = keytool.string();
+                    }
+                    
+                    if (!javaHome) {
+                        #if defined(_WIN32)
+                        _putenv_s("JAVA_HOME", java_home.string().c_str());
+                        std::string current_path = std::getenv("PATH") ? std::getenv("PATH") : "";
+                        std::string new_path = java_home.string() + "\\bin;" + current_path;
+                        _putenv_s("PATH", new_path.c_str());
+                        #else
+                        setenv("JAVA_HOME", java_home.string().c_str(), 0);
+                        std::string current_path = std::getenv("PATH") ? std::getenv("PATH") : "";
+                        std::string new_path = java_home.string() + "/bin:" + current_path;
+                        setenv("PATH", new_path.c_str(), 0);
+                        #endif
+                    }
+
                     break;
                 }
             }
 
             return json_to_lua(gameProps->lua, result);
+        }
+
+        static std::vector<uint8_t> read_file_binary(const std::filesystem::path& path) {
+            std::ifstream f(path, std::ios::binary);
+            return std::vector<uint8_t>((std::istreambuf_iterator<char>(f)),
+                                        std::istreambuf_iterator<char>());
+        }
+
+        static const std::vector<std::string> STORE_EXTENSIONS;
+
+        static bool should_store(const std::filesystem::path& path) {
+            std::string ext = path.extension().string();
+            return std::find(STORE_EXTENSIONS.begin(),
+                            STORE_EXTENSIONS.end(),
+                            ext) != STORE_EXTENSIONS.end();
+        }
+
+        bool inject_into_apk(const std::filesystem::path& apk_path,
+                     const std::filesystem::path& base_path,
+                     const nlohmann::json& files)
+        {
+            if (!files.is_array()) {
+                fatal_error("Error: Table array of file paths of things to inject.");
+                return false;
+            }
+
+            mz_zip_archive zip;
+            memset(&zip, 0, sizeof(zip));
+
+            if (!mz_zip_reader_init_file(&zip, apk_path.string().c_str(), 0)) {
+                fatal_error("Error: Failed to open APK: ", apk_path.string());
+                return false;
+            }
+
+            std::filesystem::path tmp_path = apk_path.string() + ".tmp";
+            mz_zip_archive new_zip;
+            memset(&new_zip, 0, sizeof(new_zip));
+
+            if (!mz_zip_writer_init_file(&new_zip, tmp_path.string().c_str(), 0)) {
+                fatal_error("Error: Failed to create temp APK.");
+                mz_zip_reader_end(&zip);
+                return false;
+            }
+
+            mz_uint num_files = mz_zip_reader_get_num_files(&zip);
+            for (mz_uint i = 0; i < num_files; i++) {
+                if (!mz_zip_writer_add_from_zip_reader(&new_zip, &zip, i)) {
+                    fatal_error("Error: Failed to copy existing APK entry: ", i);
+                    mz_zip_reader_end(&zip);
+                    mz_zip_writer_end(&new_zip);
+                    return false;
+                }
+            }
+            mz_zip_reader_end(&zip);
+            
+            for (const auto& item : files) {
+                if (!item.is_string()) {
+                    fatal_error("Error: expected string entry in files array.");
+                    mz_zip_writer_end(&new_zip);
+                    return false;
+                }
+
+                std::string zip_name = item.get<std::string>();
+                std::filesystem::path file_path = base_path / zip_name;
+
+                if (!std::filesystem::exists(file_path)) {
+                    fatal_error("File not found: ", file_path.string());
+                    mz_zip_writer_end(&new_zip);
+                    return false;
+                }
+
+                auto data = read_file_binary(file_path);
+                int level = should_store(file_path) ? MZ_NO_COMPRESSION : MZ_DEFAULT_COMPRESSION;
+
+                if (!mz_zip_writer_add_mem(&new_zip,
+                                            zip_name.c_str(),
+                                            data.data(), data.size(),
+                                            level))
+                {
+                    fatal_error("Failed to add file to APK: ", zip_name);
+                    mz_zip_writer_end(&new_zip);
+                    return false;
+                }
+
+                debug_log("Added to APK: ", zip_name);
+            }
+
+            if (!mz_zip_writer_finalize_archive(&new_zip)) {
+                fatal_error("Failed to finalize APK");
+                mz_zip_writer_end(&new_zip);
+                return false;
+            }
+            mz_zip_writer_end(&new_zip);
+
+            std::filesystem::remove(apk_path);
+            std::filesystem::rename(tmp_path, apk_path);
+
+            debug_log("APK injection complete: ", apk_path.string());
+            return true;
+        }
+        bool lua_inject_into_apk(const std::string& apk_path, const std::string& base_path, sol::object files) {
+            return inject_into_apk(apk_path, base_path, lua_to_json(files));
         }
         #endif
 
@@ -1685,6 +1851,7 @@ namespace Amara {
                 #endif
                 #if defined(AMARA_ENGINE_TOOLS)
                 "LocateAndroidSDK", &SystemManager::locate_android_sdk,
+                "InjectIntoAPK", &SystemManager::lua_inject_into_apk,
                 #endif
                 "programInstalled", &SystemManager::programInstalled,
                 "throwError", sol::overload(
@@ -1698,4 +1865,13 @@ namespace Amara {
             );
         }
     };
+
+    #ifdef AMARA_ENGINE_TOOLS
+    const std::vector<std::string> Amara::SystemManager::STORE_EXTENSIONS = {
+        ".png", ".jpg", ".jpeg", ".webp",
+        ".ogg", ".mp3", ".wav", ".flac",
+        ".so", ".zip", ".gz", ".json",
+        ".lua", ".luac", ".txt"
+    };
+    #endif
 }

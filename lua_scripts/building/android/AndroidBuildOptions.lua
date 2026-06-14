@@ -425,7 +425,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                 end
             })
             buildButton.x = self.get.targetWidth/2 - buildButton.width/2
-            buildButton.y = self.get.targetHeight/2 - buildButton.height/2 + 4
+            buildButton.y = self.get.targetHeight/2 - buildButton.height/2
         end
     end,
 
@@ -512,8 +512,22 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
             self.get.iconPreview.y,
             32, 32
         }
-        self.get.projectData["exe-icon"] = self.get.iconPath
-        return false
+        self.get.projectData.android["app-icon"] = self.get.iconPath
+        return valid
+    end,
+
+    truncatePath = function(self, _path)
+        local txt = self.get.iconField.get.txt
+        local str = _path
+        local path = str
+
+        local edited = false
+        txt.text = str
+        while txt.width > self.get.iconField.width - 16 do
+            str = string.sub(str, 2)
+            txt.text = string.concat("...", str)
+        end
+        return txt.text
     end,
 
     startBuilding = function(self)

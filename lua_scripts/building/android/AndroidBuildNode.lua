@@ -16,8 +16,16 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             end
         end
 
-        local function fix_path(path)
-            return quote_if_needed(string.gsub(path, "\\", "/"))
+        local function fix_path(path, allow_backslashes)
+            if not allow_backslashes then
+                return quote_if_needed(string.gsub(path, "\\", "/"))
+            else
+                return quote_if_needed(path)
+            end
+        end
+
+        local function escape_double_quotes(str)
+            return (str:gsub('"', '\\"'))
         end
 
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
@@ -47,7 +55,8 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             "lib/arm64-v8a",
             "lib/armeabi-v7a",
             "assets",
-            "res"
+            "res",
+            "compiled_res"
         }
         for i = 1, #setup_folders do
             System:createDirectory(System:join(android_package, setup_folders[i]))
@@ -60,6 +69,15 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         System:copy(
             System:join(sdl_path, "lib", "armeabi-v7a", "libSDL3.so"),
             System:join(android_package, "lib/armeabi-v7a", "libSDL3.so")
+        )
+
+        System:copy(
+            System:join(sdk.sysroot, "usr", "lib", "aarch64-linux-android", "libc++_shared.so"),
+            System:join(self.get.android_package, "lib/arm64-v8a", "libc++_shared.so")
+        )
+        System:copy(
+            System:join(sdk.sysroot, "usr", "lib", "arm-linux-androideabi", "libc++_shared.so"),
+            System:join(self.get.android_package, "lib/armeabi-v7a", "libc++_shared.so")
         )
 
         self.func:generateManifest()
@@ -176,6 +194,15 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 table.insert(args, "-DAMARA_PLUGINS")
             end
             table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
+            table.insert(args, "-DAMARA_DEF_ORG=\\\"" .. self.get.projectData.android["package-org-name"] .. "\\\"")
+            table.insert(args, "-DAMARA_DEF_APP=\\\"" .. self.get.projectData.android["package-app-name"] .. "\\\"")
+            
+            if self.get.projectData.encryption and not config.buildTest then
+                table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.get.projectData.encryption["key"]))
+                if self.get.projectData.encryption["encrypt-write-output"] then
+                    table.insert(args, "-DAMARA_ENCRYPT_OUTPUT")
+                end
+            end
 
             table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/json/include")))
             table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/lua")))
@@ -185,7 +212,6 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/minimp3")))
             table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/portable-file-dialogs")))
             table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/tinyxml2")))
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/easy-encryption")))
 
             return args
         end
@@ -221,34 +247,68 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             fix_path(sdk.compiler) .. " " .. arm_v7a_build.argstr .. " > " .. fix_path(errorOutputPath) .. " 2>&1"
         }
         
-        local sdl_jar = System:join(sdl_path, "shared", "java", "SDL3.jar")
+        local sdl_jar = System:join(sdl_path, "share", "java", "SDL3", "SDL3.jar")
         table.insert(buildCommands,
-            fix_path(sdk["d8"]) .. " --output " .. fix_path(System:join(self.get.android_package, "dex")) .. " --min-api 24 " .. fix_path(sdl_jar) .. " > " .. fix_path(errorOutputPath) .. " 2>&1"
+            "set \"JAVA_HOME=" .. sdk.java_home .. "\""
+        )
+        table.insert(buildCommands,
+            "set \"PATH=%JAVA_HOME%\\bin;%PATH%\""
+        )
+
+        table.insert(buildCommands,
+            "call " .. fix_path(sdk["d8"]) .. " --output " .. fix_path(self.get.android_package) .. " --min-api 24 " .. fix_path(sdl_jar) .. " > " .. fix_path(errorOutputPath) .. " 2>&1"
         )
 
         table.insert(buildCommands,
             fix_path(sdk["aapt2"]) .. " compile --dir " .. fix_path(System:join(self.get.android_package, "res")) .. " -o " .. fix_path(System:join(self.get.android_package, "compiled_res"))
         )
-
-        -- aapt2 link
-        -- -o build\android\base.apk
-        -- -I %ANDROID_SDK%\platforms\android-35\android.jar
-        -- --manifest build\android\AndroidManifest.xml
-        -- --min-sdk-version 24
-        -- --target-sdk-version 35
-        -- --version-code 1
-        -- --version-name "1.0.0"
-        -- build\android\compiled_res\*.flat
-
+        
+        local flats = ""
+        local abis = {"mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"}
+        for _, dpi in ipairs(abis) do
+            flats = flats .. " " .. fix_path(System:join(self.get.android_package, "compiled_res", "mipmap-" .. dpi .. "_ic_launcher.png.flat"))
+        end
         table.insert(buildCommands,
-            fix_path(sdk["aapt2"]) .. " link -o " .. fix_path(System:join(self.get.android_package, "base.apk")) .. " -I " .. fix_path(sdk.sysroot) .. " --manifest " .. fix_path(System:join(self.get.android_package, "AndroidManifest.xml")) .. " --min-sdk-version 24 --target-sdk-version 35 --version-code " .. self.get.manifest_config.VERSION_CODE .. " --version-name" .. self.get.manifest_config.VERSION_NAME .. " " .. fix_path(System:join(self.get.android_package, "compiled_res/*.flat"))
+            fix_path(sdk["aapt2"]) .. " link -o " .. fix_path(System:join(self.get.android_package, "base.apk")) .. " -I " .. fix_path(sdk.android_jar) .. " --manifest " .. fix_path(System:join(self.get.android_package, "AndroidManifest.xml")) .. " --min-sdk-version 24 --target-sdk-version 35 --version-code " .. self.get.manifest_config.VERSION_CODE .. " --version-name " .. self.get.manifest_config.VERSION_NAME .. " " .. flats
         )
 
-        -- zipalign.exe -f 4 base.apk base-aligned.apk
-
+        local props_json = System:join(self.get.android_package, "props.json")
+        System:writeFile(props_json, self.props)
+        local file_handling_args = {
+            fix_path(Game.executable),
+            "-context", fix_path(System:getBasePath()),
+            "-script", fix_path(System:getScriptPath("building/android/AndroidFileHandling")),
+            "-props_path", fix_path(props_json)
+        }
+        table.insert(buildCommands,
+            table.concat(file_handling_args, " ")
+        )
+        
         table.insert(buildCommands,
             fix_path(sdk["zipalign"]) .. " -f 4 " .. fix_path(System:join(self.get.android_package, "base.apk")) .. " " .. fix_path(System:join(self.get.android_package, "base-aligned.apk"))
         )
+
+        local keystore_path = System:join(self.get.android_package, "debug.keystore")
+        if System:exists(keystore_path) then
+            System:remove(keystore_path)
+        end
+        table.insert(buildCommands,
+            fix_path(sdk["keytool"]) .. " -genkeypair -keystore " .. fix_path(keystore_path) .. " -alias androiddebugkey -keypass android -storepass android -dname \"CN=Android Debug,O=Android,C=US\" -keyalg RSA -keysize 2048 -validity 10000"
+        )
+
+        table.insert(buildCommands,
+            "call " .. fix_path(sdk["apksigner"]) .. " sign --ks " .. fix_path(keystore_path) .. " --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out " .. fix_path(System:join(self.get.android_package, "base-signed.apk")) .. " " .. fix_path(System:join(self.get.android_package, "base-aligned.apk"))
+        )
+
+        -- local output_path = System:join(self.get.buildDir, "apk_signing_result.txt")
+        -- table.insert(buildCommands,
+        --     "call " .. fix_path(sdk["apksigner"]) .. " verify --verbose " .. fix_path(System:join(self.get.android_package, "base-signed.apk")) .. " > " .. fix_path(output_path) .. " 2>&1"
+        -- )
+        
+        -- output_path = System:join(self.get.buildDir, "aapt_dump_result.txt")
+        -- table.insert(buildCommands,
+        --     "call " .. fix_path(sdk["aapt2"]) .. " dump " .. fix_path(System:join(self.get.android_package, "base-signed.apk")) .. " > " .. fix_path(output_path) .. " 2>&1"
+        -- )
 
         table.insert(buildCommands, "exit")
 
@@ -272,14 +332,14 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         
         local config = {
             PACKAGE_NAME       = self.get.projectData.android["package-org-name"] .. "." .. self.get.projectData.android["package-app-name"],
-            VERSION_CODE       = self.get.projectData["version-code"],
-            VERSION_NAME       = self.get.projectData["version-name"],
+            VERSION_CODE       = self.get.projectData["version-code"] or 1,
+            VERSION_NAME       = self.get.projectData["version-name"] or "1.0.0",
             MIN_SDK_VERSION    = 24,
             TARGET_SDK_VERSION = 35,
             GLES_VERSION       = "0x00030000",
             APP_NAME           = self.get.projectData.android["app-name"],
             ICON_NAME          = "ic_launcher",
-            SCREEN_ORIENTATION = self.get.projectData.android["orientation"] or "sensorLandscape",
+            SCREEN_ORIENTATION = self.get.projectData.android["orientation"] or "portrait",
             KEEP_SCREEN_ON = true,
             CATEGORY_GAME = "<category android:name=\"android.intent.category.GAME\" />",
             MAIN_LIBRARY_NAME = "main",
@@ -384,10 +444,10 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
     end,
 
     onExit = function(self, exitCode)
-        System:remove(self.get.batchFilePath)
-        for _, build in ipairs(self.get.builds) do
-            System:remove(build.file)
-        end
+        -- System:remove(self.get.batchFilePath)
+        -- for _, build in ipairs(self.get.builds) do
+        --     System:remove(build.file)
+        -- end
         
         if self.get.printLog then
             self.get.printLog.func:unbindGameProcess()
@@ -404,41 +464,16 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 System:remove(errorOutputPath)
             end
 
-            -- local newProcess = self.parent:createChild("ProcessNode", {
-            --     props = {
-            --         projectPath = self.get.projectPath,
-            --         printLog = self.get.printLog
-            --     },
-            --     arguments = {
-            --         Game.executable,
-            --         "-context", System:getBasePath(),
-            --         "-script", System:getScriptPath("building/windows/WindowsFileHandling"),
-            --         "-props", self.props
-            --     },
-            --     onOutput = function(self, msg)
-            --         self.get.printLog.func:handleMessage(msg)
-            --     end,
-            --     onExit = function(self, exitCode)
-            --         if self.get.printLog then
-            --             self.get.printLog.func:unbindGameProcess()
-            --             self.get.printLog.func:stopLoading()
-            --         end
-                    
-            --         if exitCode == 0 then
-            --             System:openDirectory(System:join(self.get.projectPath, "build", "android"))
-            --             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
-            --         else
-            --             System:remove(System:join(self.get.projectPath, "build", "android"))
-            --             self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
-            --         end
-            --     end
-            -- })
-            -- self.get.printLog.get.gameProcess = newProcess
+            System:copy(
+                System:join(self.get.android_package, "base-signed.apk"),
+                System:join(self.get.projectPath, "build", "android", self.get.projectData.android["app-name"] .. " " .. self.get.manifest_config.VERSION_NAME .. ".apk")
+            )
+            -- System:remove(self.get.android_package)
 
             System:openDirectory(System:join(self.get.projectPath, "build", "android"))
             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
-            self.get.printLog.func:stopLoading()
             self.get.printLog.func:unbindGameProcess()
+            self.get.printLog.func:stopLoading()
         else
             self.get.printLog.func:stopLoading()
 

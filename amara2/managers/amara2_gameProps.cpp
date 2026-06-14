@@ -94,17 +94,23 @@ namespace Amara {
     public:
         sol::state lua;
         int lua_stack_size = 1000000000;
-
-        #ifdef AMARA_TEST_PATH
-        std::string context_path = AMARA_TEST_PATH;
+        
+        #ifdef __ANDROID__
+            std::string context_path = "";
+            std::string lua_script_path = "lua_scripts";
+            std::string assets_path = "assets";
         #else
-        std::string context_path = "./";
+            #ifdef AMARA_TEST_PATH
+            std::string context_path = AMARA_TEST_PATH;
+            #else
+            std::string context_path = "./";
+            #endif
+            std::string lua_script_path = "./lua_scripts";
+            std::string assets_path = "./assets";
         #endif
-        std::string lua_script_path = "./lua_scripts";
-        std::string assets_path = "./assets";
 
         #ifdef AMARA_DEF_ORG
-        std::string define_org = AMARA_ORG;
+        std::string define_org = AMARA_DEF_ORG;
         #else
         std::string define_org = "";
         #endif

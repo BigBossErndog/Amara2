@@ -104,6 +104,11 @@
         #include <portable-file-dialogs.h>
     #endif
 
+    #ifdef AMARA_ENGINE_TOOLS
+        #define MINIZ_IMPLEMENTATION
+        #include "miniz.h"
+    #endif
+
     #define LUA_IMPLEMENTATION
     #define SOL_ALL_SAFETIES_ON 1
         

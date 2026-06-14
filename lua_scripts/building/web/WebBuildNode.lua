@@ -163,7 +163,6 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/minimp3")))
         table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/portable-file-dialogs")))
         table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/tinyxml2")))
-        table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/easy-encryption")))
 
         -- EMSCRIPTEN_COMPILER_FLAGS (combine -s flags with their values)
         table.insert(args, "-w")

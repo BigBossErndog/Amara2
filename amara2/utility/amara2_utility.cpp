@@ -8,6 +8,9 @@ namespace Amara {
         #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
         SDL_Log("%s", ss.str().c_str());
         #endif
+        #ifdef __ANDROID__
+        SDL_Log("%s", ss.str().c_str());
+        #endif
     }
 
     template<typename... Args>
@@ -17,12 +20,15 @@ namespace Amara {
         std::string errorMessage = ss.str();
         
         #ifndef __EMSCRIPTEN__
-        // Write to error_log.txt
         std::ofstream errorLogFile("error_log.txt");
         if (errorLogFile.is_open()) {
             errorLogFile << errorMessage << std::endl;
             errorLogFile.close();
         }
+        #endif
+        
+        #ifdef __ANDROID__
+        SDL_Log("%s", errorMessage.c_str());
         #endif
 
         throw std::runtime_error(errorMessage);

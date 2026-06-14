@@ -356,7 +356,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 end
             })
             buildButton.x = self.get.targetWidth/2 - buildButton.width/2
-            buildButton.y = self.get.targetHeight/2 - buildButton.height/2 + 4
+            buildButton.y = self.get.targetHeight/2 - buildButton.height/2
         end
     end,
 

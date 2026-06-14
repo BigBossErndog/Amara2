@@ -480,6 +480,9 @@ namespace Amara {
             
             return result;
         });
+        string_metatable.set_function("to_json", [](sol::object obj) {
+            return lua_to_json(obj).dump();
+        });
 
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("round", [](sol::object num) -> int {

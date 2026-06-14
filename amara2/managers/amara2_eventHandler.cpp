@@ -208,6 +208,7 @@ namespace Amara {
                                 w->inputManager.mouse.wheel = Vector2(e.wheel.x, e.wheel.y);
                             }
                         }
+                        break;
                     }
                     case SDL_EVENT_FINGER_DOWN: {
                         changeControlMode(InputMode::Touch);

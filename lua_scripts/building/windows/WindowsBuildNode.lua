@@ -341,7 +341,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         if self.get.printLog then
             self.get.printLog.func:unbindGameProcess()
         end
-
+        
         self.world.forcedClickThrough = true
         self.world:hideWindow()
 
@@ -391,6 +391,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 System:openDirectory(System:join(self.get.buildDir))
                 self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
 
+                if self.get.iconPath then
+                    System:remove(self.get.iconPath)
+                end
                 if self.get.iconDest then
                     System:remove(self.get.iconDest)
                 end

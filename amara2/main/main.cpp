@@ -1,4 +1,12 @@
+#if defined(__ANDROID__)
+#define SDL_MAIN_HANDLED
+#endif
+
 #include <amara2.hpp>
+
+#if defined(__ANDROID__)
+#include <SDL3/SDL_main.h>
+#endif
 
 #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
 void EnsureStandardHandles() {
@@ -33,11 +41,14 @@ void EnsureStandardHandles() {
 }
 #endif
 
+#if defined(__ANDROID__)
+extern "C" int SDL_main(int argc, char** argv) {
+#else
 int main(int argc, char** argv) {
     #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
     EnsureStandardHandles();
     #endif
-
+#endif
     Amara::Creator creator(argc, argv);
     if (creator.starting_scripts.size() > 0) {
         return creator.startCreation();

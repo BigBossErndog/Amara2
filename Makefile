@@ -40,7 +40,7 @@ LINKER_FLAGS_WIN64 = -fuse-ld=lld -L$(CLANG_LLVM_PATH)/lib -pthread $(RENDERING_
 LINKER_FLAGS_LINUX = -fuse-ld=lld -L$(CLANG_LLVM_PATH)/lib -pthread `sdl3-config --libs` # Add rendering libs like -lGL, and other necessary libs like -lm, -ldl
 
 OTHER_LIB_LINKS = 
-OTHER_LIB_PATHS = -Isrc -I$(RESOURCES)/libs/json/include -I$(RESOURCES)/libs/lua -I$(RESOURCES)/libs/sol2 -I$(RESOURCES)/libs/stb -I$(RESOURCES)/libs/glm -I$(RESOURCES)/libs/minimp3 -I$(RESOURCES)/libs/portable-file-dialogs -I$(RESOURCES)/libs/tinyxml2
+OTHER_LIB_PATHS = -Isrc -I$(RESOURCES)/libs/json/include -I$(RESOURCES)/libs/lua -I$(RESOURCES)/libs/sol2 -I$(RESOURCES)/libs/stb -I$(RESOURCES)/libs/glm -I$(RESOURCES)/libs/minimp3 -I$(RESOURCES)/libs/portable-file-dialogs -I$(RESOURCES)/libs/tinyxml2 -I$(RESOURCES)/libs/miniz-3.1.1 resources/libs/miniz-3.1.1/miniz.c
 
 OTHER_LIB = $(OTHER_LIB_PATHS)
 
