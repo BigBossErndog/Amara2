@@ -1,7 +1,7 @@
 # Amara2
 A free and open-source 2D game engine with Lua scripting for people like me who are overwhelmed by game engine UI. Amara2 exists in a space between a game engine and an easy-to-use game framework.
 
-Built in C++ using SDL3, with exports to Windows and Web.
+Built in C++ using SDL3, with exports to Windows and Android and the web.
 
 *Note: Amara2 build is currently available for Windows. Sorry to Mac users, I don't have a Mac. I plan to support MacOS in the future. For Linux, clone the repo and run the build.sh shell script.*
 
@@ -21,10 +21,6 @@ Built in C++ using SDL3, with exports to Windows and Web.
 - Built using SDL3, so a porting company should be able to port to any of the multitude of  platforms SDL3 supports with ease.
 
 <img width="1920" height="1080" alt="Screenshot 2025-10-17 214551" src="https://github.com/user-attachments/assets/b74d04a4-4f62-40a9-94e0-9dc1d0a541ad" />
-
-
-## What I'm Currently Working On
-- Android export via Android Studio
 
 ## Community
 Join the Discord community where you can ask questions, promote your work and interact with fellow users of Amara2!
@@ -165,7 +161,7 @@ https://visualstudio.microsoft.com/visual-cpp-build-tools/
 
 When you run the installer, select ```Desktop development with C++```.
 
-Once installation is completed, you are ready to build your game.
+Once installation is completed, you are ready to make your game.
 
 ## Not-Yet-Frequently Asked Questions
 ### - Can I contribute code to development?
