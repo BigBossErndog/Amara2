@@ -298,6 +298,9 @@ namespace Amara {
                 resizable = json_get<bool>(config, "resizable");
                 if (window) SDL_SetWindowResizable(window, resizable);
             }
+            if (json_has(config, "orientation")) {
+                setOrientation(json_get<std::string>(config, "orientation"));
+            }
             if (json_is(config, "singleWindowApplication")) {
                 gameProps->integrate_new_windows = true;
             }
@@ -523,6 +526,60 @@ namespace Amara {
                     }
                 }
                 screenMode = _sm;
+            }
+        }
+
+        void setOrientation(std::string _orientation) {
+            std::string sdl_orientation = "";
+
+            if (_orientation == "portrait") {
+                sdl_orientation = "Portrait";
+            } 
+            else if (_orientation == "portrait_upside_down") {
+                sdl_orientation = "PortraitUpsideDown";
+            } 
+            else if (_orientation == "sensor_portrait") {
+                sdl_orientation = "Portrait PortraitUpsideDown";
+            }
+            else if (_orientation == "landscape") {
+                sdl_orientation = "LandscapeLeft"; 
+            } 
+            else if (_orientation == "landscape_flipped") {
+                sdl_orientation = "LandscapeRight";
+            } 
+            else if (_orientation == "sensor_landscape") {
+                sdl_orientation = "LandscapeLeft LandscapeRight";
+            }
+            else if (_orientation == "sensor" || _orientation == "any") {
+                sdl_orientation = "Portrait PortraitUpsideDown LandscapeLeft LandscapeRight";
+            } 
+            else {
+                sdl_orientation = _orientation;
+            }
+
+            SDL_SetHint(SDL_HINT_ORIENTATIONS, sdl_orientation.c_str());
+}
+        std::string getOrientation() {
+            if (!window) return "unknown";
+            SDL_DisplayID display_id = SDL_GetDisplayForWindow(window);
+            if (display_id == 0) return "unknown";
+            SDL_DisplayOrientation orientation = SDL_GetCurrentDisplayOrientation(display_id);
+            switch (orientation) {
+                case SDL_ORIENTATION_PORTRAIT:
+                    return "portrait";
+                    
+                case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+                    return "portrait_upside_down";
+                    
+                case SDL_ORIENTATION_LANDSCAPE:
+                    return "landscape";
+                    
+                case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+                    return "landscape_flipped";
+                    
+                case SDL_ORIENTATION_UNKNOWN:
+                default:
+                    return "unknown";
             }
         }
 
@@ -1272,20 +1329,17 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_FINGER_DOWN: {
-                        pointer->state.press();
                         pointer->real_pos = real_pos;
                         pointer->x = virtualPos.x;
                         pointer->y = virtualPos.y;
                         pointer->rec_position();
                         break;
                     }
-                    case SDL_EVENT_FINGER_UP: {
-                        pointer->state.release();
-                        inputManager.touch.deactivateFinger(fingerID);
-                        break;
-                    }
                 }
                 inputManager.handleFingerEvent(real_pos, pointer, eventType);
+                if (eventType == SDL_EVENT_FINGER_UP) {
+                    inputManager.touch.deactivateFinger(fingerID);
+                }
             }
             else {
                 debug_log("Error: Could not create pointer finger.");
@@ -1428,6 +1482,14 @@ namespace Amara {
                         SDL_SetWindowResizable(world.window, value);
                     }
                 }),
+                "orientation", sol::property(
+                    [](Amara::World& world) -> std::string {
+                        return world.getOrientation();
+                    },
+                    [](Amara::World& world, sol::object val) {
+                        world.setOrientation(json_convert<std::string>(lua_to_json(val)));   
+                    }
+                ),
                 "minimizeWindow", &World::minimizeWindow,
                 "maximizeWindow", &World::maximizeWindow,
                 "hideWindow", &World::hideWindow,

@@ -300,16 +300,6 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             "call " .. fix_path(sdk["apksigner"]) .. " sign --ks " .. fix_path(keystore_path) .. " --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out " .. fix_path(System:join(self.get.android_package, "base-signed.apk")) .. " " .. fix_path(System:join(self.get.android_package, "base-aligned.apk"))
         )
 
-        -- local output_path = System:join(self.get.buildDir, "apk_signing_result.txt")
-        -- table.insert(buildCommands,
-        --     "call " .. fix_path(sdk["apksigner"]) .. " verify --verbose " .. fix_path(System:join(self.get.android_package, "base-signed.apk")) .. " > " .. fix_path(output_path) .. " 2>&1"
-        -- )
-        
-        -- output_path = System:join(self.get.buildDir, "aapt_dump_result.txt")
-        -- table.insert(buildCommands,
-        --     "call " .. fix_path(sdk["aapt2"]) .. " dump " .. fix_path(System:join(self.get.android_package, "base-signed.apk")) .. " > " .. fix_path(output_path) .. " 2>&1"
-        -- )
-
         table.insert(buildCommands, "exit")
 
         local buildCommand = table.concat(buildCommands, "\n")
@@ -444,10 +434,10 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
     end,
 
     onExit = function(self, exitCode)
-        -- System:remove(self.get.batchFilePath)
-        -- for _, build in ipairs(self.get.builds) do
-        --     System:remove(build.file)
-        -- end
+        System:remove(self.get.batchFilePath)
+        for _, build in ipairs(self.get.builds) do
+            System:remove(build.file)
+        end
         
         if self.get.printLog then
             self.get.printLog.func:unbindGameProcess()
@@ -468,7 +458,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 System:join(self.get.android_package, "base-signed.apk"),
                 System:join(self.get.projectPath, "build", "android", self.get.projectData.android["app-name"] .. " " .. self.get.manifest_config.VERSION_NAME .. ".apk")
             )
-            -- System:remove(self.get.android_package)
+            System:remove(self.get.android_package)
 
             System:openDirectory(System:join(self.get.projectPath, "build", "android"))
             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))

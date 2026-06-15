@@ -17,7 +17,7 @@ namespace Amara {
             timeHeld = 0;
             timeSinceHeld = 0;
         }
-
+        
         bool press() {
             if (!isDown) {
                 isDown = true;

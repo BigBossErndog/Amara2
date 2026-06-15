@@ -21,6 +21,7 @@ namespace Amara {
         GeneralPointer pointer;
 
         InputDef lastInteraction;
+        Shape lastShape;
         
         Amara::Button state;
         
@@ -74,7 +75,8 @@ namespace Amara {
 
         void queueInput(Amara::Shape _shape, Rectangle _viewport, nlohmann::json _data) {
             if (paused() || !activeClickZone) return;
-            
+            lastShape = _shape;
+
             gameProps->inputManager->queueInput({
                 this,
                 _shape.scale(gameProps->passOn.input_scale),
@@ -108,7 +110,7 @@ namespace Amara {
 
             Amara::Pointer* lastPointer = lastInteraction.lastPointer;
             if (hover.isDown) {
-                if (!dragging && (lastPointer == nullptr || !lastPointer->active || !lastInteraction.shape.collidesWith(lastPointer->real_pos))) {
+                if (!dragging && (lastPointer == nullptr || !lastPointer->active || !lastShape.collidesWith(lastPointer->real_pos))) {
                     hover.release();
                     
                     if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", sol::nil });
@@ -125,7 +127,7 @@ namespace Amara {
                     }
                 }
             }
-
+            
             if (held) {
                 if (lastPointer == nullptr || !lastPointer->active || !lastPointer->state.isDown) {
                     held = false;

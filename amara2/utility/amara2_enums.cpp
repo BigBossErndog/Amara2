@@ -203,5 +203,16 @@ namespace Amara {
             "Mouse", Amara::InputMode::Mouse,
             "Touch", Amara::InputMode::Touch
         );
+
+        lua.new_enum("Orientation",
+            "Landscape", "landscape",
+            "Portrait", "portrait",
+            "PortraitUpsideDown", "portrait_upside_down",
+            "SensorLandscape", "sensor_landscape",
+            "SensorPortrait", "sensor_portrait",
+            "LandscapeFlipped", "landscape_flipped",
+            "Sensor", "sensor",
+            "Any", "any"
+        );
     }
 }

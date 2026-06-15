@@ -36,6 +36,21 @@ namespace Amara {
         }
         return nullptr;
     }
+
+    template<typename T>
+    T json_convert(const nlohmann::json& data) {
+        try {
+            T value = data;
+            return value;
+        }
+        catch (const nlohmann::json::exception& e) {
+            fatal_error(e.what());
+        }
+        catch (const std::exception& e) {
+            fatal_error(e.what());
+        }
+        throw std::runtime_error("unreachable");
+    }
     
     template <typename T>
     T json_get(const nlohmann::json& obj, const std::string& key) {

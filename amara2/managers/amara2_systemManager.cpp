@@ -796,7 +796,7 @@ namespace Amara {
             std::string rec_directory = current_file_directory;
             
             std::filesystem::path filePath = getScriptPath(path);
-            bool fileExists = exists(filePath);
+            bool fileExists = exists(filePath.string());
             if (!fileExists) {
                 fatal_error("Error: Script does not exist \"", path, "\".");
                 gameProps->breakWorld();
