@@ -27,6 +27,9 @@ Nodes:define("DropDownMenu", "FillRect", {
         if config.defaultText then
             self.get.defaultText = config.defaultText
         end
+        if config.defaultOption then
+            self.get.defaultOption = config.defaultOption
+        end
 
         if config.inputEnabled ~= nil then
             self.get.inputEnabled = config.inputEnabled
@@ -45,6 +48,13 @@ Nodes:define("DropDownMenu", "FillRect", {
         if self.get.options then
             self.func:createOptions(self.get.options)
         end
+        if self.get.defaultOption then
+            if type(self.get.defaultOption) == "string" then
+                self.func:select(self.get.defaultOption)
+            elseif type(self.get.defaultOption) == "number" then
+                self.func:select(self.get.options[self.get.defaultOption])
+            end
+        end
     end,
 
     createOptions = function(self, options)
@@ -55,8 +65,9 @@ Nodes:define("DropDownMenu", "FillRect", {
         end
 
         if options and #options > 0 then
-            self.get.menu = self:createChild("Group", {
-                y = self.height + 2,
+            self.get.menu = self.parent:createChild("Group", {
+                x = self.x,
+                y = self.y + self.height + 2,
                 visible = false
             })
 
@@ -131,6 +142,7 @@ Nodes:define("DropDownMenu", "FillRect", {
     openMenu = function(self)
         if self.get.menu then
             self.get.menu.visible = not self.get.menu.visible
+            self.get.menu:bringToFront()
             if self.get.dropIcon then
                 if self.get.menu.visible then
                     self.get.dropIcon.frame = 10

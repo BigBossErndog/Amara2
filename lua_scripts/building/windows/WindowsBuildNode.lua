@@ -318,8 +318,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                     if self.get.gameProcess then
                         self.get.gameProcess:destroy()
                         self.get.gameProcess = nil
-                        
-                        System:remove(System:join(self.get.projectPath, "build", "windows"))
                     end
                 end
             })

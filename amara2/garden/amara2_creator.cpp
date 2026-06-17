@@ -18,7 +18,7 @@ namespace Amara {
         Uint64 freq = SDL_GetPerformanceFrequency();
         double frameTarget = 0;
         double elapsedTime = 0;
-
+        
         World* currentWorld = nullptr;
         Demiurge* currentDemiurge = nullptr;
 
@@ -26,7 +26,7 @@ namespace Amara {
         std::vector<std::string> inline_scripts;
         bool inline_override = false;
 
-        double maxDeltaTime = 1;
+        double maxDeltaTime = 0.5;
 
         Creator(): Demiurge() {
             demiurgic = false;
@@ -432,8 +432,6 @@ namespace Amara {
                     }
                 }
                 current_tick = SDL_GetPerformanceCounter();
-                
-                maxDeltaTime = (1.0 / (double)game.targetFPS) * 10;
                 
                 gameProps.deltaTime = game.deltaTime = fmin((double)(current_tick - rec_tick) / (double)freq,  maxDeltaTime);
                 game.fps = 1 / game.deltaTime;

@@ -12,19 +12,15 @@ namespace Amara {
         
         bool exists(std::string path) {
             #if defined(__ANDROID__)
-            SDL_Log("Note: Finding script: %s", path.c_str());
             if (std::filesystem::exists(path)) {
-                SDL_Log("Note: Script found: %s", path.c_str());
                 return true;
             }
 
             SDL_IOStream* io = SDL_IOFromFile(path.c_str(), "rb");
             if (io) {
-                SDL_Log("Note: Script found: %s", path.c_str());
                 SDL_CloseIO(io);
                 return true;
             }
-            SDL_Log("Note: Script NOT found: %s", path.c_str());
             return false;
             #endif
 
@@ -278,6 +274,39 @@ namespace Amara {
         bool remove(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
 
+            #if defined(__ANDROID__) 
+            {
+                filePath = path;
+                if (std::filesystem::exists(filePath)) {
+                    try {
+                        if (std::filesystem::is_directory(filePath)) {
+                            if (!std::filesystem::remove_all(filePath)) {
+                                fatal_error("Error: Failed to delete directory \"", removeBasePath(filePath), "\" (unknown reason).");
+                                return false;
+                            }
+                        } else {
+                            if (!std::filesystem::remove(filePath)) {
+                                fatal_error("Error: Failed to delete file \"", removeBasePath(filePath), "\" (unknown reason).");
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                    catch (const std::filesystem::filesystem_error& e) {
+                        fatal_error("Error: Filesystem exception while deleting \"", removeBasePath(filePath), "\": ", e.what());
+                        return false;
+                    }
+                }
+                
+                if (::remove(filePath.string().c_str()) == 0) {
+                    return true;
+                }
+
+                fatal_error("Error: \"", path, "\" does not exist.");
+                return false;
+            }
+            #endif
+
             #if defined(__EMSCRIPTEN__)
             {
                 int found = EM_ASM_INT({
@@ -293,8 +322,8 @@ namespace Amara {
             }
             #endif
 
-            if (!std::filesystem::exists(filePath)) {
-                fatal_error("Error: \"", removeBasePath(filePath), "\" does not exist.");
+            if (!exists(filePath.string())) {
+                fatal_error("Error: \"", path, "\" does not exist.");
                 return false;
             }
 
@@ -806,7 +835,7 @@ namespace Amara {
             std::string scriptContent = readFile(filePath.string());
 
             if (scriptContent.empty()) {
-                fatal_error("Error: Script is empty or could not be read/decrypted \"", removeBasePath(filePath), "\"");
+                fatal_error("Error: Script is empty or could not be read/decrypted \"", path, "\"");
                 gameProps->breakWorld();
                 return sol::nil;
             }

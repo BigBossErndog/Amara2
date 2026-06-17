@@ -343,6 +343,14 @@ namespace Amara {
                 }
                 setVsync(vsync);
             }
+            if (json_has(config, "targetFPS")) {
+                if (config["targetFPS"].is_number()) {
+                    gameProps->game->setTargetFPS(json_get<int>(config, "targetFPS"));
+                }
+                else if (config["targetFPS"].is_boolean() && !config["targetFPS"]) {
+                    gameProps->game->uncapFPS();
+                }
+            }
             if (resizeWindow && window != nullptr) {
                 SDL_SetWindowSize(window, windowW, windowH);
             }
@@ -908,7 +916,7 @@ namespace Amara {
                             continue;
                         }
 
-                        #if defined(__EMSCRIPTEN__)
+                        #if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -916,10 +924,10 @@ namespace Amara {
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
                         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+                        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
                         #endif
                         
                         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-                        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
                         
                         if (antialiasing) {
                             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);

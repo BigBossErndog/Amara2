@@ -417,8 +417,6 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                     if self.get.gameProcess then
                         self.get.gameProcess:destroy()
                         self.get.gameProcess = nil
-                        
-                        System:remove(System:join(self.get.projectPath, "build", "android"))
                     end
                 end
             })
@@ -434,11 +432,6 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
     end,
 
     onExit = function(self, exitCode)
-        System:remove(self.get.batchFilePath)
-        for _, build in ipairs(self.get.builds) do
-            System:remove(build.file)
-        end
-        
         if self.get.printLog then
             self.get.printLog.func:unbindGameProcess()
         end
@@ -458,7 +451,6 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 System:join(self.get.android_package, "base-signed.apk"),
                 System:join(self.get.projectPath, "build", "android", self.get.projectData.android["app-name"] .. " " .. self.get.manifest_config.VERSION_NAME .. ".apk")
             )
-            System:remove(self.get.android_package)
 
             System:openDirectory(System:join(self.get.projectPath, "build", "android"))
             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
@@ -476,6 +468,12 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             
             self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
         end
+
+        System:remove(self.get.batchFilePath)
+        for _, build in ipairs(self.get.builds) do
+            System:remove(build.file)
+        end
+        System:remove(self.get.android_package)
 
         self.world.forcedClickThrough = false
         self.world:showWindow()

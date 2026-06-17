@@ -107,4 +107,3 @@ System:InjectIntoAPK(
     base_path,
     to_inject
 )
-System:writeFile(System:join(props.buildDir, "injected.json"), to_inject)

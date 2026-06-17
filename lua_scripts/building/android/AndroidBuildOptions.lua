@@ -5,9 +5,9 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
     height = 160,
 
     props = {
-        pageCount = 7
+        pageCount = 9
     },
-
+    
     onConfigure = function(self, config)
         if config.projectPath then
             self.get.projectPath = config.projectPath
@@ -281,7 +281,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                     self.super.TextField.func:onUpdate(self, deltaTime)
                 end
             })
-
+            
             if self.get.projectData.android["package-org-name"] then
                 self.get.orgField.func:setText(self.get.projectData.android["package-org-name"])
                 self.get.orgField.func:onChange(self.get.projectData.android["package-org-name"])
@@ -293,6 +293,93 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
             end
 
         elseif pageIndex == 3 then
+            local desc = self.get.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                text = Localize:get("label_defOrientation"),
+                font = "defaultFont",
+                wrapWidth = self.get.targetWidth - 20,
+                wrapMode = WrapMode.ByWord,
+                origin = 0
+            })
+
+            self.get.orientationMap = {
+                label_landscape = "landscape",
+                label_portrait = "portrait",
+                label_sensor_landscape = "sensorLandscape",
+                label_sensor_portrait = "sensorPortrait",
+                label_reverse_landscape = "reverseLandscape",
+                label_reverse_portrait = "reversePortrait",
+                label_sensor = "fullSensor"
+            }
+            local defaultOpt = nil
+
+            for k, v in pairs(self.get.orientationMap) do
+                if self.get.projectData.android["orientation"] == v then
+                    defaultOpt = k
+                end
+            end
+
+            self.get.orientationMenu = self.get.pageContent:createChild("DropDownMenu", {
+                x = desc.x - 2,
+                y = desc.y + desc.height + 4,
+                width = self.get.targetWidth - 16,
+                defaultOption = defaultOpt or "label_landscape",
+                options =  {
+                    "label_landscape",
+                    "label_portrait",
+                    "label_sensor_landscape",
+                    "label_sensor_portrait",
+                    "label_reverse_portrait",
+                    "label_reverse_landscape",
+                    "label_sensor"
+                },
+                onSelect = function(menu, opt)
+                    self.get.projectData.android["orientation"] = self.get.orientationMap[opt]
+                end
+            })
+
+        elseif pageIndex == 4 then
+            -- Version name and number
+            local name_desc = self.get.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                text = Localize:get("label_versionName"),
+                font = "defaultFont",
+                wrapWidth = self.get.targetWidth - 20,
+                wrapMode = WrapMode.ByWord,
+                origin = 0
+            })
+            self.get.nameField = self.get.pageContent:createChild("TextField", {
+                x = 8, y = name_desc.y + name_desc.height + 4,
+                width = self.get.targetWidth - 16,
+                
+                defaultText = Localize:get("label_enterVersionName")
+            })
+            
+            if self.get.projectData.android["version-name"] then
+                self.get.nameField.func:setText(self.get.projectData.android["version-name"])
+            end
+            
+            local code_desc = self.get.pageContent:createChild("Text", {
+                x = 10, y = self.get.nameField.y + self.get.nameField.height + 4,
+                text = Localize:get("label_versionCode"),
+                font = "defaultFont",
+                wrapWidth = self.get.targetWidth - 20,
+                wrapMode = WrapMode.ByWord,
+                origin = 0
+            })
+
+            self.get.codeField = self.get.pageContent:createChild("TextField", {
+                x = 8, y = code_desc.y + code_desc.height + 4,
+                width = self.get.targetWidth - 16,
+                
+                defaultText = Localize:get("label_enterVersionCode")
+            })
+
+            if self.get.projectData.android["version-code"] then
+                self.get.codeField.func:setText(tostring(self.get.projectData.android["version-code"]))
+            end
+
+        elseif pageIndex == 5 then
             local desc = self.get.pageContent:createChild("Text", {
                 x = 10, y = 24,
                 text = Localize:get("label_compilationDesc"),
@@ -334,7 +421,8 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                 frame = self.get.projectData["compile-code"] and 2 or 1,
                 texture = "tickBox"
             })
-        elseif pageIndex == 4 then
+
+        elseif pageIndex == 6 then
             local desc = self.get.pageContent:createChild("Text", {
                 x = 10, y = 24,
                 text = Localize:get("label_encryptionDesc"),
@@ -376,7 +464,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
 
             self.func:checkEncryption()
 
-        elseif pageIndex == 5 then
+        elseif pageIndex == 7 then
             local txt = self.get.pageContent:createChild("Text", {
                 x = 10, y = 24,
                 origin = 0,
@@ -392,7 +480,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                 height= self.get.targetHeight - 40 - 28
             })
 
-        elseif pageIndex == 6 then
+        elseif pageIndex == 8 then
             local txt = self.get.pageContent:createChild("Text", {
                 x = 10, y = 24,
                 origin = 0,
@@ -437,6 +525,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                     self.get.errorMessage.visible = true
                     return false
                 end
+
             elseif self.get.pageIndex == 2 then
                 if self.get.orgField and self.get.orgField.get.finalText == "" then
                     self.get.errorMessage.text = Localize:get("error_emptyOrgName")
@@ -460,14 +549,41 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                 end
                 self.get.projectData.android["package-org-name"] = self.get.orgField.get.finalText
                 self.get.projectData.android["package-app-name"] = self.get.appNameField.get.finalText
-            end
-            System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
         
-        elseif self.get.pageIndex == 5 then
-            self.get.includeFolders.func:confirmOptions()
-        elseif self.get.pageIndex == 6 then
-            self.get.includePlugins.func:confirmOptions()
-    
+            elseif self.get.pageIndex == 3 then
+                local opt = self.get.orientationMenu.get.selected
+                self.get.projectData.android["orientation"] = self.get.orientationMap[opt]
+            
+            elseif self.get.pageIndex == 4 then
+                -- Check version name and number
+                local version_name = self.get.nameField.get.finalText
+                if not version_name or string.len(version_name) == 0 then
+                    self.get.errorMessage.text = Localize:get("error_versionNameEmpty")
+                    self.get.errorMessage.visible = true
+                    return false
+                end
+                local version_code = self.get.codeField.get.finalText
+                if not version_code or string.len(version_code) == 0 then
+                    self.get.errorMessage.text = Localize:get("error_versionCodeEmpty")
+                    self.get.errorMessage.visible = true
+                    return false
+                end
+                local n = tonumber(version_code)
+                if n == nil or math.floor(n) ~= n then
+                    self.get.errorMessage.text = Localize:get("error_versionCodeNonNumber")
+                    self.get.errorMessage.visible = true
+                    return false
+                end
+                self.get.projectData.android["version-name"] = version_name
+                self.get.projectData.android["version-code"] = n
+
+            elseif self.get.pageIndex == 7 then
+                self.get.includeFolders.func:confirmOptions()
+            elseif self.get.pageIndex == 8 then
+                self.get.includePlugins.func:confirmOptions()
+            end
+
+            System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
         end
 
         if self.get.errorMessage then

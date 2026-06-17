@@ -99,6 +99,8 @@
     "label_clearArguments": "Clear Arguments",
     "label_true": "true",
 
+    "label_defOrientation": "Default Orientation",
+
     "label_downloadModule": "Download Module",
     "label_installVSBuildTools": "Install VS Build Tools",
     "label_installAndroidSDK": "Install Android Studio",
@@ -116,13 +118,32 @@
 
     "label_windowsModuleFile": "amara2_windows_build_module.zip",
     "label_windowsWebModuleFile": "amara2_windows_web_build_module.zip",
-
+    
     "label_platform_windows": "Windows",
     "label_platform_web": "Web",
     "label_platform_linux": "Linux",
     "label_platform_mac": "Mac",
     "label_platform_android": "Android",
     "label_platform_ios": "iOS",
+
+    "label_portrait": "Portrait",
+    "label_landscape": "Landscape",
+    "label_sensor_portrait": "Sensor Portrait",
+    "label_sensor_landscape": "Sensor Landscape",
+    "label_reverse_portrait": "Reverse Portrait",
+    "label_reverse_landscape": "Reverse Landscape",
+    "label_sensor": "Full Sensor",
+
+    "label_versionName": "Version Name",
+    "label_enterVersionName": "Enter version name (e.g. \"1.0.0\")",
+    "toolTip_versionName": "Name of this version (e.g. \"Version 1\" or \"1.0.0\")",
+    "label_versionCode": "Version Code Number",
+    "label_enterVersionCode": "Enter version code (e.g. \"1\")",
+    "toolTip_versionCode": "An integer number used in the updates that dictates the version order of builds.",
+
+    "error_versionNameEmpty": "Error: Version name cannot be empty.",
+    "error_versionCodeEmpty": "Error: Version code cannot be empty.",
+    "error_versionCodeNonNumber": "Error: Version code must be an integer number.",
 
     "label_compileCode": "Compile Code",
     "label_compilationDesc": "Compile your lua code for faster script loading and execution, however it will hamper the ability for other people to mod.",

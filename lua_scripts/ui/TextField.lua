@@ -32,6 +32,9 @@ Nodes:define("TextField", "FillRect", {
             self.get.infiniteLength = config.infiniteLength
             self.get.fixLengthToSize = false
         end
+        if config.toolTip then
+            self.get.toolTip = config.toolTip
+        end
     end,
 
     onCreate = function(self)
@@ -166,7 +169,7 @@ Nodes:define("TextField", "FillRect", {
         return false
     end,
 
-    onUpdate = function(self)
+    onUpdate = function(self, deltaTime)
         if self.get.skip then
             self.get.skip = false
             return
@@ -199,6 +202,10 @@ Nodes:define("TextField", "FillRect", {
                     end
                 end
             end
+        end
+
+        if self.get.toolTip and self.input.hovered then
+            self.world.get.toolTips.func:showToolTip(self.get.toolTip, deltaTime)
         end
     end,
     
