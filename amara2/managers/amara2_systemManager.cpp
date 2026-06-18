@@ -8,7 +8,11 @@ namespace Amara {
 
         std::string current_file_directory;
 
-        SystemManager() = default;
+        static SystemManager* global_system;
+
+        SystemManager() {
+            global_system = this;
+        };
         
         bool exists(std::string path) {
             #if defined(__ANDROID__)
@@ -1895,6 +1899,8 @@ namespace Amara {
         }
     };
 
+    Amara::SystemManager* Amara::SystemManager::global_system = nullptr;
+
     #ifdef AMARA_ENGINE_TOOLS
     const std::vector<std::string> Amara::SystemManager::STORE_EXTENSIONS = {
         ".png", ".jpg", ".jpeg", ".webp",
@@ -1903,4 +1909,27 @@ namespace Amara {
         ".lua", ".luac", ".txt"
     };
     #endif
+
+    template<typename... Args>
+    void error_log(Args... args) {
+         std::ostringstream ss;
+        (ss << ... << args);
+        std::string errorMessage = ss.str();
+
+        bool written = false;
+
+        if (SystemManager::global_system) {
+            written = SystemManager::global_system->writeFile("error_log.txt", errorMessage);
+        }
+        if (!written) {
+            #ifndef __EMSCRIPTEN__
+            std::ofstream errorLogFile("error_log.txt");
+            if (errorLogFile.is_open()) {
+                errorLogFile << errorMessage << std::endl;
+                errorLogFile.close();
+            }
+            #endif
+        }
+        debug_log(errorMessage);
+    }
 }

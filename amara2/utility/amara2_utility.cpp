@@ -18,22 +18,10 @@ namespace Amara {
         std::ostringstream ss;
         (ss << ... << args);
         std::string errorMessage = ss.str();
-        
-        #ifndef __EMSCRIPTEN__
-        std::ofstream errorLogFile("error_log.txt");
-        if (errorLogFile.is_open()) {
-            errorLogFile << errorMessage << std::endl;
-            errorLogFile.close();
-        }
-        #endif
-        
-        #ifdef __ANDROID__
-        SDL_Log("%s", errorMessage.c_str());
-        #endif
 
         throw std::runtime_error(errorMessage);
     }
-
+    
     template <class T> bool vector_contains(std::vector<T> list, T f) {
         for (T obj: list) 
             if (obj == f) return true;

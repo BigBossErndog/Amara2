@@ -288,7 +288,8 @@ namespace Amara {
 
         int startCreation() {
             if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK)) {
-                debug_log("Error: SDL_Init failed: ", SDL_GetError());
+                error_log("Error: SDL_Init failed: ", SDL_GetError());
+                return 1;
             }
 
             eventHandler.init(&gameProps);
@@ -299,7 +300,7 @@ namespace Amara {
                         scripts.execute(*it);
                     }
                     catch(std::exception& e) {
-                        debug_log(e.what());
+                        error_log(e.what());
                         gameProps.breakWorld();
                     }
                     if (game.hasQuit) break;
@@ -310,11 +311,11 @@ namespace Amara {
                     scripts.run(*it);
                 }
                 catch (const sol::error& e) {
-                    debug_log(e.what());
+                    error_log(e.what());
                     gameProps.breakWorld();
                 }
                 catch (std::exception& e) {
-                    debug_log(e.what());
+                    error_log(e.what());
                     gameProps.breakWorld();
                 }
                 if (game.hasQuit) break;
@@ -384,11 +385,11 @@ namespace Amara {
                         currentWorld->run(game.deltaTime);
                     }
                     catch (const sol::error& e) {
-                        debug_log(e.what());
+                        error_log(e.what());
                         gameProps.breakWorld();
                     }
                     catch (std::exception& e) {
-                        debug_log(e.what());
+                        error_log(e.what());
                         gameProps.breakWorld();
                     }
 
@@ -410,11 +411,11 @@ namespace Amara {
                         currentWorld->draw(gameProps.master_viewport);
                     }
                     catch (const sol::error& e) {
-                        debug_log(e.what());
+                        error_log(e.what());
                         gameProps.breakWorld();
                     }
                     catch(std::exception& e) {
-                        debug_log(e.what());
+                        error_log(e.what());
                         gameProps.breakWorld();
                     }
                     if (currentWorld->vsync != 0) vsync = true;
