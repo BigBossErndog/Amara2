@@ -647,6 +647,16 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
     end,
 
     startBuilding = function(self)
+        if not self.get.projectData.android["release-keystore"] then
+            local alias = string.random(16)
+            local storepass = string.random(16)
+            local keypass = storepass
+            self.get.projectData.android["release-keystore"] = {
+                alias = alias,
+                storepass = storepass,
+                keypass = keypass
+            }
+        end
         self.func:closeWindow(function(win)
             System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
             

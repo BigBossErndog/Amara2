@@ -83,7 +83,7 @@ namespace Amara {
                 if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
                     std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
                     std::filesystem::path newFilePath = prefPath / (std::filesystem::path)path;
-
+                    
                     if (std::filesystem::exists(newFilePath)) {
                         filePath = newFilePath;
                         found = true;
@@ -1617,6 +1617,88 @@ namespace Amara {
                     }
 
                     break;
+                }
+            }
+
+            {
+                std::vector<std::string> bundletool_candidates;
+
+                #if defined(_WIN32)
+                if (localAppData)
+                    bundletool_candidates.push_back(std::string(localAppData) + "\\Android\\bundletool");
+                if (userProfile)
+                    bundletool_candidates.push_back(std::string(userProfile) + "\\AppData\\Local\\Android\\bundletool");
+                #elif defined(__APPLE__)
+                bundletool_candidates.push_back("/usr/local/share/bundletool");
+                bundletool_candidates.push_back("/opt/homebrew/share/bundletool");
+                #else
+                bundletool_candidates.push_back("/usr/local/share/bundletool");
+                bundletool_candidates.push_back("/opt/bundletool");
+                if (const char* home = std::getenv("HOME"))
+                    bundletool_candidates.push_back(std::string(home) + "/bundletool");
+                #endif
+
+                // Inferred Android Studio bundletool paths based on the verified javac path
+                if (result.contains("javac")) {
+                    // FIX: Convert the JSON value explicitly to a clean path object first
+                    std::filesystem::path javac_path(result["javac"].get<std::string>());
+                    std::filesystem::path studio_root = javac_path.parent_path(); // Starts at 'bin'
+
+                    // Walk backward out of 'bin', 'jbr', etc. until reaching the IDE root
+                    while (studio_root.has_parent_path() && 
+                           studio_root.filename().string() != "Android Studio" && 
+                           studio_root.filename().string() != "Android Studio.app" && 
+                           studio_root.filename().string() != "android-studio" &&
+                           studio_root.filename().string() != "Programs") { 
+                        studio_root = studio_root.parent_path();
+                    }
+                    if (studio_root.filename().string() == "Programs") {
+                        studio_root /= "Android Studio";
+                    }
+
+                    #if defined(__APPLE__)
+                    bundletool_candidates.push_back((studio_root / "Contents" / "product-modules" / "android" / "plugins" / "android" / "lib" / "bundletool.jar").string());
+                    bundletool_candidates.push_back((studio_root / "Contents" / "plugins" / "android" / "lib" / "bundletool.jar").string());
+                    #else
+                    bundletool_candidates.push_back((studio_root / "product-modules" / "android" / "plugins" / "android" / "lib" / "bundletool.jar").string());
+                    bundletool_candidates.push_back((studio_root / "plugins" / "android" / "lib" / "bundletool.jar").string());
+                    #endif
+                }
+
+                // Env vars take priority
+                for (const char* var : {"BUNDLETOOL_JAR", "BUNDLETOOL"}) {
+                    const char* env = std::getenv(var);
+                    if (env) bundletool_candidates.insert(bundletool_candidates.begin(), std::string(env));
+                }
+
+                for (const auto& dir : bundletool_candidates) {
+                    if (!std::filesystem::exists(dir)) continue;
+
+                    // Env var or inferred Android Studio path points directly at the JAR file
+                    if (std::filesystem::is_regular_file(dir) &&
+                        std::filesystem::path(dir).extension() == ".jar") {
+                        result["bundletool"] = dir;
+                        break;
+                    }
+
+                    // Otherwise scan the directory for bundletool-*.jar, picking newest by name
+                    if (std::filesystem::is_directory(dir)) {
+                        std::filesystem::path best;
+                        for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+                            if (!entry.is_regular_file()) continue;
+                            const std::string fname = entry.path().filename().string();
+                            if (fname.rfind("bundletool", 0) == 0 &&
+                                entry.path().extension() == ".jar" &&
+                                entry.path() > best)
+                            {
+                                best = entry.path();
+                            }
+                        }
+                        if (!best.empty()) {
+                            result["bundletool"] = best.string();
+                            break;
+                        }
+                    }
                 }
             }
 

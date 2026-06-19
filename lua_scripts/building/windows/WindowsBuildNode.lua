@@ -93,7 +93,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         
         -- table.insert(args, compilerPath)
         table.insert(args, fix_path(System:getRelativePath("amara2/main/main.cpp")))
-
+        
         if self.get.resOutputFile then
             table.insert(args, fix_path(self.get.resOutputFile))
         end
@@ -101,7 +101,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local static_libs = {}
 
         -- AMARA_PATH
-        table.insert(args, "-Iamara2")
+        table.insert(args, "-I" ..  fix_path(System:getRelativePath("amara2")))
         
         if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
             local plugins_path = System:join(self.get.projectPath, "plugins")

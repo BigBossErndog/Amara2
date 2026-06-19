@@ -73,7 +73,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         local static_libs = {}
 
         -- AMARA_PATH
-        table.insert(args, "-Iamara2")
+        table.insert(args, "-I" ..  fix_path(System:getRelativePath("amara2")))
         
         if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
             local plugins_path = System:join(self.get.projectPath, "plugins")
