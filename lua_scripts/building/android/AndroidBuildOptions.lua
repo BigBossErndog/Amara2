@@ -645,7 +645,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
         end
         return txt.text
     end,
-
+    
     startBuilding = function(self)
         if not self.get.projectData.android["release-keystore"] then
             local alias = string.random(16)

@@ -231,6 +231,9 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_FINGER_MOTION: {
+                        if (e.tfinger.pressure <= 0.0f) break;
+                        if (e.tfinger.x == 0.0f && e.tfinger.y == 0.0f) break;
+
                         changeControlMode(InputMode::Touch);
 
                         for (auto w: worlds) {
@@ -520,13 +523,13 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_FINGER_UP: {
-                        input->hover.release();
                         input->state.release();
                         input->held = false;
 
                         input->handleMessage({ nullptr, "onPointerUp", finger->get_lua_object(gameProps) });
                         input->handleMessage({ nullptr, "onTouchUp", finger->get_lua_object(gameProps) });
                         
+                        input->hover.release();
                         if (input->hover.justReleased) {
                             input->handleMessage({ nullptr, "onPointerExit", finger->get_lua_object(gameProps) });
                             input->handleMessage({ nullptr, "onTouchExit", finger->get_lua_object(gameProps) });
@@ -537,6 +540,7 @@ namespace Amara {
                         input->hover.press();
                         input->state.press();
                         input->hover_by_mouse = false;
+
                         if (input->hover.justPressed) {
                             input->handleMessage({ nullptr, "onPointerHover", finger->get_lua_object(gameProps) });
                             input->handleMessage({ nullptr, "onTouchHover", finger->get_lua_object(gameProps) });

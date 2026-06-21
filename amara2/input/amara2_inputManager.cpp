@@ -71,13 +71,11 @@ namespace Amara {
         void pre_update(double deltaTime) {
             if (touch.isDown()) {
                 Vector2 p = *touch.lastFinger;
-                if (p.x != 0.0f || p.y != 0.0f) {
-                    generalPointer.x = p.x;
-                    generalPointer.y = p.y;
-                    generalPointer.real_pos = touch.lastFinger->real_pos;
-                }
+                generalPointer.x = p.x;
+                generalPointer.y = p.y;
+                generalPointer.real_pos = touch.lastFinger->real_pos;
             }
-            else if (mouse.moved && (mouse.x != 0.0f || mouse.y != 0.0f)) {
+            else if (mouse.moved) {
                 generalPointer.x = mouse.x;
                 generalPointer.y = mouse.y;
                 generalPointer.real_pos = mouse.real_pos;

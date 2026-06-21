@@ -12,6 +12,7 @@ namespace Amara {
         double timeHeld = false;
         bool draggable = false;
         bool dragging = false;
+        double dragDistance = 0;
         
         Vector2 drag = Vector2(0, 0);
 
@@ -173,6 +174,7 @@ namespace Amara {
                 "draggable", &NodeInput::draggable,
                 "drag", sol::readonly(&NodeInput::drag),
                 "dragging", sol::readonly(&NodeInput::dragging),
+                "dragDistance", sol::readonly(&NodeInput::dragDistance),
                 "configure", sol::resolve<void(sol::object)>(&NodeInput::configure),
                 "cursor", &NodeInput::cursor,
                 "pointer", sol::property([](Amara::NodeInput& n) {

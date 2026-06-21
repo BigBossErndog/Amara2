@@ -456,6 +456,7 @@ namespace Amara {
                     if (input.isListening("onDrag")) {
                         input.handleMessage({ nullptr, "onDrag" });
                     }
+                    input.dragDistance = distanceBetween(lastPointer->rec_pos, *lastPointer);
                     input.dragging = true;
                 }
             }

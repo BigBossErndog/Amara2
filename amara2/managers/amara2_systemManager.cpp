@@ -276,37 +276,72 @@ namespace Amara {
         }
 
         bool remove(std::string path) {
-            std::filesystem::path filePath = getRelativePath(path);
+            std::filesystem::path filePath;
 
-            #if defined(__ANDROID__) 
+            if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
+                char* rawPrefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                if (rawPrefPath) {
+                    filePath = std::filesystem::path(rawPrefPath) / path;
+                    SDL_free(rawPrefPath);
+                }
+                else {
+                    filePath = getRelativePath(path);
+                }
+            }
+            else {
+                filePath = getRelativePath(path);
+            }
+
+            #if defined(__ANDROID__)
             {
-                filePath = path;
-                if (std::filesystem::exists(filePath)) {
-                    try {
+                try {
+                    if (std::filesystem::exists(filePath)) {
                         if (std::filesystem::is_directory(filePath)) {
-                            if (!std::filesystem::remove_all(filePath)) {
-                                fatal_error("Error: Failed to delete directory \"", removeBasePath(filePath), "\" (unknown reason).");
-                                return false;
+                            if (std::filesystem::remove_all(filePath)) {
+                                return true;
                             }
-                        } else {
-                            if (!std::filesystem::remove(filePath)) {
-                                fatal_error("Error: Failed to delete file \"", removeBasePath(filePath), "\" (unknown reason).");
-                                return false;
+                            fatal_error("Error: Failed to delete directory \"", removeBasePath(filePath), "\" (unknown reason).");
+                            return false;
+                        }
+                        else {
+                            if (std::filesystem::remove(filePath)) {
+                                return true;
+                            }
+                            fatal_error("Error: Failed to delete file \"", removeBasePath(filePath), "\" (unknown reason).");
+                            return false;
+                        }
+                    }
+                }
+                catch (const std::filesystem::filesystem_error& e) {
+                    fatal_error("Error: Filesystem exception while deleting \"", removeBasePath(filePath), "\": ", e.what());
+                    return false;
+                }
+
+                if (filePath.string() != path) {
+                    try {
+                        if (std::filesystem::exists(path)) {
+                            if (std::filesystem::is_directory(path)) {
+                                if (std::filesystem::remove_all(path)) return true;
+                            }
+                            else {
+                                if (std::filesystem::remove(path)) return true;
                             }
                         }
-                        return true;
                     }
                     catch (const std::filesystem::filesystem_error& e) {
-                        fatal_error("Error: Filesystem exception while deleting \"", removeBasePath(filePath), "\": ", e.what());
+                        fatal_error("Error: Filesystem exception while deleting \"", path, "\": ", e.what());
                         return false;
                     }
                 }
-                
-                if (::remove(filePath.string().c_str()) == 0) {
+
+                if (SDL_RemovePath(filePath.string().c_str())) {
+                    return true;
+                }
+                if (filePath.string() != path && SDL_RemovePath(path.c_str())) {
                     return true;
                 }
 
-                fatal_error("Error: \"", path, "\" does not exist.");
+                fatal_error("Error: \"", path, "\" does not exist or could not be deleted (", SDL_GetError(), ").");
                 return false;
             }
             #endif

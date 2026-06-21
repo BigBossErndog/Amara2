@@ -1311,6 +1311,8 @@ namespace Amara {
         }
 
         void handleFingerEvent(const Vector2& pos, SDL_FingerID fingerID, SDL_EventType eventType) {
+            if (pos.x == 0 && pos.y == 0) return;
+
             Vector2 real_pos = Vector2(
                 pos.x * viewport.w,
                 pos.y * viewport.h
@@ -1337,6 +1339,13 @@ namespace Amara {
                         break;
                     }
                     case SDL_EVENT_FINGER_DOWN: {
+                        pointer->real_pos = real_pos;
+                        pointer->x = virtualPos.x;
+                        pointer->y = virtualPos.y;
+                        pointer->rec_position();
+                        break;
+                    }
+                    case SDL_EVENT_FINGER_UP: {
                         pointer->real_pos = real_pos;
                         pointer->x = virtualPos.x;
                         pointer->y = virtualPos.y;

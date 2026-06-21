@@ -252,6 +252,7 @@
     #include "nodes/amara2_container.cpp"
 
     #include "nodes/amara2_textureContainer.cpp"
+    #include "nodes/amara2_textureLayer.cpp"
     
     #include "nodes/amara2_quadSprite.cpp"
     #include "nodes/amara2_quadContainer.cpp"

@@ -264,6 +264,7 @@ namespace Amara {
             registerNode<Amara::Container>("Container");
 
             registerNode<Amara::TextureContainer>("TextureContainer");
+            registerNode<Amara::TextureLayer>("TextureLayer");
             
             registerNode<Amara::QuadSprite>("QuadSprite");
             registerNode<Amara::QuadContainer>("QuadContainer");
@@ -340,6 +341,7 @@ namespace Amara {
             Amara::Container::bind_lua(lua);
             
             Amara::TextureContainer::bind_lua(lua);
+            Amara::TextureLayer::bind_lua(lua);
             
             Amara::QuadSprite::bind_lua(lua);
             Amara::QuadContainer::bind_lua(lua);
