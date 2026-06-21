@@ -508,8 +508,6 @@ namespace Amara {
                         input->hover.press();
                         input->state.press();
                         input->hover_by_mouse = false;
-                        input->handleMessage({ nullptr, "onPointerDown", finger->get_lua_object(gameProps) });
-                        input->handleMessage({ nullptr, "onTouchDown", finger->get_lua_object(gameProps) });
                         if (input->hover.justPressed) {
                             input->held = true;
                             input->handleMessage({ nullptr, "onPointerHover", finger->get_lua_object(gameProps) });
@@ -517,6 +515,8 @@ namespace Amara {
                             
                             input->rec_interact_pos = input->node->pos;
                         }
+                        input->handleMessage({ nullptr, "onPointerDown", finger->get_lua_object(gameProps) });
+                        input->handleMessage({ nullptr, "onTouchDown", finger->get_lua_object(gameProps) });
                         break;
                     }
                     case SDL_EVENT_FINGER_UP: {
