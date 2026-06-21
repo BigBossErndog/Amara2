@@ -514,7 +514,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             PACKAGE_NAME       = "com." .. self.get.projectData.android["package-org-name"] .. "." .. self.get.projectData.android["package-app-name"],
             VERSION_CODE       = self.get.projectData.android["version-code"] or 1,
             VERSION_NAME       = self.get.projectData.android["version-name"] or "1.0.0",
-            MIN_SDK_VERSION    = 24,
+            MIN_SDK_VERSION    = 28,
             TARGET_SDK_VERSION = 35,
             GLES_VERSION       = "0x00030000",
             APP_NAME           = self.get.projectData.android["app-name"],
