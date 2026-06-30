@@ -43,6 +43,13 @@ namespace Amara {
                 if (height < drawHeight) height = drawHeight;
             }
 
+            if (json_has(config, "size")) {
+                resize(Amara::Rectangle(json_strict_extract<Amara::Rectangle>(config, "size")));
+            }
+            if (json_has(config, "rect")) {
+                resize(Amara::Rectangle(json_strict_extract<Amara::Rectangle>(config, "rect")));
+            }
+
             if (drawWidth < 0) drawWidth = 0;
             if (drawHeight < 0) drawHeight = 0;
 
@@ -723,8 +730,8 @@ namespace Amara {
                     },
                     [](Amara::NineSlice& t, sol::object v) { t.lua_setTempTexture(v); }
                 ),
-                "rect", sol::property([](Amara::NineSlice& t) -> Rectangle { return t.getRectangle(); }, [](Amara::NineSlice& t, Rectangle v) { t.resize(v); }),
-                "size", sol::property([](Amara::NineSlice& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.drawWidth, t.drawHeight); }, &NineSlice::resize),
+                "rect", sol::property([](Amara::NineSlice& t) -> Rectangle { return t.getRectangle(); }, [](Amara::NineSlice& t, sol::object v) { t.resize(Amara::Rectangle(v)); }),
+                "size", sol::property([](Amara::NineSlice& t) -> Rectangle { return Rectangle(t.pos.x, t.pos.y, t.drawWidth, t.drawHeight); }, [](Amara::NineSlice& t, sol::object v) { t.resize(Amara::Rectangle(v)); }),
                 "resize", &Amara::NineSlice::resize,
                 "stretchTo", &Amara::NineSlice::stretchTo,
                 "fitWithin", &Amara::NineSlice::fitWithin,

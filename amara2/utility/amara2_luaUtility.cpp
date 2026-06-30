@@ -850,6 +850,22 @@ namespace Amara {
             
             return tbl[index];
         });
+        table_metatable.set_function("keys", [&lua](sol::object obj) -> sol::object {
+            if (lua_object_is_table_array(obj)) {
+                fatal_error("Error: table.keys() expected a dictionary-like table argument.");
+            }
+
+            sol::table tbl = obj.as<sol::table>();
+            sol::table result = lua.create_table();
+
+            int index = 1;
+            for (auto& pair : tbl) {
+                result[index] = pair.first;
+                index += 1;
+            }
+
+            return result;
+        });
 
         lua["fatal_error"] = [](sol::variadic_args args) {
             fatal_error(lua_string_concat(args));

@@ -62,7 +62,6 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         self.get.android_package = android_package
 
         local keystore_path = System:join(self.get.projectPath, self.get.projectData["project-name"] .. ".keystore")
-        local debug_keystore_path = System:join(android_package, "debug.keystore")
 
         local errorOutputPath = System:join(buildDir, "build_error.txt")
         self.get.errorOutputPath = errorOutputPath
@@ -335,16 +334,6 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         local release_keypass       = keystore_details["keypass"]
         
         -- ── Generate keystore (shared by APK + AAB) ────────────────────────────
-        table.insert(buildCommands,
-            "if exist " .. fix_path(debug_keystore_path, true) .. " del " .. fix_path(debug_keystore_path, true)
-        )
-        table.insert(buildCommands,
-            fix_path(sdk["keytool"], true) ..
-            " -genkeypair -keystore " .. fix_path(debug_keystore_path, true) ..
-            " -alias androiddebugkey -keypass android -storepass android" ..
-            " -dname \"CN=Android Debug,O=Android,C=US\"" ..
-            " -keyalg RSA -keysize 2048 -validity 10000"
-        )
 
         if not System:exists(keystore_path) then
             table.insert(buildCommands,
@@ -370,8 +359,10 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
         table.insert(buildCommands,
             "call " .. fix_path(sdk["apksigner"]) ..
-            " sign --ks " .. fix_path(debug_keystore_path) ..
-            " --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey" ..
+            " sign --ks " .. fix_path(keystore_path) ..
+            " --ks-pass pass:" .. release_storepass ..
+            " --key-pass pass:" .. release_keypass ..
+            " --ks-key-alias " .. release_key_alias ..
             " --out " .. fix_path(System:join(android_package, "base-signed.apk")) ..
             " " .. fix_path(System:join(android_package, "base-aligned.apk"))
         )
