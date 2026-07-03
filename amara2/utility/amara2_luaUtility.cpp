@@ -282,9 +282,12 @@ namespace Amara {
         return lua_string_sep_concat(separator, args, false);
     }
 
-    sol::table lua_shallow_copy(sol::state& lua, sol::table tbl) {
-        if (tbl.is<sol::userdata>()) return tbl;
-        if (!tbl.is<sol::table>()) return tbl;
+    sol::table lua_shallow_copy(sol::state& lua, sol::object src) {
+        if (Shape::is_shape(src)) return Shaoe::copy_shape(src);
+        if (src.is<sol::userdata>()) return src;
+        if (!src.is<sol::table>()) return src;
+
+        sol::table tbl = src.as<sol::table>();
         
         sol::table copy = lua.create_table();
         for (auto& pair : tbl) {
@@ -293,22 +296,30 @@ namespace Amara {
         return copy;
     }
 
-    sol::table lua_deep_copy(sol::state& lua, sol::table src) {
+    sol::table lua_deep_copy(sol::state& lua, sol::object src) {
+        if (Shape::is_shape(src)) return Shaoe::copy_shape(src);
         if (src.is<sol::userdata>()) return src;
         if (!src.is<sol::table>()) return src;
+
+        sol::table tbl = src.as<sol::table>();
         
         sol::table dst(lua, sol::create);
 
-        for (auto& kv : src) {
+        for (auto& kv : tbl) {
             sol::object key = kv.first;
             sol::object value = kv.second;
-
+            
             if (value.is<sol::table>() && !value.is<sol::userdata>()) {
                 dst[key] = lua_deep_copy(lua, value.as<sol::table>());
-            } else {
+            }
+            else if (Shape::is_shape(value)) {
+                dst[key] = Shape::copy_shape(value);
+            }
+            else {
                 dst[key] = value;
             }
         }
+
         return dst;
     }
 
