@@ -175,10 +175,9 @@ namespace Amara {
 
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
                 
-                unsigned char* emptyData = (unsigned char*)calloc(atlasWidth * atlasHeight, 1);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, emptyData);
+                unsigned char* emptyData = (unsigned char*)calloc(atlasWidth * atlasHeight * 4, 1);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, atlasWidth, atlasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, emptyData);
                 free(emptyData);
-                glGenerateMipmap(GL_TEXTURE_2D);
                 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

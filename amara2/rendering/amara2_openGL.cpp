@@ -207,13 +207,83 @@ namespace Amara {
     GL_FUNCTION_LIST
     #undef X
 
+    #define GL_REQUIRED_FUNCTION_LIST \
+        X(glGenBuffers) \
+        X(glBindVertexArray) \
+        X(glGenVertexArrays) \
+        X(glShaderSource) \
+        X(glCompileShader) \
+        X(glCreateShader) \
+        X(glLinkProgram) \
+        X(glUseProgram) \
+        X(glGetShaderiv) \
+        X(glGetShaderInfoLog) \
+        X(glAttachShader) \
+        X(glCreateProgram) \
+        X(glEnableVertexAttribArray) \
+        X(glVertexAttribPointer) \
+        X(glClearColor) \
+        X(glClear) \
+        X(glViewport) \
+        X(glDeleteTextures) \
+        X(glDeleteProgram) \
+        X(glDeleteShader) \
+        X(glDeleteBuffers) \
+        X(glDeleteVertexArrays) \
+        X(glGenTextures) \
+        X(glBindTexture) \
+        X(glTexImage2D) \
+        X(glTexParameteri) \
+        X(glGetUniformLocation) \
+        X(glUniformMatrix4fv) \
+        X(glUniform1i) \
+        X(glGenFramebuffers) \
+        X(glBindFramebuffer) \
+        X(glFramebufferTexture2D) \
+        X(glDrawElements) \
+        X(glBufferData) \
+        X(glBufferSubData) \
+        X(glBindBuffer) \
+        X(glDeleteFramebuffers) \
+        X(glDetachShader) \
+        X(glUniform1f) \
+        X(glUniform2f) \
+        X(glUniform3f) \
+        X(glUniform4f) \
+        X(glUniform1fv) \
+        X(glUniform2fv) \
+        X(glUniform3fv) \
+        X(glUniform4fv) \
+        X(glUniform1iv) \
+        X(glUniform2iv) \
+        X(glUniform3iv) \
+        X(glUniform4iv) \
+        X(glCheckFramebufferStatus) \
+        X(glGenRenderbuffers) \
+        X(glBindRenderbuffer) \
+        X(glRenderbufferStorage) \
+        X(glFramebufferRenderbuffer) \
+        X(glTexSubImage2D) \
+        X(glGenerateMipmap) \
+        X(glGetProgramiv) \
+        X(glGetProgramInfoLog) \
+        X(glGetUniformIndices) \
+        X(glGetActiveUniform) \
+        X(glGetAttribLocation) \
+        X(glEnable) \
+        X(glDisable) \
+        X(glBlendFunc) \
+        X(glBlendFuncSeparate) \
+        X(glActiveTexture) \
+        X(glPixelStorei)
+
     void LoadOpenGLFunctions() {
         #define X(ret, name, ...) name = (PFN_##name)SDL_GL_GetProcAddress(#name);
         GL_FUNCTION_LIST
         #undef X
 
-        #define X(ret, name, ...) if (!name) { printf("Failed to load %s\n", #name); exit(1); }
-        GL_FUNCTION_LIST
+        #define X(name) if (!name) { fatal_error("Failed to load required OpenGL function: ", #name); }
+        GL_REQUIRED_FUNCTION_LIST
         #undef X
     }
 
@@ -294,8 +364,6 @@ namespace Amara {
     };
 
     const char* defaultVertexShader = R"(
-        #version 330 core
-
         layout (location = 0) in vec2 _position;
         layout (location = 1) in vec2 _texCoord;
         layout (location = 2) in float _alpha;
@@ -313,14 +381,12 @@ namespace Amara {
         }
     )";
     const char* defaultFragmentShader= R"(
-        #version 330 core
-
         in vec2 texCoord;
         in float fragAlpha;
         in vec4 fragTint;
         
         uniform sampler2D _texture;
-
+        
         out vec4 fragColor;
 
         void main() {

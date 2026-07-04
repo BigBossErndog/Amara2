@@ -9,7 +9,7 @@ namespace Amara {
 
         Amara::Color color = Amara::Color::White;
         Amara::BlendMode blendMode = Amara::BlendMode::Alpha;
-
+        
         sol::protected_function manipulator = sol::nil;
 
         void set(Amara::Text* text);

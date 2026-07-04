@@ -1,5 +1,3 @@
-#version 330 core
-
 in vec2 texCoord;
 in float fragAlpha;
 in vec4 fragTint;

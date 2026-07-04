@@ -1026,7 +1026,7 @@ namespace Amara {
             }
             return sol::nil;
         }
-        static bool is_shape(sol::object val) {
+        static bool is_shape(sol::object obj) {
             if (obj.is<Rectangle>()) {
                 return true;
             }
@@ -1054,32 +1054,32 @@ namespace Amara {
             return false;
         }
         static sol::object copy_shape(sol::object val, sol::state& lua) {
-            if (obj.is<Rectangle>()) {
+            if (val.is<Rectangle>()) {
                 auto allocated_shape = std::make_unique<Rectangle>(val.as<Rectangle>());
                 return sol::make_object(lua, std::move(allocated_shape));
             }
-            else if (obj.is<Quad>()) {
+            else if (val.is<Quad>()) {
                 auto allocated_shape = std::make_unique<Quad>(val.as<Quad>());
                 return sol::make_object(lua, std::move(allocated_shape));
             }
-            else if (obj.is<Circle>()) {
+            else if (val.is<Circle>()) {
                 auto allocated_shape = std::make_unique<Circle>(val.as<Circle>());
                 return sol::make_object(lua, std::move(allocated_shape));
             }
-            else if (obj.is<Triangle>()) {
+            else if (val.is<Triangle>()) {
                 auto allocated_shape = std::make_unique<Triangle>(val.as<Triangle>());
                 return sol::make_object(lua, std::move(allocated_shape));
             }
-            else if (obj.is<Line>()) {
+            else if (val.is<Line>()) {
                 auto allocated_shape = std::make_unique<Line>(val.as<Line>());
                 return sol::make_object(lua, std::move(allocated_shape));
             }
-            else if (obj.is<Vector2>()) {
+            else if (val.is<Vector2>()) {
                 auto allocated_shape = std::make_unique<Vector2>(val.as<Vector2>());
                 return sol::make_object(lua, std::move(allocated_shape));
             }
-            else if (obj.is<Vector3>()) {
-                auto allocated_shape = std::make_unique<>(val.as<Vector3>());
+            else if (val.is<Vector3>()) {
+                auto allocated_shape = std::make_unique<Vector3>(val.as<Vector3>());
                 return sol::make_object(lua, std::move(allocated_shape));
             }
             return sol::nil;

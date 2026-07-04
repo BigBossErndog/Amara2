@@ -68,6 +68,10 @@ namespace Amara {
         }
 
         #ifdef AMARA_OPENGL
+        std::string readShader(std::string path, ShaderTypeEnum type) {
+            std::string source = gameProps->system->readFile(path);
+            return source;
+}
         unsigned int getShader(std::string key) {
             if (hasShader(key)) return glShaders[key];
             return 0;
@@ -83,6 +87,51 @@ namespace Amara {
         }
 
         unsigned int compileGLShader(std::string key, std::string source, ShaderTypeEnum type) {
+            std::string versionHeader = "";
+
+            if (!String::startsWith(source, "#version")) {
+                
+                #if defined(__ANDROID__) || defined(__IPHONEOS__)
+                    if (type == ShaderTypeEnum::Compute) {
+                        versionHeader = "#version 310 es\n";
+                    } 
+                    else if (type == ShaderTypeEnum::Geometry || 
+                            type == ShaderTypeEnum::TessControl || 
+                            type == ShaderTypeEnum::TessEvaluation) {
+                        versionHeader = "#version 320 es\n";
+                    } 
+                    else {
+                        versionHeader = "#version 300 es\n";
+                        if (type == ShaderTypeEnum::Fragment) {
+                            versionHeader += "precision highp float;\n";
+                        }
+                        if (type == ShaderTypeEnum::Vertex) {
+                            versionHeader += "precision highp float;\n";
+                        }
+                    }
+
+                #elif defined(__APPLE__)
+                    versionHeader = "#version 410 core\n";
+
+                #else
+                    if (type == ShaderTypeEnum::Compute || 
+                        type == ShaderTypeEnum::TessControl || 
+                        type == ShaderTypeEnum::TessEvaluation) {
+                        versionHeader = "#version 430 core\n";
+                    } 
+                    else if (type == ShaderTypeEnum::Geometry) {
+                        versionHeader = "#version 330 core\n"; 
+                    } 
+                    else {
+                        versionHeader = "#version 330 core\n";
+                    }
+                #endif
+
+                if (!versionHeader.empty()) {
+                    source.insert(0, versionHeader);
+                }
+            }
+            
             if (gameProps->graphics != GraphicsEnum::OpenGL) {
                 debug_log("Error: Cannot compile shader without an OpenGL context.");
                 gameProps->breakWorld();                
@@ -132,7 +181,7 @@ namespace Amara {
                 else if (!shader_key.empty()) {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
                     if (gameProps->system->exists(filePath)) {
-                        std::string source = gameProps->system->readFile(filePath);
+                        std::string source = readShader(filePath, ShaderTypeEnum::Compute);
                         shaderID = compileGLShader("", source, ShaderTypeEnum::Compute);
                         temp = true;
                     }
@@ -162,7 +211,7 @@ namespace Amara {
                 else if (!shader_key.empty()) {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
                     if (gameProps->system->exists(filePath)) {
-                        std::string source = gameProps->system->readFile(filePath);
+                        std::string source = readShader(filePath, ShaderTypeEnum::Vertex);
                         shaderID = compileGLShader("", source, ShaderTypeEnum::Vertex);
                         temp = true;
                     }
@@ -193,7 +242,7 @@ namespace Amara {
                 else if (!shader_key.empty()) {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
                     if (gameProps->system->exists(filePath)) {
-                        std::string source = gameProps->system->readFile(filePath);
+                        std::string source = readShader(filePath, ShaderTypeEnum::Fragment);
                         shaderID = compileGLShader("", source, ShaderTypeEnum::Fragment);
                         temp = true;
                     }
@@ -230,7 +279,7 @@ namespace Amara {
                 if (hasShader(shader_key)) {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
                     if (gameProps->system->exists(filePath)) {
-                        std::string source = gameProps->system->readFile(filePath);
+                        std::string source = readShader(filePath, type);
                         shaderID = compileGLShader("", source, type);
                     }
                     else {
@@ -328,7 +377,7 @@ namespace Amara {
             }
             
             std::string filePath = gameProps->system->getAssetPath(path);
-            std::string source = gameProps->system->readFile(filePath);
+            std::string source = readShader(filePath, type);
 
             #ifdef AMARA_OPENGL
             unsigned int shader = compileGLShader(key, source, type);

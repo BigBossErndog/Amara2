@@ -916,15 +916,27 @@ namespace Amara {
                             continue;
                         }
 
-                        #if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+                        #if defined(__EMSCRIPTEN__)
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+
+                        #elif defined(__ANDROID__) || defined(__IPHONEOS__)
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+
+                        #elif defined(__APPLE__)
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+                            SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+
                         #else
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-                        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+                            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+                            SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
                         #endif
                         
                         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);

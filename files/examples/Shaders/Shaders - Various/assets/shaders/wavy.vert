@@ -1,5 +1,3 @@
-#version 330 core
-
 layout (location = 0) in vec2 _position;
 layout (location = 1) in vec2 _texCoord;
 layout (location = 2) in float _alpha;

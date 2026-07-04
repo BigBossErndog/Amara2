@@ -177,11 +177,12 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "EXCEPTION_CATCHING_ALLOWED='[\"std::exception\"]'")
 
         -- EMSCRIPTEN_EXTRA_OPTIONS
-        if self.get.installPlugins then
+        if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
             table.insert(args, "-DAMARA_PLUGINS")
         end
         table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
 
+        table.insert(args, "-DAMARA_OPENGL")
 
         -- EMSCRIPTEN_PRELOADS
         if System:exists(System:join(self.get.projectPath, "lua_scripts")) then

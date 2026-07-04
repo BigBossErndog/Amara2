@@ -15,19 +15,6 @@ namespace Amara {
         };
         
         bool exists(std::string path) {
-            #if defined(__ANDROID__)
-            if (std::filesystem::exists(path)) {
-                return true;
-            }
-
-            SDL_IOStream* io = SDL_IOFromFile(path.c_str(), "rb");
-            if (io) {
-                SDL_CloseIO(io);
-                return true;
-            }
-            return false;
-            #endif
-
             std::filesystem::path filePath = getRelativePath(path);
 
             #if defined(__EMSCRIPTEN__)
@@ -43,7 +30,20 @@ namespace Amara {
             }
             #endif
 
-            return std::filesystem::exists(filePath);
+            if (std::filesystem::exists(filePath)) return true;
+
+            #if defined(__ANDROID__)
+            SDL_IOStream* io = SDL_IOFromFile(filePath.string().c_str(), "rb");
+            if (io) { SDL_CloseIO(io); return true; }
+
+            if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
+                std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                std::filesystem::path newFilePath = prefPath / (std::filesystem::path)path;
+                if (std::filesystem::exists(newFilePath)) return true;
+            }
+            #endif
+
+            return false;
         }
 
         std::string readFile(const std::string& path) {
@@ -398,14 +398,26 @@ namespace Amara {
 
         bool removeDirectoryContents(std::string path) {
             std::filesystem::path dirPath = getRelativePath(path);
-            if (!std::filesystem::exists(dirPath)) { 
-                fatal_error("Error: \"", removeBasePath(dirPath), "\" does not exist.");
+            bool found = std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
+
+            #if defined(__ANDROID__)
+            if (!found) {
+                if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
+                    std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                    std::filesystem::path newDirPath = prefPath / (std::filesystem::path)path;
+                    if (std::filesystem::exists(newDirPath) && std::filesystem::is_directory(newDirPath)) {
+                        dirPath = newDirPath;
+                        found = true;
+                    }
+                }
+            }
+            #endif
+
+            if (!found) {
+                fatal_error("Error: \"", removeBasePath(dirPath), "\" does not exist or is not a directory.");
                 return false;
             }
-            if (!std::filesystem::is_directory(dirPath)) {
-                fatal_error("Error: \"", removeBasePath(dirPath), "\" is not a directory.");
-                return false;
-            }
+
             try {
                 for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
                     remove(entry.path().string());
@@ -425,11 +437,30 @@ namespace Amara {
 
         bool isDirectory(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
-            if (!exists(filePath.string())) {
-                return false;
+
+            if (std::filesystem::exists(filePath)) {
+                return std::filesystem::is_directory(filePath);
             }
-            return std::filesystem::is_directory(filePath);
-        }
+
+            #if defined(__ANDROID__)
+            if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
+                std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                std::filesystem::path newFilePath = prefPath / (std::filesystem::path)path;
+                if (std::filesystem::exists(newFilePath)) {
+                    return std::filesystem::is_directory(newFilePath);
+                }
+            }
+            #endif
+
+            #if defined(__EMSCRIPTEN__)
+            {
+                std::vector<std::string> lsEntries = emscripten_localStorage_children(filePath.lexically_normal().string(), false, false);
+                if (!lsEntries.empty()) return true;
+            }
+            #endif
+
+            return false;
+}
 
         bool isDirectoryEmpty(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
@@ -457,12 +488,121 @@ namespace Amara {
             #endif
         }
 
+        #if defined(__EMSCRIPTEN__)
+        std::vector<std::string> emscripten_localStorage_children(std::string prefix, bool onlyFiles, bool onlyDirs) {
+            std::vector<std::string> results;
+
+            if (!prefix.empty() && prefix.back() != '/' && prefix.back() != '\\') prefix += "/";
+
+            char* keysBlob = (char*)EM_ASM_PTR({
+                var prefix = UTF8ToString($0);
+                var onlyFiles = $1;
+                var onlyDirs = $2;
+                var seen = {};
+                var out = [];
+                for (var i = 0; i < window.localStorage.length; i++) {
+                    var key = window.localStorage.key(i);
+                    if (key.indexOf(prefix) !== 0) continue;
+                    var rest = key.substring(prefix.length);
+                    if (rest.length === 0) continue;
+
+                    var slash = rest.indexOf('/');
+                    var isDir = slash !== -1;
+                    var child = isDir ? rest.substring(0, slash) : rest;
+
+                    if (onlyFiles && isDir) continue;
+                    if (onlyDirs && !isDir) continue;
+
+                    if (!seen[child]) {
+                        seen[child] = true;
+                        out.push(prefix + child);
+                    }
+                }
+                var joined = out.join("\n");
+                var len = lengthBytesUTF8(joined) + 1;
+                var buf = _malloc(len);
+                stringToUTF8(joined, buf, len);
+                return buf;
+            }, prefix.c_str(), onlyFiles, onlyDirs);
+
+            if (keysBlob) {
+                std::string joined(keysBlob);
+                free(keysBlob);
+
+                size_t start = 0;
+                while (start <= joined.size()) {
+                    size_t pos = joined.find('\n', start);
+                    std::string entry = (pos == std::string::npos) ? joined.substr(start) : joined.substr(start, pos - start);
+                    if (!entry.empty()) results.push_back(entry);
+                    if (pos == std::string::npos) break;
+                    start = pos + 1;
+                }
+            }
+
+            return results;
+        }
+        #endif
+
         std::vector<std::string> getDirectoryContents(std::string path) {
             std::filesystem::path filePath = getRelativePath(path);
-
             std::vector<std::string> contents;
+            
+            #if defined(__ANDROID__)
+            {
+                struct EnumCtx {
+                    std::vector<std::string>* out;
+                } ctx{ &contents };
 
-            if (!std::filesystem::exists(filePath) || !std::filesystem::is_directory(filePath)) {
+                bool ok = SDL_EnumerateDirectory(filePath.string().c_str(),
+                    [](void* userdata, const char* dirname, const char* fname) -> SDL_EnumerationResult {
+                        EnumCtx* ctx = (EnumCtx*)userdata;
+                        std::filesystem::path full = std::filesystem::path(dirname) / fname;
+                        ctx->out->push_back(full.lexically_normal().string());
+                        return SDL_ENUM_CONTINUE;
+                    }, &ctx);
+
+                if (ok) return contents;
+
+                if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
+                    std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                    std::filesystem::path newFilePath = prefPath / (std::filesystem::path)path;
+                    if (std::filesystem::exists(newFilePath) && std::filesystem::is_directory(newFilePath)) {
+                        for (const auto& entry : std::filesystem::directory_iterator(newFilePath)) {
+                            contents.push_back(entry.path().lexically_normal().string());
+                        }
+                        return contents;
+                    }
+                }
+
+                fatal_error("Error: \"", removeBasePath(filePath), "\" does not exist or is not a directory.");
+                return contents;
+            }
+            #endif
+
+            #if defined(__EMSCRIPTEN__)
+            {
+                if (std::filesystem::exists(filePath) && std::filesystem::is_directory(filePath)) {
+                    for (const auto& entry : std::filesystem::directory_iterator(filePath)) {
+                        contents.push_back(entry.path().lexically_normal().string());
+                    }
+                }
+
+                std::vector<std::string> lsEntries = emscripten_localStorage_children(filePath.lexically_normal().string(), false, false);
+                for (const auto& e : lsEntries) {
+                    if (std::find(contents.begin(), contents.end(), e) == contents.end()) {
+                        contents.push_back(e);
+                    }
+                }
+
+                if (contents.empty()) {
+                    fatal_error("Error: \"", removeBasePath(filePath), "\" does not exist or is not a directory.");
+                }
+                return contents;
+            }
+            #endif
+
+            bool found = std::filesystem::exists(filePath) && std::filesystem::is_directory(filePath);
+            if (!found) {
                 fatal_error("Error: \"", removeBasePath(filePath), "\" does not exist or is not a directory.");
                 return contents;
             }
@@ -470,7 +610,7 @@ namespace Amara {
             for (const auto& entry : std::filesystem::directory_iterator(filePath)) {
                 contents.push_back(entry.path().lexically_normal().string());
             }
-            
+
             return contents;
         }
         sol::table luaGetDirectoryContents(std::string path) {
@@ -481,12 +621,39 @@ namespace Amara {
             std::filesystem::path dirPath = getRelativePath(path);
             std::vector<std::string> list;
 
+            #if defined(__EMSCRIPTEN__)
+            {
+                if (std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath)) {
+                    for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+                        if (entry.is_regular_file()) {
+                            list.push_back(entry.path().string());
+                        }
+                    }
+                }
+
+                std::vector<std::string> lsFiles = emscripten_localStorage_children(dirPath.lexically_normal().string(), true, false);
+                for (const auto& e : lsFiles) {
+                    if (std::find(list.begin(), list.end(), e) == list.end()) {
+                        list.push_back(e);
+                    }
+                }
+
+                return list;
+            }
+            #endif
+
+            bool found = std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
+            if (!found) {
+                fatal_error("Error: \"", removeBasePath(dirPath), "\" does not exist or is not a directory.");
+                return list;
+            }
+
             for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
                 if (entry.is_regular_file()) {
                     list.push_back(entry.path().string());
                 }
             }
-        
+
             return list;
         }
         sol::table luaGetFilesInDirectory(std::string path) {
@@ -497,12 +664,39 @@ namespace Amara {
             std::filesystem::path dirPath = getRelativePath(path);
             std::vector<std::string> list;
 
+            #if defined(__EMSCRIPTEN__)
+            {
+                if (std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath)) {
+                    for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+                        if (entry.is_directory()) {
+                            list.push_back(entry.path().string());
+                        }
+                    }
+                }
+
+                std::vector<std::string> lsDirs = emscripten_localStorage_children(dirPath.lexically_normal().string(), false, true);
+                for (const auto& e : lsDirs) {
+                    if (std::find(list.begin(), list.end(), e) == list.end()) {
+                        list.push_back(e);
+                    }
+                }
+
+                return list;
+            }
+            #endif
+
+            bool found = std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
+            if (!found) {
+                fatal_error("Error: \"", removeBasePath(dirPath), "\" does not exist or is not a directory.");
+                return list;
+            }
+
             for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
                 if (entry.is_directory()) {
                     list.push_back(entry.path().string());
                 }
             }
-        
+
             return list;
         }
         sol::table luaGetSubDirectories(std::string path) {
@@ -511,22 +705,38 @@ namespace Amara {
 
         bool clearDirectory(std::string path) {
             std::filesystem::path dirPath = getRelativePath(path);
-            try {
-                if (std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath)) {
-                    std::vector<std::string> contents = getDirectoryContents(dirPath.string());
-                    for (const auto& file : contents) {
-                        if (std::filesystem::is_regular_file(file)) {
-                            remove(file);
-                        }
-                        else if (std::filesystem::is_directory(file)) {
-                            clearDirectory(file);
-                        }
+            bool found = std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
+
+            #if defined(__ANDROID__)
+            if (!found) {
+                if (!gameProps->define_org.empty() && !gameProps->define_app.empty()) {
+                    std::filesystem::path prefPath = SDL_GetPrefPath(gameProps->define_org.c_str(), gameProps->define_app.c_str());
+                    std::filesystem::path newDirPath = prefPath / (std::filesystem::path)path;
+                    if (std::filesystem::exists(newDirPath) && std::filesystem::is_directory(newDirPath)) {
+                        dirPath = newDirPath;
+                        found = true;
                     }
-                    return true;
-                } else {
-                    fatal_error("Error: Cannot clear directory, target path is not a directory \"", removeBasePath(path), "\".");
                 }
-            } 
+            }
+            #endif
+
+            if (!found) {
+                fatal_error("Error: Cannot clear directory, target path is not a directory \"", removeBasePath(path), "\".");
+                return false;
+            }
+
+            try {
+                std::vector<std::string> contents = getDirectoryContents(dirPath.string());
+                for (const auto& file : contents) {
+                    if (std::filesystem::is_regular_file(file)) {
+                        remove(file);
+                    }
+                    else if (std::filesystem::is_directory(file)) {
+                        clearDirectory(file);
+                    }
+                }
+                return true;
+            }
             catch (const std::filesystem::filesystem_error& e) {
                 fatal_error("Error: Failed to clear directory \"", removeBasePath(path), "\".");
             }

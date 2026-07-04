@@ -220,6 +220,8 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 end
             end
 
+            table.insert(args, "-DAMARA_OPENGL")
+
             table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/json/include")))
             table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/lua")))
             table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/sol2")))

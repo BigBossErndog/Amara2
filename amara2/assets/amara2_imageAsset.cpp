@@ -75,7 +75,11 @@ namespace Amara {
 
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
                 
+                #if defined(__ANDROID__) || defined(__IPHONEOS__) || defined(__EMSCRIPTEN__)
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+                #else
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+                #endif
                 glGenerateMipmap(GL_TEXTURE_2D);
                 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -273,8 +277,13 @@ namespace Amara {
 
                 glBindTexture(GL_TEXTURE_2D, glTextureID);
                 
+                #if defined(__ANDROID__) || defined(__IPHONEOS__) || defined(__EMSCRIPTEN__)
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
-                // Mipmaps are not strictly necessary for a 1x1 texture with nearest filtering, but kept for consistency.
+                #else
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+                #endif
+                
+                
                 glGenerateMipmap(GL_TEXTURE_2D); 
                 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
