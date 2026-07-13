@@ -7,6 +7,9 @@ namespace Amara {
         std::string id;
         std::vector<SDL_Keycode> keys;
         std::vector<Amara::GamepadButton> gamepadButtons;
+
+        Amara::Button virtualButton;
+        std::vector<bool> virtualQueue;
         
         ControlScheme() {}
         ControlScheme(std::string _id, Amara::GameProps* _gameProps) {
@@ -110,6 +113,7 @@ namespace Amara {
             for (Amara::GamepadButton b: gamepadButtons) {
                 if (gameProps->gamepads->isDown(b)) return true;
             }
+            if (virtualButton.isDown) return true;
             return false;
         }
         bool justPressed() {
@@ -119,6 +123,7 @@ namespace Amara {
             for (Amara::GamepadButton b: gamepadButtons) {
                 if (gameProps->gamepads->justPressed(b)) return true;
             }
+            if (virtualButton.justPressed) return true;
             return false;
         }
         bool justReleased() {
@@ -131,6 +136,8 @@ namespace Amara {
                 if (gameProps->gamepads->isDown(b)) return false;
                 if (gameProps->gamepads->justReleased(b)) result = true;
             }
+            if (virtualButton.isDown) return false;
+            if (virtualButton.justReleased) result = true;
             return result;
         }
         double timeHeld() {
@@ -152,6 +159,15 @@ namespace Amara {
                     t = gameProps->gamepads->timeHeld(b);
                 }
             }
+
+            check = virtualButton.timeSinceHeld;
+            if (check != 0) {
+                if (c == -1 || check < c) {
+                    c = check;
+                    t = virtualButton.timeHeld;
+                }
+            }
+
             return t;
         }
         double timeSinceHeld() {
@@ -171,7 +187,24 @@ namespace Amara {
                     c = check;
                 }
             }
+
+            check = virtualButton.timeSinceHeld;
+            if (check != 0) {
+                if (c == -1 || check < c) {
+                    c = check;       
+                }
+            }
+
             return (c == -1) ? 0 : c;
+        }
+
+        void update(double deltaTime) {
+            virtualButton.update(deltaTime);
+            for (const int val: virtualQueue) {
+                if (val) virtualButton.press();
+                else virtualButton.release();
+            }
+            virtualQueue.clear();
         }
 
         static void bind_lua(sol::state& lua) {
@@ -182,6 +215,13 @@ namespace Amara {
                 "setKeys", &ControlScheme::setKeys,
                 "removeKey", &ControlScheme::removeKey,
                 "clearKeys", &ControlScheme::clearKeys,
+
+                "press", [](Amara::ControlScheme& c) {
+                    c.virtualQueue.push_back(true);
+                },
+                "release", [](Amara::ControlScheme& c) {
+                    c.virtualQueue.push_back(false);
+                },
 
                 "key", sol::property(
                     [](ControlScheme& t) -> sol::optional<int> {

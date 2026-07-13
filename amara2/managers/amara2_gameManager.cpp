@@ -117,6 +117,7 @@ namespace Amara {
                 "platform", sol::readonly(&GameManager::platform),
                 "desktop", sol::readonly(&GameManager::desktop),
                 "mobile", sol::readonly(&GameManager::mobile),
+                "console", sol::readonly(&GameManager::console),
                 "get_lua_stack_size", &GameManager::get_lua_stack_size,
                 "executable", sol::readonly(&GameManager::executable),
                 "arguments", sol::property([](const GameManager& g) -> sol::object {

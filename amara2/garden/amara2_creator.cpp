@@ -360,6 +360,7 @@ namespace Amara {
         void main_loop() {
             messages.update();
             eventHandler.handleEvents(worlds, game);
+            controls.update(game.deltaTime);
 
             if (game.hasQuit) {
                 return;

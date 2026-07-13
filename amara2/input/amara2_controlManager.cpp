@@ -154,6 +154,12 @@ namespace Amara {
             return false;
         }
 
+        void update(double deltaTime) {
+            for (const auto& pair: controls) {
+                pair.second->update(deltaTime);
+            }
+        } 
+
         static void bind_lua(sol::state& lua) {
             Amara::Button::bind_lua(lua);
             Amara::Pointer::bind_lua(lua);
