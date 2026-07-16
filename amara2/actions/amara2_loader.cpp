@@ -235,14 +235,21 @@ namespace Amara {
                     }
                 }
                 loadProgress = (double)(totalTasks - tasks.size()) / (double)totalTasks;
-                if (funcs.hasFunction("onLoadProgress")) {
-                    funcs.callFunction(actor, "onLoadProgress", loadProgress);
+                if (funcs.hasFunction("onProgress")) {
+                    funcs.callFunction(actor, "onProgress", loadProgress);
                 }
             }
         }
 
         void onLoadProgress(sol::function callback) {
-            funcs.setFunction(nodeID, "onLoadProgress", callback);
+            funcs.setFunction(nodeID, "onProgress", callback);
+        }
+
+        void shuffle() {
+            std::random_device rd;
+            std::mt19937 g(rd());
+
+            std::shuffle(tasks.begin(), tasks.end(), g);
         }
 
         virtual sol::object complete() override {
@@ -270,7 +277,19 @@ namespace Amara {
                 "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; }),
                 "loadProgress", sol::readonly(&Loader::loadProgress),
                 "totalTasks", sol::readonly(&Loader::totalTasks),
-                "onLoadProgress", &Loader::onLoadProgress
+                "onProgress", sol::property(
+                    [] (Amara::Loader& loader) {
+                        return loader.funcs.getFunction("onProgress");
+                    },
+                    [] (Amara::Loader& loader, sol::object func) {
+                        if (!func.is<sol::object>()) {
+                            fatal_error("Error: Loader onProgress requires a function.");
+                            return;
+                        }
+                        loader.onLoadProgress(func.as<sol::function>());
+                    }
+                ),
+                "shuffle", &Loader::shuffle
             );
             
             sol::usertype<Node> node_type = lua["Node"];

@@ -182,7 +182,7 @@ namespace Amara {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
                     if (gameProps->system->exists(filePath)) {
                         std::string source = readShader(filePath, ShaderTypeEnum::Compute);
-                        shaderID = compileGLShader("", source, ShaderTypeEnum::Compute);
+                        shaderID = compileGLShader(shader_key, source, ShaderTypeEnum::Compute);
                         temp = true;
                     }
                     else {
@@ -212,7 +212,7 @@ namespace Amara {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
                     if (gameProps->system->exists(filePath)) {
                         std::string source = readShader(filePath, ShaderTypeEnum::Vertex);
-                        shaderID = compileGLShader("", source, ShaderTypeEnum::Vertex);
+                        shaderID = compileGLShader(shader_key, source, ShaderTypeEnum::Vertex);
                         temp = true;
                     }
                     else {
@@ -243,7 +243,7 @@ namespace Amara {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
                     if (gameProps->system->exists(filePath)) {
                         std::string source = readShader(filePath, ShaderTypeEnum::Fragment);
-                        shaderID = compileGLShader("", source, ShaderTypeEnum::Fragment);
+                        shaderID = compileGLShader(shader_key, source, ShaderTypeEnum::Fragment);
                         temp = true;
                     }
                     else {
@@ -280,7 +280,7 @@ namespace Amara {
                     std::string filePath = gameProps->system->getAssetPath(shader_key);
                     if (gameProps->system->exists(filePath)) {
                         std::string source = readShader(filePath, type);
-                        shaderID = compileGLShader("", source, type);
+                        shaderID = compileGLShader(shader_key, source, type);
                     }
                     else {
                         fatal_error("Error: Shader not found: ", shader_key);
