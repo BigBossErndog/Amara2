@@ -22,6 +22,7 @@ namespace Amara {
         std::vector<LoadTask> tasks;
 
         int loadRate = 0;
+        double loadTick = 0;
         int totalTasks = 0;
         int maxFailAttempts = 1;
 
@@ -30,6 +31,10 @@ namespace Amara {
         bool replaceExisting = true;
 
         bool queue_empty = true;
+
+        Uint64 last_tick = 0;
+        Uint64 freq = SDL_GetPerformanceFrequency();
+        double elapsedTime = 0;
 
         Loader(): Amara::Action() {
             set_base_node_id("Loader");
@@ -192,11 +197,16 @@ namespace Amara {
         }
 
         void queueTask(const LoadTask& task) {
-            if (loadRate > 0) {
+            if (loadRate > 0 || loadTick > 0) {
                 tasks.push_back(task);
                 queue_empty = false;
             }
             else processTask(task);
+        }
+
+        virtual void prepare() {
+            Amara::Action::prepare();
+            last_tick = SDL_GetPerformanceCounter();
         }
         
         virtual void act(double deltaTime) override {
@@ -233,12 +243,22 @@ namespace Amara {
                     if (loadRate > 0 && processedTasks >= loadRate) {
                         break;
                     }
+                    if (loadTick > 0) {
+                        SDL_GetPerformanceCounter();
+                        elapsedTime = (double)(SDL_GetPerformanceCounter() - last_tick) / (double)freq;
+
+                        if (elapsedTime >= 1.0 / loadTick) {
+                            break;
+                        }
+                    }
                 }
                 loadProgress = (double)(totalTasks - tasks.size()) / (double)totalTasks;
                 if (funcs.hasFunction("onProgress")) {
                     funcs.callFunction(actor, "onProgress", loadProgress);
                 }
             }
+
+            last_tick = SDL_GetPerformanceCounter();
         }
 
         void onLoadProgress(sol::function callback) {
@@ -274,6 +294,7 @@ namespace Amara {
                 "shaderProgram", &Loader::shaderProgram,
                 "audio", &Loader::audio,
                 "loadRate", sol::property([](Amara::Loader& t) -> int { return t.loadRate; }, [](Amara::Loader& t, int v) { t.loadRate = v; }),
+                "loadTick", sol::property([](Amara::Loader& t) -> double { return t.loadTick; }, [](Amara::Loader& t, double v) { t.loadTick = v; }),
                 "maxFailAttempts", sol::property([](Amara::Loader& t) -> int { return t.maxFailAttempts; }, [](Amara::Loader& t, int v) { t.maxFailAttempts = v; }),
                 "loadProgress", sol::readonly(&Loader::loadProgress),
                 "totalTasks", sol::readonly(&Loader::totalTasks),
