@@ -5,7 +5,7 @@ Built in C++ using SDL3, with exports to Windows and Android and the web.
 
 *Note: Amara2 build is currently available for Windows. Sorry to Mac users, I don't have a Mac. I plan to support MacOS in the future. For Linux, clone the repo and run the build.sh shell script.*
 
-[Click here for the latest release.](https://github.com/BigBossErndog/Amara2/releases)
+[Click here to download the latest release.](https://github.com/BigBossErndog/Amara2/releases)
 
 [Click here to play a game made using Amara2!](https://ernest-placido.itch.io/pry-into-the-stark-morn)
 
