@@ -14,6 +14,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
                 self.get.htmlName = projectData["html-name"]
             end
         end
+        self.get.projectData = projectData
 
         if (not self.get.htmlName) and projectData["project-name"] then
             self.get.htmlName = projectData["project-name"]
@@ -301,7 +302,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         self.world.forcedClickThrough = true
         self.world:hideWindow()
 
-        local buildDir = System:join(self.get.projectPath, "build", "windows")
+        local buildDir = System:join(self.get.projectPath, "build", "web")
         local errorOutputPath = System:join(buildDir, "build_error.txt")
 
         if exitCode == 0 then

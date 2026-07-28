@@ -218,6 +218,7 @@ namespace Amara {
             if (tasks.size() == 0) complete();
             else if (has_started) {
                 int processedTasks = 0;
+                double load_tick_time = 1.0 / loadTick;
 
                 for (auto it = tasks.begin(); it != tasks.end();) {
                     LoadTask& task = *it;
@@ -247,7 +248,7 @@ namespace Amara {
                         SDL_GetPerformanceCounter();
                         elapsedTime = (double)(SDL_GetPerformanceCounter() - last_tick) / (double)freq;
 
-                        if (elapsedTime >= 1.0 / loadTick) {
+                        if (elapsedTime >= load_tick_time) {
                             break;
                         }
                     }
@@ -266,9 +267,7 @@ namespace Amara {
         }
 
         void shuffle() {
-            std::random_device rd;
-            std::mt19937 g(rd());
-
+            static std::mt19937 g(std::random_device{}());
             std::shuffle(tasks.begin(), tasks.end(), g);
         }
 

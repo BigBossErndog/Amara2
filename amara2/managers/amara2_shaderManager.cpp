@@ -92,40 +92,56 @@ namespace Amara {
             if (!String::startsWith(source, "#version")) {
                 
                 #if defined(__ANDROID__) || defined(__IPHONEOS__)
-                    if (type == ShaderTypeEnum::Compute) {
-                        versionHeader = "#version 310 es\n";
-                    } 
-                    else if (type == ShaderTypeEnum::Geometry || 
-                            type == ShaderTypeEnum::TessControl || 
-                            type == ShaderTypeEnum::TessEvaluation) {
-                        versionHeader = "#version 320 es\n";
-                    } 
-                    else {
-                        versionHeader = "#version 300 es\n";
-                        if (type == ShaderTypeEnum::Fragment) {
-                            versionHeader += "precision highp float;\n";
-                        }
-                        if (type == ShaderTypeEnum::Vertex) {
-                            versionHeader += "precision highp float;\n";
-                        }
-                    }
-
-                #elif defined(__APPLE__)
-                    versionHeader = "#version 410 core\n";
-
-                #else
-                    if (type == ShaderTypeEnum::Compute || 
+                if (type == ShaderTypeEnum::Compute) {
+                    versionHeader = "#version 310 es\n";
+                } 
+                else if (type == ShaderTypeEnum::Geometry || 
                         type == ShaderTypeEnum::TessControl || 
                         type == ShaderTypeEnum::TessEvaluation) {
-                        versionHeader = "#version 430 core\n";
-                    } 
-                    else if (type == ShaderTypeEnum::Geometry) {
-                        versionHeader = "#version 330 core\n"; 
-                    } 
-                    else {
-                        versionHeader = "#version 330 core\n";
+                    versionHeader = "#version 320 es\n";
+                } 
+                else {
+                    versionHeader = "#version 300 es\n";
+                    if (type == ShaderTypeEnum::Fragment) {
+                        versionHeader += "precision highp float;\n";
                     }
-                #endif
+                    if (type == ShaderTypeEnum::Vertex) {
+                        versionHeader += "precision highp float;\n";
+                    }
+                }
+
+            #elif defined(__EMSCRIPTEN__)
+                versionHeader = "#version 300 es\n";
+                if (type == ShaderTypeEnum::Fragment) {
+                    versionHeader += "precision highp float;\n";
+                }
+                if (type == ShaderTypeEnum::Vertex) {
+                    versionHeader += "precision highp float;\n";
+                }
+                if (type == ShaderTypeEnum::Compute || 
+                    type == ShaderTypeEnum::Geometry ||
+                    type == ShaderTypeEnum::TessControl ||
+                    type == ShaderTypeEnum::TessEvaluation) {
+                    fatal_error("Error: Shader type not supported on WebGL2/Emscripten target.");
+                    return 0;
+                }
+
+            #elif defined(__APPLE__)
+                versionHeader = "#version 410 core\n";
+
+            #else
+                if (type == ShaderTypeEnum::Compute || 
+                    type == ShaderTypeEnum::TessControl || 
+                    type == ShaderTypeEnum::TessEvaluation) {
+                    versionHeader = "#version 430 core\n";
+                } 
+                else if (type == ShaderTypeEnum::Geometry) {
+                    versionHeader = "#version 330 core\n"; 
+                } 
+                else {
+                    versionHeader = "#version 330 core\n";
+                }
+            #endif
 
                 if (!versionHeader.empty()) {
                     source.insert(0, versionHeader);
