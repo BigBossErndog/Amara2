@@ -202,6 +202,7 @@ namespace Amara {
         #ifdef AMARA_OPENGL
         void queue_texture_garbage(GLuint textureID);
         #endif
+        void clear_garbage();
 
         KeyboardManager* keyboard = nullptr;
         GamepadManager* gamepads = nullptr;

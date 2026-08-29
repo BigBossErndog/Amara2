@@ -138,7 +138,7 @@ namespace Amara {
             clearImmediately();
         }
     };
-
+    
     void GameProps::queue_garbage(Amara::Node* node, double expiration) {
         if (garbageCollector) garbageCollector->queue(node, expiration);
         else debug_log("Error: Garbage Collector has not been set up. Attempting to delete: ", *node);
@@ -153,4 +153,8 @@ namespace Amara {
         else debug_log("Error: Garbage Collector has not been set up. Attempting to delete GL texture.");
     }
     #endif
+    void GameProps::clear_garbage() {
+        if (garbageCollector) garbageCollector->clearImmediately();
+        else debug_log("Error: Garbage Collector has not been set up. Attempting to clear garbage.");
+    }
 }

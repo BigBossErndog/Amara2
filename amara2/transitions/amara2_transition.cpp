@@ -7,6 +7,7 @@ namespace Amara {
 
         bool destroy_past = true;
         bool just_deactivate = false;
+        bool clear_garbage = false;
 
         double interim = 0;
         
@@ -25,17 +26,20 @@ namespace Amara {
 
         virtual Amara::Node* configure(nlohmann::json config) override {
             if (json_has(config, "deactivate")) {
-                just_deactivate = json_extract(config, "deactivate");
+                just_deactivate = json_strict_extract<bool>(config, "deactivate");
                 destroy_past = !just_deactivate;
             }
             if (json_has(config, "interim")) {
-                interim = json_extract(config, "interim");
+                interim = json_strict_extract<double>(config, "interim");
             }
             if (json_has(config, "next")) {
                 if (config["next"].is_string()) {
                     next_key = json_extract(config, "next");
                     next_config = sol::make_object(gameProps->lua, sol::nil);
                 }
+            }
+            if (json_has(config, "clearGarbage")) {
+                clear_garbage = json_get<bool>(config, "clearGarbage");
             }
             return Amara::Action::configure(config);
         }
@@ -118,6 +122,10 @@ namespace Amara {
                     if (destroy_past) prev_parent->destroy();
                     else if (just_deactivate) prev_parent->deactivate();
                 }
+            }
+
+            if (clear_garbage) {
+                gameProps->clear_garbage();
             }
         }
 

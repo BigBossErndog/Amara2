@@ -305,11 +305,12 @@ namespace Amara {
                 else if (p.luatable[key].is<Color>()) {
                     Color minVal = min;
                     Color maxVal = max;
+                    double rand = lua_random(gameProps->lua);
                     return Color(
-                        ease(minVal.r, maxVal.r, lua_random(gameProps->lua)),
-                        ease(minVal.g, maxVal.g, lua_random(gameProps->lua)),
-                        ease(minVal.b, maxVal.b, lua_random(gameProps->lua)),
-                        ease(minVal.a, maxVal.a, lua_random(gameProps->lua))
+                        ease(minVal.r, maxVal.r, rand),
+                        ease(minVal.g, maxVal.g, rand),
+                        ease(minVal.b, maxVal.b, rand),
+                        ease(minVal.a, maxVal.a, rand)
                     ).toJSON();
                 }
             }
