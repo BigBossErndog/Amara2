@@ -199,6 +199,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "-Wl,/NOIMPLIB")
         table.insert(args, "-std=c++17")
         table.insert(args, "-O2")
+        table.insert(args, "--target=x86_64-pc-windows-msvc")
         
         -- table.insert(args, "-w")
         -- table.insert(args, "-Wall")
