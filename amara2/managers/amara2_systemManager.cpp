@@ -270,6 +270,83 @@ namespace Amara {
             return luaWriteFile(path, input, "");
         }
 
+        bool writeCSV(std::string path, sol::object input) {
+            std::string csvContent;
+
+            if (!input.valid() || !input.is<sol::table>()) {
+                fatal_error("Error: Invalid table provided for CSV writing.");
+                return false;
+            }
+
+            sol::table tbl = input.as<sol::table>();
+
+            auto escapeField = [](const std::string& field) -> std::string {
+                bool needsQuotes = field.find_first_of(",\"\r\n") != std::string::npos
+                                || (!field.empty() && (field.front() == ' ' || field.back() == ' '));
+                if (!needsQuotes) return field;
+
+                std::string out;
+                out.reserve(field.size() + 2);
+                out.push_back('"');
+                for (char c : field) {
+                    if (c == '"') out += "\"\"";
+                    else out.push_back(c);
+                }
+                out.push_back('"');
+                return out;
+            };
+
+            auto cellToString = [&](const sol::object& cell) -> std::string {
+                switch (cell.get_type()) {
+                    case sol::type::string:
+                        return escapeField(cell.as<std::string>());
+
+                    case sol::type::number: {
+                        if (cell.is<int64_t>()) {
+                            return std::to_string(cell.as<int64_t>());
+                        }
+                        char buf[64];
+                        std::snprintf(buf, sizeof(buf), "%.14g", cell.as<double>());
+                        return buf;
+                    }
+
+                    case sol::type::boolean:
+                        return cell.as<bool>() ? "true" : "false";
+
+                    default:
+                        return "";
+                }
+            };
+
+            const size_t rowCount = tbl.size();
+            size_t colCount = 0;
+
+            // Find the widest row so short rows can be padded.
+            for (size_t r = 1; r <= rowCount; ++r) {
+                sol::object rowObj = tbl[r];
+                if (!rowObj.is<sol::table>()) {
+                    fatal_error("Error: Row " + std::to_string(r) + " is not a table.");
+                    return false;
+                }
+                sol::table row = rowObj.as<sol::table>();
+                colCount = std::max(colCount, static_cast<size_t>(row.size()));
+            }
+
+            // Build the CSV text
+            for (size_t r = 1; r <= rowCount; ++r) {
+                sol::table row = tbl[r];
+
+                for (size_t c = 1; c <= colCount; ++c) {
+                    if (c > 1) csvContent.push_back(',');
+                    sol::object cell = row[c];
+                    csvContent += cellToString(cell);
+                }
+                csvContent += "\r\n";
+            }
+
+            return writeFile(path, csvContent);
+        }
+
         bool encryptFile(std::string path, std::string dest, std::string encryptionKey) {
             std::string input = readFile(path);
             return writeFile(dest, input, encryptionKey);
