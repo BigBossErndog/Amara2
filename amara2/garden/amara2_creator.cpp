@@ -168,11 +168,6 @@ namespace Amara {
             if (config.is<sol::table>()) {
                 new_world->luaConfigure(config);
             }
-
-            if (currentDemiurge && !currentDemiurge->paused) {
-                new_world->demiurge = currentDemiurge;
-                currentDemiurge->addWorld(new_world);
-            }
             
             new_world->preload();
             if (!new_world->destroyed && new_world->finishedLoading()) {
@@ -231,14 +226,15 @@ namespace Amara {
             return new_demiurge;
         }
 
-        void startDemiurgicUniverse() {
+        void createDemiurgicUniverse() {
             destroyDemiurgicUniverse();
 
             // Causes all future created worlds to be isolated.
             currentDemiurge = createDemiurge();
+            gameProps.lua["Demiurge"] = currentDemiurge->luaobject;
         }
-        void startDemiurgicUniverse(std::string path) {
-            startDemiurgicUniverse();
+        void createDemiurgicUniverse(std::string path) {
+            createDemiurgicUniverse();
             currentDemiurge->base_dir_path = path;
         }
 
@@ -248,6 +244,7 @@ namespace Amara {
                 delete currentDemiurge;
             }
             currentDemiurge = nullptr;
+            gameProps.lua["Demiurge"] = sol::nil;
         }
 
         void pauseDemiurgicUniverse() {
@@ -375,7 +372,7 @@ namespace Amara {
 
                     gameProps.lua_exception_thrown = false;
                     
-                    if (currentWorld->destroyed || currentWorld->paused) {
+                    if (currentWorld->destroyed || currentWorld->paused || (currentWorld->demiurge && currentWorld->demiurge->paused)) {
                         continue;
                     }
                     if (currentWorld->pauseOnce) {
@@ -484,15 +481,11 @@ namespace Amara {
                 sol::base_classes, sol::bases<Demiurge>(),
                 "worlds", sol::property([](Creator& self) { return sol::as_table(self.worlds); }),
                 "new_worlds", sol::property([](Creator& self) { return sol::as_table(self.new_worlds); }),
-                "startDemiurgicUniverse", sol::overload(
-                    sol::resolve<void(std::string)>( &Creator::startDemiurgicUniverse ),
-                    sol::resolve<void()>( &Creator::startDemiurgicUniverse )
+                "createDemiurge", sol::overload(
+                    sol::resolve<void(std::string)>( &Creator::createDemiurgicUniverse ),
+                    sol::resolve<void()>( &Creator::createDemiurgicUniverse )
                 ),
-                "makePresenceKnown", &Creator::makePresenceKnown,
-                "newDemiurgicUniverse", &Creator::newDemiurgicUniverse,
-                "destroyDemiurgicUniverse", &Creator::destroyDemiurgicUniverse,
-                "pauseDemuirgicUniverse", &Creator::pauseDemiurgicUniverse,
-                "resumeDemiurgicUniverse", &Creator::resumeDemiurgicUniverse
+                "destroyDemiurge", &Creator::destroyDemiurgicUniverse
             );
         }
     };

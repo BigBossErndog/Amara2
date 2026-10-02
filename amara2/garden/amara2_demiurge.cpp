@@ -22,6 +22,10 @@ namespace Amara {
         GameProps* gameProps = nullptr;
         sol::object luaobject;
 
+        sol::function onError;
+
+        int worldDepth = 0;
+
         Demiurge() {}
 
         virtual void override_existence() {
@@ -102,21 +106,12 @@ namespace Amara {
             game.demiurgic = demiurgic;
         }
 
-        void makePresenceKnown() {
-            override_existence();
-        }
-
         virtual World* createWorld(sol::object config);
         virtual World* createWorld();
 
         void destroyAllWorlds() {
             for (Amara::World* world: worlds) world->destroy();
             worlds.clear();
-        }
-
-        virtual void newDemiurgicUniverse() {
-            debug_log("Note: Demiurgic presence. Universe creation disabled.");
-            debug_log("Control will be handed over in target builds.");
         }
 
         void destroy() {
@@ -141,7 +136,16 @@ namespace Amara {
                     else world = d.createWorld();
                     if (world) return world->get_lua_object();
                     return sol::nil;
-                }
+                },
+                "worldDepth", &Demiurge::worldDepth,
+                "onError", &Demiurge::onError,
+                "pause", [](Amara::Demiurge& d) {
+                    d.paused = true;
+                },
+                "resume", [](Amara::Demiurge& d) {
+                    d.paused = false;
+                },
+                "paused", &Demiurge::paused
             );
         }
     };
