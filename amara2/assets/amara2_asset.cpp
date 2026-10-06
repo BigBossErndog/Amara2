@@ -1,7 +1,10 @@
 namespace Amara {
+    class AssetManager;
+
     class Asset {
     public:
         Amara::GameProps* gameProps = nullptr;
+        Amara::AssetManager* parent = nullptr;
 
         AssetEnum type = AssetEnum::None;
         std::string typeKey = "Base Asset";

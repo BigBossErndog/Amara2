@@ -15,7 +15,13 @@ namespace Amara {
         std::vector<World*> worlds;
 
         bool demiurgic = true;
+        bool active = true;
         bool paused = false;
+
+        bool inheritAssets = false;
+
+        bool initialized = false;
+        bool destroyed = false;
 
         std::string base_dir_path;
 
@@ -106,20 +112,25 @@ namespace Amara {
             game.demiurgic = demiurgic;
         }
 
+        void luaConfigure(sol::object config_obj);
+
         virtual World* createWorld(sol::object config);
         virtual World* createWorld();
 
         void destroyAllWorlds() {
             for (Amara::World* world: worlds) world->destroy();
-            worlds.clear();
         }
 
         void destroy() {
+            if (destroyed) return;
+
             destroyAllWorlds();
             controls.clearAllSchemes();
             factory.clear();
             scripts.clear();
             unbind();
+
+            destroyed = true;
         }
 
         static void bind_lua(sol::state& lua) {
@@ -145,7 +156,10 @@ namespace Amara {
                 "resume", [](Amara::Demiurge& d) {
                     d.paused = false;
                 },
-                "paused", &Demiurge::paused
+                "paused", &Demiurge::paused,
+                "destroy", [](Amara::Demiurge& d) {
+                    d.destroy();
+                }
             );
         }
     };

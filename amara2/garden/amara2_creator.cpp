@@ -220,22 +220,52 @@ namespace Amara {
         }
 
         Amara::Demiurge* createDemiurge() {
+            if (destroyed) return nullptr;
+
             Amara::Demiurge* new_demiurge = new Demiurge();
             new_demiurge->setup(&gameProps);
             new_demiurge->true_creator = this;
             return new_demiurge;
         }
 
-        void createDemiurgicUniverse() {
+        sol::object createDemiurgicUniverse() {
+            if (destroyed) return sol::nil;
             destroyDemiurgicUniverse();
-
-            // Causes all future created worlds to be isolated.
             currentDemiurge = createDemiurge();
             gameProps.lua["Demiurge"] = currentDemiurge->luaobject;
+            return currentDemiurge->luaobject;
         }
-        void createDemiurgicUniverse(std::string path) {
+        sol::object createDemiurgicUniverse(sol::object config_obj) {
+            if (destroyed) return sol::nil;
             createDemiurgicUniverse();
-            currentDemiurge->base_dir_path = path;
+            if (config_obj.is<sol::table>()) {
+                currentDemiurge->luaConfigure(config_obj);
+            }
+            if (!currentDemiurge->base_dir_path.empty()) {
+                std::string indexPath = currentDemiurge->system.getScriptPath("index");
+                if (currentDemiurge->system.exists(indexPath)) {
+                    try {
+                        currentDemiurge->scripts.run(indexPath);
+                    }
+                    catch (const sol::error& e) {
+                        error_log(e.what());
+                        gameProps.breakWorld();
+                        if (currentDemiurge->onError.valid()) {
+                            std::string error_msg = e.what();
+                            currentDemiurge->onError(error_msg);
+                        }
+                    }
+                    catch (std::exception& e) {
+                        error_log(e.what());
+                        gameProps.breakWorld();
+                        if (currentDemiurge->onError.valid()) {
+                            std::string error_msg = e.what();
+                            currentDemiurge->onError(error_msg);
+                        }
+                    }
+                }
+            }
+            return currentDemiurge->luaobject;
         }
 
         void destroyDemiurgicUniverse() {
@@ -327,6 +357,8 @@ namespace Amara {
             freq = SDL_GetPerformanceFrequency();
             frameTarget = 0;
             elapsedTime = 0;
+
+            initialized = true;
     
             #ifdef __EMSCRIPTEN__
                 emscripten_run_script("amara2Ready();");
@@ -365,6 +397,10 @@ namespace Amara {
             bool vsync = false;
 
             if (!eventHandler.logicBlocking) {
+                if (currentDemiurge && !currentDemiurge->paused && currentDemiurge->active) {
+                    currentDemiurge->override_existence();
+                }
+
                 copy_worlds_list = worlds;
                 for (auto it = copy_worlds_list.begin(); it != copy_worlds_list.end(); it++) {
                     currentWorld = *it;
@@ -372,7 +408,10 @@ namespace Amara {
 
                     gameProps.lua_exception_thrown = false;
                     
-                    if (currentWorld->destroyed || currentWorld->paused || (currentWorld->demiurge && currentWorld->demiurge->paused)) {
+                    if (currentWorld->destroyed || currentWorld->paused) {
+                        continue;
+                    }
+                    if (currentWorld->demiurge && (currentWorld->demiurge->paused || !currentWorld->demiurge->active)) {
                         continue;
                     }
                     if (currentWorld->pauseOnce) {
@@ -385,16 +424,25 @@ namespace Amara {
                     catch (const sol::error& e) {
                         error_log(e.what());
                         gameProps.breakWorld();
+                        if (currentWorld->demiurge && currentWorld->demiurge->onError.valid()) {
+                            std::string error_msg = e.what();
+                            currentWorld->demiurge->onError(error_msg);
+                        }
                     }
                     catch (std::exception& e) {
                         error_log(e.what());
                         gameProps.breakWorld();
+                        if (currentWorld->demiurge && currentWorld->demiurge->onError.valid()) {
+                            std::string error_msg = e.what();
+                            currentWorld->demiurge->onError(error_msg);
+                        }
                     }
 
                     if (currentWorld->exception_thrown) {
                         currentWorld->destroy();
                     }
                 }
+                currentWorld = nullptr;
 
                 cleanDestroyedWorlds();
                 std::stable_sort(worlds.begin(), worlds.end(), sort_entities_by_depth());
@@ -402,6 +450,9 @@ namespace Amara {
                 for (auto it = worlds.begin(); it != worlds.end(); it++) {
                     currentWorld = *it;
                     if (currentWorld->headless) continue;
+                    if (currentWorld->demiurge && !currentWorld->demiurge->active) {
+                        continue;
+                    }
                     update_properties();
 
                     currentWorld->prepareRenderer();
@@ -411,10 +462,18 @@ namespace Amara {
                     catch (const sol::error& e) {
                         error_log(e.what());
                         gameProps.breakWorld();
+                        if (currentWorld->demiurge && currentWorld->demiurge->onError.valid()) {
+                            std::string error_msg = e.what();
+                            currentWorld->demiurge->onError(error_msg);
+                        }
                     }
                     catch(std::exception& e) {
                         error_log(e.what());
                         gameProps.breakWorld();
+                        if (currentWorld->demiurge && currentWorld->demiurge->onError.valid()) {
+                            std::string error_msg = e.what();
+                            currentWorld->demiurge->onError(error_msg);
+                        }
                     }
                     if (currentWorld->vsync != 0) vsync = true;
                 }
@@ -482,21 +541,57 @@ namespace Amara {
                 "worlds", sol::property([](Creator& self) { return sol::as_table(self.worlds); }),
                 "new_worlds", sol::property([](Creator& self) { return sol::as_table(self.new_worlds); }),
                 "createDemiurge", sol::overload(
-                    sol::resolve<void(std::string)>( &Creator::createDemiurgicUniverse ),
-                    sol::resolve<void()>( &Creator::createDemiurgicUniverse )
+                    sol::resolve<sol::object(sol::object)>( &Creator::createDemiurgicUniverse ),
+                    sol::resolve<sol::object()>( &Creator::createDemiurgicUniverse )
                 ),
-                "destroyDemiurge", &Creator::destroyDemiurgicUniverse
+                "destroy", [](Creator& self) {
+                    self.destroyAllWorlds();
+                }
             );
         }
     };
     Creator* Creator::true_creator = nullptr;
 
     World* Demiurge::createWorld(sol::object config) {
-        if (true_creator) return true_creator->createWorld(config);
+        if (destroyed) return nullptr;
+        if (true_creator) {
+            World* world = true_creator->createWorld(config);
+            if (inheritAssets && true_creator->currentWorld) {
+                if (world && world != true_creator->currentWorld) {
+                    world->inherit(true_creator->currentWorld);
+                }
+
+            }
+            return world;
+        }
         return nullptr;
     };
     World* Demiurge::createWorld() {
-        if (true_creator) return true_creator->createWorld();
+        if (destroyed) return nullptr;
+        if (true_creator) {
+            World* world = true_creator->createWorld();
+            if (inheritAssets && true_creator->currentWorld) {
+                if (world && world != true_creator->currentWorld) {
+                    world->inherit(true_creator->currentWorld);
+                }
+            }
+            return world;
+        }
         return nullptr;
+    };
+    void Demiurge::luaConfigure(sol::object config_obj) {
+        if (config_obj.is<sol::table>()) {
+            sol::table config = config_obj.as<sol::table>();
+            if (config["path"].valid()) {
+                base_dir_path = config["path"];
+                system.setBasePath(base_dir_path);
+            }
+            if (config["onError"].valid() && config["onError"].is<sol::function>()) {
+                onError = config["onError"];
+            }
+            if (config["inheritAssets"].valid() && config["inheritAssets"].is<bool>()) {
+                inheritAssets = config["inheritAssets"];
+            }
+        }
     };
 }

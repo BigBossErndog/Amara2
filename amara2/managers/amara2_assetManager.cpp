@@ -49,21 +49,42 @@ namespace Amara {
 
         void add(std::string key, Amara::Asset* asset) {
             if (has(key) && get(key) != asset) {
-                destroyAsset(get(key));
+                removeAsset(key);
+            }
+            if (!asset->parent) {
+                asset->parent = this;
             }
             asset->key = key;
             assets[key] = asset;
         }
 
         void removeAsset(std::string key) {
-            if (has(key)) destroyAsset(assets[key]);
-            assets.erase(key);
+            Amara::Asset* asset = get(key);
+            if (asset) {
+                if (asset->parent == this) {
+                    destroyAsset(asset);
+                }
+                assets.erase(key);
+            }
         }
 
         void destroyAsset(Amara::Asset* asset) {
             if (asset->destroyed) return;
             asset->destroy();
             gameProps->queue_asset_garbage(asset);
+        }
+        
+        void insertAsset(std::string key, Amara::Asset* asset) {
+            if (has(key)) {
+                removeAsset(key);
+            }
+            add(key, asset);
+        }
+        void inheritAssets(Amara::AssetManager* other) {
+            for (auto it = other->assets.begin(); it != other->assets.end(); it++) {
+                Amara::Asset* asset = it->second;
+                add(it->first, asset);
+            }
         }
 
         void createTexture(std::string key, sol::table luaconfig);
@@ -174,7 +195,7 @@ namespace Amara {
         void clear() {
             for (auto it = assets.begin(); it != assets.end(); it++) {
                 Amara::Asset* a = it->second;
-                destroyAsset(a);
+                if (a->parent == this) destroyAsset(a);
             }
             assets.clear();
         }

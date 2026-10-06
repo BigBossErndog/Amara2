@@ -122,6 +122,14 @@ namespace Amara {
             
             Amara::Node::init();
         }
+        
+        void inherit(Amara::World* other) {
+            if (other == nullptr) return;
+            // inputManager.inherit(&other->inputManager);
+            assets.inheritAssets(&other->assets);
+            animations.textureMap = other->animations.textureMap;
+            // shaders.inherit(&other->shaders);
+        }
 
         void update_window() {
             if (window != nullptr) {
