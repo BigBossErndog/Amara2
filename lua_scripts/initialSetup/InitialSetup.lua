@@ -9,7 +9,7 @@ end
 
 Scripts:run("initialSetup/CheckCodeEditors")
 
-if System:VSBuildToolsInstalled() then
+if System:installedVSBuildTools() then
     Settings.vsBuildToolsInstalled = true
 end
 

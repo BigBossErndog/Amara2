@@ -19,7 +19,7 @@ namespace Amara {
         bool paused = false;
 
         bool inheritAssets = false;
-
+        
         bool initialized = false;
         bool destroyed = false;
 

@@ -34,7 +34,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
         self.get.projectData = projectData
 
-        local sdk = System:LocateAndroidSDK()
+        local sdk = System:locateAndroidSDK()
 
         local buildDir = System:join(self.get.projectPath, "build", "android")
         self.get.buildDir = buildDir

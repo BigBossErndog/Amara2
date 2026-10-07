@@ -102,7 +102,7 @@ function ParseAssets(path)
 end
 ParseAssets(System:join(base_path, "assets"))
 
-System:InjectIntoAPK(
+System:injectIntoAPK(
     System:join(props.android_package, "base.apk"),
     base_path,
     to_inject

@@ -27,7 +27,7 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
             id = "buildProjectButton",
             text = "label_continue",
             onPress = function()
-                if System:VSBuildToolsInstalled() then
+                if System:installedVSBuildTools() then
                     self.func:continueBuilding()
                 else
                     self.func:closeWindow(function(win)

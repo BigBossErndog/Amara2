@@ -455,7 +455,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
             elseif buildTest then
                 local newWindow
 
-                if (not settings.vsBuildToolsInstalled) and (not System:VSBuildToolsInstalled()) then
+                if (not settings.vsBuildToolsInstalled) and (not System:installedVSBuildTools()) then
                     newWindow = self.world.get.windows:createChild("VSBuildToolsInstaller", {
                         projectPath = self.get.projectPath,
                         buildTest = true

@@ -285,7 +285,12 @@ namespace Amara {
                         std::string key = it.first.as<std::string>();
                         sol::function func = val.as<sol::function>();
                         
-                        funcs.setFunction(nodeID, key, func);
+                        if (String::startsWith(key, "debug_")) {
+                            funcs.setFunction("debug", key.substr(std::string("_debug").length()), func);
+                        }
+                        else {
+                            funcs.setFunction(nodeID, key, func);
+                        }
                         remove_keys.push_back(key);
                     }
                     else if (val.is<sol::userdata>()) {

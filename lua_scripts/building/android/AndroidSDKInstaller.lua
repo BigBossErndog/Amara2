@@ -38,7 +38,7 @@ Nodes:define("AndroidSDKInstaller", "UIWindow", {
             id = "buildProjectButton",
             text = "label_continue",
             onPress = function()
-                local sdk = System:LocateAndroidSDK()
+                local sdk = System:locateAndroidSDK()
                 if sdk then
                     if sdk.ndk then
                         self.func:closeWindow(function(win)

@@ -1620,7 +1620,7 @@ namespace Amara {
         #endif
 
         #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
-        bool VSBuildToolsInstalled() {
+        bool installedVSBuildTools() {
             const std::string vswherePath =
                 "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe\"";
             const std::string command = vswherePath +
@@ -1649,7 +1649,7 @@ namespace Amara {
             return !result.empty();
         }
 
-        bool WriteICO(const std::string& input_path, const std::string& output_path) {
+        bool writeICO(const std::string& input_path, const std::string& output_path) {
             int width, height, channels;
             
             SDL_IOStream *rw = SDL_IOFromFile(input_path.c_str(), "rb");
@@ -1758,7 +1758,150 @@ namespace Amara {
         #endif
 
         #if defined(AMARA_ENGINE_TOOLS)
-        sol::table locate_android_sdk() {
+        sol::table locateWindowsSDK() {
+            #if !defined(_WIN32)
+            return sol::nil;
+            #else
+            namespace fs = std::filesystem;
+            std::error_code ec;
+
+            nlohmann::json result = nlohmann::json::object();
+
+            const char* programFiles    = std::getenv("ProgramFiles");
+            const char* programFilesX86 = std::getenv("ProgramFiles(x86)");
+
+            const std::string sep  = "\\";
+            const std::string host = "x64";
+            const std::string exe  = ".exe";
+
+            // ---- Visual Studio / MSVC ----
+            std::vector<fs::path> vsRoots;
+
+            if (const char* env = std::getenv("VSINSTALLDIR"))
+                vsRoots.push_back(fs::path(env));
+
+            // Layout: <ProgramFiles>\Microsoft Visual Studio\<year|version>\<edition>
+            for (const char* base : {programFiles, programFilesX86}) {
+                if (!base) continue;
+                fs::path vsBase = fs::path(base) / "Microsoft Visual Studio";
+                if (!fs::is_directory(vsBase, ec)) continue;
+
+                for (const auto& year : fs::directory_iterator(vsBase, ec)) {
+                    if (!year.is_directory()) continue;
+                    const std::string name = year.path().filename().string();
+                    if (name == "Installer" || name == "Shared") continue;
+
+                    for (const auto& edition : fs::directory_iterator(year.path(), ec)) {
+                        if (edition.is_directory())
+                            vsRoots.push_back(edition.path());
+                    }
+                }
+            }
+
+            // Pick the install with the newest toolset that actually contains cl.exe.
+            fs::path bestVs;
+            fs::path bestMsvc;
+            for (const auto& root : vsRoots) {
+                fs::path msvcBase = root / "VC" / "Tools" / "MSVC";
+                if (!fs::is_directory(msvcBase, ec)) continue;
+
+                for (const auto& entry : fs::directory_iterator(msvcBase, ec)) {
+                    if (!entry.is_directory()) continue;
+                    if (!fs::exists(entry.path() / "bin" / ("Host" + host) / host / ("cl" + exe), ec)) continue;
+
+                    if (entry.path().filename().string() > bestMsvc.filename().string()) {
+                        bestMsvc = entry.path();
+                        bestVs   = root;
+                    }
+                }
+            }
+
+            if (!bestMsvc.empty()) {
+                fs::path tc = bestMsvc / "bin" / ("Host" + host) / host;
+
+                result["vs"]            = bestVs.string();
+                result["msvc"]          = bestMsvc.string();
+                result["msvc_version"]  = bestMsvc.filename().string();
+                result["host"]          = host;
+                result["toolchains"]    = tc.string() + sep;
+                result["cl"]            = (tc / ("cl" + exe)).string();
+                result["link"]          = (tc / ("link" + exe)).string();
+                result["lib"]           = (tc / ("lib" + exe)).string();
+
+                if (fs::exists(tc / ("ml64" + exe), ec))
+                    result["ml64"] = (tc / ("ml64" + exe)).string();
+
+                fs::path msvcInclude = bestMsvc / "include";
+                fs::path msvcLib     = bestMsvc / "lib" / host;
+                if (fs::exists(msvcInclude, ec)) result["msvc_include"] = msvcInclude.string();
+                if (fs::exists(msvcLib, ec))     result["msvc_lib"]     = msvcLib.string();
+            }
+
+            // ---- Windows SDK ----
+            std::vector<fs::path> kitsCandidates;
+            if (const char* env = std::getenv("WindowsSdkDir"))
+                kitsCandidates.push_back(fs::path(env));
+            if (programFilesX86)
+                kitsCandidates.push_back(fs::path(programFilesX86) / "Windows Kits" / "10");
+            if (programFiles)
+                kitsCandidates.push_back(fs::path(programFiles) / "Windows Kits" / "10");
+
+            for (const auto& kits : kitsCandidates) {
+                fs::path binBase = kits / "bin";
+                if (!fs::is_directory(binBase, ec)) continue;
+
+                // Versioned directories look like "10.0.22621.0"; pick the newest with rc.exe.
+                fs::path bestSdk;
+                for (const auto& entry : fs::directory_iterator(binBase, ec)) {
+                    if (!entry.is_directory()) continue;
+                    const std::string name = entry.path().filename().string();
+                    if (name.rfind("10.", 0) != 0) continue;
+                    if (!fs::exists(entry.path() / host / ("rc" + exe), ec)) continue;
+
+                    if (entry.path().filename().string() > bestSdk.filename().string())
+                        bestSdk = entry.path();
+                }
+
+                if (bestSdk.empty()) continue;
+
+                const std::string sdkVersion = bestSdk.filename().string();
+                fs::path sdkBin = bestSdk / host;
+
+                result["sdk"]         = kits.string();
+                result["sdk_version"] = sdkVersion;
+                result["sdk_bin"]     = sdkBin.string() + sep;
+                result["rc"]          = (sdkBin / ("rc" + exe)).string();
+
+                if (fs::exists(sdkBin / ("mt" + exe), ec))
+                    result["mt"] = (sdkBin / ("mt" + exe)).string();
+                if (fs::exists(sdkBin / ("signtool" + exe), ec))
+                    result["signtool"] = (sdkBin / ("signtool" + exe)).string();
+
+                // Headers
+                for (const char* part : {"ucrt", "um", "shared", "winrt"}) {
+                    fs::path inc = kits / "Include" / sdkVersion / part;
+                    if (fs::exists(inc, ec))
+                        result[std::string("sdk_include_") + part] = inc.string();
+                }
+
+                // Import libraries
+                for (const char* part : {"ucrt", "um"}) {
+                    fs::path lib = kits / "Lib" / sdkVersion / part / host;
+                    if (fs::exists(lib, ec))
+                        result[std::string("sdk_lib_") + part] = lib.string();
+                }
+
+                break;
+            }
+
+            if (!result.contains("cl") && !result.contains("rc"))
+                return sol::nil;
+
+            return json_to_lua(gameProps->lua, result);
+            #endif
+        }
+        
+        sol::table locateAndroidSDK() {
             nlohmann::json result = nlohmann::json::object();
 
             std::vector<std::string> candidates;
@@ -2042,7 +2185,7 @@ namespace Amara {
                             ext) != STORE_EXTENSIONS.end();
         }
 
-        bool inject_into_apk(const std::filesystem::path& apk_path,
+        bool injectIntoAPK(const std::filesystem::path& apk_path,
                      const std::filesystem::path& base_path,
                      const nlohmann::json& files)
         {
@@ -2125,8 +2268,8 @@ namespace Amara {
             debug_log("APK injection complete: ", apk_path.string());
             return true;
         }
-        bool lua_inject_into_apk(const std::string& apk_path, const std::string& base_path, sol::object files) {
-            return inject_into_apk(apk_path, base_path, lua_to_json(files));
+        bool luaInjectIntoAPK(const std::string& apk_path, const std::string& base_path, sol::object files) {
+            return injectIntoAPK(apk_path, base_path, lua_to_json(files));
         }
         #endif
 
@@ -2283,12 +2426,13 @@ namespace Amara {
                 "downloadFile", &SystemManager::downloadFile,
                 #endif
                 #if defined(_WIN32) && defined(AMARA_ENGINE_TOOLS)
-                "VSBuildToolsInstalled", &SystemManager::VSBuildToolsInstalled,
-                "WriteICO", &SystemManager::WriteICO,
+                "installedVSBuildTools", &SystemManager::installedVSBuildTools,
+                "locateWindowsSDK", &SystemManager::locateWindowsSDK,
+                "writeICO", &SystemManager::writeICO,
                 #endif
                 #if defined(AMARA_ENGINE_TOOLS)
-                "LocateAndroidSDK", &SystemManager::locate_android_sdk,
-                "InjectIntoAPK", &SystemManager::lua_inject_into_apk,
+                "locateAndroidSDK", &SystemManager::locateAndroidSDK,
+                "injectIntoAPK", &SystemManager::luaInjectIntoAPK,
                 #endif
                 "programInstalled", &SystemManager::programInstalled,
                 "throwError", sol::overload(

@@ -290,7 +290,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.world:hideWindow()
 
         if self.get.iconPath then
-            System:WriteICO(self.get.iconPath, self.get.iconDest)
+            System:writeICO(self.get.iconPath, self.get.iconDest)
             System:writeFile(self.get.resFile, "1 ICON \"" .. self.get.iconDest .. "\"\n")
             
             local command = string.format("%s \"%s\"", System:join(self.get.clangLLVMPath, "bin/llvm-rc"), self.get.resFile)
@@ -416,7 +416,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             
             self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
 
-            if not System:VSBuildToolsInstalled() then
+            if not System:installedVSBuildTools() then
                 self.get.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
             end
         end

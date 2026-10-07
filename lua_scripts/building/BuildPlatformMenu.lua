@@ -102,7 +102,7 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
             local platform = self.get.platformMenu.get.selected
 
             if platform == "label_platform_windows" then
-                if (not settings.vsBuildToolsInstalled) and (not System:VSBuildToolsInstalled()) then
+                if (not settings.vsBuildToolsInstalled) and (not System:installedVSBuildTools()) then
                     newWindow = self.world.get.windows:createChild("VSBuildToolsInstaller", {
                         projectPath = self.get.projectPath
                     })
@@ -123,7 +123,7 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
                 newWindow.func:openWindow()
                 
             elseif platform == "label_platform_android" then
-                local android_sdk = System:LocateAndroidSDK()
+                local android_sdk = System:locateAndroidSDK()
                 if not android_sdk or not android_sdk.ndk then
                     newWindow = self.world.get.windows:createChild("AndroidSDKInstaller", {
                         projectPath = self.get.projectPath,

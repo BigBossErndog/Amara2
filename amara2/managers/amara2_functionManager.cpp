@@ -148,7 +148,18 @@ namespace Amara {
             return sol::nil;
         }
 
+        bool hasDebugFunction(std::string funcName) {
+            if (!gameProps->game->debugging) return false;
+            if (funcMap.find("debug") != funcMap.end() && funcMap["debug"].hasFunction(funcName)) {
+                return true;
+            }
+            return false;
+        }
+
         bool hasFunction(std::string className, std::string funcName) {
+            if (hasDebugFunction(funcName)) {
+                return true;
+            }
             if (funcMap.find(className) != funcMap.end() && funcMap[className].hasFunction(funcName)) {
                 return true;
             }
