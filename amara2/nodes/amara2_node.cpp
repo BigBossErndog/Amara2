@@ -286,7 +286,9 @@ namespace Amara {
                         sol::function func = val.as<sol::function>();
                         
                         if (String::startsWith(key, "debug_")) {
-                            funcs.setFunction("debug", key.substr(std::string("_debug").length()), func);
+                            if (gameProps->game->debugging) {
+                                funcs.setFunction("debug", key.substr(std::string("_debug").length()), func);
+                            }
                         }
                         else {
                             funcs.setFunction(nodeID, key, func);
@@ -978,6 +980,9 @@ namespace Amara {
                 "get", sol::readonly(&Amara::Node::proxy),
                 "func", sol::property([](Node& e) {
                     return e.funcs.getClassTable(e.nodeID);
+                }),
+                "debug", sol::property([](Node& e) {
+                    return e.funcs.getClassTable("debug");
                 }),
                 "getClass", &Node::getClassFunctions,
                 "classes", &Node::funcs,

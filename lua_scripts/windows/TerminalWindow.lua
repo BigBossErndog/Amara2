@@ -266,6 +266,11 @@ Nodes:define("TerminalWindow", "UIWindow", {
             end
             item.text = string.gsub(item.text, "%[string ", "[")
             ret = true
+        elseif string.starts_with(msg, "C stack overflow") then
+            item.text = "Error: Stack overflow. Check for infinite loops or recursion."
+            item.color = Colors.Red
+            self.get.allowTrace = true
+            ret = true
         elseif string.starts_with(msg, "caught (...) exception") then
             item.text = "Error: Invalid assignment or function call."
             item.color = Colors.Red
@@ -354,6 +359,9 @@ Nodes:define("TerminalWindow", "UIWindow", {
 
     pipeMessage = function(self, msg)
         if string.starts_with(msg, "stack traceback") or string.starts_with(msg, "\t[C]:") then
+            return;
+        end
+        if string.starts_with(msg, "\t...	(skipping") then
             return;
         end
         if string.starts_with(msg, "\t[") and not self.get.allowTrace then

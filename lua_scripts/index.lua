@@ -261,7 +261,7 @@ Creator:createWorld({
 
     checkBuildTools = function(self)
         if Game.platform == "windows" then
-            return System:installedVSBuildTools()
+            return System:VSBuildToolsInstalled()
         end
         return false
     end

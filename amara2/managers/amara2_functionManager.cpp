@@ -77,6 +77,12 @@ namespace Amara {
             gameProps = _gameProps;
             node = _node;
             owner_node = _node;
+
+            if (gameProps->game->debugging) {
+                funcMap["debug"] = FunctionMap(gameProps);
+                FunctionMap& debug_map = funcMap["debug"];
+                debug_map.createTable();
+            }
         }
 
         void registerClass(std::string className) {
@@ -86,7 +92,7 @@ namespace Amara {
             inheritance_map[className] = lastRegisteredClass;
             lastRegisteredClass = className;
         }
-
+        
         std::string owner_node_string();
 
         sol::function _create_wrapped_function(std::string class_name, std::string func_name) {
@@ -150,8 +156,8 @@ namespace Amara {
 
         bool hasDebugFunction(std::string funcName) {
             if (!gameProps->game->debugging) return false;
-            if (funcMap.find("debug") != funcMap.end() && funcMap["debug"].hasFunction(funcName)) {
-                return true;
+            if (funcMap.find("debug") != funcMap.end()) {
+                return funcMap["debug"].hasFunction(funcName);
             }
             return false;
         }
@@ -189,6 +195,11 @@ namespace Amara {
 
         template<typename... CallArgs>
         sol::object callFunction(std::string className, std::string funcName, CallArgs&&... args) {
+            if (gameProps->game->debugging && funcMap.find("debug") != funcMap.end() && funcMap["debug"].hasFunction(funcName)) {
+                Amara::Node* target_node = node;
+                node = owner_node;
+                return funcMap["debug"].callFunction(target_node, funcName, std::forward<CallArgs>(args)...);
+            }
             if (funcMap.find(className) != funcMap.end()) {
                 FunctionMap& found_map = funcMap[className];
                 if (found_map.hasFunction(funcName)) {
