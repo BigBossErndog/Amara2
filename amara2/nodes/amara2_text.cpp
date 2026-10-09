@@ -236,7 +236,7 @@ namespace Amara {
                     sol::object result = gameProps->lua["table"]["to_string"](arg);
                     ss << "$" << result.as<std::string>();
                 }
-                else ss << lua_to_string(arg);
+                else ss << lua_to_string(arg.get<sol::object>());
             }
             setText(ss.str());
             return get_lua_object();
@@ -372,7 +372,7 @@ namespace Amara {
                                 throw std::runtime_error(std::string(err.what()));  
                             }
                             else {
-                                configure(lua_to_json(result));
+                                configure(lua_to_json(result.get<sol::object>()));
                             }
                         }
                         catch (const sol::error& e) {
@@ -573,9 +573,11 @@ namespace Amara {
         
         float setWidth(float _w) {
             scale.x = _w / static_cast<float>(textWidth);
+            return _w;
         }
         float setHeight(float _h) {
             scale.y = _h / static_cast<float>(textHeight);
+            return _h;
         }
 
         sol::object setManipulator(sol::function manipulator) {

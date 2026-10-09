@@ -64,6 +64,7 @@ namespace Amara {
         bool paused = false;
         bool visible = true;
         bool actuated = false;
+        bool sandboxed = false;
 
         bool pauseOnce = false;
 
@@ -141,6 +142,7 @@ namespace Amara {
                 { "paused", paused },
                 { "visible", visible },
                 { "sortable", sortable },
+                { "sandboxed", sandboxed },
                 { "depthSortChildrenEnabled", depthSortChildrenEnabled },
                 { "ignoreChildren", ignoreChildren },
                 { "props", lua_to_json(props) }
@@ -229,6 +231,10 @@ namespace Amara {
             if (json_has(config, "active")) {
                 if (json_get<bool>(config, "active")) activate();
                 else deactivate();
+            }
+
+            if (json_has(config, "sandboxed")) {
+                sandboxed = json_get<bool>(config, "sandboxed");
             }
 
             if (json_has(config, "visible")) visible = json_get<bool>(config, "visible");
@@ -478,7 +484,7 @@ namespace Amara {
                 }
             }
             
-            if (!destroyed and !ignoreChildren) runChildren(deltaTime);
+            if (!destroyed && !ignoreChildren) runChildren(deltaTime);
             clean_node_list(children);
             
             input.post_run(deltaTime);
@@ -509,7 +515,20 @@ namespace Amara {
                     ++it;
                     continue;
                 }
-                child->run(deltaTime * child->speed);
+                if (!sandboxed) child->run(deltaTime * child->speed);
+                else {
+                    try {
+                        child->run(deltaTime * child->speed);
+                    }
+                    catch (const sol::error& e) {
+                        error_log(e.what());
+                        child->destroy();
+                    }
+                    catch(std::exception& e) {
+                        error_log(e.what());
+                        child->destroy();
+                    }
+                }
 
                 gameProps->passOn = passOn;
 
@@ -1035,6 +1054,7 @@ namespace Amara {
                 "destroyed", sol::readonly(&Node::destroyed),
                 "destroy", &Node::destroy,
                 "destroyChildren", &Node::destroyChildren,
+                "sandboxed", &Node::sandboxed,
                 "sortable", &Node::sortable,
                 "depthSortChildrenEnabled", &Node::depthSortChildrenEnabled,
                 "depthSortChildren", &Node::depthSortChildrenEnabled,

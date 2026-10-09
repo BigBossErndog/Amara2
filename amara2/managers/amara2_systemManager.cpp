@@ -970,7 +970,7 @@ namespace Amara {
 
             std::ostringstream ss;
             for (auto arg : args) {
-                current = current / std::filesystem::path(lua_to_string(arg));
+                current = current / std::filesystem::path(lua_to_string(arg.get<sol::object>()));
             }
             return current.string();
         }

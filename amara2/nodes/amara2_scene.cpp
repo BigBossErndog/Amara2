@@ -40,7 +40,20 @@ namespace Amara {
                     continue;
                 }
                 
-				child->run(deltaTime);
+				if (!sandboxed) child->run(deltaTime * child->speed);
+                else {
+                    try {
+                        child->run(deltaTime * child->speed);
+                    }
+                    catch (const sol::error& e) {
+                        error_log(e.what());
+                        child->destroy();
+                    }
+                    catch(std::exception& e) {
+                        error_log(e.what());
+                        child->destroy();
+                    }
+                }
 				++it;
 				if (destroyed) break;
 			}

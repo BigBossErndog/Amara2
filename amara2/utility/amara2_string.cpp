@@ -63,18 +63,14 @@ namespace Amara {
             return oss.str();
         }
 
-        static std::string format(const std::string& format, ...) {
-            va_list args;
-            va_start(args, format);
-            size_t size = std::snprintf(nullptr, 0, format.c_str(), args) + 1; // Extra space for '\0'
-            if (size <= 0) {
-                va_end(args);
-                return ""; // Error occurred
-            }
-            std::unique_ptr<char[]> buf(new char[size]);
-            std::vsnprintf(buf.get(), size, format.c_str(), args);
-            va_end(args);
-            return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+        template <typename... Args>
+        static std::string format(const std::string& fmt, Args&&... args) {
+            int size = std::snprintf(nullptr, 0, fmt.c_str(), args...);
+            if (size <= 0) return "";
+            
+            std::string out(size, '\0');
+            std::snprintf(out.data(), size + 1, fmt.c_str(), args...);
+            return out;
         }
 
         template<typename... Args>

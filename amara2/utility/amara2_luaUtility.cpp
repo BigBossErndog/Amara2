@@ -259,7 +259,7 @@ namespace Amara {
     std::string lua_string_concat(sol::variadic_args args, bool within_table) {
         std::ostringstream ss;
         for (auto arg : args) {
-            ss << lua_to_string(arg, within_table, "", "");
+            ss << lua_to_string(arg.get<sol::object>(), within_table, "", "");
         }
         return ss.str();
     }
@@ -272,7 +272,7 @@ namespace Amara {
         bool first = true;
         
         for (auto arg : args) {
-            ss << (first ? "" : separator) << lua_to_string(arg, within_table, "", "");
+            ss << (first ? "" : separator) << lua_to_string(arg.get<sol::object>(), within_table, "", "");
             first = false;
         }
     
@@ -352,7 +352,7 @@ namespace Amara {
     void lua_debug_log(sol::variadic_args args) {
         std::ostringstream ss;
         for (auto arg : args) {
-            ss << lua_to_string(arg, false, "", "");
+            ss << lua_to_string(arg.get<sol::object>(), false, "", "");
         }
         debug_log(ss.str());
     }
@@ -658,7 +658,7 @@ namespace Amara {
                             throw std::runtime_error(err.what());
                         }
                         
-                        if (lua_is_truthy(r)) {
+                        if (lua_is_truthy(r.get<sol::object>())) {
                             if (is_table_array) {
                                 result[result.size() + 1] = pair.second;
                             }
@@ -705,7 +705,7 @@ namespace Amara {
                         sol::error err = r;
                         fatal_error(err.what());
                     }
-                    return lua_is_truthy(r);
+                    return lua_is_truthy(r.get<sol::object>());
                 } else {
                     bool is_inclusive = inclusive.is<bool>() && inclusive.as<bool>();
                     return (is_inclusive == (value == predicate));

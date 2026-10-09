@@ -94,33 +94,33 @@ namespace Amara {
             }
             #endif
             else if (gameProps->gpuDevice) {
-                SDL_GPUTextureCreateInfo textureInfo = {
-                    .type = SDL_GPU_TEXTURETYPE_2D,
-                    .format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
-                    .width = (Uint32)width,
-                    .height = (Uint32)height,
-                    .layer_count_or_depth = 1,
-                    .num_levels = 1,
-                    .usage = SDL_GPU_TEXTUREUSAGE_SAMPLER
-                };
+                SDL_GPUTextureCreateInfo textureInfo;
+                SDL_zero(textureInfo);
+                textureInfo.type = SDL_GPU_TEXTURETYPE_2D;
+                textureInfo.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+                textureInfo.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+                textureInfo.width = (Uint32)width;
+                textureInfo.height = (Uint32)height;
+                textureInfo.layer_count_or_depth = 1;
+                textureInfo.num_levels = 1;
                 gpuTexture = SDL_CreateGPUTexture(gameProps->gpuDevice, &textureInfo);
 
                 SDL_SetGPUTextureName(gameProps->gpuDevice, gpuTexture, key.c_str());
 
-                SDL_GPUSamplerCreateInfo samplerInfo = {
-                    .min_filter = SDL_GPU_FILTER_NEAREST,
-                    .mag_filter = SDL_GPU_FILTER_NEAREST,
-                    .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
-                    .address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-                    .address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-                    .address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
-                };
+                SDL_GPUSamplerCreateInfo samplerInfo;
+                SDL_zero(samplerInfo);
+                samplerInfo.min_filter = SDL_GPU_FILTER_NEAREST;
+                samplerInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
+                samplerInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+                samplerInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+                samplerInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+                samplerInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
                 SDL_GPUSampler* sampler = SDL_CreateGPUSampler(gameProps->gpuDevice, &samplerInfo);
 
-                SDL_GPUTransferBufferCreateInfo bufferInfo = {
-                    .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-                    .size = (sizeof(PositionTextureVertex) * 4) + (sizeof(Uint16) * 6)
-                };
+                SDL_GPUTransferBufferCreateInfo bufferInfo;
+                SDL_zero(bufferInfo);
+                bufferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+                bufferInfo.size = (sizeof(PositionTextureVertex) * 4) + (sizeof(Uint16) * 6);
                 SDL_GPUTransferBuffer* bufferTransferBuffer = SDL_CreateGPUTransferBuffer(
                     gameProps->gpuDevice,
                     &bufferInfo
@@ -132,10 +132,10 @@ namespace Amara {
                     false
                 ));
             
-                transferData[0] = (PositionTextureVertex) { -1,  1, 0, 0, 0 };
-                transferData[1] = (PositionTextureVertex) {  1,  1, 0, 4, 0 };
-                transferData[2] = (PositionTextureVertex) {  1, -1, 0, 4, 4 };
-                transferData[3] = (PositionTextureVertex) { -1, -1, 0, 0, 4 };
+                transferData[0] = { -1,  1, 0, 0, 0 };
+                transferData[1] = {  1,  1, 0, 4, 0 };
+                transferData[2] = {  1, -1, 0, 4, 4 };
+                transferData[3] = { -1, -1, 0, 0, 4 };
 
                 Uint16* indexData = (Uint16*) &transferData[4];
                 indexData[0] = 0;
@@ -147,10 +147,10 @@ namespace Amara {
 
                 SDL_UnmapGPUTransferBuffer(gameProps->gpuDevice, bufferTransferBuffer);
 
-                SDL_GPUTransferBufferCreateInfo transferBufferInfo = {
-                    .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-                    .size = static_cast<Uint32>(width * height * 4)
-                }; 
+                SDL_GPUTransferBufferCreateInfo transferBufferInfo;
+                SDL_zero(transferBufferInfo);
+                transferBufferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+                transferBufferInfo.size = static_cast<Uint32>(width * height * 4);
                 SDL_GPUTransferBuffer* textureTransferBuffer = SDL_CreateGPUTransferBuffer(
                     gameProps->gpuDevice,
                     &transferBufferInfo

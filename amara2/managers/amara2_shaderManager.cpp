@@ -67,6 +67,13 @@ namespace Amara {
             return false;
         }
 
+        void inherit(ShaderManager* other) {
+            #ifdef AMARA_OPENGL
+            glShaders = other->glShaders;
+            glPrograms = other->glPrograms;
+            #endif
+        }
+
         #ifdef AMARA_OPENGL
         std::string readShader(std::string path, ShaderTypeEnum type) {
             std::string source = gameProps->system->readFile(path);

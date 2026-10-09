@@ -125,10 +125,9 @@ namespace Amara {
         
         void inherit(Amara::World* other) {
             if (other == nullptr) return;
-            // inputManager.inherit(&other->inputManager);
             assets.inheritAssets(&other->assets);
             animations.textureMap = other->animations.textureMap;
-            // shaders.inherit(&other->shaders);
+            shaders.inherit(&other->shaders);
         }
 
         void update_window() {
@@ -574,9 +573,11 @@ namespace Amara {
             }
 
             SDL_SetHint(SDL_HINT_ORIENTATIONS, sdl_orientation.c_str());
-}
+        }
+        
         std::string getOrientation() {
             if (!window) return "unknown";
+
             SDL_DisplayID display_id = SDL_GetDisplayForWindow(window);
             if (display_id == 0) return "unknown";
             SDL_DisplayOrientation orientation = SDL_GetCurrentDisplayOrientation(display_id);
@@ -610,6 +611,8 @@ namespace Amara {
         }
 
         void setVsync(int _vsync) {
+            if (window == nullptr) return;
+
             vsync = _vsync;
             if (graphics == GraphicsEnum::Render2D && renderer != nullptr) {
                 if (!SDL_SetRenderVSync(renderer, vsync)) {

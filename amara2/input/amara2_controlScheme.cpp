@@ -54,14 +54,17 @@ namespace Amara {
         }
 
         bool removeKey(SDL_Keycode _k) {
+            bool ret = false;
             for (auto it = keys.begin(); it != keys.end();) {
                 SDL_Keycode& k = *it;
                 if (k == _k) {
                     it = keys.erase(it);
+                    ret = true;
                     continue;
                 }
                 ++it;
             }
+            return ret;
         }
 
         void addButton(Amara::GamepadButton _b) {
@@ -83,14 +86,17 @@ namespace Amara {
         }
 
         bool removeButton(Amara::GamepadButton _b) {
+            bool ret = false;
             for (auto it = gamepadButtons.begin(); it != gamepadButtons.end();) {
                 Amara::GamepadButton& b = *it;
                 if (b == _b) {
                     it = gamepadButtons.erase(it);
+                    ret = true;
                     continue;
                 }
                 ++it;
             }
+            return ret;
         }
 
         void clearKeys() {

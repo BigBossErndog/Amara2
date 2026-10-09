@@ -1085,7 +1085,7 @@ namespace Amara {
             return sol::nil;
         }
         
-        explicit operator std::string() const {
+        std::string toString() const {
             return std::visit([](const auto& s) -> std::string {
                 using T = std::decay_t<decltype(s)>;
                 if constexpr (
@@ -1097,16 +1097,14 @@ namespace Amara {
                     std::is_same_v<T, Triangle> ||
                     std::is_same_v<T, Line>
                 ) {
-                    return std::string(s);
+                    return s.operator std::string();   // explicit call, no ambiguity
                 }
                 else if constexpr (std::is_same_v<T, std::vector<Shape>>) {
                     std::string result = "[";
                     bool first = true;
                     for (const auto& shape : s) {
-                        if (!first) {
-                            result += ", ";
-                        }
-                        result += std::string(shape);
+                        if (!first) result += ", ";
+                        result += shape.toString();
                         first = false;
                     }
                     result += "]";
@@ -1115,8 +1113,13 @@ namespace Amara {
                 return "Unknown Shape";
             }, shape);
         }
+
+        explicit operator std::string() const {
+            return toString();
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const Shape& v) {
-            return os << static_cast<std::string>(v);
+            return os << v.toString();
         }
     };
     

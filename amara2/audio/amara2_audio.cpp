@@ -196,7 +196,20 @@ namespace Amara {
                     continue;
                 }
 
-                child->run(deltaTime * child->speed);
+                if (!sandboxed) child->run(deltaTime * child->speed);
+                else {
+                    try {
+                        child->run(deltaTime * child->speed);
+                    }
+                    catch (const sol::error& e) {
+                        error_log(e.what());
+                        child->destroy();
+                    }
+                    catch(std::exception& e) {
+                        error_log(e.what());
+                        child->destroy();
+                    }
+                }
                 gameProps->audioData = rec_audio_data;
                 ++it;
                 if (destroyed) break;
