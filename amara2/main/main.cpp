@@ -50,6 +50,15 @@ int main(int argc, char** argv) {
     #endif
 #endif
     Amara::Creator creator(argc, argv);
+
+    #if defined(AMARA_ENCRYPTION_KEY)
+        creator.encryption_key = AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY);
+        #if defined(AMARA_ENCRYPT_OUTPUT)
+            creator.encrypt_output = true;
+        #endif
+        creator.setEncryption();
+    #endif
+
     if (creator.starting_scripts.size() > 0) {
         return creator.startCreation();
     }

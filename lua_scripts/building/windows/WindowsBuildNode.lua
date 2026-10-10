@@ -16,8 +16,18 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             end
         end
 
+        -- Always quotes (used for the .bat file, where tool paths nearly always contain spaces)
+        local function quote(path)
+            return '"' .. path .. '"'
+        end
+
+        -- Backslashes to forward slashes (parentheses drop gsub's second return value)
+        local function slash(path)
+            return (string.gsub(path, "\\", "/"))
+        end
+
         local function fix_path(path)
-            return quote_if_needed(string.gsub(path, "\\", "/"))
+            return quote_if_needed(slash(path))
         end
 
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
@@ -36,7 +46,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.get.printLog = config.printLog
         end
 
+        -- args: compiler options. linkArgs: everything after /link
         local args = {}
+        local linkArgs = {}
 
         local buildDir = System:join(self.get.projectPath, "build", "windows")
         if config.buildTest then
@@ -47,9 +59,14 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.get.buildDir = buildDir
 
         local buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
-        local clangLLVMPath = System:join(buildModule, "clang-llvm")
-        self.get.clangLLVMPath = clangLLVMPath
-        
+
+        -- MSVC / Windows SDK locations (from the C++ locateWindowsSDK function)
+        local winsdk = System:locateWindowsSDK() or {}
+        local sdkFound = (winsdk.cl ~= nil) and (winsdk.rc ~= nil)
+        local function sdk(key)
+            return winsdk[key] or ""
+        end
+
         local sdl3Path = System:join(buildModule, "resources/libs/SDL3-3.4.10")
 
         local nlohmannPath = System:join(buildModule, "resources/libs/json/include")
@@ -84,14 +101,15 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             256, 256,
             self.get.iconPath
         )
-
+        
         self.get.iconDest = System:join(buildDir, "icon.ico")
         self.get.resFile = System:join(buildDir, "icon.rc")
         self.get.resOutputFile = System:join(buildDir, "icon.res")
 
-        local compilerPath = fix_path(System:join(clangLLVMPath, "bin/clang++.exe"))
-        
-        -- table.insert(args, compilerPath)
+        self.get.objFile = System:join(buildDir, "main.obj")
+
+        -- Compiler options
+        table.insert(args, "/nologo")
         table.insert(args, fix_path(System:getRelativePath("amara2/main/main.cpp")))
         
         if self.get.resOutputFile then
@@ -100,12 +118,23 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         local static_libs = {}
 
+        -- MSVC and Windows SDK headers
+        table.insert(args, "/I" .. fix_path(sdk("msvc_include")))
+        table.insert(args, "/I" .. fix_path(sdk("sdk_include_ucrt")))
+        table.insert(args, "/I" .. fix_path(sdk("sdk_include_um")))
+        table.insert(args, "/I" .. fix_path(sdk("sdk_include_shared")))
+
+        -- MSVC and Windows SDK import libraries
+        table.insert(linkArgs, "/LIBPATH:" .. fix_path(sdk("msvc_lib")))
+        table.insert(linkArgs, "/LIBPATH:" .. fix_path(sdk("sdk_lib_ucrt")))
+        table.insert(linkArgs, "/LIBPATH:" .. fix_path(sdk("sdk_lib_um")))
+
         -- AMARA_PATH
-        table.insert(args, "-I" ..  fix_path(System:getRelativePath("amara2")))
+        table.insert(args, "/I" ..  fix_path(System:getRelativePath("amara2")))
         
         if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
             local plugins_path = System:join(self.get.projectPath, "plugins")
-            table.insert(args, "-I" .. fix_path(plugins_path))
+            table.insert(args, "/I" .. fix_path(plugins_path))
 
             local plugins = self.get.projectData["plugin-directories"]
             local plugin_template = System:readFile(System:getRelativePath("amara2/main/plugin_template.cpp"))
@@ -136,24 +165,25 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                         end
                     end
                     
+                    -- plugin.json keeps its clang-style keys; they are translated to MSVC options here
                     if plugin_data["-I"] then
                         for _, path in ipairs(plugin_data["-I"]) do
-                            table.insert(args, "-I" .. fix_path(System:join(plugin_path, path)))
+                            table.insert(args, "/I" .. fix_path(System:join(plugin_path, path)))
                         end
                     end
                     if plugin_data["-L"] then
                         for _, path in ipairs(plugin_data["-L"]) do
-                            table.insert(args, "-L" .. fix_path(System:join(plugin_path, path)))
+                            table.insert(linkArgs, "/LIBPATH:" .. fix_path(System:join(plugin_path, path)))
                         end
                     end
                     if plugin_data["-l"] then
                         for _, lib in ipairs(plugin_data["-l"]) do
-                            table.insert(args, "-l" .. lib)
+                            table.insert(linkArgs, lib .. ".lib")
                         end
                     end
                     if plugin_data["-l:"] then
                         for _, lib in ipairs(plugin_data["-l:"]) do
-                            table.insert(args, "-l:" .. lib)
+                            table.insert(linkArgs, lib)
                         end
                     end
                     if plugin_data[".lib"] then
@@ -178,94 +208,108 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         -- OTHER_LIB_PATHS
-        table.insert(args, "-Isrc")
-        table.insert(args, "-I" .. fix_path(nlohmannPath))
-        table.insert(args, "-I" .. fix_path(luaPath))
-        table.insert(args, "-I" .. fix_path(sol2Path))
-        table.insert(args, "-I" .. fix_path(stbPath))
-        table.insert(args, "-I" .. fix_path(glmPath))
-        table.insert(args, "-I" .. fix_path(tinyxml2Path))
-        table.insert(args, "-I" .. fix_path(minimp3Path))
-        table.insert(args, "-I" .. fix_path(pfdPath))
+        table.insert(args, "/Isrc")
+        table.insert(args, "/I" .. fix_path(nlohmannPath))
+        table.insert(args, "/I" .. fix_path(luaPath))
+        table.insert(args, "/I" .. fix_path(sol2Path))
+        table.insert(args, "/I" .. fix_path(stbPath))
+        table.insert(args, "/I" .. fix_path(glmPath))
+        table.insert(args, "/I" .. fix_path(tinyxml2Path))
+        table.insert(args, "/I" .. fix_path(minimp3Path))
+        table.insert(args, "/I" .. fix_path(pfdPath))
 
         -- SDL_PATHS_WIN64
-        table.insert(args, "-I" .. fix_path(System:join(sdl3Path, "include")))
-        table.insert(args, "-L" .. fix_path(System:join(sdl3Path, "lib", "x64")))
+        table.insert(args, "/I" .. fix_path(System:join(sdl3Path, "include")))
+        table.insert(linkArgs, "/LIBPATH:" .. fix_path(System:join(sdl3Path, "lib", "x64")))
         
         -- WINDOWS_COMPILER_FLAGS
-        table.insert(args, "-w")
-        table.insert(args, "-m64")
-        table.insert(args, "-Wl,/SUBSYSTEM:WINDOWS")
-        table.insert(args, "-Wl,/NOIMPLIB")
-        table.insert(args, "-std=c++17")
-        table.insert(args, "-O2")
-        table.insert(args, "--target=x86_64-pc-windows-msvc")
+        table.insert(args, "/w")
+        table.insert(args, "/std:c++17")
+        table.insert(args, "/EHsc")
+        table.insert(args, "/O2")
+        table.insert(args, "/MT")                -- static runtime (replaces -static)
+        table.insert(args, "/utf-8")             -- clang assumes UTF-8 sources; MSVC does not
+        table.insert(args, "/bigobj")            -- sol2 translation units can exceed the default object limit
+        table.insert(args, "/Zc:__cplusplus")
+        table.insert(linkArgs, "/SUBSYSTEM:WINDOWS")
+        -- If linking fails with "unresolved external symbol WinMain", the entry point is `main`:
+        -- table.insert(linkArgs, "/ENTRY:mainCRTStartup")
         
-        -- table.insert(args, "-w")
-        -- table.insert(args, "-Wall")
-        -- table.insert(args, "-m64")
-        -- table.insert(args, "-std=c++17")
-        -- table.insert(args, "-Wl,/NOIMPLIB")
-        -- table.insert(args, "-DAMARA_DEBUG_BUILD")
-
         -- EXTRA_OPTIONS
         if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
-            table.insert(args, "-DAMARA_PLUGINS")
+            table.insert(args, "/DAMARA_PLUGINS")
         end
         if not config.buildTest then
-            table.insert(args, "-DAMARA_DISABLE_EXTERNAL_SCRIPTS")
+            table.insert(args, "/DAMARA_DISABLE_EXTERNAL_SCRIPTS")
         else
-            table.insert(args, "-DAMARA_DEBUGGING")
-            table.insert(args, "-DAMARA_ENGINE_TOOLS")
+            table.insert(args, "/DAMARA_DEBUGGING")
+            table.insert(args, "/DAMARA_ENGINE_TOOLS")
         end
-        -- Add flags from Makefile's EXTRA_OPTIONS
-        -- table.insert(args, "-DAMARA_DEBUGGING")
-        -- table.insert(args, "-DAMARA_ENGINE_TOOLS")
 
         if self.get.projectData.encryption and not config.buildTest then
-            table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.get.projectData.encryption["key"]))
+            table.insert(args, "/DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.get.projectData.encryption["key"]))
             if self.get.projectData.encryption["encrypt-write-output"] then
-                table.insert(args, "-DAMARA_ENCRYPT_OUTPUT")
+                table.insert(args, "/DAMARA_ENCRYPT_OUTPUT")
             end
         end
 
         -- LINKER_FLAGS_WIN64
-        table.insert(args, "-fuse-ld=lld")
-        table.insert(args, "-L" .. fix_path(System:join(clangLLVMPath, "lib")))
-        table.insert(args, "-pthread")
-        table.insert(args, "-DAMARA_OPENGL")
-        table.insert(args, "-lopengl32")
-        table.insert(args, "-lSDL3")
-        table.insert(args, "-lshell32")
-        table.insert(args, "-luser32")
-        table.insert(args, "-lgdi32")
-        table.insert(args, "-lwinmm")
-        table.insert(args, "-limm32")
-        table.insert(args, "-lole32")
-        table.insert(args, "-loleaut32")
-        table.insert(args, "-lversion")
-
-        table.insert(args, "-static")
+        table.insert(args, "/DAMARA_OPENGL")
+        table.insert(linkArgs, "opengl32.lib")
+        table.insert(linkArgs, "SDL3.lib")
+        table.insert(linkArgs, "shell32.lib")
+        table.insert(linkArgs, "user32.lib")
+        table.insert(linkArgs, "gdi32.lib")
+        table.insert(linkArgs, "winmm.lib")
+        table.insert(linkArgs, "imm32.lib")
+        table.insert(linkArgs, "ole32.lib")
+        table.insert(linkArgs, "oleaut32.lib")
+        table.insert(linkArgs, "version.lib")
 
         if #static_libs > 0 then
             for _, lib in ipairs(static_libs) do
-                table.insert(args, lib)
+                table.insert(linkArgs, lib)
             end
         end
 
-        -- Output file
-        table.insert(args, "-o")
-        table.insert(args, fix_path(System:join(buildDir, self.get.executableName .. ".exe")))
+        -- Output files (object file goes into the build dir; it is removed after the build)
+        table.insert(args, "/Fo:" .. quote(slash(self.get.objFile)))
+        table.insert(args, "/Fe:" .. quote(slash(System:join(buildDir, self.get.executableName .. ".exe"))))
+
+        -- Everything after /link goes to the linker
+        table.insert(args, "/link")
+        for _, a in ipairs(linkArgs) do
+            table.insert(args, a)
+        end
 
         local argsFile = System:join(buildDir, "build_args.txt")
         System:writeFile(argsFile, string.sep_concat(" ", table.unpack(args)))
-        local buildCommand = quote_if_needed(compilerPath) .. " @" .. quote_if_needed(argsFile)
-        
+
         local batchFilePath = System:join(buildDir, "build_windows.bat")
         self.get.batchFilePath = batchFilePath
         local errorOutputPath = System:join(buildDir, "build_error.txt")
         self.get.errorOutputPath = errorOutputPath
-        local batchFileContent = buildCommand .. " > " .. fix_path(errorOutputPath) .. " 2>&1 && exit"
+        local errorLog = quote(slash(errorOutputPath))
+
+        -- Step 1: compile the icon resource with rc (needs the SDK headers only if the .rc includes any)
+        local rcCommand = quote(slash(sdk("rc"))) .. " /nologo"
+            .. " /I" .. quote(slash(sdk("sdk_include_um")))
+            .. " /I" .. quote(slash(sdk("sdk_include_shared")))
+            .. " /fo " .. quote(slash(self.get.resOutputFile))
+            .. " " .. quote(slash(self.get.resFile))
+
+        -- Step 2: compile and link with cl, using the response file
+        local clCommand = quote(slash(sdk("cl"))) .. " @" .. quote(slash(argsFile))
+
+        local batchFileContent
+        if sdkFound then
+            batchFileContent = rcCommand .. " > " .. errorLog .. " 2>&1"
+                .. " && " .. clCommand .. " >> " .. errorLog .. " 2>&1"
+                .. " && exit"
+        else
+            batchFileContent = "echo MSVC build tools or the Windows SDK could not be found. > " .. errorLog
+                .. " & exit /b 1"
+        end
 
         System:writeFile(batchFilePath, batchFileContent)
 
@@ -290,11 +334,11 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.world:hideWindow()
 
         if self.get.iconPath then
+            -- The .ico is written here; rc.exe itself runs as the first step of the build .bat file.
+            -- Forward slashes keep rc from treating backslashes in the path as escape characters.
             System:writeICO(self.get.iconPath, self.get.iconDest)
-            System:writeFile(self.get.resFile, "1 ICON \"" .. self.get.iconDest .. "\"\n")
-            
-            local command = string.format("%s \"%s\"", System:join(self.get.clangLLVMPath, "bin/llvm-rc"), self.get.resFile)
-            System:execute(command)
+            local iconDestForRc = string.gsub(self.get.iconDest, "\\", "/")
+            System:writeFile(self.get.resFile, "1 ICON \"" .. iconDestForRc .. "\"\n")
         end
 
         if not self.get.printLog then
@@ -336,6 +380,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
     onExit = function(self, exitCode)
         System:remove(self.get.batchFilePath)
         System:remove(System:join(self.get.buildDir, "build_args.txt"))
+        if self.get.objFile and System:exists(self.get.objFile) then
+            System:remove(self.get.objFile)
+        end
         
         if self.get.printLog then
             self.get.printLog.func:unbindGameProcess()

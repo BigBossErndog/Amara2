@@ -139,10 +139,6 @@
         #define AMARA_STRINGIFY(x) AMARA_STR(x)
     #endif
 
-    #ifndef AMARA_ENCRYPTION_SETUP
-    
-    #endif
-
     #ifndef M_PI
         #define M_PI 3.14159265358979323846264338327950288
     #endif

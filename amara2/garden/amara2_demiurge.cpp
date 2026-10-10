@@ -28,6 +28,9 @@ namespace Amara {
         GameProps* gameProps = nullptr;
         sol::object luaobject;
 
+        std::string encryption_key;
+        bool encrypt_output = false;
+
         sol::function onError;
 
         int worldDepth = 0;
@@ -100,6 +103,8 @@ namespace Amara {
 
             system.gameProps = gameProps;
             system.luaobject = sol::make_object(gameProps->lua, &system);
+            system.encryption_key = encryption_key;
+            system.encrypt_output = encrypt_output;
 
             controls.init(gameProps);
             controls.luaobject = sol::make_object(gameProps->lua, &controls);
@@ -110,6 +115,17 @@ namespace Amara {
             factory.registerNode<World>("World");
 
             game.demiurgic = demiurgic;
+        }
+
+        virtual void setEncryption() {
+            system.encryption_key = encryption_key;
+            system.encrypt_output = encrypt_output;
+        }
+        virtual void setEncryption(std::string key, bool output) {
+            encryption_key = key;
+            encrypt_output = output;
+
+            setEncryption();
         }
 
         void luaConfigure(sol::object config_obj);

@@ -53,7 +53,7 @@ if "%USE_MAIN_ENTRY%"=="1" set "LINK_FLAGS=%LINK_FLAGS% /ENTRY:mainCRTStartup"
 
 rem ---------- Dispatch ----------
 set "TARGET=%~1"
-if "%TARGET%"=="" set "TARGET=win"
+if "%TARGET%"=="" set "TARGET=release"
 
 if /i "%TARGET%"=="win"     goto :target_win
 if /i "%TARGET%"=="test"    goto :target_test
@@ -165,7 +165,12 @@ cl.exe %CL_FLAGS% %DEFINES% %INCLUDES% %ENTRY_FILES% %EXTRA_SOURCES% ^
     /Fo"%OBJ_PATH%\\" ^
     /Fe"%EXE%" ^
     /link %LINK_FLAGS% "%ICON_RES%"
-if errorlevel 1 (
+set "CL_RESULT=%errorlevel%"
+
+rem Objects are only needed during the build
+if exist "%OBJ_PATH%" rmdir /s /q "%OBJ_PATH%"
+
+if not "%CL_RESULT%"=="0" (
     echo ERROR: build failed.
     exit /b 1
 )

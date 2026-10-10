@@ -145,6 +145,15 @@ namespace Amara {
             }
         }
 
+        virtual void setEncryption() override {
+            Amara::Demiurge::setEncryption();
+            if (currentDemiurge) currentDemiurge->setEncryption();
+        }
+        virtual void setEncryption(std::string key, bool output) override {
+            Amara::Demiurge::setEncryption(key, output);
+            if (currentDemiurge) currentDemiurge->setEncryption(key, output);
+        }
+
         virtual World* createWorld(sol::object config) override {
             if (game.hasQuit) {
                 return nullptr;
@@ -223,6 +232,7 @@ namespace Amara {
             if (destroyed) return nullptr;
 
             Amara::Demiurge* new_demiurge = new Demiurge();
+            new_demiurge->setEncryption(encryption_key, encrypt_output);
             new_demiurge->setup(&gameProps);
             new_demiurge->true_creator = this;
             return new_demiurge;

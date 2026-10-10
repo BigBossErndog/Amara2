@@ -10,6 +10,11 @@ namespace Amara {
 
         static SystemManager* global_system;
 
+        std::string encryption_key;
+        bool encrypt_output = false;
+
+        std::string encryption_prefix = "_amara_encrypted_";
+
         SystemManager() {
             global_system = this;
         };
@@ -66,10 +71,10 @@ namespace Amara {
                     std::string contents(lsValue);
                     free(lsValue);
 
-                    if (String::startsWith(contents, "_amara_encrypted_")) {
-                        #if defined(AMARA_ENCRYPTION_KEY)
-                        contents = decrypt(contents.substr(17), AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY));
-                        #endif
+                    if (String::startsWith(contents, encryption_prefix)) {
+                        if (!encryption_key.empty()) {
+                            contents = decrypt(contents.substr(17), encryption_key);
+                        }
                     }
 
                     return contents;
@@ -144,13 +149,13 @@ namespace Amara {
                 SDL_ReadIO(rw, buffer.data(), fileSize);
             }
             SDL_CloseIO(rw);
-
+            
             std::string contents = std::string(reinterpret_cast<char*>(buffer.data()), buffer.size());
             
-            if (String::startsWith(contents, "_amara_encrypted_")) {
-                #if defined(AMARA_ENCRYPTION_KEY)
-                contents = decrypt(contents.substr(17), AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY));
-                #endif
+            if (String::startsWith(contents, encryption_prefix)) {
+                if (!encryption_key.empty()) {
+                    contents = decrypt(contents.substr(17), encryption_key);
+                }
             }
 
             return contents;
@@ -203,10 +208,10 @@ namespace Amara {
                 }
             }
 
-            #if (defined(AMARA_ENCRYPT_OUTPUT) && defined(AMARA_ENCRYPTION_KEY))
-            if (encryptionKey.empty()) encryptionKey = AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY);
-            #endif
-
+            if (encrypt_output && !encryption_key.empty()) {
+                if (encryptionKey.empty()) encryptionKey = encryption_key;
+            }
+            
             if (!encryptionKey.empty()) {
                 output_str = std::string("_amara_encrypted_") + encrypt(output_str, encryptionKey);
             }
