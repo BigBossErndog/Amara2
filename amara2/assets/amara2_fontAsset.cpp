@@ -1,4 +1,6 @@
 namespace Amara {
+    class TextLine;
+
     struct Glyph {
         char32_t codepoint;
         
@@ -8,6 +10,10 @@ namespace Amara {
         Rectangle src;
         int xoffset, yoffset;
         int xadvance;
+
+        int characterIndex = -1;
+
+        TextLine* line = nullptr;
         
         bool renderable = true;
         
@@ -90,6 +96,16 @@ namespace Amara {
         TextLine& getLastLine() {
             return lines.back();
         }
+
+        Glyph getGlyph(int index) {
+            int glyphCount = 1;
+            for (TextLine& line: lines) {
+                if (index >= glyphCount && index < glyphCount + line.size()) {
+                    return line.glyphs[index - glyphCount];
+                }
+                glyphCount += line.size();
+            }
+        } 
 
         int size() {
             int count = 0;
@@ -331,6 +347,9 @@ namespace Amara {
 
                     if (codepoint == U'$' && i < str.size() - 1 && str[i + 1] == U'{') {
                         Glyph glyph;
+                        glyph.line = line;
+                        glyph.characterIndex = i + 1;
+
                         glyph.renderable = false;
                         glyph.is_config = true;
 
@@ -342,24 +361,39 @@ namespace Amara {
 
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
                         Glyph glyph;
+                        glyph.line = line;
+                        glyph.characterIndex = i + 1;
+
                         glyph.renderable = false;
                         line->glyphs.push_back(glyph);
                         continue;
                     }
+                    
                     Glyph glyph = glyphCache[codepoint];
+                    glyph.line = line;
+                    glyph.characterIndex = i + 1;
 
                     if (codepoint == U'\t' || codepoint == U' ') {
+                        glyph.x = cursorX + glyph.xoffset;
+                        glyph.y = fontSize + glyph.yoffset;
+
+                        glyph.width = glyph.xadvance;
+
                         cursorX += glyph.xadvance;
                         if (wrapWidth <= 0 || ((line->width + glyph.xadvance) < wrapWidth)) {
                             line->width += glyph.xadvance;
                             layout.width = fmax(layout.width, line->width);
                         }
+
                         glyph.renderable = false;
+
                         line->glyphs.push_back(glyph);
                         continue;
                     }
-                    if (codepoint == U'\r') { // Carriage return handling
+                    if (codepoint == U'\r') {
                         glyph.renderable = false;
+                        glyph.x = cursorX + glyph.xoffset;
+                        glyph.y = fontSize + glyph.yoffset;
                         line->glyphs.push_back(glyph);
                         continue;
                     }
@@ -403,6 +437,9 @@ namespace Amara {
 
                     if (codepoint == U'$' && i < str.size() - 1 && str[i + 1] == U'{') {
                         Glyph glyph;
+                        glyph.line = line;
+                        glyph.characterIndex = i + 1;
+
                         glyph.renderable = false;
                         glyph.is_config = true;
                         
@@ -411,15 +448,20 @@ namespace Amara {
                         word.glyphs.push_back(glyph);
                         continue;
                     }
-
+                    
                     if (glyphCache.find(codepoint) == glyphCache.end()) {
                         Glyph glyph;
+                        glyph.line = line;
+                        glyph.characterIndex = i + 1;
+
                         glyph.renderable = false;
                         word.glyphs.push_back(glyph);
                         continue;
                     }
                     
                     Glyph glyph = glyphCache[codepoint];
+                    glyph.line = line;
+                    glyph.characterIndex = i + 1;
 
                     if (codepoint == U'\t' || codepoint == U' ') {
                         if (wrapWidth > 0 && (line->width + word.width) >= wrapWidth) {
@@ -434,6 +476,13 @@ namespace Amara {
                             
                             word.x = 0;
                         }
+
+                        glyph.x = cursorX + glyph.xoffset;
+                        glyph.y = fontSize + glyph.yoffset;
+                        glyph.width = glyph.xadvance;
+
+                        word.glyphs.push_back(glyph);
+
                         cursorX += glyph.xadvance;
                         word.width += glyph.xadvance;
 
@@ -445,7 +494,6 @@ namespace Amara {
                         cursorX = 0;
                         
                         glyph.renderable = false;
-                        word.glyphs.push_back(glyph);
                         continue;
                     }
                     if (codepoint == U'\r') { // Carriage return handling-
@@ -503,6 +551,7 @@ namespace Amara {
 
                     word.text += codepoint;
                     word.width += glyph.xadvance;
+
                     word.glyphs.push_back(glyph);
                 }
                 if (wrapWidth > 0 && (line->width + word.width) >= wrapWidth) {

@@ -6,7 +6,7 @@ namespace Amara {
         NodeInput* input = nullptr;
         Shape shape;
         Rectangle viewport;
-        nlohmann::json data;
+        sol::object data = sol::nil;
         Pointer* lastPointer = nullptr;
     };
 

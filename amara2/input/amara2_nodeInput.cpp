@@ -1,6 +1,5 @@
 namespace Amara {
     class Node;
-    class NodeInput;
 
     class NodeInput: public MessageBox {
     public:
@@ -82,7 +81,7 @@ namespace Amara {
                 this,
                 _shape.scale(gameProps->passOn.input_scale),
                 _viewport*gameProps->passOn.input_scale,
-                _data
+                json_to_lua(gameProps->lua, _data)
             });
         }
         
@@ -114,17 +113,17 @@ namespace Amara {
                 if (!dragging && (lastPointer == nullptr || !lastPointer->active || !lastShape.collidesWith(lastPointer->real_pos))) {
                     hover.release();
                     
-                    if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", sol::nil });
-                    handleMessage({ nullptr, "onPointerExit", sol::nil });
+                    if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", { sol::nil } });
+                    handleMessage({ nullptr, "onPointerExit", { sol::nil } });
                     held = false;
                     
                     hover_by_mouse = false;
                 }
                 else {
-                    handleMessage({ nullptr, "whilePointerHover", sol::nil });
+                    handleMessage({ nullptr, "whilePointerHover", { sol::nil } });
 
                     if (hover_by_mouse) {
-                        handleMessage({ nullptr, "whileMouseHover", sol::nil });
+                        handleMessage({ nullptr, "whileMouseHover", { sol::nil } });
                     }
                 }
             }
@@ -135,9 +134,9 @@ namespace Amara {
                     state.release();
                 }
                 else {
-                    handleMessage({ nullptr, "whilePointerDown", sol::nil });
+                    handleMessage({ nullptr, "whilePointerDown", { sol::nil } });
                     if (hover_by_mouse) {
-                        handleMessage({ nullptr, "whileMouseDown", sol::nil });
+                        handleMessage({ nullptr, "whileMouseDown", { sol::nil } });
                     }
                 }
             }

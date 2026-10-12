@@ -3,16 +3,22 @@ Nodes:define("TextField", "FillRect", {
     height = 18,
     origin = 0,
     color = "#111d27",
-    input = {
-        active = true,
-        cursor = Cursor.Text
-    },
 
     props = {
+        finalText = "",
         defaultText = "label_enterTextHere",
         inputEnabled = true,
         fixLengthToSize = true,
         skip = false
+    },
+
+    input = {
+        active = true,
+        cursor = Cursor.Text,
+        onPointerDown = function(self)
+            self.func:focusField()
+            self.func:selectIndex(string.len(self.get.finalText))
+        end
     },
 
     onConfigure = function(self, config)
@@ -37,15 +43,31 @@ Nodes:define("TextField", "FillRect", {
         end
     end,
 
+    selectIndex = function(self, index)
+        if not index then
+            index = self.get.textInput.selectIndex
+        end
+        self.get.textInput.selectIndex = index
+
+        if index == 0 then
+            self.get.cursor.x = 0
+        else
+            local glyph = self.get.txt:getGlyph(index)
+            if glyph then
+                self.get.cursor.x = glyph.x + glyph.width
+                print(glyph, self.get.cursor.parent.x, self.get.cursor.x, glyph.x, glyph.width)
+            end
+        end
+    end,
+
     onCreate = function(self)
         self.get.selected = false
-        self.get.finalText = ""
         
         if self.get.fixLengthToSize then
             self.get.maxTextWidth = self.width - 16
         end
         
-        self.get.container = self:createChild("TextureContainer", {
+        self.get.container = self:createChild("Container", {
             x = 2,
             y = 0,
             width = self.width - 4,
@@ -65,6 +87,16 @@ Nodes:define("TextField", "FillRect", {
             wrapMode = WrapMode.ByWord,
             props = {
                 backing = self
+            },
+            input = {
+                active = true,
+                cursor = self.get.inputEnabled and Cursor.Text or Cursor.Default,
+                onPointerDown = function(txt, mouse, glyph)
+                    self.func:focusField()
+                    if self.get.selected then
+                        self.func:selectIndex(glyph.index)
+                    end
+                end
             }
         })
 
@@ -78,7 +110,6 @@ Nodes:define("TextField", "FillRect", {
             end,
             onUpdate = function(self, deltaTime)
                 if self.get.showing then
-                    self.x  = self.parent.width
                     self.get.counter = self.get.counter + deltaTime
                     if self.get.counter >= 0.5 then
                         self.get.counter = self.get.counter - 0.5
@@ -97,6 +128,7 @@ Nodes:define("TextField", "FillRect", {
                 self.get.counter = 0
             end
         })
+        self.get.cursor.x = self.get.txt.rect.left
 
         self.get.textInput = self.get.txt:createChild("TextInput", {
             onInput = function(textInput, txt)
@@ -106,12 +138,18 @@ Nodes:define("TextField", "FillRect", {
                 if self.func.onChange then
                     self.func:onChange(self.get.finalText)
                 end
+            end,
+            onSanitize = function(textInput, txt)
+                local invalid_chars = '<>:"/\\|?*'
+                return (txt:gsub(".", function(c)
+                    local byte = c:byte()
+                    if byte < 32 or invalid_chars:find(c, 1, true) then
+                        return ""
+                    end
+                    return c
+                end))
             end
         })
-
-        self.input:listen("onPointerDown", function(self)
-            self.func:focusField()
-        end)
 
         self.func:setText("")
     end,
@@ -146,6 +184,7 @@ Nodes:define("TextField", "FillRect", {
             self.get.txt.color = Colors.White
 
             self.get.textInput.text = txt
+
             if self.get.maxTextWidth then
                 while self.get.txt.width > self.get.maxTextWidth do
                     self.get.textInput:backspace()
@@ -154,6 +193,8 @@ Nodes:define("TextField", "FillRect", {
                 end
             end
         end
+
+        self.func:selectIndex()
     end,
 
     deselect = function(self)
@@ -184,6 +225,10 @@ Nodes:define("TextField", "FillRect", {
                     self.func:onTab(self.get.finalText)
                 end
             end
+
+            -- if Keyboard:justPressed(Key.Right) then
+                
+            -- end
 
             if tabbed or self.func:deselect() then
                 self.get.selected = false

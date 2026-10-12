@@ -307,7 +307,7 @@ namespace Amara {
             if (progress > converted_text.size()) {
                 progress = converted_text.size();
             }
-
+            
             Vector2 render_pos = (renderPixelPerfect) ? pos.round() : pos;
             
             Vector3 anchoredPos = Vector3(
@@ -358,12 +358,10 @@ namespace Amara {
                 for (const Glyph& glyph : line.glyphs) {
                     if (count >= progress) break;
 
-                    if (!glyph.renderable) {
-                        if (glyph.is_config) {
-                            configure(glyph.config);
-                        }
-                        continue;
+                    if (glyph.is_config) {
+                        configure(glyph.config);
                     }
+
                     if (temp_props.manipulator.valid()) {
                         try {
                             sol::protected_function_result result = temp_props.manipulator(count, lifeTime, (char)glyph.codepoint);
@@ -434,9 +432,16 @@ namespace Amara {
                         );
                         input.queueInput(moveQuad(inputQuad, v.x, v.y), v, nlohmann::json::object({
                             { "glyph", glyph.codepoint },
-                            { "index", count }
+                            { "character", std::string(1, static_cast<char>(glyph.codepoint)) },
+                            { "index", glyph.characterIndex },
+                            { "x", line.x + glyph.x + temp_props.offsetX - layout.width*origin.x },
+                            { "y", line.y + glyph.y + temp_props.offsetY - layout.height*origin.y },
+                            { "width", glyph.width },
+                            { "height", glyph.height }
                         }));
                     }
+
+                    if (!glyph.renderable) continue;
 
                     if (font->texture && gameProps->renderer) {
                         SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
@@ -565,6 +570,30 @@ namespace Amara {
                 return true;
             }
             return false;
+        }
+
+        sol::object getGlyph(sol::object obj) {
+            if (obj.is<int>()) {
+                int index = obj.as<int>();
+
+                if (index < 0 || index > layout.size()) return sol::nil;
+
+                Glyph glyph = layout.getGlyph(index);
+                
+                return json_to_lua(gameProps->lua, nlohmann::json::object({
+                    { "glyph", glyph.codepoint },
+                    { "character", std::string(1, static_cast<char>(glyph.codepoint)) },
+                    { "index", glyph.characterIndex },
+                    { "x", glyph.line->x + glyph.x - layout.width*origin.x },
+                    { "y", glyph.line->y + glyph.y - layout.height*origin.y },
+                    { "width", glyph.width },
+                    { "height", glyph.height }
+                }));
+            }
+            else {
+                fatal_error("Error: Text:getGlyph() expected number argument.");
+            }
+            return sol::nil;
         }
         
         sol::object autoProgress(double speed); // speed = characters per second
@@ -736,6 +765,7 @@ namespace Amara {
                         return t.currentManipulator;
                     }
                 ),
+                "getGlyph", &Text::getGlyph,
                 "autoProgress", sol::overload(
                     sol::resolve<sol::object(double)>(&Text::autoProgress),
                     sol::resolve<sol::object(sol::table)>(&Text::autoProgress)

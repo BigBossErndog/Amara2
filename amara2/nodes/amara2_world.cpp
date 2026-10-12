@@ -28,10 +28,6 @@ namespace Amara {
         float windowW = 640;
         float windowH = 360;
         Rectangle window_dim = { pos.x, pos.y, windowW, windowH };
-        
-        std::vector<Amara::WindowActionEnum> window_actions;
-        float resize_window_w = -1;
-        float resize_window_h = -1;
 
         bool windowMoved = false;
         bool windowResized = false;
@@ -486,17 +482,15 @@ namespace Amara {
                     case ScreenModeEnum::Windowed: {
                         SDL_SetWindowFullscreen(window, false);
                         SDL_SetWindowBordered(window, true);
-                        resize_window_w = windowW;
-                        resize_window_h = windowH;
-                        window_actions.push_back(Amara::WindowActionEnum::SetWindowSize);
+                        resizeWindow(windowW, windowH);
+                        centerWindow();
                         break;
                     }
                     case ScreenModeEnum::BorderlessWindowed: {
                         SDL_SetWindowFullscreen(window, false);
                         SDL_SetWindowBordered(window, false);
-                        resize_window_w = windowW;
-                        resize_window_h = windowH;
-                        window_actions.push_back(Amara::WindowActionEnum::SetWindowSize);
+                        resizeWindow(windowW, windowH);
+                        centerWindow();
                         break;
                     }
                     case ScreenModeEnum::Fullscreen: {
@@ -511,7 +505,6 @@ namespace Amara {
                         SDL_SetWindowBordered(window, false);
                         SDL_SetWindowFullscreen(window, false);
                         fitToDisplay();
-                        window_actions.push_back(Amara::WindowActionEnum::FitToDisplay);
                         break;
                     }
                     default:
@@ -1140,22 +1133,7 @@ namespace Amara {
             Amara::Node::create();
         }
 
-        virtual void run(double deltaTime) override {
-            if (window_actions.size() > 0) {
-                for (Amara::WindowActionEnum val: window_actions) {
-                    switch (val) {
-                        case Amara::WindowActionEnum::FitToDisplay:
-                            fitToDisplay();
-                            break;
-                        case Amara::WindowActionEnum::SetWindowSize:
-                            resizeWindow(resize_window_w, resize_window_h);
-                            centerWindow();
-                            break;
-                    }
-                }
-                window_actions.clear();
-            }
-            
+        virtual void run(double deltaTime) override {            
             basePassOnProps();
             checkClickThrough();
 

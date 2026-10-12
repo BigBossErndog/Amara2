@@ -4,7 +4,7 @@ namespace Amara {
     struct Message {
         Amara::MessageBox* sender = nullptr;
         std::string key;
-        sol::object data = sol::nil;
+        std::vector<sol::object> args;
         
         bool active = true;
         bool null = false;
@@ -69,11 +69,21 @@ namespace Amara {
         }
 
         Message& send(std::string key, sol::object _msgData) {
-            queue.push_back({ nullptr, key, _msgData });
+            queue.push_back({ nullptr, key, { _msgData } });
             return queue.back();
         }
 
         Message& send(Amara::MessageBox* gParent, std::string key, sol::object _msgData) {
+            queue.push_back({ gParent, key, { _msgData } });
+            return queue.back();
+        }
+
+        Message& send(std::string key, std::vector<sol::object> _msgData) {
+            queue.push_back({ nullptr, key, _msgData });
+            return queue.back();
+        }
+
+        Message& send(Amara::MessageBox* gParent, std::string key, std::vector<sol::object> _msgData) {
             queue.push_back({ gParent, key, _msgData });
             return queue.back();
         }

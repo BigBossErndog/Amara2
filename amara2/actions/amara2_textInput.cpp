@@ -21,12 +21,19 @@ namespace Amara {
         
         virtual void act(double deltaTime) override {
             Amara::Action::act(deltaTime);
-
+            
             if (has_started && recording) {
                 switch (gameProps->text_input_type) {
                     case TextInputEnum::Text: {
-                        text.insert(selectIndex, gameProps->text_input);
-                        selectIndex += gameProps->text_input.size();
+                        std::string appendage = gameProps->text_input;
+                        if (funcs.hasFunction("onSanitize")) {
+                            sol::object fixed = funcs.callFunction(this, "onSanitize", gameProps->text_input);
+                            if (fixed.is<std::string>()) {
+                                appendage = fixed.as<std::string>();
+                            }
+                        }
+                        text.insert(selectIndex, appendage);
+                        selectIndex += appendage.size();
                         break;
                     }
                     case TextInputEnum::Backspace: {
@@ -41,10 +48,9 @@ namespace Amara {
                 }
             }
         }
-
+        
         sol::object setText(std::string _text) {
             text = _text;
-            selectIndex = text.size();
             return get_lua_object();
         }
 
@@ -70,6 +76,13 @@ namespace Amara {
             return get_lua_object();
         }
 
+        sol::object setIndex(int _index) {
+            selectIndex = _index;
+            if (selectIndex < 0) selectIndex = 0;
+            if (selectIndex > text.size()) selectIndex = text.size();
+            return get_lua_object();
+        }
+
         sol::object backspace() {
             if (selectIndex > 0) {
                 text.erase(selectIndex - 1, 1);
@@ -87,7 +100,7 @@ namespace Amara {
         sol::object split() {
             std::string part1 = text.substr(0, selectIndex);
             std::string part2 = text.substr(selectIndex);
-            return json_to_lua(gameProps->lua, nlohmann::json::array({part1, part2}));
+            return json_to_lua(gameProps->lua, nlohmann::json::array({ part1, part2 }));
         }
 
         virtual void destroy() {
@@ -105,7 +118,19 @@ namespace Amara {
                 "stopInput", &TextInput::stopInput,
                 "backspace", &TextInput::backspace,
                 "clear", &TextInput::clear,
-                "split", &TextInput::split
+                "split", &TextInput::split,
+                "selectIndex", sol::property(
+                    [](Amara::TextInput& t) {
+                        return t.selectIndex;
+                    },
+                    [](Amara::TextInput& t, sol::object obj) {
+                        if (!obj.is<int>()) {
+                            fatal_error("Error: TextInput.selectIndex expected an int.");
+                            return;
+                        }
+                        t.setIndex(obj.as<int>());
+                    }
+                )
             );
         }
     };

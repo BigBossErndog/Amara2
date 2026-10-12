@@ -95,9 +95,24 @@ namespace Amara {
             }
             return Rectangle( -1, -1, -1, -1 );
         }
-
         Rectangle getMainDisplay() {
             return getDisplayBounds(1);
+        }
+
+        Rectangle getUsableDisplaySpace(Uint32 dispID) {
+            SDL_Rect rect;
+            if (SDL_GetDisplayUsableBounds(dispID, &rect)) {
+                return { 
+                    static_cast<float>(rect.x),
+                    static_cast<float>(rect.y), 
+                    static_cast<float>(rect.w),
+                    static_cast<float>(rect.h)
+                };
+            }
+            return Rectangle( -1, -1, -1, -1 );
+        }
+        Rectangle getMainUsableDisplaySpace() {
+            return getUsableDisplaySpace(1);
         }
 
         static void bind_lua(sol::state& lua) {
@@ -128,8 +143,36 @@ namespace Amara {
                     return json_to_lua(g.gameProps->lua, g.argmap);
                 }),
                 "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint,
-                "getDisplayBounds", &GameManager::getDisplayBounds,
+                "getDisplayBounds", [&lua](GameManager& g, sol::object arg) -> sol::object {
+                    if (arg.is<int>()) {
+                        int dispID = arg.as<int>();
+                        
+                        SDL_Rect rect;
+                        if (SDL_GetDisplayBounds(dispID, &rect)) {
+                            return sol::make_object(lua, g.getDisplayBounds(dispID));
+                        }
+                        return sol::nil;
+                    }
+                    else {
+                        fatal_error("Error: Game:getDisplayBounds() expected number argument.");
+                    }
+                },
                 "mainDisplay", sol::property(&GameManager::getMainDisplay),
+                "usableDisplaySpace", sol::property(&GameManager::getMainUsableDisplaySpace),
+                "getUsableDisplaySpace", [&lua](GameManager& g, sol::object arg) -> sol::object {
+                    if (arg.is<int>()) {
+                        int dispID = arg.as<int>();
+                        
+                        SDL_Rect rect;
+                        if (SDL_GetDisplayBounds(dispID, &rect)) {
+                            return sol::make_object(lua, g.getUsableDisplaySpace(dispID));
+                        }
+                        return sol::nil;
+                    }
+                    else {
+                        fatal_error("Error: Game:getUsableDisplaySpace() expected number argument.");
+                    }
+                },
                 "debugging", sol::readonly(&GameManager::debugging),
                 "forceClose", &GameManager::forceClose
             );

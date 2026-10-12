@@ -190,7 +190,7 @@ namespace Amara {
 
         std::vector<SDL_Keycode> key_pressed_buffer;
         std::vector<SDL_Keycode> key_released_buffer;
-
+        
         void queue_garbage(Amara::Node*, double);
         void queue_garbage(Amara::Node* node) {
             queue_garbage(node, 1);

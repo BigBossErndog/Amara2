@@ -467,7 +467,7 @@ namespace Amara {
                     pos.y = input.rec_interact_pos.y + lastPointer->y - lastPointer->rec_pos.y;
                     input.drag = pos - recPos;
                     if (input.isListening("onDrag")) {
-                        input.handleMessage({ nullptr, "onDrag" });
+                        input.handleMessage({ nullptr, "onDrag", { sol::nil } });
                     }
                     input.dragDistance = distanceBetween(lastPointer->rec_pos, *lastPointer);
                     input.dragging = true;
@@ -1162,7 +1162,9 @@ namespace Amara {
             for (const sol::protected_function& callback: list) {
                 if (callback.valid()) {
                     try {
-                        sol::protected_function_result result = callback(node->get_lua_object(), msg.data);
+                        std::vector pass_args = msg.args;
+                        pass_args.insert(pass_args.begin(), node->get_lua_object());
+                        sol::protected_function_result result = callback(sol::as_args(pass_args));
                         if (!result.valid()) {
                             sol::error err = result;
                             throw std::runtime_error(std::string(err.what()));  
