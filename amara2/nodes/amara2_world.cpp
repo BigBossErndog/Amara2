@@ -282,21 +282,24 @@ namespace Amara {
             if (json_has(config, "virtualHeight")) {
                 virtualHeight = json_get<float>(config, "virtualHeight");
             }
-            if (json_has(config, "virtualSize")) {
-                if (config["virtualSize"].is_number()) {
+            if (json_has_any(config, "virtualSize", "virtualScale")) {
+                nlohmann::json virtual_size;
+                if (json_has(config, "virtualSize")) virtual_size = config["virtualSize"];
+                else if (json_has(config, "virtualScale")) virtual_size = config["virtualScale"];
+
+                if (virtual_size.is_number()) {
                     virtualWidth = json_get<float>(config, "virtualSize");
                     virtualHeight = json_get<float>(config, "virtualSize");
                 }
-                else if (config["virtualSize"].is_object()) {
-                    nlohmann::json size = config["virtualSize"];
-                    if (json_has(config, "w")) virtualWidth = json_get<float>(size, "w");
-                    if (json_has(config, "h")) virtualHeight = json_get<float>(size, "h");
-                    if (json_has(config, "width")) virtualWidth = json_get<float>(size, "width");
-                    if (json_has(config, "height")) virtualHeight = json_get<float>(size, "height");
+                else if (virtual_size.is_object()) {
+                    if (json_has(config, "w")) virtualWidth = json_get<float>(virtual_size, "w");
+                    if (json_has(config, "h")) virtualHeight = json_get<float>(virtual_size, "h");
+                    if (json_has(config, "width")) virtualWidth = json_get<float>(virtual_size, "width");
+                    if (json_has(config, "height")) virtualHeight = json_get<float>(virtual_size, "height");
                 }
-                else if (config["virtualSize"].is_array())  {
-                    virtualWidth = config["virtualSize"][0];
-                    virtualHeight = config["virtualSize"][1];
+                else if (virtual_size.is_array())  {
+                    virtualWidth = virtual_size[0];
+                    virtualHeight = virtual_size[1];
                 }
             }
             if (json_has(config, "resizable")) {
@@ -1046,6 +1049,9 @@ namespace Amara {
                     if (pos.y == -1) pos.y = rect.y + (rect.h-windowH)/2;
                     SDL_SetWindowPosition(window, pos.x, pos.y);
                 }
+
+                if (displayID == 0) displayID = SDL_GetDisplayForWindow(window);
+                display = gameProps->game->getDisplayBounds(displayID);
                 rec_pos = pos;
 
                 gameProps->graphics = graphics;
@@ -1455,7 +1461,28 @@ namespace Amara {
                 "vh", &World::virtualHeight,
                 "virtualWidth", &World::virtualWidth,
                 "virtualHeight", &World::virtualHeight,
-                "virtualScale", sol::readonly(&World::virtualScale),
+                "virtualScale", sol::property(
+                    [&lua](World& w) -> sol::object {
+                        if (w.virtualWidth == w.virtualHeight) return sol::make_object(w.gameProps->lua, w.virtualWidth);
+                        else return sol::make_object(w.gameProps->lua, Vector2(w.virtualWidth, w.virtualHeight));
+                    },
+                    [&lua](World& w, sol::object arg) {
+                        Vector2 virtual_size = arg;
+                        w.virtualWidth = virtual_size.x;
+                        w.virtualHeight = virtual_size.y;
+                    }
+                ),
+                "virtualSize", sol::property(
+                    [&lua](World& w) -> sol::object {
+                        if (w.virtualWidth == w.virtualHeight) return sol::make_object(w.gameProps->lua, w.virtualWidth);
+                        else return sol::make_object(w.gameProps->lua, Vector2(w.virtualWidth, w.virtualHeight));
+                    },
+                    [&lua](World& w, sol::object arg) {
+                        Vector2 virtual_size = arg;
+                        w.virtualWidth = virtual_size.x;
+                        w.virtualHeight = virtual_size.y;
+                    }
+                ),
                 "left", sol::readonly(&World::left),
                 "right", sol::readonly(&World::right),
                 "top", sol::readonly(&World::top),
@@ -1465,6 +1492,9 @@ namespace Amara {
                 "shaders", sol::readonly(&World::shaders),
                 "base_dir_path", sol::readonly(&World::base_dir_path),
                 "display", sol::readonly(&World::display),
+                "usableDisplay", sol::property([](World& w) {
+                    return sol::make_object(w.gameProps->lua, w.gameProps->game->getUsableDisplaySpace(w.displayID));
+                }),
                 "displayID", sol::readonly(&World::displayID),
                 "graphics", sol::readonly(&World::graphics),
                 "centerWindow", &World::centerWindow,

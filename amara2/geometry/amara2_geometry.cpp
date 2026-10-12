@@ -502,6 +502,16 @@ namespace Amara {
         else if (config.is_object()) {
             if (json_has(config, "x")) x = config["x"];
             if (json_has(config, "y")) y = config["y"];
+            if (!json_has_any(config, "x", "y")) {
+                if (json_has_any(config, "w", "h")) {
+                    if (json_has(config, "w")) x = config["w"];
+                    if (json_has(config, "h")) y = config["h"];
+                }
+                else if (json_has_any(config, "width", "height")) {
+                    if (json_has(config, "width")) x = config["width"];
+                    if (json_has(config, "height")) y = config["height"];
+                }
+            }
         }
         else if (config.is_array()) {
             if (config.size() == 2) {

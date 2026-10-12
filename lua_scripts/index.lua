@@ -54,7 +54,7 @@ Creator:createWorld({
         alwaysOnTop = true,
         vsync = true,
         graphics = Graphics.Render2D,
-        screenMode = ScreenMode.Fullscreen,
+        screenMode = ScreenMode.BorderlessWindowed,
     },
     
     onPreload = function(world)
@@ -80,7 +80,18 @@ Creator:createWorld({
     end,
 
     onCreate = function(world)
-        world:fitToDisplay()
+        local usableDisplay = world.usableDisplay
+        world.virtualScale = usableDisplay.height
+        if world.virtualScale > 960 then
+            for i = 2, 8 do
+                if usableDisplay.height / i <= 480 then
+                    world.virtualScale = usableDisplay.h / i
+                    break;
+                end
+            end
+        end
+        world.size = usableDisplay
+
         math.randomseed(os.time())
         
         local props = world.props;
@@ -149,7 +160,7 @@ Creator:createWorld({
                 end
                 
                 if world.displayID ~= switchDisplay and switchDisplay ~= 0 then
-                    world:fitToDisplay(switchDisplay)
+                    world.size = Game:getUsableDisplaySpace(switchDisplay)
                 end
             end
         })

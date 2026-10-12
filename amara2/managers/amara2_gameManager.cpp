@@ -98,7 +98,7 @@ namespace Amara {
         Rectangle getMainDisplay() {
             return getDisplayBounds(1);
         }
-
+        
         Rectangle getUsableDisplaySpace(Uint32 dispID) {
             SDL_Rect rect;
             if (SDL_GetDisplayUsableBounds(dispID, &rect)) {

@@ -169,5 +169,9 @@ Nodes:define("UIWindow", "NineSlice", {
         if self.world.get.focusedWindow == self then
             self.world.get.focusedWindow = nil
         end
+    end,
+
+    addContent = function(self, nodeID, config)
+        self.get.content:createChild(nodeID, config)
     end
 })
