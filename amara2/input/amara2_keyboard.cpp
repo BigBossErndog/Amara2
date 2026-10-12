@@ -76,12 +76,30 @@ namespace Amara {
             return 0;
         }
 
+        bool pulseHeld(SDL_Keycode code, double interim) {
+            if (keys.find(code) != keys.end()) {
+                return keys[code].pulseHeld(interim);
+            }
+            return false;
+        }
+        bool pulseHeld(SDL_Keycode code, double interim, double delay) {
+            if (keys.find(code) != keys.end()) {
+                return keys[code].pulseHeld(interim, delay);
+            }
+            return false;
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<KeyboardManager>("Keyboard",
                 "isDown", &KeyboardManager::isDown,
                 "justPressed", &KeyboardManager::justPressed,
                 "justReleased", &KeyboardManager::justReleased,
                 "timeHeld", &KeyboardManager::timeHeld,
+                "timeSinceHeld", &KeyboardManager::timeSinceHeld,
+                "pulseHeld", sol::overload(
+                    sol::resolve<bool(SDL_Keycode, double)>(&KeyboardManager::pulseHeld),
+                    sol::resolve<bool(SDL_Keycode, double, double)>(&KeyboardManager::pulseHeld)
+                ),
                 "keyPressed", sol::readonly(&KeyboardManager::keyPressed),
                 "keyReleased", sol::readonly(&KeyboardManager::keyReleased),
                 "lastKeyPressed", sol::readonly(&KeyboardManager::lastKeyPressed),

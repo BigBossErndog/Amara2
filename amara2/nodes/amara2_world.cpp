@@ -24,6 +24,7 @@ namespace Amara {
         std::string windowTitle;
         
         bool create_window_on_start = false;
+        bool center_window_on_update = true;
 
         float windowW = 640;
         float windowH = 360;
@@ -48,6 +49,7 @@ namespace Amara {
         Rectangle display;
         Uint32 displayID = 0;
         Uint32 rec_displayID = 0;
+        Uint32 start_display = 0;
 
         Vector2 rec_pos = { -1, -1 };
 
@@ -408,6 +410,10 @@ namespace Amara {
                 configure_window(config["window"]);
             }
 
+            if (json_has_any("x", "y", "pos")) {
+                center_window_on_update = false;
+            }
+
             if (json_has(config, "basePath")) {
                 base_dir_path = json_get<std::string>(config, "basePath");
                 gameProps->system->setBasePath(base_dir_path);
@@ -483,14 +489,12 @@ namespace Amara {
                         SDL_SetWindowFullscreen(window, false);
                         SDL_SetWindowBordered(window, true);
                         resizeWindow(windowW, windowH);
-                        centerWindow();
                         break;
                     }
                     case ScreenModeEnum::BorderlessWindowed: {
                         SDL_SetWindowFullscreen(window, false);
                         SDL_SetWindowBordered(window, false);
                         resizeWindow(windowW, windowH);
-                        centerWindow();
                         break;
                     }
                     case ScreenModeEnum::Fullscreen: {
@@ -1023,16 +1027,26 @@ namespace Amara {
 
             if (window) {
                 int wx, wy;
+
+                if (gameProps->targetDisplayID > 0) {
+                    goToDisplay(gameProps->targetDisplayID);
+                }
+                else if (start_display > 0) {
+                    goToDisplay(start_display);
+                }
+
                 if (pos == Vector3(-1, -1, -1)) {
-                    SDL_GetWindowPosition(window, &wx, &wy);
-                    pos.x = static_cast<int>(wx);
-                    pos.y = static_cast<int>(wy);
-                    rec_pos = pos;
+                    centerWindow();
                 }
                 else {
+                    if (displayID == 0) displayID = 1;
+                    SDL_Rect rect;
+                    SDL_GetDisplayUsableBounds(displayID, &rect);
+                    if (pos.x == -1) pos.x = rect.x + (rect.w-windowW)/2;
+                    if (pos.y == -1) pos.y = rect.y + (rect.h-windowH)/2;
                     SDL_SetWindowPosition(window, pos.x, pos.y);
-                    rec_pos = pos;
                 }
+                rec_pos = pos;
 
                 gameProps->graphics = graphics;
 
@@ -1047,18 +1061,16 @@ namespace Amara {
                 assets.init(gameProps);
 
                 debug_log("Note: ", *this, " rendering to window using ", graphics_to_string(graphics), ".");
-
-                if (gameProps->targetDisplayID > 0) {
-                    goToDisplay(gameProps->targetDisplayID);
-                }
                 
                 if (hiddenOnStart) {
                     hideWindow();
                 }
-                else {
+                #ifdef AMARA_OPENGL
+                else if (graphics == GraphicsEnum::OpenGL && glContext != NULL) {
                     showWindow();
                     restoreWindow();
                 }
+                #endif
             }
             else if (graphics == GraphicsEnum::None && gameProps->current_window != nullptr) {
                 pos.x = (gameProps->master_viewport.w - windowW) / 2.0f;
@@ -1133,7 +1145,7 @@ namespace Amara {
             Amara::Node::create();
         }
 
-        virtual void run(double deltaTime) override {            
+        virtual void run(double deltaTime) override {
             basePassOnProps();
             checkClickThrough();
 

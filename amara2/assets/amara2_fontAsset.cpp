@@ -16,6 +16,7 @@ namespace Amara {
         TextLine* line = nullptr;
         
         bool renderable = true;
+        bool invisible = false;
         
         bool is_config = false;
         nlohmann::json config;
@@ -378,6 +379,9 @@ namespace Amara {
                         glyph.y = fontSize + glyph.yoffset;
 
                         glyph.width = glyph.xadvance;
+                        glyph.height = lineHeight;
+                        glyph.src.w = glyph.width;
+                        glyph.src.h = glyph.height;
 
                         cursorX += glyph.xadvance;
                         if (wrapWidth <= 0 || ((line->width + glyph.xadvance) < wrapWidth)) {
@@ -385,7 +389,7 @@ namespace Amara {
                             layout.width = fmax(layout.width, line->width);
                         }
 
-                        glyph.renderable = false;
+                        glyph.invisible = true;
 
                         line->glyphs.push_back(glyph);
                         continue;
@@ -478,22 +482,26 @@ namespace Amara {
                         }
 
                         glyph.x = cursorX + glyph.xoffset;
-                        glyph.y = fontSize + glyph.yoffset;
+                        glyph.y = 0;
+
                         glyph.width = glyph.xadvance;
+                        glyph.height = lineHeight;
+                        glyph.src.w = glyph.width;
+                        glyph.src.h = glyph.height;
+
+                        glyph.invisible = true;
 
                         word.glyphs.push_back(glyph);
 
                         cursorX += glyph.xadvance;
                         word.width += glyph.xadvance;
-
+                        
                         line->merge(word);
                         cursorX += word.x;
 
                         word = TextLine();
                         word.x += cursorX;
                         cursorX = 0;
-                        
-                        glyph.renderable = false;
                         continue;
                     }
                     if (codepoint == U'\r') { // Carriage return handling-
@@ -556,7 +564,7 @@ namespace Amara {
                 }
                 if (wrapWidth > 0 && (line->width + word.width) >= wrapWidth) {
                     layout.width = fmax(layout.width, line->width);
-
+                    
                     layout.height += line->height + lineSpacing;
                     
                     cursorY += lineHeight + lineSpacing;

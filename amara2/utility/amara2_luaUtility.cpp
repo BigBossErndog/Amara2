@@ -872,6 +872,13 @@ namespace Amara {
 
             return result;
         });
+        table_metatable.set_function("clear", [](sol::object obj) {
+            if (!obj.is<sol::table>()) {
+                fatal_error("Error: table.clear() expected a table argument.");
+            }
+            obj.as<sol::table>().clear();
+            return sol::nil;
+        });
 
         lua["fatal_error"] = [](sol::variadic_args args) {
             fatal_error(lua_string_concat(args));

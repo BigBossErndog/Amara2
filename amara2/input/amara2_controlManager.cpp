@@ -153,6 +153,18 @@ namespace Amara {
             }
             return false;
         }
+        bool pulseHeld(std::string key, double interim) {
+            if (controls.find(key) != controls.end()) {
+                return controls[key]->pulseHeld(interim);
+            }
+            return false;
+        }
+        bool pulseHeld(std::string key, double interim, double delay) {
+            if (controls.find(key) != controls.end()) {
+                return controls[key]->pulseHeld(interim, delay);
+            }
+            return false;
+        }
 
         void update(double deltaTime) {
             for (const auto& pair: controls) {
@@ -194,6 +206,10 @@ namespace Amara {
                 "justPressed", &ControlManager::justPressed,
                 "justReleased", &ControlManager::justReleased,
                 "timeHeld", &ControlManager::timeHeld,
+                "pulseHeld", sol::overload(
+                    sol::resolve<bool(std::string, double)>(&ControlManager::pulseHeld),
+                    sol::resolve<bool(std::string, double, double)>(&ControlManager::pulseHeld)
+                ),
                 "mode", sol::property([](ControlManager& cm) {
                     return cm.gameProps->controlMode;
                 })

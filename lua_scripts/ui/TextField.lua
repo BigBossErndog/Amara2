@@ -11,7 +11,7 @@ Nodes:define("TextField", "FillRect", {
         fixLengthToSize = true,
         skip = false
     },
-
+    
     input = {
         active = true,
         cursor = Cursor.Text,
@@ -43,9 +43,12 @@ Nodes:define("TextField", "FillRect", {
         end
     end,
 
-    selectIndex = function(self, index)
+    selectIndex = function(self, index, pointer)
         if not index then
             index = self.get.textInput.selectIndex
+        end
+        if index < 0 then
+            index = 0
         end
         self.get.textInput.selectIndex = index
 
@@ -55,8 +58,16 @@ Nodes:define("TextField", "FillRect", {
             local glyph = self.get.txt:getGlyph(index)
             if glyph then
                 self.get.cursor.x = glyph.x + glyph.width
-                print(glyph, self.get.cursor.parent.x, self.get.cursor.x, glyph.x, glyph.width)
+                local pos = self.worldPos.x + self.get.container.x + self.get.container.width/2 + self.get.root.x + self.get.txt.x
+
+                if pointer and pointer.x < pos + glyph.x + glyph.width/2 then
+                    self.func:selectIndex(index - 1)
+                    return
+                end
             end
+        end
+        if self.get.selected then
+            self.get.cursor.func:show()
         end
     end,
 
@@ -91,10 +102,10 @@ Nodes:define("TextField", "FillRect", {
             input = {
                 active = true,
                 cursor = self.get.inputEnabled and Cursor.Text or Cursor.Default,
-                onPointerDown = function(txt, mouse, glyph)
+                onPointerDown = function(txt, pointer, glyph)
                     self.func:focusField()
                     if self.get.selected then
-                        self.func:selectIndex(glyph.index)
+                        self.func:selectIndex(glyph.index, pointer)
                     end
                 end
             }
@@ -226,9 +237,12 @@ Nodes:define("TextField", "FillRect", {
                 end
             end
 
-            -- if Keyboard:justPressed(Key.Right) then
-                
-            -- end
+            if Keyboard:pulseHeld(Key.Right, 0.05, 0.5) then
+                self.func:selectIndex(self.get.textInput.selectIndex + 1)
+            end
+            if Keyboard:pulseHeld(Key.Left, 0.05, 0.5) then
+                self.func:selectIndex(self.get.textInput.selectIndex - 1)
+            end
 
             if tabbed or self.func:deselect() then
                 self.get.selected = false

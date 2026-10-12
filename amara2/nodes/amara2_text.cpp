@@ -40,6 +40,7 @@ namespace Amara {
         int lineSpacing = 0;
 
         TextLayout layout;
+        int num_displayed_characters = -1;
 
         Text_TempProps temp_props;
         bool in_drawing = false;
@@ -211,6 +212,7 @@ namespace Amara {
                 layout = font->generateLayout(converted_text, wrapWidth, wrapMode, alignment, lineSpacing);
                 textWidth = layout.width;
                 textHeight = layout.height;
+                num_displayed_characters = layout.display_size();
             }
         }
 
@@ -225,7 +227,7 @@ namespace Amara {
             converted_text = Amara::String::utf8_to_utf32(str);  // Convert UTF-8 string to UTF-32
 
             updateText();
-            progress = layout.display_size();
+            progress = num_displayed_characters;
         }
 
         sol::object setText(sol::variadic_args input) {
@@ -304,9 +306,10 @@ namespace Amara {
 
             float cursorX = 0, cursorY = 0;
             
-            if (progress > converted_text.size()) {
-                progress = converted_text.size();
+            if (progress > num_displayed_characters) {
+                progress = num_displayed_characters;
             }
+            if (progress < 0) progress = 0;
             
             Vector2 render_pos = (renderPixelPerfect) ? pos.round() : pos;
             
@@ -360,6 +363,7 @@ namespace Amara {
 
                     if (glyph.is_config) {
                         configure(glyph.config);
+                        continue;
                     }
 
                     if (temp_props.manipulator.valid()) {
@@ -443,6 +447,10 @@ namespace Amara {
 
                     if (!glyph.renderable) continue;
 
+                    count += 1;
+
+                    if (glyph.invisible) continue;
+
                     if (font->texture && gameProps->renderer) {
                         SDL_SetTextureScaleMode(font->texture, SDL_SCALEMODE_NEAREST);
                         SDL_SetTextureColorMod(font->texture, temp_props.color.r, temp_props.color.g, temp_props.color.b);
@@ -498,8 +506,6 @@ namespace Amara {
                         );
                     }
                     #endif
-
-                    count += 1;
                 }
             }
 
@@ -562,7 +568,7 @@ namespace Amara {
         bool progressText(int speed) {
             progress += speed;
             if (speed > 0 && progress >= layout.display_size()) {
-                progress = layout.display_size();
+                progress = num_displayed_characters;
                 return true;
             }
             if (speed < 0 && progress <= 0) {

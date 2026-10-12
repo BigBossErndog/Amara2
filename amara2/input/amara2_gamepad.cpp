@@ -275,6 +275,19 @@ namespace Amara {
             return 0;
         }
 
+        bool pulseHeld(Amara::GamepadButton _buttoncode, double interim) {
+            if (buttons.find(_buttoncode) != buttons.end()) {
+                return buttons[_buttoncode].pulseHeld(interim);
+            }
+            return false;
+        }
+        bool pulseHeld(Amara::GamepadButton _buttoncode, double interim, double delay) {
+            if (buttons.find(_buttoncode) != buttons.end()) {
+                return buttons[_buttoncode].pulseHeld(interim, delay);
+            }
+            return false;
+        }
+
         void update(double deltaTime) {
             if (gamepad == nullptr) return;
             
@@ -369,6 +382,11 @@ namespace Amara {
                 "justPressed", &Amara::Gamepad::justPressed,
                 "justReleased", &Amara::Gamepad::justReleased,
                 "timeHeld", &Amara::Gamepad::timeHeld,
+                "timeSinceHeld", &Amara::Gamepad::timeSinceHeld,
+                "pulseHeld", sol::overload(
+                    sol::resolve<bool(Amara::GamepadButton, double)>(&Gamepad::pulseHeld),
+                    sol::resolve<bool(Amara::GamepadButton, double, double)>(&Gamepad::pulseHeld)
+                ),
                 "leftStick", sol::readonly(&Amara::Gamepad::leftStick),
                 "rightStick", sol::readonly(&Amara::Gamepad::rightStick),
                 "leftTrigger", sol::readonly(&Amara::Gamepad::leftTrigger),
@@ -523,6 +541,25 @@ namespace Amara {
             }
             return (t == -1) ? 0 : t;
         }
+
+        bool pulseHeld(Amara::GamepadButton _buttoncode, double _interim) {
+            for (Amara::Gamepad& gamepad : gamepads) {
+                if (gamepad.active) {
+                    if (!gamepad.buttonInitialized(_buttoncode)) continue;
+                    if (gamepad.pulseHeld(_buttoncode, _interim)) return true;
+                }
+            }
+            return false;
+        }
+        bool pulseHeld(Amara::GamepadButton _buttoncode, double _interim, double _delay) {
+            for (Amara::Gamepad& gamepad : gamepads) {
+                if (gamepad.active) {
+                    if (!gamepad.buttonInitialized(_buttoncode)) continue;
+                    if (gamepad.pulseHeld(_buttoncode, _interim, _delay)) return true;
+                }
+            }
+            return false;
+        }
         
         void update(double deltaTime) {
             for (auto it = gamepads.begin(); it != gamepads.end(); it++) {
@@ -559,6 +596,10 @@ namespace Amara {
                 "justReleased", &Amara::GamepadManager::justReleased,
                 "timeHeld", &Amara::GamepadManager::timeHeld,
                 "timeSinceHeld", &Amara::GamepadManager::timeSinceHeld,
+                "pulseHeld", sol::overload(
+                    sol::resolve<bool(Amara::GamepadButton, double)>(&GamepadManager::pulseHeld),
+                    sol::resolve<bool(Amara::GamepadButton, double, double)>(&GamepadManager::pulseHeld)
+                ),
                 sol::meta_function::length, [](Amara::GamepadManager& manager) {
                     return manager.connectedGamepadsCount;
                 }

@@ -203,6 +203,26 @@ namespace Amara {
 
             return (c == -1) ? 0 : c;
         }
+        bool pulseHeld(double interim) {
+            for (SDL_Keycode k: keys) {
+                if (gameProps->keyboard->pulseHeld(k, interim)) return true;
+            }
+            for (Amara::GamepadButton b: gamepadButtons) {
+                if (gameProps->gamepads->pulseHeld(b, interim)) return true;
+            }
+            if (virtualButton.pulseHeld(interim)) return true;
+            return false;
+        }
+        bool pulseHeld(double interim, double delay) {
+            for (SDL_Keycode k: keys) {
+                if (gameProps->keyboard->pulseHeld(k, interim, delay)) return true;
+            }
+            for (Amara::GamepadButton b: gamepadButtons) {
+                if (gameProps->gamepads->pulseHeld(b, interim, delay)) return true;
+            }
+            if (virtualButton.pulseHeld(interim, delay)) return true;
+            return false;
+        }
 
         void update(double deltaTime) {
             virtualButton.update(deltaTime);
@@ -337,7 +357,11 @@ namespace Amara {
                 "isDown", sol::property(&ControlScheme::isDown),
                 "justPressed", sol::property(&ControlScheme::justPressed),
                 "justReleased", sol::property(&ControlScheme::justReleased),
-                "timeHeld", sol::property(&ControlScheme::timeHeld)
+                "timeHeld", sol::property(&ControlScheme::timeHeld),
+                "pulseHeld", sol::overload(
+                    sol::resolve<bool(double)>(&ControlScheme::pulseHeld),
+                    sol::resolve<bool(double, double)>(&ControlScheme::pulseHeld)
+                )
             );
         }
     };

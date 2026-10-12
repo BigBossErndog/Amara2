@@ -10,12 +10,15 @@ namespace Amara {
         double timeHeld = 0;
         double timeSinceHeld = 0;
 
+        double pulseTimeRec = 0;
+
         void reset() {
             isDown = false;
             justPressed = false;
             justReleased = false;
             timeHeld = 0;
             timeSinceHeld = 0;
+            pulseTimeRec = 0;
         }
         
         bool press() {
@@ -23,6 +26,7 @@ namespace Amara {
                 isDown = true;
                 timeHeld = 0;
                 timeSinceHeld = 0;
+                pulseTimeRec = 0;
                 justPressed = true;
                 return true;
             }
@@ -37,6 +41,18 @@ namespace Amara {
                 return true;
             }
             return false;
+        }
+
+        bool pulseHeld(double interim) {
+            bool ret = justPressed;
+            while (timeHeld - pulseTimeRec >= interim) {
+                pulseTimeRec += interim;
+                ret = true;
+            }
+            return ret;
+        }
+        bool pulseHeld(double interim, double delay) {
+            return justPressed || (pulseHeld(interim) && timeHeld > delay);
         }
 
         void update(double deltaTime) {
@@ -56,7 +72,11 @@ namespace Amara {
                 "justPressed", sol::readonly(&Button::justPressed),
                 "justReleased", sol::readonly(&Button::justReleased),
                 "timeHeld", sol::readonly(&Button::timeHeld),
-                "timeSinceHeld", sol::readonly(&Button::timeSinceHeld)
+                "timeSinceHeld", sol::readonly(&Button::timeSinceHeld),
+                "pulseHeld", sol::overload(
+                    sol::resolve<bool(double)>(&Button::pulseHeld),
+                    sol::resolve<bool(double, double)>(&Button::pulseHeld)
+                )
             );
         }
     };
