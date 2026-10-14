@@ -28,10 +28,10 @@ namespace Amara {
 
         void update_size() {
             left = (-width/2.0)/zoom.x;
-            right = (width/2.0)/zoom.y;
-            top = (-height/2.0)/zoom.w;
-            bottom = (height/2.0)/zoom.h;
-
+            right = (width/2.0)/zoom.x;
+            top = (-height/2.0)/zoom.y;
+            bottom = (height/2.0)/zoom.y;
+            
             if (resetScaling) {
                 left = left/lastTotalScaling.x;
                 right = right/lastTotalScaling.y;

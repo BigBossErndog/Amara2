@@ -257,11 +257,9 @@ public:
 
 class Hotkey: public Amara::Action {
 public:
-    bool pressed = false;
-    bool rec_pressed = false;
+    Amara::Button state;
 
-    bool justPressed = false;
-    bool justReleased = false;
+    bool pressed = false;
 
     double timeHeld = 0;
 
@@ -326,12 +324,9 @@ public:
     }
 
     virtual void act(double deltaTime) {
-        rec_pressed = pressed;
+        state.update(deltaTime);
+
         pressed = false;
-
-        justPressed = false;
-        justReleased = false;
-
         if (configs.size() > 0) {
             for (HotkeyConfig& config: configs) {
                 if (config.pressed()) {
@@ -342,16 +337,16 @@ public:
         }
 
         if (pressed) {
-            timeHeld += deltaTime;
-            if (!rec_pressed) {
-                timeHeld = 0;
-                justPressed = true;
-                if (funcs.hasFunction("onPress")) funcs.callFunction(actor, "onPress");
-            }
+            state.press();
             if (funcs.hasFunction("whilePressed")) funcs.callFunction(actor, "whilePressed", deltaTime);
         }
-        if (rec_pressed) {
-            if (funcs.hasFunction("onRelease")) funcs.callFunction(actor, "onRelease");
+        else state.release();
+
+        if (state.justPressed) {
+            if (funcs.hasFunction("onPress")) funcs.callFunction(actor, "onPress");
+        }
+        if (state.justReleased) {
+             if (funcs.hasFunction("onRelease")) funcs.callFunction(actor, "onRelease");
         }
     }
 
@@ -362,10 +357,11 @@ public:
     static void bind_lua(sol::state& lua) {
         lua.new_usertype<Hotkey>("Hotkey",
             "pressing", &Hotkey::keyPressed,
-            "isDown", sol::readonly(&Hotkey::pressed),
-            "justPressed", sol::readonly(&Hotkey::justPressed),
-            "justReleased", sol::readonly(&Hotkey::justReleased),
-            "timeHeld", sol::readonly(&Hotkey::timeHeld)
+            "state", sol::readonly(&Hotkey::state),
+            "isDown", sol::property([](Hotkey& h) { return h.state.isDown; }),
+            "justPressed", sol::property([](Hotkey& h) { return h.state.justPressed; }),
+            "justReleased", sol::property([](Hotkey& h)  { return h.state.justReleased; }),
+            "timeHeld", sol::property([](Hotkey& h) { return h.state.timeHeld; })
         );
     }
 };
