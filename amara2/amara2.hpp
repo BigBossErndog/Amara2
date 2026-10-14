@@ -1,14 +1,12 @@
 #pragma once
 
 #if defined(_MSC_VER)
-    // Mixing an engine lib with a plain-header compile (or vice versa) becomes a link error
     #ifdef AMARA_ENGINE_TOOLS
         #pragma detect_mismatch("amara2_variant", "engine")
     #else
         #pragma detect_mismatch("amara2_variant", "plain")
     #endif
 
-    // System libs travel with the header, so the final link doesn't list them
     #pragma comment(lib, "shell32.lib")
     #pragma comment(lib, "user32.lib")
     #pragma comment(lib, "gdi32.lib")
@@ -23,7 +21,6 @@
         #pragma comment(lib, "opengl32.lib")
     #endif
 
-    // Pick the right lib automatically when compiling main.cpp
     #ifndef AMARA_IMPLEMENTATION
         #ifdef AMARA_ENGINE_TOOLS
             #pragma comment(lib, "amara2-engine.lib")
@@ -33,14 +30,9 @@
     #endif
 #endif
 
-// Runs the whole engine. Defined in the lib (or in this translation unit when
-// AMARA_IMPLEMENTATION is defined for a single-compilation build).
 int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool encrypt_output = false);
 
 #ifndef AMARA_IMPLEMENTATION
-    // ---------------------------------------------------------------
-    //  Light mode (compiling main.cpp): the engine is in the precompiled lib
-    // ---------------------------------------------------------------
     #include <stdio.h>
     #include <stdlib.h>
 
@@ -57,9 +49,6 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
     #endif
 
 #else
-// -------------------------------------------------------------------
-//  Implementation mode (compiling the lib): the full engine
-// -------------------------------------------------------------------
 
 #ifndef AMARA_STD
 #define AMARA_STD
@@ -353,7 +342,6 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
     #include "garden/amara2_creator.cpp"
 #endif
 
-// Entry point called by main.cpp (keeps the Creator code inside the lib)
 int amara_run(int argc, char** argv, const char* encryption_key, bool encrypt_output) {
     Amara::Creator creator(argc, argv);
 
@@ -362,9 +350,14 @@ int amara_run(int argc, char** argv, const char* encryption_key, bool encrypt_ou
         if (encrypt_output) creator.encrypt_output = true;
         creator.setEncryption();
     }
-
+    
     if (creator.starting_scripts.size() > 0) {
         return creator.startCreation();
+    }
+
+    std::string demiurgicPath = creator.system.getRelativePath("demiurgic.world");
+    if (creator.system.exists(demiurgicPath)) {
+        return creator.startCreation(demiurgicPath);
     }
 
     std::string indexPath = creator.system.getScriptPath("index");
@@ -374,4 +367,4 @@ int amara_run(int argc, char** argv, const char* encryption_key, bool encrypt_ou
     return 1;
 }
 
-#endif // AMARA_IMPLEMENTATION
+#endif

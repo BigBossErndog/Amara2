@@ -45,7 +45,7 @@ set "EXTRA_SOURCES=%RESOURCES%\libs\miniz-3.1.1\miniz.c"
 
 rem ---------- Compiler flags ----------
 rem /w = no warnings (like -w), /MT = static CRT (like -static), /O2 = optimize
-set "CL_FLAGS=/nologo /std:c++17 /EHsc /MT /O2 /w /bigobj /utf-8 /Zc:__cplusplus"
+set "CL_FLAGS=/nologo /std:c++17 /EHs /MT /O2 /w /bigobj /utf-8 /Zc:__cplusplus"
 
 rem ---------- Linker flags ----------
 set "SYSTEM_LIBS=opengl32.lib shell32.lib user32.lib gdi32.lib winmm.lib imm32.lib ole32.lib oleaut32.lib version.lib advapi32.lib setupapi.lib"

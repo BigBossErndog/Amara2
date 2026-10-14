@@ -233,7 +233,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         -- WINDOWS_COMPILER_FLAGS
         table.insert(args, "/w")
         table.insert(args, "/std:c++17")
-        table.insert(args, "/EHsc")
+        table.insert(args, "/EHs")
         table.insert(args, "/O2")
         table.insert(args, "/MT")                -- static runtime (replaces -static)
         table.insert(args, "/utf-8")             -- clang assumes UTF-8 sources; MSVC does not

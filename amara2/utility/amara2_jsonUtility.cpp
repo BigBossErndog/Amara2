@@ -44,10 +44,10 @@ namespace Amara {
             return value;
         }
         catch (const nlohmann::json::exception& e) {
-            fatal_error(e.what());
+            fatal_error(e.what(), " Got: ", data);
         }
         catch (const std::exception& e) {
-            fatal_error(e.what());
+            fatal_error(e.what(), " Got: ", data);
         }
         throw std::runtime_error("unreachable");
     }
@@ -59,10 +59,10 @@ namespace Amara {
             return prop;
         }
         catch (const nlohmann::json::exception& e) {
-            fatal_error(e.what(), ". For property \"", key, "\"");
+            fatal_error(e.what(), ". Property: \"", key, "\". Got: ", obj[key]);
         }
         catch (const std::exception& e) {
-            fatal_error(e.what(), " For property \"", key, "\".");
+            fatal_error(e.what(), ". Property \"", key, "\". Got: ", obj[key]);
         }
         throw std::runtime_error("unreachable");
     }
@@ -77,6 +77,8 @@ namespace Amara {
         fatal_error("Error: Table does not contain \"", key, "\".");
         throw std::runtime_error("unreachable");
     }
+
+    
     
     nlohmann::json string_to_json(const std::string& input, bool allow_null) {
         if (input.size() == 0) return allow_null ? nullptr : std::string("");
