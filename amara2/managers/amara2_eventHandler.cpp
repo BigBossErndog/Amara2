@@ -27,15 +27,23 @@ namespace Amara {
             SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
             SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
             
-            gameProps->cursor_default = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
-            gameProps->cursor_pointer = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
-            gameProps->cursor_text = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
-            gameProps->cursor_wait = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
-            gameProps->cursor_progress = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_PROGRESS);
-            gameProps->cursor_notAllowed = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED);
-            if (gameProps->cursor_default) {
-                SDL_SetCursor(gameProps->cursor_default);
-            }
+            gameProps->cursor_map[Amara::CursorEnum::Default] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+            gameProps->cursor_map[Amara::CursorEnum::Pointer] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
+            gameProps->cursor_map[Amara::CursorEnum::Text] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
+            gameProps->cursor_map[Amara::CursorEnum::Wait] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+            gameProps->cursor_map[Amara::CursorEnum::Progress] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_PROGRESS);
+            gameProps->cursor_map[Amara::CursorEnum::NotAllowed] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED);
+            
+            gameProps->cursor_map[Amara::CursorEnum::ResizeNW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NW_RESIZE);
+            gameProps->cursor_map[Amara::CursorEnum::ResizeN]  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_N_RESIZE);
+            gameProps->cursor_map[Amara::CursorEnum::ResizeNE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NE_RESIZE);
+            gameProps->cursor_map[Amara::CursorEnum::ResizeW]  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_W_RESIZE);
+            gameProps->cursor_map[Amara::CursorEnum::ResizeE]  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_E_RESIZE);
+            gameProps->cursor_map[Amara::CursorEnum::ResizeSW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SW_RESIZE);
+            gameProps->cursor_map[Amara::CursorEnum::ResizeS]  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_S_RESIZE);
+            gameProps->cursor_map[Amara::CursorEnum::ResizeSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SE_RESIZE);
+
+            gameProps->system->setCursor(Amara::CursorEnum::Default);
         }
         
         void changeControlMode(Amara::InputMode mode) {
@@ -332,6 +340,13 @@ namespace Amara {
             }
 
             gameProps->system->setCursor(gameProps->current_cursor);
+        }
+
+        ~EventHandler() {
+            for (auto& [key, value]: gameProps->cursor_map) {
+                SDL_DestroyCursor(value);
+            }
+            gameProps->cursor_map.clear();
         }
     };
 

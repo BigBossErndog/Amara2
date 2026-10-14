@@ -857,7 +857,9 @@ namespace Amara {
 
         std::string removeBasePath(std::filesystem::path filePath) {
             try {
-                return std::filesystem::relative(filePath, getBasePath()).string();
+                std::string path = std::filesystem::relative(filePath, getBasePath()).string();
+                if (path.empty()) return filePath.string();
+                return path;
             }
             catch (const std::filesystem::filesystem_error& e) {
                 return filePath.string();
@@ -873,6 +875,19 @@ namespace Amara {
             std::filesystem::path exeDir = getBasePath();
             std::filesystem::path filePath = exeDir / (std::filesystem::path)path;
             return filePath.lexically_normal().string();
+        }
+        std::string getRelativePath(std::string base_path, std::string path) {
+            std::filesystem::path fs_base_path = base_path;
+            std::filesystem::path fs_path = path;
+            try {
+                std::string final_path = std::filesystem::relative(path, base_path).string();
+                if (final_path.empty()) return path;
+                return final_path;
+            }
+            catch (const std::filesystem::filesystem_error& e) {
+                return path;
+            }
+            return path;
         }
 
         std::string getScriptPath(std::string path) {
@@ -1127,28 +1142,11 @@ namespace Amara {
         }
 
         void setCursor(CursorEnum cursor) {
-            switch (cursor) {
-                case CursorEnum::Default:
-                    SDL_SetCursor(gameProps->cursor_default);
-                    break;
-                case CursorEnum::Pointer:
-                    SDL_SetCursor(gameProps->cursor_pointer);
-                    break;
-                case CursorEnum::Text:
-                    SDL_SetCursor(gameProps->cursor_text);
-                    break;
-                case CursorEnum::Wait:
-                    SDL_SetCursor(gameProps->cursor_wait);
-                    break;
-                case CursorEnum::Progress:
-                    SDL_SetCursor(gameProps->cursor_progress);
-                    break;
-                case CursorEnum::NotAllowed:
-                    SDL_SetCursor(gameProps->cursor_notAllowed);
-                    break;
-                default:
-                    fatal_error("Error: Unsupported cursor type.");
-                    break;
+            if (gameProps->cursor_map.find(cursor) != gameProps->cursor_map.end()) {
+                SDL_SetCursor(gameProps->cursor_map[cursor]);
+            }
+            else {
+                fatal_error("Error: Unsupported cursor type.");
             }
         }
 
@@ -2363,7 +2361,10 @@ namespace Amara {
                 "getBasePath", &SystemManager::getBasePath,
                 "setBasePath", &SystemManager::setBasePath,
                 "resetBasePath", &SystemManager::resetBasePath,
-                "getRelativePath", &SystemManager::getRelativePath,
+                "getRelativePath", sol::overload(
+                    sol::resolve<std::string(std::string)>(&SystemManager::getRelativePath),
+                    sol::resolve<std::string(std::string, std::string)>(&SystemManager::getRelativePath)
+                ),
                 "getScriptPath", &SystemManager::getScriptPath,
                 "getAssetPath", &SystemManager::getAssetPath,
                 "getFileName", sol::overload(

@@ -711,8 +711,13 @@ namespace Amara {
         sol::object luaGetChildren() {
             if (children.size() > 0) {
                 sol::table result = gameProps->lua.create_table();
+                Amara::Node* child;
                 for (int i = 0; i < children.size(); i++) {
-                    result[i + 1] = children[i]->get_lua_object();
+                    child = children[i];
+                    if (child == nullptr || child->destroyed || child->parent != this) {
+                        continue;
+                    }
+                    result[i + 1] = child->get_lua_object();
                 }
                 return result;
             }
@@ -1051,6 +1056,18 @@ namespace Amara {
                 "createChild", &Node::luaCreateChild,
                 "addChild", &Node::addChild,
                 "getChild", &Node::luaGetChild,
+                "numberOfChildren", sol::property([](Node* node) {
+                    int count = 0;
+
+                    Amara::Node* child;
+                    for (auto child: node->children) {
+                        if (child == nullptr || child->destroyed || child->parent != node) {
+                            continue;
+                        }
+                        count += 1;
+                    }
+                    return count;
+                }),
                 "destroyed", sol::readonly(&Node::destroyed),
                 "destroy", &Node::destroy,
                 "destroyChildren", &Node::destroyChildren,

@@ -8,7 +8,7 @@
 #include <SDL3/SDL_main.h>
 #endif
 
-#if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)
+#if defined(_WIN32)
 void EnsureStandardHandles() {
     OutputDebugStringA("Amara Engine: Checking standard handles...\n");
 

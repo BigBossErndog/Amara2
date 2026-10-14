@@ -213,11 +213,6 @@ namespace Amara {
         Pointer* globalPointer = nullptr;
 
         CursorEnum current_cursor = CursorEnum::Default;
-        SDL_Cursor* cursor_default = nullptr;
-        SDL_Cursor* cursor_pointer = nullptr;
-        SDL_Cursor* cursor_text = nullptr;
-        SDL_Cursor* cursor_wait = nullptr;
-        SDL_Cursor* cursor_progress = nullptr;
-        SDL_Cursor* cursor_notAllowed = nullptr;
+        std::unordered_map<Amara::CursorEnum, SDL_Cursor*> cursor_map;
     };
 }

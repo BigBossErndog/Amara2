@@ -100,7 +100,15 @@ namespace Amara {
         Text = 3,
         Wait = 4,
         Progress = 5,
-        NotAllowed = 6
+        NotAllowed = 6,
+        ResizeN = 7,
+        ResizeNW = 8,
+        ResizeNE = 9,
+        ResizeW = 10,
+        ResizeE = 11,
+        ResizeSW = 12,
+        ResizeS = 13,
+        ResizeSE = 14
     };
 
     void bind_lua_Enums(sol::state& lua) {
@@ -193,7 +201,15 @@ namespace Amara {
             "NotAllowed", Amara::CursorEnum::NotAllowed,
             "Forbidden", Amara::CursorEnum::NotAllowed,
             "Wait", Amara::CursorEnum::Wait,
-            "Progress", Amara::CursorEnum::Progress
+            "Progress", Amara::CursorEnum::Progress,
+            "ResizeNW", Amara::CursorEnum::ResizeNW,
+            "ResizeN", Amara::CursorEnum::ResizeN,
+            "ResizeNE", Amara::CursorEnum::ResizeNE,
+            "ResizeW", Amara::CursorEnum::ResizeW,
+            "ResizeE", Amara::CursorEnum::ResizeE,
+            "ResizeSW", Amara::CursorEnum::ResizeSW,
+            "ResizeS", Amara::CursorEnum::ResizeS,
+            "ResizeSE", Amara::CursorEnum::ResizeSE
         );
 
         lua.new_enum("InputMode",
