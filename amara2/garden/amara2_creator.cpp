@@ -345,7 +345,23 @@ namespace Amara {
             }
             for (auto it = starting_scripts.begin(); it != starting_scripts.end(); it++) {
                 try {
-                    scripts.run(*it);
+                    std::string path = *it;
+                    if (String::endsWith(path, "demiurgic.world")) {
+                        nlohmann::json config = system.readJSON(path);
+
+                        if (json_has(config, "scripts")) {
+                            nlohmann::json list = config["scripts"];
+                            if (list.is_array()) {
+                                for (nlohmann::json path: list) {
+                                    std::string path = json_convert<std::string>(path);
+                                }
+                            }
+                        }
+
+                    }
+                    else {
+                        scripts.run(path);
+                    }
                 }
                 catch (const sol::error& e) {
                     error_log(e.what());

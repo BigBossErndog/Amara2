@@ -9,6 +9,12 @@ namespace Amara {
         float top = 0;
         float bottom = 0;
 
+        Vector2 lastTotalScaling = 1;
+
+        bool resetScaling = false;
+
+        Amara::Vector2 zoom = 1;
+
         Vector2 origin = { 0.5, 0.5 };
         
         Container(): Amara::Node() {
@@ -21,10 +27,17 @@ namespace Amara {
         }
 
         void update_size() {
-            left = -width/2.0;
-            right = width/2.0;
-            top = -height/2.0;
-            bottom = height/2.0;
+            left = (-width/2.0)/zoom.x;
+            right = (width/2.0)/zoom.y;
+            top = (-height/2.0)/zoom.w;
+            bottom = (height/2.0)/zoom.h;
+
+            if (resetScaling) {
+                left = left/lastTotalScaling.x;
+                right = right/lastTotalScaling.y;
+                top = top/lastTotalScaling.y;
+                bottom = bottom/lastTotalScaling.y;
+            }
         }
 
         void setWidth(float _w) {
@@ -78,6 +91,8 @@ namespace Amara {
 
             Vector2 vcenter = { v.w/2.0f, v.h/2.0f };
             Vector2 totalZoom = { passOn.zoom.x*passOn.window_zoom.x, passOn.zoom.y*passOn.window_zoom.y };
+
+            lastTotalScaling = totalZoom;
 
             Vector3 anchoredPos = Vector3(
                 rotateAroundAnchor(
@@ -133,6 +148,13 @@ namespace Amara {
 
             new_props.anchor = Vector3(0, 0, 0);
             new_props.scroll = Vector2(0, 0);
+            if (resetScaling) {
+                new_props.scale = Vector2(1);
+                new_props.zoom = Vector2(1);
+                new_props.window_zoom = Vector2(1);
+                new_props.input_scale = Vector2(1);
+            }
+            new_props.zoom *= zoom;
 
             gameProps->passOn = new_props;
 
@@ -172,6 +194,15 @@ namespace Amara {
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<Container>("Container",
                 sol::base_classes, sol::bases<Amara::Node>(),
+                "resetScaling", &Amara::Container::resetScaling,
+                "zoom", sol::property(
+                    [](Amara::Container& c) -> Vector2& {
+                        return c.zoom;
+                    },
+                    [](Amara::Container& c, sol::object v) {
+                        c.zoom = v;
+                    }
+                ),
                 "width", sol::property([](Amara::Container& c) -> float { return c.width; }, [](Amara::Container& c, sol::object v) {
                     if (v.is<float>()) c.setWidth(v.as<float>());
                     else if (v.is<int>()) c.setWidth(static_cast<float>(v.as<int>()));

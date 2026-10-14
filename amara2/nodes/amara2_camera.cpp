@@ -366,7 +366,7 @@ namespace Amara {
                 gameProps->passOn = passOn;
 				++it;
 			}
-
+            
             gameProps->passOn = rec_passOn;
 
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
