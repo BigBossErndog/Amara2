@@ -206,6 +206,8 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             table.insert(args, "-fPIC")
             table.insert(args, "-ftls-model=global-dynamic")
 
+            table.insert(args, "-DAMARA_IMPLEMENTATION")
+
             if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
                 table.insert(args, "-DAMARA_PLUGINS")
             end

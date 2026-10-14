@@ -77,6 +77,13 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local minimp3Path = System:join(buildModule, "resources/libs/minimp3")
         local pfdPath = System:join(buildModule, "resources/libs/portable-file-dialogs")
         local tinyxml2Path = System:join(buildModule, "resources/libs/tinyxml2")
+
+        local libDir = System:getRelativePath("lib")
+        local hasPlugins = (projectData["plugin-directories"] ~= nil) and (#projectData["plugin-directories"] > 0)
+        local useLib = (not config.buildTest)
+            and (not hasPlugins)
+            and System:exists(System:join(libDir, "amara2.lib"))
+        self.get.useLib = useLib
         
         -- Clean and create build directory as per Makefile
         if System:exists(buildDir) then
@@ -84,7 +91,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
         System:createDirectory(buildDir)
         System:copy(
-            System:join(buildModule, "resources/dlls/win64"),
+            System:getRelativePath("resources/dlls/win64"),
             buildDir
         )
         
@@ -132,11 +139,11 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         -- AMARA_PATH
         table.insert(args, "/I" ..  fix_path(System:getRelativePath("amara2")))
         
-        if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
+        if hasPlugins then
             local plugins_path = System:join(self.get.projectPath, "plugins")
             table.insert(args, "/I" .. fix_path(plugins_path))
 
-            local plugins = self.get.projectData["plugin-directories"]
+            local plugins = projectData["plugin-directories"]
             local plugin_template = System:readFile(System:getRelativePath("amara2/main/plugin_template.cpp"))
             for i, plugin in ipairs(plugins) do
                 local plugin_path = System:join(plugins_path, plugin)
@@ -207,20 +214,21 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             System:writeFile(System:join(plugins_path, "amara2_plugins.cpp"), plugin_template)
         end
 
-        -- OTHER_LIB_PATHS
-        table.insert(args, "/Isrc")
-        table.insert(args, "/I" .. fix_path(nlohmannPath))
-        table.insert(args, "/I" .. fix_path(luaPath))
-        table.insert(args, "/I" .. fix_path(sol2Path))
-        table.insert(args, "/I" .. fix_path(stbPath))
-        table.insert(args, "/I" .. fix_path(glmPath))
-        table.insert(args, "/I" .. fix_path(tinyxml2Path))
-        table.insert(args, "/I" .. fix_path(minimp3Path))
-        table.insert(args, "/I" .. fix_path(pfdPath))
+        if not useLib then
+            table.insert(args, "/Isrc")
+            table.insert(args, "/I" .. fix_path(nlohmannPath))
+            table.insert(args, "/I" .. fix_path(luaPath))
+            table.insert(args, "/I" .. fix_path(sol2Path))
+            table.insert(args, "/I" .. fix_path(stbPath))
+            table.insert(args, "/I" .. fix_path(glmPath))
+            table.insert(args, "/I" .. fix_path(tinyxml2Path))
+            table.insert(args, "/I" .. fix_path(minimp3Path))
+            table.insert(args, "/I" .. fix_path(pfdPath))
 
-        -- SDL_PATHS_WIN64
-        table.insert(args, "/I" .. fix_path(System:join(sdl3Path, "include")))
-        table.insert(linkArgs, "/LIBPATH:" .. fix_path(System:join(sdl3Path, "lib", "x64")))
+            -- SDL_PATHS_WIN64
+            table.insert(args, "/I" .. fix_path(System:join(sdl3Path, "include")))
+            table.insert(linkArgs, "/LIBPATH:" .. fix_path(System:join(sdl3Path, "lib", "x64")))
+        end
         
         -- WINDOWS_COMPILER_FLAGS
         table.insert(args, "/w")
@@ -232,15 +240,23 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "/bigobj")            -- sol2 translation units can exceed the default object limit
         table.insert(args, "/Zc:__cplusplus")
         table.insert(linkArgs, "/SUBSYSTEM:WINDOWS")
-        -- If linking fails with "unresolved external symbol WinMain", the entry point is `main`:
-        -- table.insert(linkArgs, "/ENTRY:mainCRTStartup")
+
+        if useLib then
+            -- amara2.hpp adds `#pragma comment(lib, "amara2.lib")` by itself; it just needs to be found
+            table.insert(linkArgs, "/LIBPATH:" .. fix_path(libDir))
+        else
+            -- Compile the whole engine into main.obj
+            table.insert(args, "/DAMARA_IMPLEMENTATION")
+        end
         
         -- EXTRA_OPTIONS
-        if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
+        if hasPlugins then
             table.insert(args, "/DAMARA_PLUGINS")
         end
         if not config.buildTest then
-            table.insert(args, "/DAMARA_DISABLE_EXTERNAL_SCRIPTS")
+            if not useLib then
+                table.insert(args, "/DAMARA_DISABLE_EXTERNAL_SCRIPTS")
+            end
         else
             table.insert(args, "/DAMARA_DEBUGGING")
             table.insert(args, "/DAMARA_ENGINE_TOOLS")
@@ -253,18 +269,20 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             end
         end
 
-        -- LINKER_FLAGS_WIN64
-        table.insert(args, "/DAMARA_OPENGL")
-        table.insert(linkArgs, "opengl32.lib")
-        table.insert(linkArgs, "SDL3.lib")
-        table.insert(linkArgs, "shell32.lib")
-        table.insert(linkArgs, "user32.lib")
-        table.insert(linkArgs, "gdi32.lib")
-        table.insert(linkArgs, "winmm.lib")
-        table.insert(linkArgs, "imm32.lib")
-        table.insert(linkArgs, "ole32.lib")
-        table.insert(linkArgs, "oleaut32.lib")
-        table.insert(linkArgs, "version.lib")
+        if not useLib then
+            -- LINKER_FLAGS_WIN64
+            table.insert(args, "/DAMARA_OPENGL")
+            table.insert(linkArgs, "opengl32.lib")
+            table.insert(linkArgs, "SDL3.lib")
+            table.insert(linkArgs, "shell32.lib")
+            table.insert(linkArgs, "user32.lib")
+            table.insert(linkArgs, "gdi32.lib")
+            table.insert(linkArgs, "winmm.lib")
+            table.insert(linkArgs, "imm32.lib")
+            table.insert(linkArgs, "ole32.lib")
+            table.insert(linkArgs, "oleaut32.lib")
+            table.insert(linkArgs, "version.lib")
+        end
 
         if #static_libs > 0 then
             for _, lib in ipairs(static_libs) do
@@ -272,11 +290,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             end
         end
 
-        -- Output files (object file goes into the build dir; it is removed after the build)
         table.insert(args, "/Fo:" .. quote(slash(self.get.objFile)))
         table.insert(args, "/Fe:" .. quote(slash(System:join(buildDir, self.get.executableName .. ".exe"))))
 
-        -- Everything after /link goes to the linker
         table.insert(args, "/link")
         for _, a in ipairs(linkArgs) do
             table.insert(args, a)
@@ -334,8 +350,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.world:hideWindow()
 
         if self.get.iconPath then
-            -- The .ico is written here; rc.exe itself runs as the first step of the build .bat file.
-            -- Forward slashes keep rc from treating backslashes in the path as escape characters.
             System:writeICO(self.get.iconPath, self.get.iconDest)
             local iconDestForRc = string.gsub(self.get.iconDest, "\\", "/")
             System:writeFile(self.get.resFile, "1 ICON \"" .. iconDestForRc .. "\"\n")

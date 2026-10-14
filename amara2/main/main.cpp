@@ -49,25 +49,15 @@ int main(int argc, char** argv) {
     EnsureStandardHandles();
     #endif
 #endif
-    Amara::Creator creator(argc, argv);
-
     #if defined(AMARA_ENCRYPTION_KEY)
-        creator.encryption_key = AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY);
         #if defined(AMARA_ENCRYPT_OUTPUT)
-            creator.encrypt_output = true;
+            return amara_run(argc, argv, AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY), true);
+        #else
+            return amara_run(argc, argv, AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY), false);
         #endif
-        creator.setEncryption();
+    #else
+        return amara_run(argc, argv);
     #endif
-
-    if (creator.starting_scripts.size() > 0) {
-        return creator.startCreation();
-    }
-    
-    std::string indexPath = creator.system.getScriptPath("index");
-    if (creator.system.exists(indexPath)) {
-        return creator.startCreation(indexPath);
-    }
-    return 1;
 }
 
 #if defined(_WIN32) && !defined(AMARA_DEBUG_BUILD)

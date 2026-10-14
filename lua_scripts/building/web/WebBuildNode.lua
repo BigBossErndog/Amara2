@@ -177,6 +177,8 @@ Nodes:define("WebBuildNode", "ProcessNode", {
         table.insert(args, "-s")
         table.insert(args, "EXCEPTION_CATCHING_ALLOWED='[\"std::exception\"]'")
 
+        table.insert(args, "-DAMARA_IMPLEMENTATION")
+
         -- EMSCRIPTEN_EXTRA_OPTIONS
         if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
             table.insert(args, "-DAMARA_PLUGINS")
