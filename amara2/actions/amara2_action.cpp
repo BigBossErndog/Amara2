@@ -201,12 +201,21 @@ namespace Amara {
             );
 
             sol::usertype<Node> node_type = lua["Node"];
-            node_type["act"] = [](Amara::Node& e, std::string key, sol::object config) -> sol::object {
-                Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
-                if (config.valid()) {
-                    action->luaConfigure(config);
+            node_type["act"] = [](Amara::Node& e, sol::object arg1, sol::object arg2) -> sol::object {
+                if (arg1.is<std::string>()) {
+                    std::string key = arg1.as<std::string>();
+                    Amara::Action* action = e.createChild(key)->as<Amara::Action*>();
+                    if (arg2.valid()) {
+                        action->luaConfigure(arg2);
+                    }
+                    return action->get_lua_object();
                 }
-                return action->get_lua_object();
+                else if (arg1.is<sol::table>()) {
+                    Amara::Action* action = e.createChild("Action")->as<Amara::Action*>();
+                    action->luaConfigure(arg1);
+                    return action->get_lua_object();
+                }
+                return sol::nil;
             };
             node_type["stopActions"] = [](Amara::Node& e) -> sol::object {
                 for (Amara::Node* child: e.children) {

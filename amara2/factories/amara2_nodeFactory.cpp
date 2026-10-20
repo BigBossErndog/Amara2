@@ -247,6 +247,10 @@ namespace Amara {
             registerNode<Amara::RepeatAction>("RepeatAction");
             registerNode<Amara::ProcessNode>("ProcessNode");
 
+            #if defined(__ANDROID__)
+            registerNode<Amara::BrowseDirectoryNode>("BrowseDirectory");
+            #endif
+
             registerNode<Amara::TextInput>("TextInput");
             
             registerNode<Amara::Loader>("Loader");

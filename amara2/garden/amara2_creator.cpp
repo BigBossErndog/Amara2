@@ -24,6 +24,8 @@ namespace Amara {
 
         std::vector<std::string> starting_scripts;
         std::vector<std::string> inline_scripts;
+        nlohmann::json build_args;
+        std::vector<nlohmann::json> world_args;
         bool inline_override = false;
 
         double maxDeltaTime = 0.5;
@@ -102,6 +104,17 @@ namespace Amara {
                                 starting_scripts.push_back(path);
                             }
                         }
+                        else if (String::equal(arg, "-world")) {
+                            ++it;
+                            if (it == game.arguments.end()) break;
+                            nlohmann::json& config = *it;
+                            if (config.is_object()) {
+                                world_args.push_back(config);
+                            }
+                            else {
+                                fatal_error("Error: World config doesn't contain a valid table/json.", config);
+                            }
+                        }
                         else if (String::equal(arg, "-inline-script")) {
                             ++it;
                             if (it == game.arguments.end()) break;
@@ -143,6 +156,8 @@ namespace Amara {
                     ++it;
                 }
             }
+            
+            if (!build_args.is_null()) game.build_args = build_args;
         }
 
         virtual void setEncryption() override {

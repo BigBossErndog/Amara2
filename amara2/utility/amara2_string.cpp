@@ -256,6 +256,23 @@ namespace Amara {
                 last_line += str[i];
             }
             return found_newline ? last_line : str;
+        },
+
+        template<typename... Chars>
+        static std::string escape(const std::string& input, Chars... chars) {
+            std::string result;
+            result.reserve(input.size() * 2);
+
+            for (char c : input) {
+                bool should_escape = ((c == chars) || ...);
+                
+                if (should_escape) {
+                    result.push_back('\\');
+                }
+                result.push_back(c);
+            }
+
+            return result;
         }
     };
 }

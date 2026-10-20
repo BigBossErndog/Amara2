@@ -47,7 +47,6 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
         #define AMARA_STR(x) #x
         #define AMARA_STRINGIFY(x) AMARA_STR(x)
     #endif
-
 #else
 
 #ifndef AMARA_STD
@@ -82,6 +81,10 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
     #include <thread>
     #include <mutex>
     #include <type_traits>
+
+    #if defined(__ANDROID__)
+    #include <jni.h>
+    #endif
 #endif
 
 #ifndef AMARA_EXTLIBS
@@ -281,6 +284,10 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
     #include "actions/amara2_repeatAction.cpp"
     #include "actions/amara2_processNode.cpp"
 
+    #if defined(__ANDROID__)
+    
+    #endif
+
     #include "actions/amara2_textInput.cpp"
 
     #include "actions/amara2_loader.cpp"
@@ -342,7 +349,7 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
     #include "garden/amara2_creator.cpp"
 #endif
 
-int amara_run(int argc, char** argv, const char* encryption_key, bool encrypt_output) {
+int amara_run(int argc, char** argv, const char* encryption_key, bool encrypt_output, const nlohmann::json& build_args) {
     Amara::Creator creator(argc, argv);
 
     if (encryption_key != nullptr && encryption_key[0] != '\0') {
@@ -350,6 +357,8 @@ int amara_run(int argc, char** argv, const char* encryption_key, bool encrypt_ou
         if (encrypt_output) creator.encrypt_output = true;
         creator.setEncryption();
     }
+
+    creator.build_args = build_args;
     
     if (creator.starting_scripts.size() > 0) {
         return creator.startCreation();

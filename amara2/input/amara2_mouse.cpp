@@ -10,11 +10,15 @@ namespace Amara {
         bool moved = false;
 
         GameProps* gameProps = nullptr;
-
-        sol::object luaobject;
         
         Mouse() = default;
         Mouse(GameProps* _gameProps): gameProps(_gameProps) {}
+
+        virtual sol::object get_lua_object(Amara::GameProps* gameProps) override {
+            if (luaobject.valid()) return luaobject;
+            luaobject = sol::make_object(gameProps->lua, this);
+            return luaobject;
+        }
         
         void update(double deltaTime) {
             left.update(deltaTime);

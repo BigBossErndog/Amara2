@@ -462,16 +462,25 @@ namespace Amara {
                 
                 Amara::Pointer* lastPointer = input.lastInteraction.lastPointer;
                 if (input.draggable && input.held && lastPointer != nullptr) {
-                    Vector2 recPos = pos;
-                    pos.x = input.rec_interact_pos.x + lastPointer->x - lastPointer->rec_pos.x;
-                    pos.y = input.rec_interact_pos.y + lastPointer->y - lastPointer->rec_pos.y;
-                    input.drag = pos - recPos;
-                    if (input.isListening("onDrag")) {
-                        input.handleMessage({ nullptr, "onDrag", { sol::nil } });
+                    Vector2 rec_pos = pos;
+                    pos = Vector2(
+                        input.rec_interact_pos.x + lastPointer->x - lastPointer->rec_pos.x,
+                        input.rec_interact_pos.y + lastPointer->y - lastPointer->rec_pos.y
+                    );
+                    input.drag = pos - input.rec_drag_pos;
+                    input.dragDistance = distanceBetween(input.rec_drag_pos, pos);
+                    
+                    if (input.dragDistance > 0) {
+                        if (input.isListening("onDrag")) {
+                            input.handleMessage({ nullptr, "onDrag", { sol::nil } });
+                        }
+                        input.dragging = true;
                     }
-                    input.dragDistance = distanceBetween(lastPointer->rec_pos, *lastPointer);
-                    input.dragging = true;
                 }
+                else {
+                    input.dragDistance = 0;
+                }
+                input.rec_drag_pos = pos;
             }
 
             if (destroyed) return;

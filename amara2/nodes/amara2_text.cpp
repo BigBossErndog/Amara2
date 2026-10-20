@@ -39,6 +39,8 @@ namespace Amara {
 
         int lineSpacing = 0;
 
+        bool parseTags = true;
+
         TextLayout layout;
         int num_displayed_characters = -1;
 
@@ -151,6 +153,8 @@ namespace Amara {
             if (json_has(config, "lineSpacing")) setLineSpacing(json_get<int>(config, "lineSpacing"));
 
             if (json_has(config, "alignment")) align(static_cast<Amara::AlignmentEnum>(json_get<int>(config, "alignment")));
+
+            if (json_has(config, "parseTags")) parseTags = json_get<bool>(config, "parseTags");
             
             if (json_has(config, "font")) setFont(config["font"]);
             if (json_has(config, "text")) {
@@ -209,7 +213,7 @@ namespace Amara {
         void updateText() {
             if (font) {
                 font->packGlyphsFromString(converted_text);
-                layout = font->generateLayout(converted_text, wrapWidth, wrapMode, alignment, lineSpacing);
+                layout = font->generateLayout(converted_text, wrapWidth, wrapMode, alignment, lineSpacing, parseTags);
                 textWidth = layout.width;
                 textHeight = layout.height;
                 num_displayed_characters = layout.display_size();
@@ -741,6 +745,13 @@ namespace Amara {
                     if (v.is<int>()) t.setWrapWidth(v.as<int>());
                     else if (v.is<double>()) t.setWrapWidth(floor(v.as<double>()));
                 }),
+                "parseTags", sol::property(
+                    [](Amara::Text& t) { return t.parseTags; },
+                    [](Amara::Text& t, sol::object arg) {
+                        t.parseTags = arg.as<bool>();
+                        t.updateText();
+                    }
+                ),
                 "progress", &Text::progress,
                 "progressText", &Text::progressText,
                 "resetProgress", &Text::resetProgress,

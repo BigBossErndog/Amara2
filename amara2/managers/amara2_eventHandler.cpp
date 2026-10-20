@@ -356,6 +356,7 @@ namespace Amara {
         
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             inputDef = *it;
+            if (inputDef.input->paused()) continue;
             if (inputDef.shape.collidesWith(pos) && Shape::checkCollision(inputDef.viewport, pos)) {
                 any_hovered = true;
                 gameProps->current_cursor = inputDef.input->cursor;
@@ -410,6 +411,7 @@ namespace Amara {
         for (auto it = queue.rbegin(); it != queue.rend(); ++it) {
             inputDef = *it;
             input = inputDef.input;
+            if (input->paused()) continue;
 
             if (inputDef.shape.collidesWith(pos) && Shape::checkCollision(inputDef.viewport, pos)) {
                 inputDef.lastPointer = &mouse;

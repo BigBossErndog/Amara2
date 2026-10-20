@@ -16,6 +16,7 @@ namespace Amara {
         Vector2 drag = Vector2(0, 0);
 
         Vector2 rec_interact_pos;
+        Vector2 rec_drag_pos;
 
         CursorEnum cursor = CursorEnum::Default;
         GeneralPointer pointer;
@@ -114,16 +115,16 @@ namespace Amara {
                     hover.release();
                     
                     if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", { sol::nil } });
-                    handleMessage({ nullptr, "onPointerExit", { sol::nil } });
+                    handleMessage({ nullptr, "onPointerExit", { lastPointer ? lastPointer->get_lua_object(gameProps) : sol::nil } });
                     held = false;
                     
                     hover_by_mouse = false;
                 }
                 else {
-                    handleMessage({ nullptr, "whilePointerHover", { sol::nil } });
+                    handleMessage({ nullptr, "whilePointerHover", { lastPointer ? lastPointer->get_lua_object(gameProps) : sol::nil } });
 
                     if (hover_by_mouse) {
-                        handleMessage({ nullptr, "whileMouseHover", { sol::nil } });
+                        handleMessage({ nullptr, "whileMouseHover", { lastPointer ? lastPointer->get_lua_object(gameProps) : sol::nil } });
                     }
                 }
             }
@@ -134,9 +135,9 @@ namespace Amara {
                     state.release();
                 }
                 else {
-                    handleMessage({ nullptr, "whilePointerDown", { sol::nil } });
+                    handleMessage({ nullptr, "whilePointerDown", { lastPointer ? lastPointer->get_lua_object(gameProps) : sol::nil } });
                     if (hover_by_mouse) {
-                        handleMessage({ nullptr, "whileMouseDown", { sol::nil } });
+                        handleMessage({ nullptr, "whileMouseDown", { lastPointer ? lastPointer->get_lua_object(gameProps) : sol::nil } });
                     }
                 }
             }

@@ -18,7 +18,7 @@ namespace Amara {
 
         sol::object luaobject;
 
-        sol::object get_lua_object(Amara::GameProps* gameProps) {
+        virtual sol::object get_lua_object(Amara::GameProps* gameProps) {
             if (luaobject.valid()) return luaobject;
             luaobject = sol::make_object(gameProps->lua, this);
             return luaobject;

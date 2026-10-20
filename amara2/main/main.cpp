@@ -49,11 +49,15 @@ int main(int argc, char** argv) {
     EnsureStandardHandles();
     #endif
 #endif
+    nlohmann::json build_args = nullptr;
+    #ifdef defined(AMARA_BUILD_ARGS)
+        build_args = string_to_json(AMARA_BUILD_ARGS);
+    #endif
     #if defined(AMARA_ENCRYPTION_KEY)
         #if defined(AMARA_ENCRYPT_OUTPUT)
-            return amara_run(argc, argv, AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY), true);
+            return amara_run(argc, argv, AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY), true, build_args);
         #else
-            return amara_run(argc, argv, AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY), false);
+            return amara_run(argc, argv, AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY), false, build_args);
         #endif
     #else
         return amara_run(argc, argv);

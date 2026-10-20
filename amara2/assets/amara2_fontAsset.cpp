@@ -333,7 +333,7 @@ namespace Amara {
             return contents_str;
         }
 
-        TextLayout generateLayout(const std::u32string& str, double wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing) {
+        TextLayout generateLayout(const std::u32string& str, double wrapWidth, WrapModeEnum wrapMode, AlignmentEnum alignment, int lineSpacing, bool parseTags) {
             TextLayout layout = TextLayout();
             layout.text = str;
 
@@ -346,7 +346,7 @@ namespace Amara {
                 for (int i = 0; i < str.size(); ++i) {
                     char32_t codepoint = str[i];
 
-                    if (codepoint == U'$' && i < str.size() - 1 && str[i + 1] == U'{') {
+                    if (parseTags && codepoint == U'$' && i < str.size() - 1 && str[i + 1] == U'{') {
                         Glyph glyph;
                         glyph.line = line;
                         glyph.characterIndex = i + 1;
@@ -439,7 +439,7 @@ namespace Amara {
                 for (int i = 0; i < str.size(); ++i) {
                     char32_t codepoint = str[i];
 
-                    if (codepoint == U'$' && i < str.size() - 1 && str[i + 1] == U'{') {
+                    if (parseTags && codepoint == U'$' && i < str.size() - 1 && str[i + 1] == U'{') {
                         Glyph glyph;
                         glyph.line = line;
                         glyph.characterIndex = i + 1;
