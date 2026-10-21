@@ -251,6 +251,8 @@ namespace Amara {
             registerNode<Amara::ImportZipNode>("ImportZip");
             registerNode<Amara::ExportZipNode>("ExportZip");
 
+            registerNode<Amara::SyncDirectoryNode>("SyncDirectory");
+
             registerNode<Amara::TextInput>("TextInput");
             
             registerNode<Amara::Loader>("Loader");
@@ -331,6 +333,8 @@ namespace Amara {
             Amara::BrowseDirectoryNode::bind_lua(lua);
             Amara::ImportZipNode::bind_lua(lua);
             Amara::ExportZipNode::bind_lua(lua);
+
+            Amara::SyncDirectoryNode::bind_lua(lua);
 
             Amara::TextInput::bind_lua(lua);
             

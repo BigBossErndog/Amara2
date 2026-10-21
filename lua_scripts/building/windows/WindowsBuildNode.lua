@@ -31,10 +31,11 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
-        if projectData then
-            if projectData["executable-name"] then
-                self.get.executableName = projectData["executable-name"]
-            end
+        if not projectData then
+            return
+        end
+        if projectData["executable-name"] then
+            self.get.executableName = projectData["executable-name"]
         end
         self.get.projectData = projectData
 
@@ -57,6 +58,10 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.get.buildTest = true
         end
         self.get.buildDir = buildDir
+
+        if not self.get.executableName then
+            self.get.executableName = "game"
+        end
 
         local buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
 
@@ -101,17 +106,21 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 config.iconPath = defaultIcon
             end
         end
-        self.get.iconPath = System:join(buildDir, "icon.png")
-        self.load:image("exe_icon", config.iconPath)
-        Assets:resizeTextureToPNG(
-            "exe_icon",
-            256, 256,
-            self.get.iconPath
-        )
-        
-        self.get.iconDest = System:join(buildDir, "icon.ico")
-        self.get.resFile = System:join(buildDir, "icon.rc")
-        self.get.resOutputFile = System:join(buildDir, "icon.res")
+
+        local hasIcon = (config.iconPath ~= nil) and System:exists(config.iconPath)
+        if hasIcon then
+            self.get.iconPath = System:join(buildDir, "icon.png")
+            self.load:image("exe_icon", config.iconPath)
+            Assets:resizeTextureToPNG(
+                "exe_icon",
+                256, 256,
+                self.get.iconPath
+            )
+
+            self.get.iconDest = System:join(buildDir, "icon.ico")
+            self.get.resFile = System:join(buildDir, "icon.rc")
+            self.get.resOutputFile = System:join(buildDir, "icon.res")
+        end
 
         self.get.objFile = System:join(buildDir, "main.obj")
 
@@ -145,26 +154,25 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
             local plugins = projectData["plugin-directories"]
             local plugin_template = System:readFile(System:getRelativePath("amara2/main/plugin_template.cpp"))
+
+            local includes_str = ""
+            local bindings = ""
+            local registrations = ""
+
             for i, plugin in ipairs(plugins) do
                 local plugin_path = System:join(plugins_path, plugin)
                 local plugin_data = System:readJSON(System:join(plugin_path, "plugin.json"))
                 if plugin_data then
                     if plugin_data.includes then
-                        local includes_str = ""
                         for _, file in ipairs(plugin_data.includes) do
-                            includes_str = includes_str .. "#include \"" .. System:join(plugin, file) .. "\"\n"
+                            includes_str = includes_str .. "#include \"" .. plugin .. "/" .. file .. "\"\n"
                         end
-                        plugin_template = string.gsub(plugin_template, "// plugin_includes", includes_str)
                     end
                     if plugin_data.nodes then
-                        local bindings = ""
-                        local registrations = ""
                         for _, node_data in ipairs(plugin_data.nodes) do
                             bindings = bindings .. node_data.class .. "::bind_lua(lua);"
                             registrations = registrations .. "registerNode<" .. node_data.class .. ">(\"" .. node_data.nodeID .. "\");"
                         end
-                        plugin_template = string.gsub(plugin_template, "// plugin_lua_bindings", bindings)
-                        plugin_template = string.gsub(plugin_template, "// plugin_node_registrations", registrations)
                     end
                     if plugin_data.copy then
                         for _, file in ipairs(plugin_data.copy) do
@@ -211,6 +219,10 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 end
             end
 
+            plugin_template = plugin_template:gsub("// plugin_includes", function() return includes_str end)
+            plugin_template = plugin_template:gsub("// plugin_lua_bindings", function() return bindings end)
+            plugin_template = plugin_template:gsub("// plugin_node_registrations", function() return registrations end)
+
             System:writeFile(System:join(plugins_path, "amara2_plugins.cpp"), plugin_template)
         end
 
@@ -233,7 +245,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         -- WINDOWS_COMPILER_FLAGS
         table.insert(args, "/w")
         table.insert(args, "/std:c++17")
-        table.insert(args, "/EHs")
+        table.insert(args, "/EHsc")
         table.insert(args, "/O2")
         table.insert(args, "/MT")                -- static runtime (replaces -static)
         table.insert(args, "/utf-8")             -- clang assumes UTF-8 sources; MSVC does not
@@ -307,27 +319,32 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.get.errorOutputPath = errorOutputPath
         local errorLog = quote(slash(errorOutputPath))
 
-        -- Step 1: compile the icon resource with rc (needs the SDK headers only if the .rc includes any)
-        local rcCommand = quote(slash(sdk("rc"))) .. " /nologo"
-            .. " /I" .. quote(slash(sdk("sdk_include_um")))
-            .. " /I" .. quote(slash(sdk("sdk_include_shared")))
-            .. " /fo " .. quote(slash(self.get.resOutputFile))
-            .. " " .. quote(slash(self.get.resFile))
-
         -- Step 2: compile and link with cl, using the response file
         local clCommand = quote(slash(sdk("cl"))) .. " @" .. quote(slash(argsFile))
 
-        local batchFileContent
+        local batchLines = {}
         if sdkFound then
-            batchFileContent = rcCommand .. " > " .. errorLog .. " 2>&1"
-                .. " && " .. clCommand .. " >> " .. errorLog .. " 2>&1"
-                .. " && exit"
+            local logRedirect = " > "
+
+            -- Step 1: compile the icon resource with rc (needs the SDK headers only if the .rc includes any)
+            if hasIcon then
+                local rcCommand = quote(slash(sdk("rc"))) .. " /nologo"
+                    .. " /I" .. quote(slash(sdk("sdk_include_um")))
+                    .. " /I" .. quote(slash(sdk("sdk_include_shared")))
+                    .. " /fo " .. quote(slash(self.get.resOutputFile))
+                    .. " " .. quote(slash(self.get.resFile))
+                table.insert(batchLines, rcCommand .. logRedirect .. errorLog .. " 2>&1 || exit 1")
+                logRedirect = " >> "
+            end
+
+            table.insert(batchLines, clCommand .. logRedirect .. errorLog .. " 2>&1 || exit 1")
+            table.insert(batchLines, "exit 0")
         else
-            batchFileContent = "echo MSVC build tools or the Windows SDK could not be found. > " .. errorLog
-                .. " & exit /b 1"
+            table.insert(batchLines, "echo MSVC build tools or the Windows SDK could not be found. > " .. errorLog)
+            table.insert(batchLines, "exit 1")
         end
 
-        System:writeFile(batchFilePath, batchFileContent)
+        System:writeFile(batchFilePath, table.concat(batchLines, "\r\n") .. "\r\n")
 
         local systemCommand = "System:exit(System:executeTerminal(" .. string.format("%q", quote_if_needed(batchFilePath)) .. "))"
 
@@ -408,6 +425,21 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local buildDir = self.get.buildDir
         local errorOutputPath = self.get.errorOutputPath
 
+        local function removeIconFiles()
+            if self.get.iconPath and System:exists(self.get.iconPath) then
+                System:remove(self.get.iconPath)
+            end
+            if self.get.iconDest and System:exists(self.get.iconDest) then
+                System:remove(self.get.iconDest)
+            end
+            if self.get.resFile and System:exists(self.get.resFile) then
+                System:remove(self.get.resFile)
+            end
+            if self.get.resOutputFile and System:exists(self.get.resOutputFile) then
+                System:remove(self.get.resOutputFile)
+            end
+        end
+
         if exitCode == 0 then
             if System:exists(errorOutputPath) then
                 System:remove(errorOutputPath)
@@ -451,18 +483,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 System:openDirectory(System:join(self.get.buildDir))
                 self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
 
-                if self.get.iconPath then
-                    System:remove(self.get.iconPath)
-                end
-                if self.get.iconDest then
-                    System:remove(self.get.iconDest)
-                end
-                if self.get.resFile then
-                    System:remove(self.get.resFile)
-                end
-                if self.get.resOutputFile then
-                    System:remove(self.get.resOutputFile)
-                end
+                removeIconFiles()
             end
             
         else
@@ -480,6 +501,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             if not System:installedVSBuildTools() then
                 self.get.printLog.func:handleMessage(Localize:get("error_vsBuildToolsNotFound"))
             end
+
+            removeIconFiles()
         end
 
         self.world.forcedClickThrough = false

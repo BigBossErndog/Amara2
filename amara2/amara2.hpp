@@ -76,10 +76,13 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
         #include <filesystem>
         #include <cstdlib>
         #include <cstdarg>
+        #include <cstdint>
         #include <atomic>
         #include <thread>
         #include <mutex>
         #include <type_traits>
+        #include <chrono>
+        #include <memory>
 
         #if defined(__ANDROID__)
         #include <jni.h>
@@ -274,6 +277,8 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
         
         #include "nodes/amara2_scene.cpp"
 
+        #include "nodes/amara2_syncDirectory.cpp"
+
         #include "actions/amara2_action.cpp"
         #include "actions/amara2_waitAction.cpp"
         #include "actions/amara2_tween.cpp"
@@ -281,6 +286,7 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
         #include "actions/amara2_delayNode.cpp"
         #include "actions/amara2_repeatAction.cpp"
         #include "actions/amara2_processNode.cpp"
+
         #include "actions/amara2_browseDirectory.cpp"
         #include "actions/amara2_importZip.cpp"
         #include "actions/amara2_exportZip.cpp"

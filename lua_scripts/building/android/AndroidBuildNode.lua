@@ -1,3 +1,6 @@
+local ANDROID_MIN_SDK = 24
+local ANDROID_TARGET_SDK = 35
+
 Nodes:define("AndroidBuildNode", "ProcessNode", {
     id = "buildNode",
 
@@ -65,7 +68,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
         local errorOutputPath = System:join(buildDir, "build_error.txt")
         self.get.errorOutputPath = errorOutputPath
-        local errorCommand = " > " .. fix_path(errorOutputPath) .. " 2>&1"
+        local errorCommand = " >> " .. fix_path(errorOutputPath) .. " 2>&1 || exit 1"
         
         local setup_folders = {
             "lib/arm64-v8a",
@@ -128,26 +131,25 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
                 local plugins = self.get.projectData["plugin-directories"]
                 local plugin_template = System:readFile(System:getRelativePath("amara2/main/plugin_template.cpp"))
+
+                local includes_str = ""
+                local bindings = ""
+                local registrations = ""
+
                 for i, plugin in ipairs(plugins) do
                     local plugin_path = System:join(plugins_path, plugin)
                     local plugin_data = System:readJSON(System:join(plugin_path, "plugin.json"))
                     if plugin_data then
                         if plugin_data.includes then
-                            local includes_str = ""
                             for _, file in ipairs(plugin_data.includes) do
                                 includes_str = includes_str .. "#include \"" .. System:join(plugin, file) .. "\"\n"
                             end
-                            plugin_template = string.gsub(plugin_template, "// plugin_includes", includes_str)
                         end
                         if plugin_data.nodes then
-                            local bindings = ""
-                            local registrations = ""
                             for _, node_data in ipairs(plugin_data.nodes) do
                                 bindings = bindings .. node_data.class .. "::bind_lua(lua);"
                                 registrations = registrations .. "registerNode<" .. node_data.class .. ">(\"" .. node_data.nodeID .. "\");"
                             end
-                            plugin_template = string.gsub(plugin_template, "// plugin_lua_bindings", bindings)
-                            plugin_template = string.gsub(plugin_template, "// plugin_node_registrations", registrations)
                         end
                         if plugin_data.copy then
                             for _, file in ipairs(plugin_data.copy) do
@@ -193,6 +195,10 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                     end
                 end
 
+                plugin_template = plugin_template:gsub("// plugin_includes", function() return includes_str end)
+                plugin_template = plugin_template:gsub("// plugin_lua_bindings", function() return bindings end)
+                plugin_template = plugin_template:gsub("// plugin_node_registrations", function() return registrations end)
+
                 System:writeFile(System:join(plugins_path, "amara2_plugins.cpp"), plugin_template)
             end
 
@@ -237,12 +243,12 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         end
 
         local arm64_v8a_build = {
-            args = buildArgs("arm64-v8a", "-target aarch64-linux-android33"),
+            args = buildArgs("arm64-v8a", "-target aarch64-linux-android" .. ANDROID_MIN_SDK),
             file = System:join(buildDir, "arm64-v8a_build.txt")
         }
         arm64_v8a_build.argstr = string.sep_concat(" ", table.unpack(arm64_v8a_build.args))
         local arm_v7a_build = {
-            args = buildArgs("armeabi-v7a", "-target armv7a-linux-androideabi33"),
+            args = buildArgs("armeabi-v7a", "-target armv7a-linux-androideabi" .. ANDROID_MIN_SDK),
             file = System:join(buildDir, "armeabi-v7a_build.txt")
         }
         arm_v7a_build.argstr = string.sep_concat(" ", table.unpack(arm_v7a_build.args))
@@ -276,28 +282,37 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         table.insert(buildCommands, "set \"JAVA_HOME=" .. sdk.java_home .. "\"")
         table.insert(buildCommands, "set \"PATH=%JAVA_HOME%\\bin;%PATH%\"")
 
-        -- ── d8: compile SDL jar to classes.dex ────────────────────────────────
-        local sdl_jar = System:join(sdl_path, "share", "java", "SDL3", "SDL3.jar")
-        local java_src   = System:join(sdl_path, "java", "amara", "AmaraActivity.java")
+        -- ── javac + jar + d8: compile SDL jar and AmaraActivity to classes.dex ─
+        local sdl_jar     = System:join(sdl_path, "share", "java", "SDL3", "SDL3.jar")
+        local java_src    = System:join(sdl_path, "java", "amara", "AmaraActivity.java")
         local classes_dir = System:join(android_package, "java_classes")
-        local javac        = fix_path(System:join(sdk.java_home, "bin", "javac.exe"), true)
+        local classes_jar = System:join(android_package, "amara_classes.jar")
+        local jdk_bin     = System:join(sdk.java_home, "bin")
+
+        if not System:exists(java_src) then
+            error("Missing " .. java_src)
+        end
 
         table.insert(buildCommands, "mkdir " .. fix_path(classes_dir, true))
         table.insert(buildCommands,
-            javac ..
+            fix_path(System:join(jdk_bin, "javac.exe"), true) ..
             " -source 8 -target 8" ..
-            " -classpath " .. fix_path(sdk.android_jar) .. ";" .. fix_path(sdl_jar) ..
+            " -classpath \"" .. sdk.android_jar .. ";" .. sdl_jar .. "\"" ..
             " -d " .. fix_path(classes_dir) ..
             " " .. fix_path(java_src)
         )
-
+        table.insert(buildCommands,
+            fix_path(System:join(jdk_bin, "jar.exe"), true) ..
+            " cf " .. fix_path(classes_jar, true) ..
+            " -C " .. fix_path(classes_dir, true) .. " ."
+        )
         table.insert(buildCommands,
             "call " .. fix_path(sdk["d8"]) ..
             " --output " .. fix_path(android_package) ..
-            " --min-api 24" ..
+            " --min-api " .. ANDROID_MIN_SDK ..
             " --lib " .. fix_path(sdk.android_jar) ..
             " " .. fix_path(sdl_jar) ..
-            " " .. fix_path(System:join(classes_dir, "amara", "AmaraActivity.class"))
+            " " .. fix_path(classes_jar)
         )
 
         -- ── aapt2 compile resources ────────────────────────────────────────────
@@ -316,7 +331,8 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         local manifest_flags =
             " -I " .. fix_path(sdk.android_jar) ..
             " --manifest " .. fix_path(System:join(android_package, "AndroidManifest.xml")) ..
-            " --min-sdk-version 24 --target-sdk-version 35" ..
+            " --min-sdk-version " .. ANDROID_MIN_SDK ..
+            " --target-sdk-version " .. ANDROID_TARGET_SDK ..
             " --version-code " .. self.get.manifest_config.VERSION_CODE ..
             " --version-name " .. self.get.manifest_config.VERSION_NAME ..
             " " .. flats
@@ -526,8 +542,8 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             PACKAGE_NAME       = "com." .. self.get.projectData.android["package-org-name"] .. "." .. self.get.projectData.android["package-app-name"],
             VERSION_CODE       = self.get.projectData.android["version-code"] or 1,
             VERSION_NAME       = self.get.projectData.android["version-name"] or "1.0.0",
-            MIN_SDK_VERSION    = 28,
-            TARGET_SDK_VERSION = 35,
+            MIN_SDK_VERSION    = ANDROID_MIN_SDK,
+            TARGET_SDK_VERSION = ANDROID_TARGET_SDK,
             GLES_VERSION       = "0x00030000",
             APP_NAME           = self.get.projectData.android["app-name"],
             ICON_NAME          = "ic_launcher",
