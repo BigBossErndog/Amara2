@@ -278,7 +278,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
         -- ── d8: compile SDL jar to classes.dex ────────────────────────────────
         local sdl_jar = System:join(sdl_path, "share", "java", "SDL3", "SDL3.jar")
-        local java_src   = System:join(sdl_path, "java", "org", "amara", "AmaraActivity.java")
+        local java_src   = System:join(sdl_path, "java", "amara", "AmaraActivity.java")
         local classes_dir = System:join(android_package, "java_classes")
         local javac        = fix_path(System:join(sdk.java_home, "bin", "javac.exe"), true)
 
@@ -297,7 +297,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             " --min-api 24" ..
             " --lib " .. fix_path(sdk.android_jar) ..
             " " .. fix_path(sdl_jar) ..
-            " " .. fix_path(System:join(classes_dir, "org", "amara", "AmaraActivity.class"))
+            " " .. fix_path(System:join(classes_dir, "amara", "AmaraActivity.class"))
         )
 
         -- ── aapt2 compile resources ────────────────────────────────────────────
@@ -522,7 +522,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         local template = System:readFile(System:join(self.get.sdl_path, "AndroidManifest.xml"))
 
         local config = {
-            ACTIVITY_CLASS = "org.amara.AmaraActivity",
+            ACTIVITY_CLASS = "amara.AmaraActivity",
             PACKAGE_NAME       = "com." .. self.get.projectData.android["package-org-name"] .. "." .. self.get.projectData.android["package-app-name"],
             VERSION_CODE       = self.get.projectData.android["version-code"] or 1,
             VERSION_NAME       = self.get.projectData.android["version-name"] or "1.0.0",

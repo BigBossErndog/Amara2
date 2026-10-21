@@ -247,9 +247,9 @@ namespace Amara {
             registerNode<Amara::RepeatAction>("RepeatAction");
             registerNode<Amara::ProcessNode>("ProcessNode");
 
-            #if defined(__ANDROID__)
             registerNode<Amara::BrowseDirectoryNode>("BrowseDirectory");
-            #endif
+            registerNode<Amara::ImportZipNode>("ImportZip");
+            registerNode<Amara::ExportZipNode>("ExportZip");
 
             registerNode<Amara::TextInput>("TextInput");
             
@@ -327,6 +327,10 @@ namespace Amara {
             Amara::DelayNode::bind_lua(lua);
             Amara::RepeatAction::bind_lua(lua);
             Amara::ProcessNode::bind_lua(lua);
+
+            Amara::BrowseDirectoryNode::bind_lua(lua);
+            Amara::ImportZipNode::bind_lua(lua);
+            Amara::ExportZipNode::bind_lua(lua);
 
             Amara::TextInput::bind_lua(lua);
             

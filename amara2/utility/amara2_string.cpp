@@ -256,7 +256,7 @@ namespace Amara {
                 last_line += str[i];
             }
             return found_newline ? last_line : str;
-        },
+        }
 
         template<typename... Chars>
         static std::string escape(const std::string& input, Chars... chars) {
