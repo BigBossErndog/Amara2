@@ -76,6 +76,10 @@ namespace Amara {
         static const int STATUS_ERROR = 1;
         static const int STATUS_CANCELLED = 2;
 
+        static const int KIND_ALL = 0;
+        static const int KIND_FILE = 1;
+        static const int KIND_DIR = 2;
+
         static constexpr const char* TMP_SUFFIX = ".amara_tmp";
 
         std::string targetPath;
@@ -91,6 +95,28 @@ namespace Amara {
         sol::protected_function callOnCancel;
         sol::protected_function callOnProgress;
 
+        static bool normalizeSubPath(const std::string& in, std::string& out) {
+            std::string s = in;
+            std::replace(s.begin(), s.end(), '\\', '/');
+
+            std::string result;
+            size_t start = 0;
+            while (start <= s.size()) {
+                size_t pos = s.find('/', start);
+                std::string part = (pos == std::string::npos) ? s.substr(start) : s.substr(start, pos - start);
+                if (!part.empty() && part != ".") {
+                    if (part == ".." || part.find(':') != std::string::npos) return false;
+                    if (!result.empty()) result += "/";
+                    result += part;
+                }
+                if (pos == std::string::npos) break;
+                start = pos + 1;
+            }
+            if (result.empty()) return false;
+            out = result;
+            return true;
+        }
+
         #if defined(AMARA_DESKTOP) && !defined(__ANDROID__)
         static bool pathsOverlap(const std::filesystem::path& a, const std::filesystem::path& b) {
             std::filesystem::path rel = b.lexically_relative(a);
@@ -102,6 +128,17 @@ namespace Amara {
             std::string suffix = TMP_SUFFIX;
             return name.size() >= suffix.size()
                 && name.compare(name.size() - suffix.size(), suffix.size(), suffix) == 0;
+        }
+
+        static bool needsCopy(const std::filesystem::path& out, uint64_t size,
+                              std::filesystem::file_time_type mtime, bool force) {
+            namespace fs = std::filesystem;
+            if (force) return true;
+            std::error_code ec;
+            if (!fs::is_regular_file(out, ec)) return true;
+            if ((uint64_t)fs::file_size(out, ec) != size) return true;
+            fs::file_time_type destTime = fs::last_write_time(out, ec);
+            return ec || (destTime + std::chrono::seconds(2) < mtime);
         }
 
         static int copyFileChunked(SyncJob* job, const std::filesystem::path& from,
@@ -161,7 +198,49 @@ namespace Amara {
             return STATUS_OK;
         }
 
-        static void syncWorker(std::shared_ptr<SyncJob> job, std::string srcStr, std::string dstStr, bool mirror, bool force) {
+        static void syncSingleFile(SyncJob* job, const std::filesystem::path& from,
+                                   const std::filesystem::path& to, const std::string& sub, bool force) {
+            namespace fs = std::filesystem;
+            std::error_code ec;
+
+            if (!fs::is_regular_file(from, ec)) {
+                job->finish(STATUS_ERROR, "The file does not exist in the source: " + sub);
+                return;
+            }
+
+            uint64_t size = (uint64_t)fs::file_size(from, ec);
+            fs::file_time_type mtime = fs::last_write_time(from, ec);
+            job->setProgress(0, size);
+
+            if (fs::is_directory(to, ec)) fs::remove_all(to, ec);
+            ec.clear();
+            fs::create_directories(to.parent_path(), ec);
+            if (ec) {
+                job->finish(STATUS_ERROR, "Could not create the destination folder.");
+                return;
+            }
+
+            if (needsCopy(to, size, mtime, force)) {
+                uint64_t done = 0;
+                int result = copyFileChunked(job, from, to, done, size);
+                if (result == STATUS_CANCELLED) {
+                    job->finish(STATUS_CANCELLED, "Cancelled.");
+                    return;
+                }
+                if (result != STATUS_OK) {
+                    job->finish(STATUS_ERROR, "Failed to copy: " + sub);
+                    return;
+                }
+                std::error_code tec;
+                fs::last_write_time(to, mtime, tec);
+            }
+
+            job->setProgress(size, size);
+            job->finish(STATUS_OK, "");
+        }
+
+        static void syncWorker(std::shared_ptr<SyncJob> job, std::string srcStr, std::string dstStr,
+                               std::string sub, int kind, bool mirror, bool force) {
             namespace fs = std::filesystem;
             try {
                 std::error_code ec;
@@ -181,6 +260,36 @@ namespace Amara {
                     return;
                 }
 
+                if (kind != KIND_ALL) {
+                    fs::path subRel = fs::path(sub);
+
+                    ec.clear();
+                    fs::path srcSub = fs::weakly_canonical(src / subRel, ec);
+                    if (ec || !pathsOverlap(src, srcSub)) {
+                        job->finish(STATUS_ERROR, "Invalid path: " + sub);
+                        return;
+                    }
+                    ec.clear();
+                    fs::path dstSub = fs::weakly_canonical(dst / subRel, ec);
+                    if (ec || !pathsOverlap(dst, dstSub)) {
+                        job->finish(STATUS_ERROR, "Invalid path: " + sub);
+                        return;
+                    }
+
+                    if (kind == KIND_FILE) {
+                        syncSingleFile(job.get(), srcSub, dstSub, sub, force);
+                        return;
+                    }
+
+                    ec.clear();
+                    if (!fs::is_directory(srcSub, ec)) {
+                        job->finish(STATUS_ERROR, "The directory does not exist in the source: " + sub);
+                        return;
+                    }
+                    src = srcSub;
+                    dst = dstSub;
+                }
+
                 struct Item {
                     std::string rel;
                     fs::path path;
@@ -191,6 +300,7 @@ namespace Amara {
                 std::vector<Item> items;
                 uint64_t total = 0;
 
+                ec.clear();
                 fs::recursive_directory_iterator it(src, fs::directory_options::skip_permission_denied, ec);
                 fs::recursive_directory_iterator end;
                 if (ec) {
@@ -223,6 +333,9 @@ namespace Amara {
                     }
                 }
 
+                ec.clear();
+                if (fs::exists(dst, ec) && !fs::is_directory(dst, ec)) fs::remove(dst, ec);
+                ec.clear();
                 fs::create_directories(dst, ec);
                 if (ec) {
                     job->finish(STATUS_ERROR, "Could not create the destination folder.");
@@ -254,21 +367,7 @@ namespace Amara {
 
                     if (fs::is_directory(out, eec)) fs::remove_all(out, eec);
 
-                    bool copy = force;
-                    if (!copy) {
-                        if (!fs::is_regular_file(out, eec)) {
-                            copy = true;
-                        }
-                        else if ((uint64_t)fs::file_size(out, eec) != item.size) {
-                            copy = true;
-                        }
-                        else {
-                            fs::file_time_type destTime = fs::last_write_time(out, eec);
-                            copy = eec || (destTime + std::chrono::seconds(2) < item.mtime);
-                        }
-                    }
-
-                    if (!copy) {
+                    if (!needsCopy(out, item.size, item.mtime, force)) {
                         done += item.size;
                         job->setProgress(done, total);
                         continue;
@@ -289,6 +388,7 @@ namespace Amara {
 
                 if (mirror) {
                     std::vector<fs::path> doomed;
+                    ec.clear();
                     fs::recursive_directory_iterator dit(dst, fs::directory_options::skip_permission_denied, ec);
                     fs::recursive_directory_iterator dend;
                     for (; !ec && dit != dend; dit.increment(ec)) {
@@ -407,6 +507,10 @@ namespace Amara {
 
             bool useMirror = mirror;
             bool useForce = force;
+            int kind = KIND_ALL;
+            std::string subPath;
+            std::string optionError;
+
             if (opts.valid() && opts.is<sol::table>()) {
                 sol::table t = opts.as<sol::table>();
                 sol::object m = t["mirror"];
@@ -418,11 +522,33 @@ namespace Amara {
                 callOnFail = readCallback(t, "onFail");
                 callOnCancel = readCallback(t, "onCancel");
                 callOnProgress = readCallback(t, "onProgress");
+
+                sol::object fileObj = t["file"];
+                sol::object dirObj = t["directory"];
+                bool hasFile = fileObj.valid() && fileObj.is<std::string>();
+                bool hasDir = dirObj.valid() && dirObj.is<std::string>();
+
+                if (hasFile && hasDir) {
+                    optionError = "Specify either file or directory, not both.";
+                }
+                else if (hasFile || hasDir) {
+                    std::string raw = hasFile ? fileObj.as<std::string>() : dirObj.as<std::string>();
+                    if (!normalizeSubPath(raw, subPath)) {
+                        optionError = "Invalid " + std::string(hasFile ? "file" : "directory") + " path: " + raw;
+                    }
+                    else {
+                        kind = hasFile ? KIND_FILE : KIND_DIR;
+                    }
+                }
             }
 
             direction = push ? "push" : "pull";
             job = std::make_shared<SyncJob>();
 
+            if (!optionError.empty()) {
+                job->finish(STATUS_ERROR, optionError);
+                return true;
+            }
             if (localPath.empty()) {
                 job->finish(STATUS_ERROR, "localPath is required.");
                 return true;
@@ -442,7 +568,7 @@ namespace Amara {
             }
 
             std::string target = (targetPath.rfind("content://", 0) == 0) ? targetPath : "";
-            if (!launchAndroid(resolvedLocal, target, push, useMirror, useForce)) {
+            if (!launchAndroid(resolvedLocal, target, push, useMirror, useForce, subPath, kind)) {
                 {
                     std::lock_guard<std::mutex> lock(g_syncMtx);
                     if (g_syncJob == job) g_syncJob.reset();
@@ -459,8 +585,8 @@ namespace Amara {
             std::shared_ptr<SyncJob> j = job;
             std::string from = push ? resolvedLocal : resolvedTarget;
             std::string to = push ? resolvedTarget : resolvedLocal;
-            std::thread([j, from, to, useMirror, useForce]() {
-                syncWorker(j, from, to, useMirror, useForce);
+            std::thread([j, from, to, subPath, kind, useMirror, useForce]() {
+                syncWorker(j, from, to, subPath, kind, useMirror, useForce);
             }).detach();
             #else
             job->finish(STATUS_ERROR, "SyncDirectory is not supported on this platform.");
@@ -558,7 +684,8 @@ namespace Amara {
 
         #if defined(__ANDROID__)
         bool launchAndroid(const std::string& local, const std::string& target,
-                           bool push, bool useMirror, bool useForce) {
+                           bool push, bool useMirror, bool useForce,
+                           const std::string& subPath, int kind) {
             JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
             jobject activity = (jobject)SDL_GetAndroidActivity();
             BrowseDirectoryNode::LocalRef activityRef(env, activity);
@@ -571,10 +698,10 @@ namespace Amara {
             jclass cls = env->GetObjectClass(activity);
             BrowseDirectoryNode::LocalRef clsRef(env, cls);
 
-            jmethodID mid = env->GetMethodID(cls, "startSync", "(Ljava/lang/String;Ljava/lang/String;ZZZ)V");
+            jmethodID mid = env->GetMethodID(cls, "startSync", "(Ljava/lang/String;Ljava/lang/String;ZZZLjava/lang/String;I)V");
             if (!mid) {
                 env->ExceptionClear();
-                fatal_error("Error: startSync(String, String, boolean, boolean, boolean) not found on Android activity.");
+                fatal_error("Error: startSync(String, String, boolean, boolean, boolean, String, int) not found on Android activity.");
                 return false;
             }
 
@@ -582,12 +709,16 @@ namespace Amara {
             BrowseDirectoryNode::LocalRef localRef(env, jLocal);
             jstring jTarget = env->NewStringUTF(target.c_str());
             BrowseDirectoryNode::LocalRef targetRef(env, jTarget);
+            jstring jSub = env->NewStringUTF(subPath.c_str());
+            BrowseDirectoryNode::LocalRef subRef(env, jSub);
 
             env->CallVoidMethod(
                 activity, mid, jLocal, jTarget,
                 (jboolean)(push ? JNI_TRUE : JNI_FALSE),
                 (jboolean)(useMirror ? JNI_TRUE : JNI_FALSE),
-                (jboolean)(useForce ? JNI_TRUE : JNI_FALSE)
+                (jboolean)(useForce ? JNI_TRUE : JNI_FALSE),
+                jSub,
+                (jint)kind
             );
 
             if (env->ExceptionCheck()) {
