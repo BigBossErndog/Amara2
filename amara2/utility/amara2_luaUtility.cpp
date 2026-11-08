@@ -489,6 +489,17 @@ namespace Amara {
         string_metatable.set_function("to_json", [](sol::object obj) {
             return lua_to_json(obj).dump();
         });
+        string_metatable.set_function("parse_json", [&lua](sol::object obj) {
+            if (!obj.is<std::string>()) {
+                fatal_error("Error: string.parse_json() expected a string argument.");
+            }
+            std::string json_str = obj.as<std::string>();
+            nlohmann::json json_obj = nlohmann::json::parse(json_str, nullptr, false);
+            if (json_obj.is_discarded()) {
+                fatal_error("Error: string.parse_json() failed to parse the JSON string.");
+            }
+            return json_to_lua(lua, json_obj);
+        });
 
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("round", [](sol::object num) -> int {

@@ -735,12 +735,12 @@ namespace Amara {
                     }
                     else {
                         if (inputManager.generalPointer.isDown()) {
-                            if (mx != inputManager.mouse.real_pos.x || my != inputManager.mouse.real_pos.y) {
+                            if (mousePos.x != inputManager.mouse.real_pos.x || mousePos.y != inputManager.mouse.real_pos.y) {
                                 handleMouseMovement(
-                                    Vector2(mx, my),
+                                    Vector2(mousePos.x, mousePos.y),
                                     Vector2(
-                                        mx - inputManager.mouse.real_pos.x,
-                                        my - inputManager.mouse.real_pos.y
+                                        mousePos.x - inputManager.mouse.real_pos.x,
+                                        mousePos.y - inputManager.mouse.real_pos.y
                                     )
                                 );
                             }

@@ -74,7 +74,7 @@ namespace Amara {
             gameProps.world_list = &worlds;
         }
 
-        Creator(int argv, char** args): Creator() {
+        Creator(int argv, char** args, std::string build_args_str): Creator() {
             game.executable = system.getRelativePath(system.getFileName(std::string(args[0])));
             if (argv > 1) {
                 for (int i = 1; i < argv; i++) {
@@ -157,7 +157,20 @@ namespace Amara {
                 }
             }
             
-            if (!build_args.is_null()) game.build_args = build_args;
+            if (!build_args_str.empty()) {
+                build_args = Amara::string_to_json(build_args_str);
+            }
+            game.build_args = nlohmann::json::object();
+            if (!build_args.is_null()) {
+                if (build_args.is_array()) {
+                    for (nlohmann::json& obj: build_args) {
+                        game.build_args[obj["key"]] = obj["value"];
+                    }
+                }
+                else if (build_args.is_object()) {
+                    game.build_args = build_args;
+                }
+            }
         }
 
         virtual void setEncryption() override {

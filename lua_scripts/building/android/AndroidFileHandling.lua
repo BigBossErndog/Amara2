@@ -1,4 +1,4 @@
-local props = System:readJSON(Game.argtable["props_path"])
+local props = System:readJSON(Game.args["props_path"])
 local projectData = props.projectData
 
 local shouldCompile = false

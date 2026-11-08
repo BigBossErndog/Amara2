@@ -309,4 +309,5 @@ if not exist "%LIB_PATH%\amara2.lib" echo WARNING: %LIB_PATH%\amara2.lib not fou
 if not exist "%LIB_PATH%\amara2.lib" exit /b 0
 if not exist "%BUILD_PATH%\lib" md "%BUILD_PATH%\lib"
 copy /y "%LIB_PATH%\amara2.lib" "%BUILD_PATH%\lib\" >nul
+copy /y "%LIB_PATH%\amara2-engine.lib" "%BUILD_PATH%\lib\" >nul
 exit /b 0

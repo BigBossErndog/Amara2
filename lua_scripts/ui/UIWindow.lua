@@ -51,6 +51,13 @@ Nodes:define("UIWindow", "NineSlice", {
             -self.get.targetHeight / 2.0
         )
 
+        if self.input.dragging then
+            local mouseDisplayID = self.world.input.mouse.displayID
+            if self.world.get.currentDisplayID ~= mouseDisplayID then
+                self.world.func:snapToDisplay(mouseDisplayID)
+            end
+        end
+
         if self.x < self.world.left + self.width/2 then
             self.x = self.world.left + self.width/2
         elseif self.x > self.world.right - self.width/2 then

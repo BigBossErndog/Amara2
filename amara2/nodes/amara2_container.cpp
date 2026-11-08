@@ -79,13 +79,21 @@ namespace Amara {
             if (children.size() == 0) return;
             
             SDL_Rect old_sdl_viewport;
+            bool old_sdl_clip_enabled = false;
+            SDL_Rect old_sdl_clip = { 0, 0, 0, 0 };
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 SDL_GetRenderViewport(gameProps->renderer, &old_sdl_viewport);
+                old_sdl_clip_enabled = SDL_RenderClipEnabled(gameProps->renderer);
+                SDL_GetRenderClipRect(gameProps->renderer, &old_sdl_clip);
             }
             #ifdef AMARA_OPENGL
             GLint old_gl_viewport[4];
+            GLboolean old_gl_scissor_enabled = GL_FALSE;
+            GLint old_gl_scissor[4] = { 0, 0, 0, 0 };
             if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 glGetIntegerv(GL_VIEWPORT, old_gl_viewport);
+                old_gl_scissor_enabled = glIsEnabled(GL_SCISSOR_TEST);
+                glGetIntegerv(GL_SCISSOR_BOX, old_gl_scissor);
             }
             #endif
 
@@ -115,27 +123,63 @@ namespace Amara {
             destRect.w = width*scale.x*passOn.scale.x * totalZoom.x;
             destRect.h = height*scale.y*passOn.scale.y * totalZoom.y;
 
-            float diag_distance = distanceBetween(0, 0, destRect.w, destRect.h);
-            if (!Shape::checkCollision(
-                Rectangle(destRect), Rectangle(
-                    v.x - diag_distance, v.y - diag_distance,
-                    v.w + diag_distance*2, v.h + diag_distance*2
-                )
-            )) return;
+            float cropL = std::max(destRect.x, v.x);
+            float cropT = std::max(destRect.y, v.y);
+            float cropR = std::min(destRect.x + destRect.w, v.x + v.w);
+            float cropB = std::min(destRect.y + destRect.h, v.y + v.h);
+
+            if (cropR <= cropL || cropB <= cropT) return;
 
             if (input.active && !passOn.inputDisabled) {
                 input.queueInput(Quad(destRect), v, nullptr);
             }
+
+            // Keep destRect within the previous viewport.
             
             SDL_Rect new_sdl_viewport = Rectangle::makeSDLRect(Rectangle(destRect));
 
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 SDL_SetRenderViewport(gameProps->renderer, &new_sdl_viewport);
+
+                int cx1 = (int)std::floor(cropL);
+                int cy1 = (int)std::floor(cropT);
+                int cx2 = (int)std::ceil(cropR);
+                int cy2 = (int)std::ceil(cropB);
+
+                if (old_sdl_clip_enabled) {
+                    cx1 = std::max(cx1, old_sdl_viewport.x + old_sdl_clip.x);
+                    cy1 = std::max(cy1, old_sdl_viewport.y + old_sdl_clip.y);
+                    cx2 = std::min(cx2, old_sdl_viewport.x + old_sdl_clip.x + old_sdl_clip.w);
+                    cy2 = std::min(cy2, old_sdl_viewport.y + old_sdl_clip.y + old_sdl_clip.h);
+                }
+
+                SDL_Rect clip = {
+                    cx1 - new_sdl_viewport.x,
+                    cy1 - new_sdl_viewport.y,
+                    std::max(0, cx2 - cx1),
+                    std::max(0, cy2 - cy1)
+                };
+                SDL_SetRenderClipRect(gameProps->renderer, &clip);
             }
             #ifdef AMARA_OPENGL
             else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) { // OpenGL uses bottom-left origin
                 gameProps->renderBatch->flush();
                 glViewport(new_sdl_viewport.x, gameProps->master_viewport.h - (new_sdl_viewport.y + new_sdl_viewport.h), new_sdl_viewport.w, new_sdl_viewport.h);
+
+                int sx1 = (int)std::floor(cropL);
+                int sx2 = (int)std::ceil(cropR);
+                int sy1 = (int)(gameProps->master_viewport.h - std::ceil(cropB));
+                int sy2 = (int)(gameProps->master_viewport.h - std::floor(cropT));
+
+                if (old_gl_scissor_enabled) {
+                    sx1 = std::max(sx1, old_gl_scissor[0]);
+                    sy1 = std::max(sy1, old_gl_scissor[1]);
+                    sx2 = std::min(sx2, old_gl_scissor[0] + old_gl_scissor[2]);
+                    sy2 = std::min(sy2, old_gl_scissor[1] + old_gl_scissor[3]);
+                }
+
+                glEnable(GL_SCISSOR_TEST);
+                glScissor(sx1, sy1, std::max(0, sx2 - sx1), std::max(0, sy2 - sy1));
             }
             #endif
             
@@ -182,11 +226,14 @@ namespace Amara {
 
             if (gameProps->graphics == GraphicsEnum::Render2D && gameProps->renderer) {
                 SDL_SetRenderViewport(gameProps->renderer, &old_sdl_viewport);
+                SDL_SetRenderClipRect(gameProps->renderer, old_sdl_clip_enabled ? &old_sdl_clip : nullptr);
             }
             #ifdef AMARA_OPENGL
             else if (gameProps->graphics == GraphicsEnum::OpenGL && gameProps->glContext != NULL) {
                 gameProps->renderBatch->flush();
                 glViewport(old_gl_viewport[0], old_gl_viewport[1], old_gl_viewport[2], old_gl_viewport[3]);
+                glScissor(old_gl_scissor[0], old_gl_scissor[1], old_gl_scissor[2], old_gl_scissor[3]);
+                if (!old_gl_scissor_enabled) glDisable(GL_SCISSOR_TEST);
             }
             #endif
         }

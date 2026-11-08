@@ -140,13 +140,16 @@ namespace Amara {
                     if (g.arguments.size() == 0) return sol::nil;
                     return json_to_lua(g.gameProps->lua, g.arguments);
                 }),
-                "argtable", sol::property([](GameManager& g) -> sol::table {
+                "args", sol::property([](GameManager& g) -> sol::table {
                     return json_to_lua(g.gameProps->lua, g.argmap);
                 }),
                 "buildArgs", sol::property([](GameManager& g) -> sol::table {
                     return json_to_lua(g.gameProps->lua, g.build_args);
                 }),
-                "getDisplayIDForPoint", &GameManager::getDisplayIDForPoint,
+                "getDisplayIDForPoint", [](GameManager& g, sol::object arg) -> int {
+                    Vector2 p = arg;
+                    return (int)g.getDisplayIDForPoint(p);
+                },
                 "getDisplayBounds", [&lua](GameManager& g, sol::object arg) -> sol::object {
                     if (arg.is<int>()) {
                         int dispID = arg.as<int>();

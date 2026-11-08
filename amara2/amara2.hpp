@@ -33,20 +33,20 @@
 
 int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool encrypt_output = false, const std::string& build_args_str = "");
 
+#ifndef AMARA_STR
+    #define AMARA_STR(x) #x
+    #define AMARA_STRINGIFY(x) AMARA_STR(x)
+#endif
+
 #ifndef AMARA_IMPLEMENTATION
     #include <stdio.h>
     #include <stdlib.h>
-
+    
     #if defined(_WIN32)
         #ifndef NOMINMAX
             #define NOMINMAX
         #endif
         #include <windows.h>
-    #endif
-
-    #ifndef AMARA_STR
-        #define AMARA_STR(x) #x
-        #define AMARA_STRINGIFY(x) AMARA_STR(x)
     #endif
 #else
     #ifndef AMARA_STD
@@ -353,16 +353,12 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
     #endif
 
     int amara_run(int argc, char** argv, const char* encryption_key, bool encrypt_output, const std::string& build_args_str) {
-        Amara::Creator creator(argc, argv);
+        Amara::Creator creator(argc, argv, build_args_str);
 
         if (encryption_key != nullptr && encryption_key[0] != '\0') {
             creator.encryption_key = encryption_key;
             if (encrypt_output) creator.encrypt_output = true;
             creator.setEncryption();
-        }
-
-        if (!build_args_str.empty()) {
-            creator.build_args = Amara::string_to_json(build_args_str);
         }
         
         if (creator.starting_scripts.size() > 0) {

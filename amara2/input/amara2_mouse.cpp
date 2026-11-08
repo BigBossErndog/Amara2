@@ -52,6 +52,7 @@ namespace Amara {
                 "right", sol::readonly(&Mouse::right),
                 "middle", sol::readonly(&Mouse::middle),
                 "wheel", sol::readonly(&Mouse::wheel),
+                "scroll", sol::readonly(&Mouse::wheel),
                 "moved", sol::readonly(&Mouse::moved),
                 "show", &Mouse::show,
                 "hide", &Mouse::hide,
@@ -64,6 +65,17 @@ namespace Amara {
                         else m.hide();
                     }
                 ),
+                "system_pos", sol::property([&lua](Amara::Mouse& m) {
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    return sol::make_object(lua, Vector2(mx, my));
+                }),
+                "displayID", sol::property([&lua](Amara::Mouse& m) {
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    SDL_Point point = { static_cast<int>(mx), static_cast<int>(my) };
+                    return SDL_GetDisplayForPoint(&point);
+                }),
                 "lock", &Mouse::lock,
                 "unlock", &Mouse::unlock,
                 "locked", sol::property([](Amara::Mouse& m) {

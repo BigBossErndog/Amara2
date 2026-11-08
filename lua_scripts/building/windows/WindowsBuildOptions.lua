@@ -1,9 +1,9 @@
 Nodes:define("WindowsBuildOptions", "PagedWindow", {
     width = 256,
-    height = 140,
+    height = 160,
 
     props = {
-        pageCount = 6
+        pageCount = 7
     },
 
     onConfigure = function(self, config)
@@ -28,7 +28,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
         end
 
         if self.get.buildTest then
-            self.get.pageIndexOverride = { 5, 6 }
+            self.get.pageIndexOverride = { 5, 6, 7 }
             self.get.pageCount = #self.get.pageIndexOverride
         end
         
@@ -298,7 +298,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 end
             })
             encryptionButton.x = self.get.targetWidth/2 - encryptionButton.width/2
-            encryptionButton.y = desc.y + desc.height + 5
+            encryptionButton.y = desc.y + desc.height + 7
 
             self.get.tickBox = self.get.pageContent:createChild("Sprite", {
                 origin = 0,
@@ -337,13 +337,31 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 projectData = self.get.projectData,
                 x = 10, y = 40,
                 width = self.get.targetWidth - 20,
-                height= self.get.targetHeight - 40 - 28
+                height= self.get.targetHeight - 40 - 28,
+                window = self
             })
         elseif pageIndex == 6 then
+            local txt = self.get.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                origin = 0,
+                text = Localize:get("label_buildArgsDesc"),
+                font = "defaultFont",
+                color = Colors.White
+            })
+            self.get.buildArgs = self.get.pageContent:createChild("BuildArgsList", {
+                projectPath = self.get.projectPath,
+                projectData = self.get.projectData,
+                x = 10, y = 40,
+                width = self.get.targetWidth - 20,
+                height= self.get.targetHeight - 40 - 48,
+                window = self
+            })
+
+        elseif pageIndex == 7 then
             local backer = self.get.pageContent:createChild("FillRect", {
                 x = 10, y = 26,
                 width = self.get.targetWidth - 20,
-                height = 86,
+                height = self.height - 56,
                 color = "#111d27",
                 origin = 0,
                 alpha = 0.75
@@ -430,6 +448,8 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
                 self.get.includeFolders.func:confirmOptions()
             elseif pageOverride == 5 then
                 self.get.includePlugins.func:confirmOptions()
+            elseif pageOverride == 6 then
+
             end
 
             System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)

@@ -29,6 +29,7 @@ Scripts:include("windows/RunArgumentsWindow")
 Scripts:include("building/BuildPlatformMenu")
 Scripts:include("building/IncludeFolders")
 Scripts:include("building/IncludePlugins")
+Scripts:include("building/BuildArgsList")
 Scripts:include("building/EncryptionOptions")
 
 Scripts:include("building/windows/VSBuildToolsInstaller")
@@ -55,6 +56,7 @@ Creator:createWorld({
         vsync = true,
         graphics = Graphics.Render2D,
         screenMode = ScreenMode.BorderlessWindowed,
+        currentDisplayID = nil
     },
     
     onPreload = function(world)
@@ -80,7 +82,7 @@ Creator:createWorld({
     end,
 
     onCreate = function(world)
-        local usableDisplay = world.usableDisplay
+        local usableDisplay = Game:getUsableDisplaySpace(world.input.mouse.displayID)
         world.virtualScale = usableDisplay.height
         if world.virtualScale > 960 then
             for i = 2, 8 do
@@ -130,8 +132,8 @@ Creator:createWorld({
         local hotkey
         hotkey = world:createChild("Hotkey", {
             config = {
-                { Key.LeftCtrl, Key.LeftAlt },
-                { Key.RightCtrl, Key.RightAlt }
+                { Key.LeftAlt, Key.LeftShift },
+                { Key.RightAlt, Key.RightShift }
             },
             onPress = function()
                 if not world.forcedClickThrough then
@@ -140,32 +142,25 @@ Creator:createWorld({
             end,
             onRelease = function()
                 world.clickThrough = true
-            end,
-            whilePressed = function()
-                local switchDisplay = 0
-                if hotkey:pressing(Key.One) then
-                    switchDisplay = 1
-                elseif hotkey:pressing(Key.Two) then
-                    switchDisplay = 2
-                elseif hotkey:pressing(Key.Three) then
-                    switchDisplay = 3
-                elseif hotkey:pressing(Key.Four) then
-                    switchDisplay = 4
-                end
-
-                if world.input.mouse.wheel.y < 0 then
-                    switchDisplay = world.displayID - 1
-                elseif world.input.mouse.wheel.y > 0 then
-                    switchDisplay = world.displayID + 1
-                end
-                
-                if world.displayID ~= switchDisplay and switchDisplay ~= 0 then
-                    world.size = Game:getUsableDisplaySpace(switchDisplay)
-                end
             end
         })
 
+        world.get.currentDisplayID = world.display
         Game.targetFPS = 0
+    end,
+
+    snapToDisplay = function(world, switchDisplay)
+        if world.get.currentDisplayID ~= switchDisplay and switchDisplay ~= 0 then
+            world.get.currentDisplayID = switchDisplay
+            local rect = Game:getUsableDisplaySpace(switchDisplay)
+            world.tween:to({
+                x = rect.x, y = rect.y,
+                width = rect.width,
+                height = rect.height,
+                duration = 0.1,
+                ease = Ease.SineInOut
+            })
+        end
     end,
     
     getSettings = function(self, forceLoad)

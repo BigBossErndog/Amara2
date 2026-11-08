@@ -3,7 +3,7 @@
 #endif
 
 #include <amara2.hpp>
-
+#include <iostream>
 #if defined(__ANDROID__)
 #include <SDL3/SDL_main.h>
 #endif
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 #endif
     std::string build_args_str;
     #if defined(AMARA_BUILD_ARGS)
-        build_args_str = AMARA_BUILD_ARGS;
+        build_args_str = AMARA_STRINGIFY(AMARA_BUILD_ARGS);
     #endif
     #if defined(AMARA_ENCRYPTION_KEY)
         #if defined(AMARA_ENCRYPT_OUTPUT)
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
             return amara_run(argc, argv, AMARA_STRINGIFY(AMARA_ENCRYPTION_KEY), false, build_args_str);
         #endif
     #else
-        return amara_run(argc, argv, "", false, "");
+        return amara_run(argc, argv, "", false, build_args_str);
     #endif
 }
 

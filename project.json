@@ -1,5 +1,16 @@
 {
+    "build-directories": [
+        "files",
+        "resources",
+        "gimp",
+        "projects",
+        "lib",
+        "amara2"
+    ],
     "executable-name": "Amara2",
+    "plugin-directories": [
+        "hotkeys"
+    ],
     "project-name": "Amara2",
     "test_arguments": {}
 }

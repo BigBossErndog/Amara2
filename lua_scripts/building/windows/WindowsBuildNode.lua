@@ -16,14 +16,38 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             end
         end
 
-        -- Always quotes (used for the .bat file, where tool paths nearly always contain spaces)
         local function quote(path)
             return '"' .. path .. '"'
         end
 
-        -- Backslashes to forward slashes (parentheses drop gsub's second return value)
         local function slash(path)
             return (string.gsub(path, "\\", "/"))
+        end
+
+        local function c_string_literal(s)
+            s = s:gsub("\\", "\\\\")
+            s = s:gsub('"', '\\"')
+            s = s:gsub("\r", "\\r"):gsub("\n", "\\n")
+            return '"' .. s .. '"'
+        end
+
+        local function quote_bat_arg(s)
+            s = s:gsub('(\\*)"', function(bs) return bs .. bs .. '\\"' end)
+            s = s:gsub('(\\+)$', '%1%1')
+            s = '"' .. s .. '"'
+
+            s = s:gsub("%%", "%%%%")
+
+            local out, in_quotes = {}, false
+            for c in s:gmatch(".") do
+                if c == '"' then
+                    in_quotes = not in_quotes
+                elseif not in_quotes and c:find("[%^&|<>()]") then
+                    out[#out + 1] = "^"
+                end
+                out[#out + 1] = c
+            end
+            return table.concat(out)
         end
 
         local function fix_path(path)
@@ -47,7 +71,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             self.get.printLog = config.printLog
         end
 
-        -- args: compiler options. linkArgs: everything after /link
         local args = {}
         local linkArgs = {}
 
@@ -64,33 +87,33 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         local buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
+        local resourcePath = System:getRelativePath("resources")
 
-        -- MSVC / Windows SDK locations (from the C++ locateWindowsSDK function)
         local winsdk = System:locateWindowsSDK() or {}
         local sdkFound = (winsdk.cl ~= nil) and (winsdk.rc ~= nil)
         local function sdk(key)
             return winsdk[key] or ""
         end
 
-        local sdl3Path = System:join(buildModule, "resources/libs/SDL3-3.4.10")
+        local sdl3Path = System:join(resourcePath, "libs/SDL3-3.4.10")
 
-        local nlohmannPath = System:join(buildModule, "resources/libs/json/include")
-        local luaPath = System:join(buildModule, "resources/libs/lua")
-        local sol2Path = System:join(buildModule, "resources/libs/sol2")
-        local stbPath = System:join(buildModule, "resources/libs/stb")
-        local glmPath = System:join(buildModule, "resources/libs/glm")
-        local minimp3Path = System:join(buildModule, "resources/libs/minimp3")
-        local pfdPath = System:join(buildModule, "resources/libs/portable-file-dialogs")
-        local tinyxml2Path = System:join(buildModule, "resources/libs/tinyxml2")
+        local nlohmannPath = System:join(resourcePath, "libs/json/include")
+        local luaPath = System:join(resourcePath, "libs/lua")
+        local sol2Path = System:join(resourcePath, "libs/sol2")
+        local stbPath = System:join(resourcePath, "libs/stb")
+        local glmPath = System:join(resourcePath, "libs/glm")
+        local minimp3Path = System:join(resourcePath, "libs/minimp3")
+        local pfdPath = System:join(resourcePath, "libs/portable-file-dialogs")
+        local tinyxml2Path = System:join(resourcePath, "libs/tinyxml2")
+        local minizPath = System:join(resourcePath, "libs/miniz-3.1.1")
 
         local libDir = System:getRelativePath("lib")
         local hasPlugins = (projectData["plugin-directories"] ~= nil) and (#projectData["plugin-directories"] > 0)
-        local useLib = (not config.buildTest)
-            and (not hasPlugins)
+        local useLib =
+            not hasPlugins
             and System:exists(System:join(libDir, "amara2.lib"))
         self.get.useLib = useLib
-        
-        -- Clean and create build directory as per Makefile
+
         if System:exists(buildDir) then
             System:remove(buildDir)
         end
@@ -99,7 +122,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             System:getRelativePath("resources/dlls/win64"),
             buildDir
         )
-        
+
         if not config.iconPath then
             local defaultIcon = System:getRelativePath("assets/icons/icon.png")
             if System:exists(defaultIcon) then
@@ -123,31 +146,31 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         self.get.objFile = System:join(buildDir, "main.obj")
+        self.get.minizObjFile = System:join(buildDir, "miniz.obj")
 
-        -- Compiler options
         table.insert(args, "/nologo")
         table.insert(args, fix_path(System:getRelativePath("amara2/main/main.cpp")))
-        
+        if not useLib then
+            table.insert(args, fix_path(System:join(minizPath, "miniz.c")))
+        end
+
         if self.get.resOutputFile then
             table.insert(args, fix_path(self.get.resOutputFile))
         end
 
         local static_libs = {}
 
-        -- MSVC and Windows SDK headers
         table.insert(args, "/I" .. fix_path(sdk("msvc_include")))
         table.insert(args, "/I" .. fix_path(sdk("sdk_include_ucrt")))
         table.insert(args, "/I" .. fix_path(sdk("sdk_include_um")))
         table.insert(args, "/I" .. fix_path(sdk("sdk_include_shared")))
 
-        -- MSVC and Windows SDK import libraries
         table.insert(linkArgs, "/LIBPATH:" .. fix_path(sdk("msvc_lib")))
         table.insert(linkArgs, "/LIBPATH:" .. fix_path(sdk("sdk_lib_ucrt")))
         table.insert(linkArgs, "/LIBPATH:" .. fix_path(sdk("sdk_lib_um")))
 
-        -- AMARA_PATH
-        table.insert(args, "/I" ..  fix_path(System:getRelativePath("amara2")))
-        
+        table.insert(args, "/I" .. fix_path(System:getRelativePath("amara2")))
+
         if hasPlugins then
             local plugins_path = System:join(self.get.projectPath, "plugins")
             table.insert(args, "/I" .. fix_path(plugins_path))
@@ -179,8 +202,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                             System:copy(System:join(plugin_path, file), buildDir)
                         end
                     end
-                    
-                    -- plugin.json keeps its clang-style keys; they are translated to MSVC options here
+
                     if plugin_data["-I"] then
                         for _, path in ipairs(plugin_data["-I"]) do
                             table.insert(args, "/I" .. fix_path(System:join(plugin_path, path)))
@@ -236,32 +258,28 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             table.insert(args, "/I" .. fix_path(tinyxml2Path))
             table.insert(args, "/I" .. fix_path(minimp3Path))
             table.insert(args, "/I" .. fix_path(pfdPath))
+            table.insert(args, "/I" .. fix_path(minizPath))
 
-            -- SDL_PATHS_WIN64
             table.insert(args, "/I" .. fix_path(System:join(sdl3Path, "include")))
             table.insert(linkArgs, "/LIBPATH:" .. fix_path(System:join(sdl3Path, "lib", "x64")))
         end
-        
-        -- WINDOWS_COMPILER_FLAGS
+
         table.insert(args, "/w")
         table.insert(args, "/std:c++17")
         table.insert(args, "/EHsc")
         table.insert(args, "/O2")
-        table.insert(args, "/MT")                -- static runtime (replaces -static)
-        table.insert(args, "/utf-8")             -- clang assumes UTF-8 sources; MSVC does not
-        table.insert(args, "/bigobj")            -- sol2 translation units can exceed the default object limit
+        table.insert(args, "/MT")
+        table.insert(args, "/utf-8")
+        table.insert(args, "/bigobj")
         table.insert(args, "/Zc:__cplusplus")
         table.insert(linkArgs, "/SUBSYSTEM:WINDOWS")
 
         if useLib then
-            -- amara2.hpp adds `#pragma comment(lib, "amara2.lib")` by itself; it just needs to be found
             table.insert(linkArgs, "/LIBPATH:" .. fix_path(libDir))
         else
-            -- Compile the whole engine into main.obj
             table.insert(args, "/DAMARA_IMPLEMENTATION")
         end
-        
-        -- EXTRA_OPTIONS
+
         if hasPlugins then
             table.insert(args, "/DAMARA_PLUGINS")
         end
@@ -274,6 +292,14 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             table.insert(args, "/DAMARA_ENGINE_TOOLS")
         end
 
+        if self.get.projectData.build_args then
+            local args_as_str = string.json_string(self.get.projectData.build_args)
+            local args_macro = quote_bat_arg(args_as_str)
+            print(args_as_str)
+            print(args_macro)
+            table.insert(args, "/DAMARA_BUILD_ARGS=" .. args_macro)
+        end
+
         if self.get.projectData.encryption and not config.buildTest then
             table.insert(args, "/DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.get.projectData.encryption["key"]))
             if self.get.projectData.encryption["encrypt-write-output"] then
@@ -282,7 +308,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         if not useLib then
-            -- LINKER_FLAGS_WIN64
             table.insert(args, "/DAMARA_OPENGL")
             table.insert(linkArgs, "opengl32.lib")
             table.insert(linkArgs, "SDL3.lib")
@@ -302,7 +327,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             end
         end
 
-        table.insert(args, "/Fo:" .. quote(slash(self.get.objFile)))
+        table.insert(args, "/Fo:" .. quote(slash(buildDir) .. "/"))
         table.insert(args, "/Fe:" .. quote(slash(System:join(buildDir, self.get.executableName .. ".exe"))))
 
         table.insert(args, "/link")
@@ -319,14 +344,12 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         self.get.errorOutputPath = errorOutputPath
         local errorLog = quote(slash(errorOutputPath))
 
-        -- Step 2: compile and link with cl, using the response file
         local clCommand = quote(slash(sdk("cl"))) .. " @" .. quote(slash(argsFile))
 
         local batchLines = {}
         if sdkFound then
             local logRedirect = " > "
 
-            -- Step 1: compile the icon resource with rc (needs the SDK headers only if the .rc includes any)
             if hasIcon then
                 local rcCommand = quote(slash(sdk("rc"))) .. " /nologo"
                     .. " /I" .. quote(slash(sdk("sdk_include_um")))
@@ -350,7 +373,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         if #args > 0 then
             self:configure({
-                -- arguments = args
                 arguments = {
                     Game.executable,
                     "-context", System:getBasePath(),
@@ -390,7 +412,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                     local newWindow = self.world.get.windows:createChild("ProjectWindow", {
                         projectPath = self.get.projectPath
                     })
-                    
+
                     if self.get.gameProcess then
                         self.get.gameProcess:destroy()
                         self.get.gameProcess = nil
@@ -414,11 +436,14 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         if self.get.objFile and System:exists(self.get.objFile) then
             System:remove(self.get.objFile)
         end
-        
+        if self.get.minizObjFile and System:exists(self.get.minizObjFile) then
+            System:remove(self.get.minizObjFile)
+        end
+
         if self.get.printLog then
             self.get.printLog.func:unbindGameProcess()
         end
-        
+
         self.world.forcedClickThrough = true
         self.world:hideWindow()
 
@@ -464,7 +489,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                             self.get.printLog.func:unbindGameProcess()
                             self.get.printLog.func:stopLoading()
                         end
-                        
+
                         if exitCode == 0 then
                             System:openDirectory(System:join(self.get.projectPath, "build", "windows"))
                             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
@@ -480,12 +505,11 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                     self.get.printLog.func:unbindGameProcess()
                     self.get.printLog.func:stopLoading()
                 end
-                System:openDirectory(System:join(self.get.buildDir))
                 self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
 
                 removeIconFiles()
             end
-            
+
         else
             self.get.printLog.func:stopLoading()
 
@@ -495,7 +519,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 self.get.printLog.func:handleMessage("Error: Build failed.\n" .. error_message)
                 System:remove(errorOutputPath)
             end
-            
+
             self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
 
             if not System:installedVSBuildTools() then

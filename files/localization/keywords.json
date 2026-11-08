@@ -159,10 +159,12 @@
     "label_encryptFilesAndAssets": "Encrypt Files and Assets",
     "label_encryptWriteOutput": "Encrypt Write Output",
 
-    "label_includeFoldersDesc": "Choose optional directories to include.",
+    "label_includeFoldersDesc": "${yellow}Choose optional directories to include.",
 
-    "label_pluginsDesc": "Select which plugins to include.",
+    "label_pluginsDesc": "${yellow}Select which plugins to include.",
     "label_noPluginsFound": "No plugins found.",
+
+    "label_buildArgsDesc": "${yellow}Optional flags accessible via \"Game.buildArgs\".",
 
     "label_doNotCloseCommandPrompt": "Warning: Do not close the external command prompt window. You may minimize it instead.",
     
