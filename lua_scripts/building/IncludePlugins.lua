@@ -18,12 +18,10 @@ Nodes:define("IncludePlugins", "FillRect", {
     },
 
     onConfigure = function(self, config)
-        if config.projectPath then
-            self.get.projectPath = config.projectPath
-        end
-        if config.projectData then
-            self.get.projectData = config.projectData
-        end
+        table.assign(self.get, {
+            projectPath = config.projectPath,
+            projectData = config.projectData
+        })
     end,
 
     onCreate = function(self)

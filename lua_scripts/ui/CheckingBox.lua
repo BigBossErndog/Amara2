@@ -19,12 +19,10 @@ Nodes:define("CheckingBox", "FillRect", {
     },
 
     onConfigure = function(self, config)
-        if config.options then
-            self.get.options = config.options
-        end
-        if config.record then
-            self.get.record = config.record
-        end
+        table.assign(self.get, {
+            projectPath = config.projectPath,
+            projectData = config.projectData
+        })
     end,
 
     onCreate = function(self)

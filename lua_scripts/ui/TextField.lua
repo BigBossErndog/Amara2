@@ -22,24 +22,16 @@ Nodes:define("TextField", "FillRect", {
     },
 
     onConfigure = function(self, config)
-        if config.defaultText then
-            self.get.defaultText = config.defaultText
-        end
-        if config.inputEnabled ~= nil then
-            self.get.inputEnabled = config.inputEnabled
-        end
-        if config.fixLengthToSize ~= nil then
-            self.get.fixLengthToSize = config.fixLengthToSize
-        end
-        if config.maxTextWidth then
-            self.get.maxTextWidth = config.maxTextWidth
-        end
+        table.assign(self.get, {
+            defaultText = config.defaultText,
+            inputEnabled = config.inputEnabled,
+            fixLengthToSize = config.fixLengthToSize,
+            maxTextWidth = config.maxTextWidth,
+            toolTip = config.toolTip,
+        })
         if config.infiniteLength then
             self.get.infiniteLength = config.infiniteLength
             self.get.fixLengthToSize = false
-        end
-        if config.toolTip then
-            self.get.toolTip = config.toolTip
         end
     end,
 

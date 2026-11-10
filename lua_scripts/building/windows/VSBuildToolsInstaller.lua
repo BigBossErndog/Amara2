@@ -3,12 +3,10 @@ Nodes:define("VSBuildToolsInstaller", "UIWindow", {
     height = 100,
 
     onConfigure = function(self, config)
-        if config.projectPath then
-            self.get.projectPath = config.projectPath
-        end
-        if config.buildTest then
-            self.get.buildTest = config.buildTest
-        end
+        table.assign(self.get, {
+            projectPath = config.projectPath,
+            buildTest = config.buildTest
+        })
     end,
 
     onCreate = function(self)

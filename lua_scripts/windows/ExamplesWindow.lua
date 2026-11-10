@@ -1,20 +1,12 @@
 Nodes:define("ExampleModule", "Group", {
     onConfigure = function(self, config)
-        if config.type then
-            self.get.type = config.type
-        end
-        if config.name then
-            self.get.name = config.name
-        end
-        if config.path then
-            self.get.path = config.path
-        end
-        if config.openProject then
-            self.get.openProject = config.openProject
-        end
-        if config.openFolder then
-            self.get.openFolder = config.openFolder
-        end
+        table.assign(self.get, {
+            type = config.type,
+            name = config.name,
+            path = config.path,
+            openProject = config.openProject,
+            openFolder = config.openFolder
+        })
     end,
 
     onCreate = function(self)
@@ -107,6 +99,10 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
     },
 
     onConfigure = function(self, config)
+        table.assign(self.get, {
+            allProjects = config.allProjects,
+            examples = config.examples
+        })
         if config.allProjects then
             self.get.allProjects = config.allProjects
         end

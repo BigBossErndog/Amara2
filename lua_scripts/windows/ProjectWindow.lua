@@ -3,12 +3,11 @@ Nodes:define("ProjectWindow", "UIWindow", {
     height = 60,
 
     onConfigure = function(self, config)
-        if config.projectPath then
-            self.get.projectPath = config.projectPath
-        end
-        if config.playOnStart then
-            self.get.playOnStart = config.playOnStart
-        end
+        table.assign(self.get, {
+            projectPath = config.projectPath,
+            playOnStart = config.playOnStart,
+            resumePosition = config.resumePosition
+        })
     end,
     
     onCreate = function(self)

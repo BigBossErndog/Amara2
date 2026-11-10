@@ -9,12 +9,10 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
     },
     
     onConfigure = function(self, config)
-        if config.projectPath then
-            self.get.projectPath = config.projectPath
-        end
-        if config.exampleProject then
-            self.get.exampleProject = config.exampleProject
-        end
+        table.assign(self.get, {
+            projectPath = config.projectPath,
+            exampleProject = config.exampleProject
+        })
     end,
     
     onCreate = function(self)

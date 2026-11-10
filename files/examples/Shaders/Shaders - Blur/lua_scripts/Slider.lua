@@ -4,15 +4,11 @@ Nodes:define("Slider", "Group", {
     },
 
     onConfigure = function(self, config)
-        if config.onChange then
-            self.get.onChange = config.onChange
-        end
-        if config.text then
-            self.get.text = config.text
-        end
-        if config.value then
-            self.get.value = config.value
-        end
+        table.assign(self.get, {
+            onChange = config.onChange,
+            text = config.text,
+            value = config.value
+        })
     end,
     
     onCreate = function(self)

@@ -11,21 +11,13 @@ Nodes:define("TerminalWindow", "UIWindow", {
     },
 
     onConfigure = function(self, config)
-        if config.gameProcess then
-            self.get.gameProcess = config.gameProcess
-        end
-        if config.disableSavePosition then
-            self.get.disableSavePosition = config.disableSavePosition
-        end
-        if config.allowMinimize then
-            self.get.allowMinimize = config.allowMinimize
-        end
-        if config.projectPath then
-            self.get.projectPath = config.projectPath
-        end
-        if config.titleText then
-            self.get.titleText = config.titleText
-        end
+        table.assign(self.get, {
+            projectPath = config.projectPath,
+            disableSavePosition = config.disableSavePosition,
+            allowMinimize = config.allowMinimize,
+            gameProcess = config.gameProcess,
+            titleText = config.titleText
+        })
     end,
 
     onCreate = function(self, config)

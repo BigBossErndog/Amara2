@@ -892,8 +892,7 @@ namespace Amara {
 
         std::string getScriptPath(std::string path) {
             if (String::startsWith(path, "lua_scripts/")) {
-                path = path.substr(12);
-                return getScriptPath(path);
+                return getScriptPath(path.substr(12));
             }
 
             std::string rec_path = path;
@@ -911,8 +910,6 @@ namespace Amara {
                 if (exists(path)) return path;
                 path = filePath.string() + ".lua";
                 if (exists(path)) return path;
-                path = filePath.string() + ".amara";
-                if (exists(path)) return path;
             }
 
             if (!current_file_directory.empty()) {
@@ -926,8 +923,6 @@ namespace Amara {
                 path = new_path.string() + ".luac";
                 if (exists(path)) return path;
                 path = new_path.string() + ".lua";
-                if (exists(path)) return path;
-                path = new_path.string() + ".amara";
                 if (exists(path)) return path;
             }
 

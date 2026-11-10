@@ -601,15 +601,17 @@ namespace Amara {
             }
             return new_table;
         });
-        table_metatable.set_function("update", [](sol::table t1, sol::table t2) {
+        auto assign_table_func = [](sol::table t1, sol::table t2) {
             if (!t1.is<sol::table>() || !t2.is<sol::table>()) {
-                fatal_error("Error: table.update() expected 2 table arguments.");
+                fatal_error("Error: table.assign() expected 2 table arguments.");
             }
             for (auto& it: t2) {
                 t1[it.first] = it.second;
             }
             return t1;
-        });
+        };
+        table_metatable.set_function("assign", assign_table_func);
+        table_metatable.set_function("update", assign_table_func);
         table_metatable.set_function("is_array", [](sol::object tbl) {
             return lua_object_is_table_array(tbl);
         });
