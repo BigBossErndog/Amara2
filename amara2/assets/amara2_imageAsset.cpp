@@ -172,6 +172,15 @@ namespace Amara {
             return false;
         }
 
+        void setPixels(unsigned char* data, int _w, int _h) {
+            if (imageData && imageData != data) stbi_image_free(imageData);
+            imageData = data;
+            width = _w;
+            height = _h;
+            channels = 4;
+            pitch = _w * 4;
+        }
+
         unsigned char* resize(int _w, int _h, bool keep) {
             if (!imageData) {
                 fatal_error("Error: ImageAsset contains no image data.");

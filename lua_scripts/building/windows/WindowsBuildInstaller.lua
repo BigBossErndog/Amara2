@@ -3,12 +3,11 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
     height = 120,
 
     onConfigure = function(self, config)
-        if config.projectPath then
-            self.get.projectPath = config.projectPath
-        end
-        if config.buildTest then
-            self.get.buildText = config.buildTest
-        end
+        table.assign(self.get, {
+            projectPath = config.projectPath,
+            nextWindow = config.nextWindow,
+            exampleProject = config.exampleProject
+        })
     end,
 
     onCreate = function(self)
@@ -207,15 +206,10 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
                         })
                     else
                         local newWindow
-                        if not self.get.buildTest then
-                            newWindow = self.world.get.windows:createChild("BuildPlatformMenu", {
+                        if self.get.nextWindow then
+                            newWindow = self.world.get.windows:createChild(self.get.nextWindow, {
                                 projectPath = self.get.projectPath,
-                                buildTest = buildTest
-                            })
-                        else
-                            newWindow = self.world.get.windows:createChild("WindowsBuildOptions", {
-                                projectPath = self.get.projectPath,
-                                buildTest = true
+                                exampleProject = self.get.exampleProject
                             })
                         end
                         newWindow.func:openWindow()

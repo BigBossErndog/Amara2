@@ -277,8 +277,6 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
         
         #include "nodes/amara2_scene.cpp"
 
-        #include "nodes/amara2_syncDirectory.cpp"
-
         #include "actions/amara2_action.cpp"
         #include "actions/amara2_waitAction.cpp"
         #include "actions/amara2_tween.cpp"
@@ -290,6 +288,8 @@ int amara_run(int argc, char** argv, const char* encryption_key = nullptr, bool 
         #include "actions/amara2_browseDirectory.cpp"
         #include "actions/amara2_importZip.cpp"
         #include "actions/amara2_exportZip.cpp"
+
+        #include "nodes/amara2_syncDirectory.cpp"
 
         #include "actions/amara2_textInput.cpp"
 

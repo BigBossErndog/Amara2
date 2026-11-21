@@ -291,10 +291,12 @@ if not exist "%BUILD_PATH%\assets" md "%BUILD_PATH%\assets"
 if not exist "%BUILD_PATH%\files" md "%BUILD_PATH%\files"
 if not exist "%BUILD_PATH%\lua_scripts" md "%BUILD_PATH%\lua_scripts"
 if not exist "%BUILD_PATH%\resources" md "%BUILD_PATH%\resources"
+if not exist "%BUILD_PATH%\amara2" md "%BUILD_PATH%\amara2"
 xcopy /s /e /i /y "assets\*.*" "%BUILD_PATH%\assets" >nul
 xcopy /s /e /i /y "files\*.*" "%BUILD_PATH%\files" >nul
 xcopy /s /e /i /y "lua_scripts\*.*" "%BUILD_PATH%\lua_scripts" >nul
 xcopy /s /e /i /y "resources\*.*" "%BUILD_PATH%\resources" >nul
+xcopy /s /e /i /y "amara2\*.*" "%BUILD_PATH%\amara2" >nul
 exit /b 0
 
 :copy_engine

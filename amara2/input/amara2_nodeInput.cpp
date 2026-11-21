@@ -111,7 +111,7 @@ namespace Amara {
 
             Amara::Pointer* lastPointer = lastInteraction.lastPointer;
             if (hover.isDown) {
-                if (!dragging && (lastPointer == nullptr || !lastPointer->active || !lastShape.collidesWith(lastPointer->real_pos))) {
+                if (!dragging && (lastPointer == nullptr || !lastPointer->active || !(lastShape.collidesWith(lastPointer->real_pos) && Shape::checkCollision(lastInteraction.viewport, lastPointer->real_pos)))) {
                     hover.release();
                     
                     if (hover_by_mouse) handleMessage({ nullptr, "onMouseExit", { sol::nil } });

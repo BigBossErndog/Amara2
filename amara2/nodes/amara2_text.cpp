@@ -34,6 +34,7 @@ namespace Amara {
         int textWidth = 0;
         int textHeight = 0;
 
+        bool wrapText = wrapText;
         double wrapWidth = -1;
         Amara::WrapModeEnum wrapMode = Amara::WrapModeEnum::ByWord;
 
@@ -149,6 +150,7 @@ namespace Amara {
             if (json_has(config, "wrapMode")) {
                 setWrapMode(static_cast<Amara::WrapModeEnum>(json_get<int>(config, "wrapMode")));
             }
+            if (json_has(config, "wrap")) wrapText = json_get<bool>(config, "wrap");
 
             if (json_has(config, "lineSpacing")) setLineSpacing(json_get<int>(config, "lineSpacing"));
 
@@ -213,7 +215,7 @@ namespace Amara {
         void updateText() {
             if (font) {
                 font->packGlyphsFromString(converted_text);
-                layout = font->generateLayout(converted_text, wrapWidth, wrapMode, alignment, lineSpacing, parseTags);
+                layout = font->generateLayout(converted_text, wrapText ? -1 : wrapWidth, wrapMode, alignment, lineSpacing, parseTags);
                 textWidth = layout.width;
                 textHeight = layout.height;
                 num_displayed_characters = layout.display_size();
@@ -274,6 +276,7 @@ namespace Amara {
         }
 
         sol::object setWrapWidth(double width) {
+            wrapText = true;
             wrapWidth = width;
             updateText();
             return get_lua_object();
@@ -745,6 +748,15 @@ namespace Amara {
                     if (v.is<int>()) t.setWrapWidth(v.as<int>());
                     else if (v.is<double>()) t.setWrapWidth(floor(v.as<double>()));
                 }),
+                "wrap", sol::property(
+                    [](Amara::Text& t) { return t.wrapText; },
+                    [](Amara::Text& t, bool arg) {
+                        if (arg != t.wrapText) {
+                            t.wrapText = arg;
+                            t.updateText();
+                        }
+                    }
+                ),
                 "parseTags", sol::property(
                     [](Amara::Text& t) { return t.parseTags; },
                     [](Amara::Text& t, sol::object arg) {

@@ -45,6 +45,8 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         local buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
         self.get.buildModule = buildModule
 
+        local resourcePath = System:getRelativePath("resources")
+
         local sdl_path = System:join(buildModule, "sdl_android")
         self.get.sdl_path = sdl_path
 
@@ -230,14 +232,14 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
             table.insert(args, "-DAMARA_OPENGL")
 
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/json/include")))
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/lua")))
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/sol2")))
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/stb")))
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/glm")))
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/minimp3")))
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/portable-file-dialogs")))
-            table.insert(args, "-I" .. fix_path(System:join(buildModule, "resources/libs/tinyxml2")))
+            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/json/include")))
+            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/lua")))
+            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/sol2")))
+            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/stb")))
+            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/glm")))
+            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/minimp3")))
+            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/portable-file-dialogs")))
+            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/tinyxml2")))
 
             return args
         end

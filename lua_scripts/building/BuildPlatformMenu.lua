@@ -6,6 +6,9 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
         if config.projectPath then
             self.get.projectPath = config.projectPath
         end
+        if config.exampleProject then
+            self.get.exampleProject = config.exampleProject
+        end
     end,
 
     onCreate = function(self)
@@ -117,10 +120,19 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
                     newWindow.func:openWindow()
                 end
             elseif platform == "label_platform_web" then
-                newWindow = self.world.get.windows:createChild("WebBuildOptions", {
-                    projectPath = self.get.projectPath
-                })
-                newWindow.func:openWindow()
+                if Game.platform == "windows" and not System:exists(System:getRelativePath("build_modules/amara2_windows_build_module")) then
+                    local newWindow = self.world.get.windows:createChild("WindowsBuildInstaller", {
+                        projectPath = self.get.projectPath,
+                        exampleProject = self.get.exampleProject,
+                        nextWindow = "WebBuildOptions"
+                    })
+                    newWindow.func:openWindow()
+                else
+                    newWindow = self.world.get.windows:createChild("WebBuildOptions", {
+                        projectPath = self.get.projectPath
+                    })
+                    newWindow.func:openWindow()
+                end
                 
             elseif platform == "label_platform_android" then
                 local android_sdk = System:locateAndroidSDK()
@@ -130,6 +142,13 @@ Nodes:define("BuildPlatformMenu", "UIWindow", {
                         sdk = android_sdk,
                         ndk = android_sdk and android_sdk.ndk
                     })
+                elseif Game.platform == "windows" and not System:exists(System:getRelativePath("build_modules/amara2_windows_build_module")) then
+                    local newWindow = self.world.get.windows:createChild("WindowsBuildInstaller", {
+                        projectPath = self.get.projectPath,
+                        exampleProject = self.get.exampleProject,
+                        nextWindow = "AndroidBuildOptions"
+                    })
+                    newWindow.func:openWindow()
                 else
                     newWindow = self.world.get.windows:createChild("AndroidBuildOptions", {
                         projectPath = self.get.projectPath

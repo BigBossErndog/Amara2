@@ -82,11 +82,20 @@ Nodes:define("AndroidSDKInstaller", "UIWindow", {
     end,
 
     continueBuilding = function(self)
-        local newWindow = self.world.get.windows:createChild("AndroidBuildOptions", {
-            projectPath = self.get.projectPath,
-            buildTest = self.get.buildTest
-        })
-        newWindow.func:openWindow()
+        if Game.platform == "windows" and not System:exists(System:getRelativePath("build_modules/amara2_windows_build_module")) then
+            local newWindow = self.world.get.windows:createChild("WindowsBuildInstaller", {
+                projectPath = self.get.projectPath,
+                exampleProject = self.get.exampleProject,
+                nextWindow = "AndroidBuildOptions"
+            })
+            newWindow.func:openWindow()
+        else
+            local newWindow = self.world.get.windows:createChild("AndroidBuildOptions", {
+                projectPath = self.get.projectPath,
+                buildTest = self.get.buildTest
+            })
+            newWindow.func:openWindow()
+        end
     end,
 
     downloadAndroidSDK = function(self)

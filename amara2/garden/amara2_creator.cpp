@@ -380,12 +380,14 @@ namespace Amara {
                         if (json_has(config, "scripts")) {
                             nlohmann::json list = config["scripts"];
                             if (list.is_array()) {
-                                for (nlohmann::json path: list) {
-                                    std::string path = json_convert<std::string>(path);
+                                for (nlohmann::json item: list) {
+                                    std::string script_path = json_convert<std::string>(item);
+                                    if (!script_path.empty()) {
+                                        scripts.run(script_path);
+                                    }
                                 }
                             }
                         }
-
                     }
                     else {
                         scripts.run(path);
