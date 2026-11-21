@@ -1523,7 +1523,8 @@ namespace Amara {
             return path.empty() ? "" : path;
         }
         std::string browseDirectory(std::string defPath) {
-            auto path = pfd::select_folder("Select folder", defPath, pfd::opt::force_path).result();
+            if (!exists(defPath)) return browseDirectory();
+            auto path = pfd::select_folder("Select folder", getRelativePath(defPath), pfd::opt::force_path).result();
             return path.empty() ? "" : path;
         }
 
@@ -1532,11 +1533,12 @@ namespace Amara {
             return result.empty() ? "" : result[0];
         }
         std::string browseFile(const std::string& defPath) {
+            if (!exists(defPath)) return browseFile();
             auto result = pfd::open_file("Select a file", defPath, { "All Files", "*" }, pfd::opt::force_path).result();
             return result.empty() ? "" : result[0];
         }
         std::string browseFile(const std::string& defPath, const std::vector<std::string>& filters) {
-            auto result = pfd::open_file("Select a file", defPath, filters, pfd::opt::force_path).result();
+            auto result = pfd::open_file("Select a file", exists(defPath) ? getRelativePath(defPath) : getUserArea(), filters, pfd::opt::force_path).result();
             return result.empty() ? "" : result[0];
         }
 
