@@ -172,6 +172,22 @@ Nodes:define("ProjectWindow", "UIWindow", {
                     self:destroy()
                 end)
             end,
+            onRightClick = function()
+                if self.get.gameProcess then
+                    self.func:stopGame()
+                end
+                if self.get.printLog then
+                    self.get.printLog.func:unbindGameProcess()
+                    self.get.printLog.func:closeWindow(function(self)
+                        self:destroy()
+                    end)
+                    self.get.printLog = nil
+                end
+                self.func:closeWindow(function(button)
+                    button.get.enabled = false
+                    self.world:destroy()
+                end)
+            end,
             hotkey = {
                 { Key.LeftAlt, Key.LeftShift, Key.Backspace },
                 { Key.RightAlt, Key.RightShift, Key.Backspace }
