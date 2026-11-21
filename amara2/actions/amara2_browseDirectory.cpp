@@ -111,10 +111,7 @@ namespace Amara {
             if (!launchPicker()) { fail(); return; }
             #elif defined(AMARA_DESKTOP)
             if (!defPath.empty() && gameProps->system->exists(defPath)) {
-                std::string startPath = defPath;
-                if (SystemManager::global_system) {
-                    startPath = SystemManager::global_system->getRelativePath(defPath);
-                }
+                std::string startPath = gameProps->system->getRelativePath(defPath);
                 folderDialog = std::make_unique<pfd::select_folder>("Select folder", startPath, pfd::opt::force_path);
             }
             else {

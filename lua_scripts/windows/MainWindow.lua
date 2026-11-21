@@ -253,43 +253,41 @@ Nodes:define("MainWindow", "UIWindow", {
             icon = 6,
             onPress = function(button)
                 self:wait(0.2):next(function()
-                    local path = nil
                     self.world:hideWindow()
-
+                    local defPath = nil
                     if settings.projects and #settings.projects > 0 then
-                        local defPath = nil
                         if System:exists(System:getDirectoryOf(settings.projects[1])) then
                             defPath = System:getDirectoryOf(settings.projects[1])
                         end
-                        self:act("BrowseDirectory", {
-                            defaultPath = defPath,
-                            onComplete = function()
-                                self.world:showWindow()
-                            end,
-                            onSuccess = function(self, path)
-                                if string.len(path) == 0 then
-                                    return
-                                end
-
-                                local indexPath = System:join(path, "lua_scripts", "index.lua")
-                                if not System:exists(indexPath) then
-                                    return
-                                end
-
-                                local projectJsonPath = System:join(path, "project.json")
-                                if not System:exists(projectJsonPath) then
-                                    return
-                                end
-
-                                local newWindow = self.parent:createChild("ProjectWindow", {
-                                    projectPath = path
-                                })
-                                newWindow.func:openDefault()
-                                
-                                self:destroy()
-                            end
-                        })
                     end
+                    self:act("BrowseDirectory", {
+                        defaultPath = defPath,
+                        onComplete = function()
+                            self.world:showWindow()
+                        end,
+                        onSuccess = function(self, path)
+                            if string.len(path) == 0 then
+                                return
+                            end
+                            
+                            local indexPath = System:join(path, "lua_scripts", "index.lua")
+                            if not System:exists(indexPath) then
+                                return
+                            end
+
+                            local projectJsonPath = System:join(path, "project.json")
+                            if not System:exists(projectJsonPath) then
+                                return
+                            end
+
+                            local newWindow = self.parent:createChild("ProjectWindow", {
+                                projectPath = path
+                            })
+                            newWindow.func:openDefault()
+                            
+                            self:destroy()
+                        end
+                    })
                 end)
             end,
             hotkey = {
