@@ -215,7 +215,7 @@ namespace Amara {
         void updateText() {
             if (font) {
                 font->packGlyphsFromString(converted_text);
-                layout = font->generateLayout(converted_text, wrapText ? -1 : wrapWidth, wrapMode, alignment, lineSpacing, parseTags);
+                layout = font->generateLayout(converted_text, wrapText ? wrapWidth : -1, wrapMode, alignment, lineSpacing, parseTags);
                 textWidth = layout.width;
                 textHeight = layout.height;
                 num_displayed_characters = layout.display_size();
