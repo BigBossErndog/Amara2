@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 #endif
     std::string build_args_str;
     #if defined(AMARA_BUILD_ARGS)
-        build_args_str = AMARA_STRINGIFY(AMARA_BUILD_ARGS);
+        build_args_str = AMARA_BUILD_ARGS;
     #endif
     #if defined(AMARA_ENCRYPTION_KEY)
         #if defined(AMARA_ENCRYPT_OUTPUT)

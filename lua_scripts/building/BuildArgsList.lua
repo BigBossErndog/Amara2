@@ -254,7 +254,7 @@ Nodes:define("BuildArgsList", "FillRect", {
         self.get.projectData.build_args = {}
         for i, field in ipairs(self.get.fields) do
             if field.get.label then
-                self.get.projectData.build_args[field.get.label] = field.get.value and field.get.value or true
+                self.get.projectData.build_args[field.get.label] = field.get.value or "true"
             end
         end
         System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)

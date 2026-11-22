@@ -23,25 +23,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             return '"' .. s .. '"'
         end
 
-        local function quote_bat_arg(s)
-            s = s:gsub('(\\*)"', function(bs) return bs .. bs .. '\\"' end)
-            s = s:gsub('(\\+)$', '%1%1')
-            s = '"' .. s .. '"'
-
-            s = s:gsub("%%", "%%%%")
-
-            local out, in_quotes = {}, false
-            for c in s:gmatch(".") do
-                if c == '"' then
-                    in_quotes = not in_quotes
-                elseif not in_quotes and c:find("[%^&|<>()]") then
-                    out[#out + 1] = "^"
-                end
-                out[#out + 1] = c
-            end
-            return table.concat(out)
-        end
-
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
         if not projectData then
             return
@@ -281,10 +262,16 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         if self.get.projectData.build_args then
-            local args_as_str = string.json_string(self.get.projectData.build_args)
-            local args_macro = quote_bat_arg(args_as_str)
-            print(args_as_str)
-            print(args_macro)
+            local build_args = {}
+            for k, v in pairs(self.get.projectData.build_args) do
+                if v then
+                    build_args[k] = string.accept_json(v) and string.parse_json(v) or true
+                else
+                    build_args[k] = true
+                end
+            end
+            local args_as_str = string.json_string(build_args)
+            local args_macro = quote_bat_str(args_as_str)
             table.insert(args, "/DAMARA_BUILD_ARGS=" .. args_macro)
         end
 

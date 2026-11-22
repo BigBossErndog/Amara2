@@ -500,6 +500,12 @@ namespace Amara {
             }
             return json_to_lua(lua, json_obj);
         });
+        string_metatable.set_function("accept_json", [](sol::object obj) -> bool {
+            if (!obj.is<std::string>()) {
+                fatal_error("Error: string.accept_json() expected a string argument.");
+            }
+            return nlohmann::json::accept(obj.as<std::string>());
+        });
 
         sol::table math_metatable = lua["math"];
         math_metatable.set_function("round", [](sol::object num) -> int {

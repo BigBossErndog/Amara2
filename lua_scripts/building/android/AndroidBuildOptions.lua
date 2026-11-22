@@ -5,7 +5,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
     height = 160,
 
     props = {
-        pageCount = 9
+        pageCount = 10
     },
     
     onConfigure = function(self, config)
@@ -493,6 +493,23 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                 width = self.get.targetWidth - 20,
                 height= self.get.targetHeight - 40 - 28
             })
+
+        elseif pageIndex == 9 then
+            local txt = self.get.pageContent:createChild("Text", {
+                x = 10, y = 24,
+                origin = 0,
+                text = Localize:get("label_buildArgsDesc"),
+                font = "defaultFont",
+                color = Colors.White
+            })
+            self.get.buildArgs = self.get.pageContent:createChild("BuildArgsList", {
+                projectPath = self.get.projectPath,
+                projectData = self.get.projectData,
+                x = 10, y = 40,
+                width = self.get.targetWidth - 20,
+                height= self.get.targetHeight - 40 - 48,
+                window = self
+            })
         
         elseif pageIndex == self.get.pageCount then
             local backer = self.get.pageContent:createChild("FillRect", {
@@ -579,6 +596,8 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                 self.get.includeFolders.func:confirmOptions()
             elseif self.get.pageIndex == 8 then
                 self.get.includePlugins.func:confirmOptions()
+            elseif self.get.pageIndex == 9 then
+                self.get.buildArgs.func:confirmOptions()
             end
 
             System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)

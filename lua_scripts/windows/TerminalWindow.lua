@@ -396,7 +396,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         item.input.cursor = Cursor.Pointer
         item.input:listen("onRightMouseDown", function(txt)
             local toCopy = txt.text
-            if config.copy then
+            if config and config.copy then
                 toCopy = config.copy
             end
             System:copyToClipboard(toCopy)

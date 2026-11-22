@@ -97,11 +97,14 @@ namespace Amara {
             Amara::Node::configure(config);
 
             if (in_drawing) {
+                temp_props.set(this);
+                
                 if (config.is_string()) {
                     std::string manipulator_name = config;
+                    temp_props.set(this);
                     
                     if (String::equal(manipulator_name, "end")) {
-                        temp_props.set(this);
+                        // Reset temp props.
                     }
                     else if (manipulators.find(manipulator_name) != manipulators.end()) {
                         temp_props.manipulator = manipulators[manipulator_name];
@@ -115,7 +118,7 @@ namespace Amara {
                     }
                 }
                 else if (json_is(config, "end")) {
-                    temp_props.set(this);
+                    // Reset temp props.
                 }
                 else {
                     if (json_has(config, "offsetX")) temp_props.offsetX = json_get<float>(config, "offsetX");

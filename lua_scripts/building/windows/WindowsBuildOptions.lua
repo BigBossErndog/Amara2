@@ -449,7 +449,7 @@ Nodes:define("WindowsBuildOptions", "PagedWindow", {
             elseif pageOverride == 5 then
                 self.get.includePlugins.func:confirmOptions()
             elseif pageOverride == 6 then
-
+                self.get.buildArgs.func:confirmOptions()
             end
 
             System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)

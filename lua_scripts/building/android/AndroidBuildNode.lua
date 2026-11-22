@@ -207,6 +207,20 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             table.insert(args, "-DAMARA_DEF_ORG=\\\"" .. self.get.projectData.android["package-org-name"] .. "\\\"")
             table.insert(args, "-DAMARA_DEF_APP=\\\"" .. self.get.projectData.android["package-app-name"] .. "\\\"")
 
+            if self.get.projectData.build_args then
+                local build_args = {}
+                for k, v in pairs(self.get.projectData.build_args) do
+                    if v then
+                        build_args[k] = string.accept_json(v) and string.parse_json(v) or true
+                    else
+                        build_args[k] = true
+                    end
+                end
+                local args_as_str = string.json_string(build_args)
+                local args_macro = quote_bat_str(args_as_str)
+                table.insert(args, "-DAMARA_BUILD_ARGS=" .. args_macro)
+            end
+            
             if self.get.projectData.encryption and not config.buildTest then
                 table.insert(args, "-DAMARA_ENCRYPTION_KEY=" .. quote_if_needed(self.get.projectData.encryption["key"]))
                 if self.get.projectData.encryption["encrypt-write-output"] then

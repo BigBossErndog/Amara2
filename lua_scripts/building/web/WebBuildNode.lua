@@ -174,6 +174,20 @@ Nodes:define("WebBuildNode", "ProcessNode", {
 
         table.insert(args, "-DAMARA_OPENGL")
 
+        if self.get.projectData.build_args then
+            local build_args = {}
+            for k, v in pairs(self.get.projectData.build_args) do
+                if v then
+                    build_args[k] = string.accept_json(v) and string.parse_json(v) or true
+                else
+                    build_args[k] = true
+                end
+            end
+            local args_as_str = string.json_string(build_args)
+            local args_macro = quote_bat_arg(args_as_str)
+            table.insert(args, "-DAMARA_BUILD_ARGS=" .. args_macro)
+        end
+
         -- EMSCRIPTEN_PRELOADS
         if System:exists(System:join(self.get.projectPath, "lua_scripts")) then
             table.insert(args, "--preload-file")
