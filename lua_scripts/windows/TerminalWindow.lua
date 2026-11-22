@@ -349,7 +349,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         return ret
     end,
 
-    pipeMessage = function(self, msg)
+    pipeMessage = function(self, msg, config)
         if string.starts_with(msg, "stack traceback") or string.starts_with(msg, "\t[C]:") then
             return;
         end
@@ -395,7 +395,11 @@ Nodes:define("TerminalWindow", "UIWindow", {
         item.input:activate()
         item.input.cursor = Cursor.Pointer
         item.input:listen("onRightMouseDown", function(txt)
-            System:copyToClipboard(txt.text)
+            local toCopy = txt.text
+            if config.copy then
+                toCopy = config.copy
+            end
+            System:copyToClipboard(toCopy)
             txt.color = Colors.White;
             txt.tween:to({
                 color = txt.get.defColor,
@@ -423,11 +427,18 @@ Nodes:define("TerminalWindow", "UIWindow", {
             })
         end)
 
+        if config and config.onClick then
+            local clickFunction = config.onClick
+            item.input:listen("onLeftMouseDown", function()
+                clickFunction()
+            end)
+        end
+
         return item
     end,
 
-    handleMessage = function(self, msg)
-        return self.func:pipeMessage(msg)
+    handleMessage = function(self, msg, config)
+        return self.func:pipeMessage(msg, config)
     end,
 
     savePosition = function(self)

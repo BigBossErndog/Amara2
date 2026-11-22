@@ -11,33 +11,17 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             return
         end
 
-        local function quote_if_needed(path)
-            if string.find(path, " ") then
-                return '"' .. path .. '"'
-            else
-                return path
-            end
-        end
-
-        local function fix_path(path, allow_backslashes)
-            if not allow_backslashes then
-                return quote_if_needed(string.gsub(path, "\\", "/"))
-            else
-                return quote_if_needed(path)
-            end
-        end
-
-        local function escape_double_quotes(str)
-            return (str:gsub('"', '\\"'))
-        end
-
         local build_aab = true
         self.get.build_aab = build_aab
 
-        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        if config.projectData then
+            self.get.projectData = config.projectData
+        end
+        local projectData = self.get.projectData or System:readJSON(System:join(self.get.projectPath, "project.json"))
         self.get.projectData = projectData
 
         local sdk = System:locateAndroidSDK()
+        self.get.sdk = sdk
 
         local buildDir = System:join(self.get.projectPath, "build", "android")
         self.get.buildDir = buildDir
@@ -626,7 +610,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                         end
                     end
 
-                    local newWindow = self.world.get.windows:createChild("ProjectWindow", {
+                    self.world.get.windows:createChild("ProjectWindow", {
                         projectPath = self.get.projectPath
                     })
 
@@ -648,6 +632,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
     onExit = function(self, exitCode)
         if self.get.printLog then
             self.get.printLog.func:unbindGameProcess()
+            self.get.printLog.func:stopLoading()
         end
 
         self.world.forcedClickThrough = true
@@ -657,7 +642,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         local app_name    = self.get.projectData.android["app-name"]
         local version     = self.get.manifest_config.VERSION_NAME
         local out_dir     = System:join(self.get.projectPath, "build", "android")
-
+        
         if exitCode == 0 then
             if System:exists(self.get.errorOutputPath) then
                 System:remove(self.get.errorOutputPath)
@@ -679,11 +664,13 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
             System:openDirectory(out_dir)
             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
-            self.get.printLog.func:unbindGameProcess()
-            self.get.printLog.func:stopLoading()
-        else
-            self.get.printLog.func:stopLoading()
 
+            self.get.printLog.func:handleMessage(Localize:get("label_clickToInstallOnAndroidDevice"), {
+                onClick = function()
+                    self.func:installApp()
+                end
+            })
+        else
             if System:exists(self.get.errorOutputPath) then
                 local error_message = System:readFile(self.get.errorOutputPath)
                 self.get.printLog.func:handleMessage("Error: Build failed.\n" .. error_message)
@@ -701,5 +688,22 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
         self.world.forcedClickThrough = false
         self.world:showWindow()
+    end,
+
+    installApp = function(self)
+        if self.get.adbInstaller then
+            return
+        end
+        self.get.adbInstaller = self.world:createChild("AndroidADBInstaller", {
+            printLog = self.get.printLog,
+            projectData = self.get.projectData,
+            sdk = self.get.sdk,
+            buildDir = self.get.buildDir,
+            errorOutputPath = self.get.errorOutputPath,
+            onComplete = function()
+                self.get.adbInstaller:destroy()
+                self.get.adbInstaller = nil
+            end
+        })
     end
 })

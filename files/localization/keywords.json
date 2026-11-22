@@ -20,6 +20,7 @@
     "title_projectSettings": "Project Settings",
     "title_exampleProjects": "Example Projects",
     "title_testArguments": "Test Arguments",
+    "title_buildAlreadyExists": "Build Already Exists",
 
     "title_organizationName": "Organization Name",
     "title_projectName": "Project Name",
@@ -116,6 +117,14 @@
     "label_androidSDKNotFound_desc": "Please install and setup Android Studio.",
     "label_androidNDKNotFound_desc": "Open Android Studio. Click '${cyan}More Actions${end}' > '${cyan}SDK Manager${end}' > Open the '${cyan}SDK Tools${end}' tab > Check '${cyan}NDK (Side by Side)${end}' > Apply and install.",
 
+    "label_androidBuildAlreadyExists": "A build with the same name and version number already exists. Would you like to skip building and install to a device?",
+    "label_skipAndInstall": "Skip and install",
+    "label_continueAndRebuild": "Continue and rebuild",
+    
+    "label_clickToInstallOnAndroidDevice": "${cyan}> Click to install on a connected Android device <${end}",
+    "label_installingAppToAndroidDevice": "Installing app to Android device...",
+    "label_successfullyInstalledApp": "Success: The app has been sucessfully installed your Android device.",
+    
     "label_windowsModuleFile": "amara2_windows_build_module.zip",
     "label_windowsWebModuleFile": "amara2_windows_web_build_module.zip",
     

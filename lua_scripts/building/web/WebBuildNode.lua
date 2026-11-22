@@ -45,19 +45,6 @@ Nodes:define("WebBuildNode", "ProcessNode", {
             pythonPath = System:join(buildModule, "emsdk/python/3.13.3_64bit/python.exe")
         end
 
-        -- Helper to quote paths with spaces
-        local function quote_if_needed(path)
-            if string.find(path, " ") then
-                return '"' .. path .. '"'
-            else
-                return path
-            end
-        end
-
-        local function fix_path(path)
-            return quote_if_needed(string.gsub(path, "\\", "/"))
-        end
-
         local compilerPath = System:join(emscriptenPath, "em++")
         local buildPath = System:join(buildDir, self.get.htmlName .. ".html")
         self.get.htmlPath = buildPath

@@ -8,14 +8,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             return
         end
 
-        local function quote_if_needed(path)
-            if string.find(path, " ") then
-                return '"' .. path .. '"'
-            else
-                return path
-            end
-        end
-
         local function quote(path)
             return '"' .. path .. '"'
         end
@@ -48,10 +40,6 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 out[#out + 1] = c
             end
             return table.concat(out)
-        end
-
-        local function fix_path(path)
-            return quote_if_needed(slash(path))
         end
 
         local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))

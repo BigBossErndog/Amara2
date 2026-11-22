@@ -6,6 +6,7 @@ version_string = version_major .. "." .. version_minor .. "." .. version_patch
 
 Scripts:run("utility/Localize")
 Scripts:run("utility/OpenCodeEditor")
+Scripts:run("utility/UtilityFunctions")
 
 Scripts:include("ui/UIWindow")
 Scripts:include("ui/UIButton")
@@ -42,6 +43,7 @@ Scripts:include("building/web/WebBuildNode")
 
 Scripts:include("building/android/AndroidSDKInstaller")
 Scripts:include("building/android/AndroidBuildOptions")
+Scripts:include("building/android/AndroidAppInstaller")
 Scripts:include("building/android/AndroidBuildNode")
 
 Creator:createWorld({

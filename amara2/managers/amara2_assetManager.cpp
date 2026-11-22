@@ -87,7 +87,7 @@ namespace Amara {
             }
         }
 
-        void Amara::AssetManager::renderToTexture(ImageAsset* asset, sol::object luaconfig);
+        void renderToTexture(ImageAsset* asset, sol::object luaconfig);
         void createTexture(std::string key, sol::object luaconfig);
         void updateTexture(std::string key, sol::object luaconfig);
         

@@ -657,10 +657,26 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
         end
         self.func:closeWindow(function(win)
             System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
+
+            local buildDir = System:join(self.get.projectPath, "build", "android")
+            local apk_name = self.get.projectData.android["app-name"] .. " " .. (self.get.projectData.android["version-name"] or "1.0.0") .. ".apk"
+            local apk_path = System:join(buildDir, apk_name)
             
-            self.world.get.windows:createChild("AndroidBuildNode", {
-                projectPath = self.get.projectPath
-            })
+            if System:exists(apk_path) then
+                local newWindow = self.world.get.windows:createChild("AndroidInstallOrRebuild", {
+                    projectPath = self.get.projectPath,
+                    projectData = self.get.projectData,
+                    buildDir = buildDir,
+                    exampleProject = self.get.exampleProject
+                })
+                newWindow.func:openWindow()
+            else
+                self.world:createChild("AndroidBuildNode", {
+                    projectPath = self.get.projectPath,
+                    projectData = self.get.projectData,
+                    exampleProject = self.get.exampleProject
+                })
+            end
 
             win:destroy()
         end)
