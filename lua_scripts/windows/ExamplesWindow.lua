@@ -51,8 +51,8 @@ Nodes:define("ExampleModule", "Group", {
 
         self.get.icon = self.get.cont:createChild("Sprite")
         if self.get.type == "example-project" then
-            if System:exists(System:join(self.get.path, "thumbnail.png")) then
-                self.get.icon.tempTexture = System:join(self.get.path, "thumbnail.png")
+            if System:exists(string.joinpath(self.get.path, "thumbnail.png")) then
+                self.get.icon.tempTexture = string.joinpath(self.get.path, "thumbnail.png")
             else
                 self.get.icon.texture = "largeIcons"
             end
@@ -125,8 +125,8 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
         local dirs = System:getDirectoryContents(currentPath)
 
         for i, v in ipairs(dirs) do
-            if System:isDirectory(v) and System:exists(System:join(v, "project.json")) then
-                local projectData = System:readJSON(System:join(v, "project.json"))
+            if System:isDirectory(v) and System:exists(string.joinpath(v, "project.json")) then
+                local projectData = System:readJSON(string.joinpath(v, "project.json"))
                 
                 self.get.allProjects.projects[projectData["project-name"]] = v
             else
@@ -163,7 +163,7 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
             local projects = {}
 
             for i, v in ipairs(dirs) do
-                if System:isDirectory(v) and System:exists(System:join(v, "project.json")) then
+                if System:isDirectory(v) and System:exists(string.joinpath(v, "project.json")) then
                     table.insert(projects, v)
                 else
                     table.insert(self.get.examples, v)
@@ -207,7 +207,7 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
             },
             onPress = function()
                 if self.get.pathStack then
-                    local pathStack = table.shallow_copy(self.get.pathStack)
+                    local pathStack = table.shallowcopy(self.get.pathStack)
                     local path = table.remove(pathStack)
 
                     if #pathStack == 0 then
@@ -301,10 +301,10 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
                 end
                 System:copy(path, sandboxPath)
                 
-                local projectData = System:readJSON(System:join(sandboxPath, "project.json"))
+                local projectData = System:readJSON(string.joinpath(sandboxPath, "project.json"))
                 projectData.uninitiated = true
                 projectData.exampleProject = true
-                System:writeFile(System:join(sandboxPath, "project.json"), projectData)
+                System:writeFile(string.joinpath(sandboxPath, "project.json"), projectData)
 
                 local newWindow = self.parent:createChild("ProjectWindow", {
                     projectPath = sandboxPath
@@ -321,7 +321,7 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
             if not pathStack then
                 pathStack = {}
             else
-                pathStack = table.shallow_copy(pathStack)
+                pathStack = table.shallowcopy(pathStack)
             end
             table.insert(pathStack, self.get.currentPath)
 
@@ -347,10 +347,10 @@ Nodes:define("ExamplesWindow", "PagedWindow", {
             local name
 
             if System:isDirectory(v) then
-                if System:exists(System:join(v, "project.json")) then
+                if System:exists(string.joinpath(v, "project.json")) then
                     type = "example-project"
 
-                    local projectData = System:readJSON(System:join(v, "project.json"))
+                    local projectData = System:readJSON(string.joinpath(v, "project.json"))
 
                     name = projectData["project-name"]
                 else

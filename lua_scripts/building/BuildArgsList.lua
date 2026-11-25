@@ -18,15 +18,11 @@ Nodes:define("BuildArgsList", "FillRect", {
     },
 
     onConfigure = function(self, config)
-        if config.projectPath then
-            self.get.projectPath = config.projectPath
-        end
-        if config.projectData then
-            self.get.projectData = config.projectData
-        end
-        if config.window then
-            self.get.window = config.window
-        end
+        table.assign(self.get, {
+            projectPath = config.projectPath,
+            projectData = config.projectData,
+            window = config.window
+        })
     end,
 
     onCreate = function(self)
@@ -43,7 +39,7 @@ Nodes:define("BuildArgsList", "FillRect", {
             x = self.get.content.left, y = self.get.content.top
         })
 
-        local buildArgs = self.get.projectData.build_args and table.deep_copy(self.get.projectData.build_args) or {}
+        local buildArgs = self.get.projectData.build_args and table.deepcopy(self.get.projectData.build_args) or {}
 
         self.get.fields = {}
         for label, value in pairs(buildArgs) do
@@ -189,7 +185,6 @@ Nodes:define("BuildArgsList", "FillRect", {
                 else
                     field.get.label = txt
                 end
-                self.func:saveArguments()
             end
         })
         
@@ -205,7 +200,6 @@ Nodes:define("BuildArgsList", "FillRect", {
                 else
                     field.get.value = txt
                 end
-                self.func:saveArguments()
             end
         })
 
@@ -257,9 +251,8 @@ Nodes:define("BuildArgsList", "FillRect", {
                 self.get.projectData.build_args[field.get.label] = field.get.value or "true"
             end
         end
-        System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
     end,
-
+    
     onUpdate = function(self)
         if self.get.wallHeight > self.get.content.height then
             self.get.scrollBar.func:handleScrolling()

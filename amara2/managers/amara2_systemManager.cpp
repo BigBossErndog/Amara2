@@ -979,16 +979,6 @@ namespace Amara {
             }
             return p2.string();
         }
-        
-        std::string lua_join(sol::variadic_args args) {
-            std::filesystem::path current;
-
-            std::ostringstream ss;
-            for (auto arg : args) {
-                current = current / std::filesystem::path(lua_to_string(arg.get<sol::object>()));
-            }
-            return current.string();
-        }
 
         bool copy(std::string input, std::string output, bool overwrite) {
             std::filesystem::path source = getRelativePath(input);
@@ -2374,7 +2364,6 @@ namespace Amara {
                 "getDirectoryOf", &SystemManager::getDirectoryOf,
                 "getUserArea", &SystemManager::getUserArea,
                 "mergePaths", &SystemManager::mergePaths,
-                "join", &SystemManager::lua_join,
                 "remove", &SystemManager::remove,
                 "removeDirectoryContents", &SystemManager::removeDirectoryContents,
                 "copy", sol::overload(

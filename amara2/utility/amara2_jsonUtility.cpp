@@ -77,8 +77,6 @@ namespace Amara {
         fatal_error("Error: Table does not contain \"", key, "\".");
         throw std::runtime_error("unreachable");
     }
-
-    
     
     nlohmann::json string_to_json(const std::string& input, bool allow_null) {
         if (input.size() == 0) return allow_null ? nullptr : std::string("");

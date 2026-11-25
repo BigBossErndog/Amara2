@@ -1,3 +1,4 @@
+#include <stdexcept>
 namespace Amara {
     class Node;
 
@@ -256,15 +257,15 @@ namespace Amara {
         return lua_table;
     }
 
-    std::string lua_string_concat(sol::variadic_args args, bool within_table) {
+    std::string lua_string_join(sol::variadic_args args, bool within_table) {
         std::ostringstream ss;
         for (auto arg : args) {
             ss << lua_to_string(arg.get<sol::object>(), within_table, "", "");
         }
         return ss.str();
     }
-    std::string lua_string_concat(sol::variadic_args args) {
-        return lua_string_concat(args, false);
+    std::string lua_string_join(sol::variadic_args args) {
+        return lua_string_join(args, false);
     }
     
     std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args, bool within_table) {
@@ -275,11 +276,21 @@ namespace Amara {
             ss << (first ? "" : separator) << lua_to_string(arg.get<sol::object>(), within_table, "", "");
             first = false;
         }
-    
+        
         return ss.str();
     }
     std::string lua_string_sep_concat(const std::string& separator, sol::variadic_args args) {
         return lua_string_sep_concat(separator, args, false);
+    }
+
+    std::string lua_join_path(sol::variadic_args args) {
+        std::filesystem::path current;
+
+        std::ostringstream ss;
+        for (auto arg : args) {
+            current = current / std::filesystem::path(lua_to_string(arg.get<sol::object>()));
+        }
+        return current.string();
     }
 
     sol::table lua_shallow_copy(sol::state& lua, sol::object src) {
@@ -329,10 +340,6 @@ namespace Amara {
 
             if type(val) == "table" then
                 tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
-
-                for k, v in pairs(val) do
-                    tmp =  tmp .. table.to_string(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
-                end
 
                 tmp = tmp .. string.rep(" ", depth) .. "}"
             elseif type(val) == "number" then
@@ -439,6 +446,18 @@ namespace Amara {
                !(obj.get_type() == sol::type::boolean && !obj.as<bool>());
     }
 
+    template <typename T>
+    T convert_lua_arg(const sol::object& obj, const std::string& type_str) {
+        if (obj.is<T>()) return obj.as<T>();
+        if (type_str.empty()) fatal_error("Error: Incorrect argument type.");
+        else fatal_error("Error: Incorrect argument type, expected ", type_str, ".");
+        throw std::runtime_error("Error: Incorrect type.");
+    }
+    template <typename T>
+    T convert_lua_arg(const sol::object& obj) {
+        return convert_lua<T>(obj, "");
+    }
+    
     void bind_lua_LuaUtilityFunctions(sol::state& lua) {
         lua.set_function("debug_log", &Amara::lua_debug_log);
 
@@ -446,19 +465,17 @@ namespace Amara {
         lua.set_function("print", [](sol::variadic_args args) {
             debug_log(lua_string_sep_concat(" ", args));
         });
-
-        lua.set_function("object_to_string", sol::resolve<std::string(sol::object)>(&Amara::lua_to_string));
         
         sol::table string_metatable = lua["string"];
-        string_metatable.set_function("starts_with", [](sol::object self, sol::object check) -> bool {
+        string_metatable.set_function("startswith", [](sol::object self, sol::object check) -> bool {
             if (!self.is<std::string>() || !check.is<std::string>()) {
-                fatal_error("Error: string.starts_with() expected 2 string arguments.");
+                fatal_error("Error: string.startswith() expected 2 string arguments.");
             }
             return String::startsWith(self.as<std::string>(), check.as<std::string>());
         });
-        string_metatable.set_function("ends_with", [](sol::object self, sol::object check) -> bool {
+        string_metatable.set_function("endswith", [](sol::object self, sol::object check) -> bool {
             if (!self.is<std::string>() || !check.is<std::string>()) {
-                fatal_error("Error: string.ends_with() expected 2 string arguments.");
+                fatal_error("Error: string.endswith() expected 2 string arguments.");
             }
             return String::endsWith(self.as<std::string>(), check.as<std::string>());
         });
@@ -468,9 +485,9 @@ namespace Amara {
             }
             return String::contains(self, check);
         });
-        string_metatable.set_function("concat", sol::resolve<std::string(sol::variadic_args)>(Amara::lua_string_concat));
-        string_metatable.set_function("sep_concat", sol::resolve<std::string(const std::string&, sol::variadic_args)>(Amara::lua_string_sep_concat));
-        string_metatable.set_function("json_string", [](sol::object obj) {
+        string_metatable.set_function("join", sol::resolve<std::string(sol::variadic_args)>(Amara::lua_string_join));
+        string_metatable.set_function("joinpath", sol::resolve<std::string(sol::variadic_args)>(Amara::lua_join_path));
+        string_metatable.set_function("jsonstring", [](sol::object obj) {
             return lua_to_json(obj).dump();
         });
         string_metatable.set_function("random", [&lua](sol::object num_obj) {
@@ -486,23 +503,23 @@ namespace Amara {
             
             return result;
         });
-        string_metatable.set_function("to_json", [](sol::object obj) {
+        string_metatable.set_function("tojson", [](sol::object obj) {
             return lua_to_json(obj).dump();
         });
-        string_metatable.set_function("parse_json", [&lua](sol::object obj) {
+        string_metatable.set_function("parsejson", [&lua](sol::object obj) {
             if (!obj.is<std::string>()) {
-                fatal_error("Error: string.parse_json() expected a string argument.");
+                fatal_error("Error: string.parsejson() expected a string argument.");
             }
             std::string json_str = obj.as<std::string>();
             nlohmann::json json_obj = nlohmann::json::parse(json_str, nullptr, false);
             if (json_obj.is_discarded()) {
-                fatal_error("Error: string.parse_json() failed to parse the JSON string.");
+                fatal_error("Error: string.parsejson() failed to parse the JSON string.");
             }
             return json_to_lua(lua, json_obj);
         });
-        string_metatable.set_function("accept_json", [](sol::object obj) -> bool {
+        string_metatable.set_function("acceptjson", [](sol::object obj) -> bool {
             if (!obj.is<std::string>()) {
-                fatal_error("Error: string.accept_json() expected a string argument.");
+                fatal_error("Error: string.acceptjson() expected a string argument.");
             }
             return nlohmann::json::accept(obj.as<std::string>());
         });
@@ -563,16 +580,16 @@ namespace Amara {
             }
             return count;
         });
-        table_metatable.set_function("to_string", string_to_lua_object(lua, lua_table_to_string));
-        table_metatable.set_function("shallow_copy", [&lua](sol::object tbl) -> sol::table {
+        table_metatable.set_function("tostring", string_to_lua_object(lua, lua_table_to_string));
+        table_metatable.set_function("shallowcopy", [&lua](sol::object tbl) -> sol::table {
             if (!tbl.is<sol::table>()) {
-                fatal_error("Error: table.shallow_copy() expected a table argument.");
+                fatal_error("Error: table.shallowcopy() expected a table argument.");
             }
             return lua_shallow_copy(lua, tbl.as<sol::table>());
         });
-        table_metatable.set_function("deep_copy", [&lua](sol::object tbl) -> sol::table {
+        table_metatable.set_function("deepcopy", [&lua](sol::object tbl) -> sol::table {
             if (!tbl.is<sol::table>()) {
-                fatal_error("Error: table.deep_copy() expected a table argument.");
+                fatal_error("Error: table.deepcopy() expected a table argument.");
             }
             return lua_deep_copy(lua, tbl.as<sol::table>());
         });
@@ -618,7 +635,7 @@ namespace Amara {
         };
         table_metatable.set_function("assign", assign_table_func);
         table_metatable.set_function("update", assign_table_func);
-        table_metatable.set_function("is_array", [](sol::object tbl) {
+        table_metatable.set_function("isarray", [](sol::object tbl) {
             return lua_object_is_table_array(tbl);
         });
         table_metatable.set_function("contains", [](sol::table tbl, sol::object check) {
@@ -706,7 +723,7 @@ namespace Amara {
             
             return result;
         });
-        table_metatable.set_function("ref_filter", [&lua](sol::object obj, sol::object predicate, sol::object inclusive) {
+        table_metatable.set_function("filterinplace", [&lua](sol::object obj, sol::object predicate, sol::object inclusive) {
             if (!obj.is<sol::table>()) {
                 fatal_error("Error: table.filter() expected a table argument.");
             }
@@ -783,9 +800,9 @@ namespace Amara {
         
             return result;
         });
-        table_metatable.set_function("wrap_index", [](sol::object tbl_obj, sol::object index_obj) -> sol::object {
+        table_metatable.set_function("wrapindex", [](sol::object tbl_obj, sol::object index_obj) -> sol::object {
             if (!tbl_obj.is<sol::table>() || !index_obj.is<int>()) {
-                fatal_error("Error: table.wrap_index() expected (table, integer) arguments.");
+                fatal_error("Error: table.wrapindex() expected (table, integer) arguments.");
             }
             
             sol::table tbl = tbl_obj.as<sol::table>();
@@ -797,10 +814,9 @@ namespace Amara {
             
             return tbl[index];
         });
-        table_metatable.set_function("remove_duplicates", [&lua](sol::object tbl_obj, sol::object check) {
-        
+        table_metatable.set_function("removeduplicates", [&lua](sol::object tbl_obj, sol::object check) {
                 if (!lua_object_is_table_array(tbl_obj)) {
-                    fatal_error("Error: table.remove_duplicates() expected an array-style table argument.");
+                    fatal_error("Error: table.removeduplicates() expected an array-style table argument.");
                 }
         
                 sol::table tbl = tbl_obj.as<sol::table>();
@@ -900,7 +916,7 @@ namespace Amara {
         });
 
         lua["fatal_error"] = [](sol::variadic_args args) {
-            fatal_error(lua_string_concat(args));
+            fatal_error(lua_string_join(args));
         };
     }
 }

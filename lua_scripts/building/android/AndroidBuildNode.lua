@@ -17,13 +17,13 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         if config.projectData then
             self.get.projectData = config.projectData
         end
-        local projectData = self.get.projectData or System:readJSON(System:join(self.get.projectPath, "project.json"))
+        local projectData = self.get.projectData or System:readJSON(string.joinpath(self.get.projectPath, "project.json"))
         self.get.projectData = projectData
 
         local sdk = System:locateAndroidSDK()
         self.get.sdk = sdk
 
-        local buildDir = System:join(self.get.projectPath, "build", "android")
+        local buildDir = string.joinpath(self.get.projectPath, "build", "android")
         self.get.buildDir = buildDir
 
         local buildModule = System:getRelativePath("build_modules/amara2_windows_build_module")
@@ -31,11 +31,11 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
         local resourcePath = System:getRelativePath("resources")
 
-        local sdl_path = System:join(buildModule, "sdl_android")
+        local sdl_path = string.joinpath(buildModule, "sdl_android")
         self.get.sdl_path = sdl_path
 
         if not sdk["bundletool"] then
-            local bundletool_path = System:join(sdl_path, "bundletool", "bundletool-all-1.18.3.jar")
+            local bundletool_path = string.joinpath(sdl_path, "bundletool", "bundletool-all-1.18.3.jar")
             if System:exists(bundletool_path) then
                 sdk["bundletool"] = bundletool_path
             end
@@ -46,13 +46,13 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         end
         System:createDirectory(buildDir)
         
-        local android_package = System:join(buildDir, "android_package")
+        local android_package = string.joinpath(buildDir, "android_package")
         System:createDirectory(android_package)
         self.get.android_package = android_package
 
-        local keystore_path = System:join(self.get.projectPath, self.get.projectData["project-name"] .. ".keystore")
+        local keystore_path = string.joinpath(self.get.projectPath, self.get.projectData["project-name"] .. ".keystore")
 
-        local errorOutputPath = System:join(buildDir, "build_error.txt")
+        local errorOutputPath = string.joinpath(buildDir, "build_error.txt")
         self.get.errorOutputPath = errorOutputPath
         local errorCommand = " >> " .. fix_path(errorOutputPath) .. " 2>&1 || exit 1"
         
@@ -64,25 +64,25 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             "compiled_res"
         }
         for i = 1, #setup_folders do
-            System:createDirectory(System:join(android_package, setup_folders[i]))
+            System:createDirectory(string.joinpath(android_package, setup_folders[i]))
         end
 
         System:copy(
-            System:join(sdl_path, "lib", "arm64-v8a", "libSDL3.so"),
-            System:join(android_package, "lib/arm64-v8a", "libSDL3.so")
+            string.joinpath(sdl_path, "lib", "arm64-v8a", "libSDL3.so"),
+            string.joinpath(android_package, "lib/arm64-v8a", "libSDL3.so")
         )
         System:copy(
-            System:join(sdl_path, "lib", "armeabi-v7a", "libSDL3.so"),
-            System:join(android_package, "lib/armeabi-v7a", "libSDL3.so")
+            string.joinpath(sdl_path, "lib", "armeabi-v7a", "libSDL3.so"),
+            string.joinpath(android_package, "lib/armeabi-v7a", "libSDL3.so")
         )
 
         System:copy(
-            System:join(sdk.sysroot, "usr", "lib", "aarch64-linux-android", "libc++_shared.so"),
-            System:join(android_package, "lib/arm64-v8a", "libc++_shared.so")
+            string.joinpath(sdk.sysroot, "usr", "lib", "aarch64-linux-android", "libc++_shared.so"),
+            string.joinpath(android_package, "lib/arm64-v8a", "libc++_shared.so")
         )
         System:copy(
-            System:join(sdk.sysroot, "usr", "lib", "arm-linux-androideabi", "libc++_shared.so"),
-            System:join(android_package, "lib/armeabi-v7a", "libc++_shared.so")
+            string.joinpath(sdk.sysroot, "usr", "lib", "arm-linux-androideabi", "libc++_shared.so"),
+            string.joinpath(android_package, "lib/armeabi-v7a", "libc++_shared.so")
         )
 
         self.func:generateManifest()
@@ -101,7 +101,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
             table.insert(args, "-shared")
             table.insert(args, "-o")
-            table.insert(args, fix_path(System:join(android_package, "lib", target, "libmain.so")))
+            table.insert(args, fix_path(string.joinpath(android_package, "lib", target, "libmain.so")))
             table.insert(args, fix_path(System:getRelativePath("amara2/main/main.cpp")))
             
             table.insert(args, "-w")
@@ -112,7 +112,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             local static_libs = {}
 
             if self.get.projectData["plugin-directories"] and #self.get.projectData["plugin-directories"] > 0 then
-                local plugins_path = System:join(self.get.projectPath, "plugins")
+                local plugins_path = string.joinpath(self.get.projectPath, "plugins")
                 table.insert(args, "-I" .. fix_path(plugins_path))
 
                 local plugins = self.get.projectData["plugin-directories"]
@@ -123,12 +123,12 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 local registrations = ""
 
                 for i, plugin in ipairs(plugins) do
-                    local plugin_path = System:join(plugins_path, plugin)
-                    local plugin_data = System:readJSON(System:join(plugin_path, "plugin.json"))
+                    local plugin_path = string.joinpath(plugins_path, plugin)
+                    local plugin_data = System:readJSON(string.joinpath(plugin_path, "plugin.json"))
                     if plugin_data then
                         if plugin_data.includes then
                             for _, file in ipairs(plugin_data.includes) do
-                                includes_str = includes_str .. "#include \"" .. System:join(plugin, file) .. "\"\n"
+                                includes_str = includes_str .. "#include \"" .. string.joinpath(plugin, file) .. "\"\n"
                             end
                         end
                         if plugin_data.nodes then
@@ -139,18 +139,18 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                         end
                         if plugin_data.copy then
                             for _, file in ipairs(plugin_data.copy) do
-                                System:copy(System:join(plugin_path, file), buildDir)
+                                System:copy(string.joinpath(plugin_path, file), buildDir)
                             end
                         end
 
                         if plugin_data["-I"] then
                             for _, path in ipairs(plugin_data["-I"]) do
-                                table.insert(args, "-I" .. fix_path(System:join(plugin_path, path)))
+                                table.insert(args, "-I" .. fix_path(string.joinpath(plugin_path, path)))
                             end
                         end
                         if plugin_data["-L"] then
                             for _, path in ipairs(plugin_data["-L"]) do
-                                table.insert(args, "-L" .. fix_path(System:join(plugin_path, path)))
+                                table.insert(args, "-L" .. fix_path(string.joinpath(plugin_path, path)))
                             end
                         end
                         if plugin_data["-l"] then
@@ -165,14 +165,14 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                         end
                         if plugin_data[".lib"] then
                             for _, lib in ipairs(plugin_data[".lib"]) do
-                                if not string.ends_with(lib, ".lib") then
+                                if not string.endswith(lib, ".lib") then
                                     lib = lib .. ".lib"
                                 end
-                                table.insert(static_libs, fix_path(System:join(plugin_path, lib)))
+                                table.insert(static_libs, fix_path(string.joinpath(plugin_path, lib)))
                             end
                         end
                     end
-                    local copy_path = System:join(plugin_path, "copy")
+                    local copy_path = string.joinpath(plugin_path, "copy")
                     if System:directoryExists(copy_path) then
                         local contents = System:getDirectoryContents(copy_path)
                         for _, file in ipairs(contents) do
@@ -185,12 +185,12 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 plugin_template = plugin_template:gsub("// plugin_lua_bindings", function() return bindings end)
                 plugin_template = plugin_template:gsub("// plugin_node_registrations", function() return registrations end)
 
-                System:writeFile(System:join(plugins_path, "amara2_plugins.cpp"), plugin_template)
+                System:writeFile(string.joinpath(plugins_path, "amara2_plugins.cpp"), plugin_template)
             end
 
             table.insert(args, "--sysroot=" .. fix_path(sdk.sysroot))
-            table.insert(args, "-I" .. fix_path(System:join(sdl_path, "include")))
-            table.insert(args, "-L" .. fix_path(System:join(android_package, "lib", target)))
+            table.insert(args, "-I" .. fix_path(string.joinpath(sdl_path, "include")))
+            table.insert(args, "-L" .. fix_path(string.joinpath(android_package, "lib", target)))
             table.insert(args, "-lSDL3")
             table.insert(args, "-landroid")
             table.insert(args, "-llog")
@@ -211,7 +211,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
                 local build_args = {}
                 for k, v in pairs(self.get.projectData.build_args) do
                     if v then
-                        build_args[k] = string.accept_json(v) and string.parse_json(v) or true
+                        build_args[k] = string.acceptjson(v) and string.parsejson(v) or true
                     else
                         build_args[k] = true
                     end
@@ -230,28 +230,28 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
             table.insert(args, "-DAMARA_OPENGL")
 
-            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/json/include")))
-            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/lua")))
-            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/sol2")))
-            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/stb")))
-            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/glm")))
-            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/minimp3")))
-            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/portable-file-dialogs")))
-            table.insert(args, "-I" .. fix_path(System:join(resourcePath, "libs/tinyxml2")))
+            table.insert(args, "-I" .. fix_path(string.joinpath(resourcePath, "libs/json/include")))
+            table.insert(args, "-I" .. fix_path(string.joinpath(resourcePath, "libs/lua")))
+            table.insert(args, "-I" .. fix_path(string.joinpath(resourcePath, "libs/sol2")))
+            table.insert(args, "-I" .. fix_path(string.joinpath(resourcePath, "libs/stb")))
+            table.insert(args, "-I" .. fix_path(string.joinpath(resourcePath, "libs/glm")))
+            table.insert(args, "-I" .. fix_path(string.joinpath(resourcePath, "libs/minimp3")))
+            table.insert(args, "-I" .. fix_path(string.joinpath(resourcePath, "libs/portable-file-dialogs")))
+            table.insert(args, "-I" .. fix_path(string.joinpath(resourcePath, "libs/tinyxml2")))
 
             return args
         end
 
         local arm64_v8a_build = {
             args = buildArgs("arm64-v8a", "-target aarch64-linux-android" .. ANDROID_MIN_SDK),
-            file = System:join(buildDir, "arm64-v8a_build.txt")
+            file = string.joinpath(buildDir, "arm64-v8a_build.txt")
         }
-        arm64_v8a_build.argstr = string.sep_concat(" ", table.unpack(arm64_v8a_build.args))
+        arm64_v8a_build.argstr = table.concat(arm64_v8a_build.args, " ")
         local arm_v7a_build = {
             args = buildArgs("armeabi-v7a", "-target armv7a-linux-androideabi" .. ANDROID_MIN_SDK),
-            file = System:join(buildDir, "armeabi-v7a_build.txt")
+            file = string.joinpath(buildDir, "armeabi-v7a_build.txt")
         }
-        arm_v7a_build.argstr = string.sep_concat(" ", table.unpack(arm_v7a_build.args))
+        arm_v7a_build.argstr = table.concat(arm_v7a_build.args, " ")
 
         local builds = {
             arm64_v8a_build,
@@ -262,7 +262,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         end
         self.get.builds = builds
 
-        local batchFilePath = System:join(buildDir, "build_android.bat")
+        local batchFilePath = string.joinpath(buildDir, "build_android.bat")
         self.get.batchFilePath = batchFilePath
 
         local app_name = self.get.projectData.android["app-name"]
@@ -283,11 +283,11 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         table.insert(buildCommands, "set \"PATH=%JAVA_HOME%\\bin;%PATH%\"")
 
         -- ── javac + jar + d8: compile SDL jar and AmaraActivity to classes.dex ─
-        local sdl_jar     = System:join(sdl_path, "share", "java", "SDL3", "SDL3.jar")
-        local java_src    = System:join(sdl_path, "java", "amara", "AmaraActivity.java")
-        local classes_dir = System:join(android_package, "java_classes")
-        local classes_jar = System:join(android_package, "amara_classes.jar")
-        local jdk_bin     = System:join(sdk.java_home, "bin")
+        local sdl_jar     = string.joinpath(sdl_path, "share", "java", "SDL3", "SDL3.jar")
+        local java_src    = string.joinpath(sdl_path, "java", "amara", "AmaraActivity.java")
+        local classes_dir = string.joinpath(android_package, "java_classes")
+        local classes_jar = string.joinpath(android_package, "amara_classes.jar")
+        local jdk_bin     = string.joinpath(sdk.java_home, "bin")
 
         if not System:exists(java_src) then
             error("Missing " .. java_src)
@@ -295,14 +295,14 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
         table.insert(buildCommands, "mkdir " .. fix_path(classes_dir, true))
         table.insert(buildCommands,
-            fix_path(System:join(jdk_bin, "javac.exe"), true) ..
+            fix_path(string.joinpath(jdk_bin, "javac.exe"), true) ..
             " -source 8 -target 8" ..
             " -classpath \"" .. sdk.android_jar .. ";" .. sdl_jar .. "\"" ..
             " -d " .. fix_path(classes_dir) ..
             " " .. fix_path(java_src)
         )
         table.insert(buildCommands,
-            fix_path(System:join(jdk_bin, "jar.exe"), true) ..
+            fix_path(string.joinpath(jdk_bin, "jar.exe"), true) ..
             " cf " .. fix_path(classes_jar, true) ..
             " -C " .. fix_path(classes_dir, true) .. " ."
         )
@@ -318,19 +318,19 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         -- ── aapt2 compile resources ────────────────────────────────────────────
         table.insert(buildCommands,
             fix_path(sdk["aapt2"]) .. " compile --dir " ..
-            fix_path(System:join(android_package, "res")) ..
-            " -o " .. fix_path(System:join(android_package, "compiled_res"))
+            fix_path(string.joinpath(android_package, "res")) ..
+            " -o " .. fix_path(string.joinpath(android_package, "compiled_res"))
         )
 
         local flats = ""
         local dpis = {"mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"}
         for _, dpi in ipairs(dpis) do
-            flats = flats .. " " .. fix_path(System:join(android_package, "compiled_res", "mipmap-" .. dpi .. "_ic_launcher.png.flat"))
+            flats = flats .. " " .. fix_path(string.joinpath(android_package, "compiled_res", "mipmap-" .. dpi .. "_ic_launcher.png.flat"))
         end
 
         local manifest_flags =
             " -I " .. fix_path(sdk.android_jar) ..
-            " --manifest " .. fix_path(System:join(android_package, "AndroidManifest.xml")) ..
+            " --manifest " .. fix_path(string.joinpath(android_package, "AndroidManifest.xml")) ..
             " --min-sdk-version " .. ANDROID_MIN_SDK ..
             " --target-sdk-version " .. ANDROID_TARGET_SDK ..
             " --version-code " .. self.get.manifest_config.VERSION_CODE ..
@@ -340,7 +340,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         -- ── aapt2 link for APK (binary format) ────────────────────────────────
         table.insert(buildCommands,
             fix_path(sdk["aapt2"]) .. " link" ..
-            " -o " .. fix_path(System:join(android_package, "base.apk")) ..
+            " -o " .. fix_path(string.joinpath(android_package, "base.apk")) ..
             manifest_flags
         )
 
@@ -348,13 +348,13 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         if build_aab then
             table.insert(buildCommands,
                 fix_path(sdk["aapt2"]) .. " link --proto-format" ..
-                " -o " .. fix_path(System:join(android_package, "base_proto.apk")) ..
+                " -o " .. fix_path(string.joinpath(android_package, "base_proto.apk")) ..
                 manifest_flags
             )
         end
 
         -- ── File handling script ───────────────────────────────────────────────
-        local props_json = System:join(android_package, "props.json")
+        local props_json = string.joinpath(android_package, "props.json")
         System:writeFile(props_json, self.props)
         local file_handling_args = {
             fix_path(Game.executable),
@@ -389,8 +389,8 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
         table.insert(buildCommands,
             fix_path(sdk["zipalign"]) .. " -f 4 " ..
-            fix_path(System:join(android_package, "base.apk")) .. " " ..
-            fix_path(System:join(android_package, "base-aligned.apk"))
+            fix_path(string.joinpath(android_package, "base.apk")) .. " " ..
+            fix_path(string.joinpath(android_package, "base-aligned.apk"))
         )
 
         table.insert(buildCommands,
@@ -399,21 +399,21 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             " --ks-pass pass:" .. release_storepass ..
             " --key-pass pass:" .. release_keypass ..
             " --ks-key-alias " .. release_key_alias ..
-            " --out " .. fix_path(System:join(android_package, "base-signed.apk")) ..
-            " " .. fix_path(System:join(android_package, "base-aligned.apk"))
+            " --out " .. fix_path(string.joinpath(android_package, "base-signed.apk")) ..
+            " " .. fix_path(string.joinpath(android_package, "base-aligned.apk"))
         )
 
         -- ════════════════════════════════════════════════════════════════════════
         -- AAB pipeline
         -- ════════════════════════════════════════════════════════════════════════
         if build_aab then
-            local base_extracted  = System:join(android_package, "base_extracted")
-            local base_module_dir = System:join(android_package, "base_module")
-            local base_zip        = System:join(android_package, "base.zip")
-            local unsigned_aab    = System:join(android_package, "unsigned.aab")
+            local base_extracted  = string.joinpath(android_package, "base_extracted")
+            local base_module_dir = string.joinpath(android_package, "base_module")
+            local base_zip        = string.joinpath(android_package, "base.zip")
+            local unsigned_aab    = string.joinpath(android_package, "unsigned.aab")
             
-            local base_proto_apk = System:join(android_package, "base_proto.apk")
-            local base_proto_zip = System:join(android_package, "base_proto.zip")
+            local base_proto_apk = string.joinpath(android_package, "base_proto.apk")
+            local base_proto_zip = string.joinpath(android_package, "base_proto.zip")
             
             table.insert(buildCommands,
                 "copy " ..
@@ -444,39 +444,39 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             -- Populate module layout
             table.insert(buildCommands,
                 "copy " ..
-                fix_path(System:join(base_extracted, "AndroidManifest.xml"), true) ..
+                fix_path(string.joinpath(base_extracted, "AndroidManifest.xml"), true) ..
                 " " ..
-                fix_path(System:join(base_module_dir, "manifest"), true)
+                fix_path(string.joinpath(base_module_dir, "manifest"), true)
             )
             table.insert(buildCommands,
                 "copy " ..
-                fix_path(System:join(base_extracted, "resources.pb"), true) ..
+                fix_path(string.joinpath(base_extracted, "resources.pb"), true) ..
                 " " ..
                 fix_path(base_module_dir, true)
             )
             table.insert(buildCommands,
                 "copy " ..
-                fix_path(System:join(android_package, "classes.dex"), true) ..
+                fix_path(string.joinpath(android_package, "classes.dex"), true) ..
                 " " ..
-                fix_path(System:join(base_module_dir, "dex"), true)
+                fix_path(string.joinpath(base_module_dir, "dex"), true)
             )
             table.insert(buildCommands,
                 "xcopy /E /I /Y " ..
-                fix_path(System:join(android_package, "lib"), true) ..
+                fix_path(string.joinpath(android_package, "lib"), true) ..
                 " " ..
-                fix_path(System:join(base_module_dir, "lib"), true)
+                fix_path(string.joinpath(base_module_dir, "lib"), true)
             )
             table.insert(buildCommands,
                 "xcopy /E /I /Y " ..
-                fix_path(System:join(android_package, "assets"), true) ..
+                fix_path(string.joinpath(android_package, "assets"), true) ..
                 " " ..
-                fix_path(System:join(base_module_dir, "assets"), true)
+                fix_path(string.joinpath(base_module_dir, "assets"), true)
             )
             table.insert(buildCommands,
                 "xcopy /E /I /Y " ..
-                fix_path(System:join(base_extracted, "res"), true) ..
+                fix_path(string.joinpath(base_extracted, "res"), true) ..
                 " " ..
-                fix_path(System:join(base_module_dir, "res"), true)
+                fix_path(string.joinpath(base_module_dir, "res"), true)
             )
 
             -- Zip the module
@@ -506,7 +506,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
             )
 
             -- jarsigner (reuses keystore from APK step)
-            local signed_aab = System:join(android_package, "signed.aab")
+            local signed_aab = string.joinpath(android_package, "signed.aab")
 
             table.insert(buildCommands,
                 "jarsigner -keystore " .. fix_path(keystore_path, true) ..
@@ -535,7 +535,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
     end,
 
     generateManifest = function(self)
-        local template = System:readFile(System:join(self.get.sdl_path, "AndroidManifest.xml"))
+        local template = System:readFile(string.joinpath(self.get.sdl_path, "AndroidManifest.xml"))
 
         local config = {
             ACTIVITY_CLASS = "amara.AmaraActivity",
@@ -574,7 +574,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         end
 
         local manifest = table.concat(lines, "\n")
-        System:writeFile(System:join(self.get.android_package, "AndroidManifest.xml"), manifest)
+        System:writeFile(string.joinpath(self.get.android_package, "AndroidManifest.xml"), manifest)
     end,
 
     generateIcons = function(self)
@@ -597,7 +597,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
         self.load:image("app_icon", icon_path)
         for k, size in pairs(mimaps) do
-            local path = System:join(self.get.android_package, "res", k, "ic_launcher.png")
+            local path = string.joinpath(self.get.android_package, "res", k, "ic_launcher.png")
             Assets:resizeTextureToPNG("app_icon", size, size, path)
         end
     end,
@@ -655,7 +655,7 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
         local buildDir    = self.get.buildDir
         local app_name    = self.get.projectData.android["app-name"]
         local version     = self.get.manifest_config.VERSION_NAME
-        local out_dir     = System:join(self.get.projectPath, "build", "android")
+        local out_dir     = string.joinpath(self.get.projectPath, "build", "android")
         
         if exitCode == 0 then
             if System:exists(self.get.errorOutputPath) then
@@ -664,15 +664,15 @@ Nodes:define("AndroidBuildNode", "ProcessNode", {
 
             -- Copy APK
             System:copy(
-                System:join(self.get.android_package, "base-signed.apk"),
-                System:join(out_dir, app_name .. " " .. version .. ".apk")
+                string.joinpath(self.get.android_package, "base-signed.apk"),
+                string.joinpath(out_dir, app_name .. " " .. version .. ".apk")
             )
 
             -- Copy AAB
             if self.get.build_aab then
                 System:copy(
-                    System:join(self.get.android_package, "signed.aab"),
-                    System:join(out_dir, app_name .. " " .. version .. ".aab")
+                    string.joinpath(self.get.android_package, "signed.aab"),
+                    string.joinpath(out_dir, app_name .. " " .. version .. ".aab")
                 )
             end
 

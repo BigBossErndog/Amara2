@@ -23,14 +23,14 @@ function OpenCodeEditor(settings, projectPath, filePath, lineNumber)
     end
     local config = editorConfigs[editorKey]
 
-    local projectData = System:readJSON(System:join(projectPath, "project.json"))
+    local projectData = System:readJSON(string.joinpath(projectPath, "project.json"))
     local isUninitiated = projectData and projectData.uninitiated
 
     local fileToOpen = filePath
     if editorKey == "codeEditor_Notepad" then
-        fileToOpen = System:join(projectPath, "lua_scripts", "index.lua")
+        fileToOpen = string.joinpath(projectPath, "lua_scripts", "index.lua")
     elseif not fileToOpen and isUninitiated then
-        fileToOpen = System:join(projectPath, "lua_scripts", "index.lua")
+        fileToOpen = string.joinpath(projectPath, "lua_scripts", "index.lua")
     end
 
     local args = { config.cmd }
@@ -56,6 +56,6 @@ function OpenCodeEditor(settings, projectPath, filePath, lineNumber)
 
     if isUninitiated then
         projectData.uninitiated = nil
-        System:writeFile(System:join(projectPath, "project.json"), projectData)
+        System:writeFile(string.joinpath(projectPath, "project.json"), projectData)
     end
 end

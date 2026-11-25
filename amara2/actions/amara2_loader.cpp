@@ -180,8 +180,8 @@ namespace Amara {
             task.key = key;
             task.type = (int)AssetEnum::ShaderProgram;
             task.config = config;
-            task.path = gameProps->lua["table"]["to_string"](config);
-
+            task.path = gameProps->lua["table"]["tostring"](config);
+            
             queueTask(task);
             return get_lua_object();
         }

@@ -23,7 +23,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             return '"' .. s .. '"'
         end
 
-        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        local projectData = System:readJSON(string.joinpath(self.get.projectPath, "project.json"))
         if not projectData then
             return
         end
@@ -43,9 +43,9 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         local args = {}
         local linkArgs = {}
 
-        local buildDir = System:join(self.get.projectPath, "build", "windows")
+        local buildDir = string.joinpath(self.get.projectPath, "build", "windows")
         if config.buildTest then
-            buildDir = System:join(self.get.projectPath, "build", "test")
+            buildDir = string.joinpath(self.get.projectPath, "build", "test")
             self.get.executableName = "Amara2"
             self.get.buildTest = true
         end
@@ -64,23 +64,23 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             return winsdk[key] or ""
         end
 
-        local sdl3Path = System:join(resourcePath, "libs/SDL3-3.4.10")
+        local sdl3Path = string.joinpath(resourcePath, "libs/SDL3-3.4.10")
 
-        local nlohmannPath = System:join(resourcePath, "libs/json/include")
-        local luaPath = System:join(resourcePath, "libs/lua")
-        local sol2Path = System:join(resourcePath, "libs/sol2")
-        local stbPath = System:join(resourcePath, "libs/stb")
-        local glmPath = System:join(resourcePath, "libs/glm")
-        local minimp3Path = System:join(resourcePath, "libs/minimp3")
-        local pfdPath = System:join(resourcePath, "libs/portable-file-dialogs")
-        local tinyxml2Path = System:join(resourcePath, "libs/tinyxml2")
-        local minizPath = System:join(resourcePath, "libs/miniz-3.1.1")
+        local nlohmannPath = string.joinpath(resourcePath, "libs/json/include")
+        local luaPath = string.joinpath(resourcePath, "libs/lua")
+        local sol2Path = string.joinpath(resourcePath, "libs/sol2")
+        local stbPath = string.joinpath(resourcePath, "libs/stb")
+        local glmPath = string.joinpath(resourcePath, "libs/glm")
+        local minimp3Path = string.joinpath(resourcePath, "libs/minimp3")
+        local pfdPath = string.joinpath(resourcePath, "libs/portable-file-dialogs")
+        local tinyxml2Path = string.joinpath(resourcePath, "libs/tinyxml2")
+        local minizPath = string.joinpath(resourcePath, "libs/miniz-3.1.1")
 
         local libDir = System:getRelativePath("lib")
         local hasPlugins = (projectData["plugin-directories"] ~= nil) and (#projectData["plugin-directories"] > 0)
         local useLib =
             not hasPlugins
-            and System:exists(System:join(libDir, "amara2.lib"))
+            and System:exists(string.joinpath(libDir, "amara2.lib"))
         self.get.useLib = useLib
 
         if System:exists(buildDir) then
@@ -101,7 +101,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
         local hasIcon = (config.iconPath ~= nil) and System:exists(config.iconPath)
         if hasIcon then
-            self.get.iconPath = System:join(buildDir, "icon.png")
+            self.get.iconPath = string.joinpath(buildDir, "icon.png")
             self.load:image("exe_icon", config.iconPath)
             Assets:resizeTextureToPNG(
                 "exe_icon",
@@ -109,18 +109,18 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 self.get.iconPath
             )
 
-            self.get.iconDest = System:join(buildDir, "icon.ico")
-            self.get.resFile = System:join(buildDir, "icon.rc")
-            self.get.resOutputFile = System:join(buildDir, "icon.res")
+            self.get.iconDest = string.joinpath(buildDir, "icon.ico")
+            self.get.resFile = string.joinpath(buildDir, "icon.rc")
+            self.get.resOutputFile = string.joinpath(buildDir, "icon.res")
         end
 
-        self.get.objFile = System:join(buildDir, "main.obj")
-        self.get.minizObjFile = System:join(buildDir, "miniz.obj")
+        self.get.objFile = string.joinpath(buildDir, "main.obj")
+        self.get.minizObjFile = string.joinpath(buildDir, "miniz.obj")
 
         table.insert(args, "/nologo")
         table.insert(args, fix_path(System:getRelativePath("amara2/main/main.cpp")))
         if not useLib then
-            table.insert(args, fix_path(System:join(minizPath, "miniz.c")))
+            table.insert(args, fix_path(string.joinpath(minizPath, "miniz.c")))
         end
 
         if self.get.resOutputFile then
@@ -141,7 +141,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         table.insert(args, "/I" .. fix_path(System:getRelativePath("amara2")))
 
         if hasPlugins then
-            local plugins_path = System:join(self.get.projectPath, "plugins")
+            local plugins_path = string.joinpath(self.get.projectPath, "plugins")
             table.insert(args, "/I" .. fix_path(plugins_path))
 
             local plugins = projectData["plugin-directories"]
@@ -152,8 +152,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             local registrations = ""
 
             for i, plugin in ipairs(plugins) do
-                local plugin_path = System:join(plugins_path, plugin)
-                local plugin_data = System:readJSON(System:join(plugin_path, "plugin.json"))
+                local plugin_path = string.joinpath(plugins_path, plugin)
+                local plugin_data = System:readJSON(string.joinpath(plugin_path, "plugin.json"))
                 if plugin_data then
                     if plugin_data.includes then
                         for _, file in ipairs(plugin_data.includes) do
@@ -168,18 +168,18 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                     end
                     if plugin_data.copy then
                         for _, file in ipairs(plugin_data.copy) do
-                            System:copy(System:join(plugin_path, file), buildDir)
+                            System:copy(string.joinpath(plugin_path, file), buildDir)
                         end
                     end
 
                     if plugin_data["-I"] then
                         for _, path in ipairs(plugin_data["-I"]) do
-                            table.insert(args, "/I" .. fix_path(System:join(plugin_path, path)))
+                            table.insert(args, "/I" .. fix_path(string.joinpath(plugin_path, path)))
                         end
                     end
                     if plugin_data["-L"] then
                         for _, path in ipairs(plugin_data["-L"]) do
-                            table.insert(linkArgs, "/LIBPATH:" .. fix_path(System:join(plugin_path, path)))
+                            table.insert(linkArgs, "/LIBPATH:" .. fix_path(string.joinpath(plugin_path, path)))
                         end
                     end
                     if plugin_data["-l"] then
@@ -194,14 +194,14 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                     end
                     if plugin_data[".lib"] then
                         for _, lib in ipairs(plugin_data[".lib"]) do
-                            if not string.ends_with(lib, ".lib") then
+                            if not string.endswith(lib, ".lib") then
                                 lib = lib .. ".lib"
                             end
-                            table.insert(static_libs, fix_path(System:join(plugin_path, lib)))
+                            table.insert(static_libs, fix_path(string.joinpath(plugin_path, lib)))
                         end
                     end
                 end
-                local copy_path = System:join(plugin_path, "copy")
+                local copy_path = string.joinpath(plugin_path, "copy")
                 if System:directoryExists(copy_path) then
                     local contents = System:getDirectoryContents(copy_path)
                     for _, file in ipairs(contents) do
@@ -214,7 +214,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             plugin_template = plugin_template:gsub("// plugin_lua_bindings", function() return bindings end)
             plugin_template = plugin_template:gsub("// plugin_node_registrations", function() return registrations end)
 
-            System:writeFile(System:join(plugins_path, "amara2_plugins.cpp"), plugin_template)
+            System:writeFile(string.joinpath(plugins_path, "amara2_plugins.cpp"), plugin_template)
         end
 
         if not useLib then
@@ -229,8 +229,8 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             table.insert(args, "/I" .. fix_path(pfdPath))
             table.insert(args, "/I" .. fix_path(minizPath))
 
-            table.insert(args, "/I" .. fix_path(System:join(sdl3Path, "include")))
-            table.insert(linkArgs, "/LIBPATH:" .. fix_path(System:join(sdl3Path, "lib", "x64")))
+            table.insert(args, "/I" .. fix_path(string.joinpath(sdl3Path, "include")))
+            table.insert(linkArgs, "/LIBPATH:" .. fix_path(string.joinpath(sdl3Path, "lib", "x64")))
         end
 
         table.insert(args, "/w")
@@ -265,7 +265,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
             local build_args = {}
             for k, v in pairs(self.get.projectData.build_args) do
                 if v then
-                    build_args[k] = string.accept_json(v) and string.parse_json(v) or true
+                    build_args[k] = string.acceptjson(v) and string.parsejson(v) or true
                 else
                     build_args[k] = true
                 end
@@ -303,19 +303,19 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
         end
 
         table.insert(args, "/Fo:" .. quote(slash(buildDir) .. "/"))
-        table.insert(args, "/Fe:" .. quote(slash(System:join(buildDir, self.get.executableName .. ".exe"))))
+        table.insert(args, "/Fe:" .. quote(slash(string.joinpath(buildDir, self.get.executableName .. ".exe"))))
 
         table.insert(args, "/link")
         for _, a in ipairs(linkArgs) do
             table.insert(args, a)
         end
 
-        local argsFile = System:join(buildDir, "build_args.txt")
-        System:writeFile(argsFile, string.sep_concat(" ", table.unpack(args)))
+        local argsFile = string.joinpath(buildDir, "build_args.txt")
+        System:writeFile(argsFile, table.concat(args, " "))
 
-        local batchFilePath = System:join(buildDir, "build_windows.bat")
+        local batchFilePath = string.joinpath(buildDir, "build_windows.bat")
         self.get.batchFilePath = batchFilePath
-        local errorOutputPath = System:join(buildDir, "build_error.txt")
+        local errorOutputPath = string.joinpath(buildDir, "build_error.txt")
         self.get.errorOutputPath = errorOutputPath
         local errorLog = quote(slash(errorOutputPath))
 
@@ -381,7 +381,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                 onExit = function(self)
                     if self.get.gameProcess then
                         System:remove(self.get.gameProcess.get.batchFilePath)
-                        System:remove(System:join(self.get.gameProcess.get.buildDir, "build_args.txt"))
+                        System:remove(string.joinpath(self.get.gameProcess.get.buildDir, "build_args.txt"))
                     end
 
                     local newWindow = self.world.get.windows:createChild("ProjectWindow", {
@@ -407,7 +407,7 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
 
     onExit = function(self, exitCode)
         System:remove(self.get.batchFilePath)
-        System:remove(System:join(self.get.buildDir, "build_args.txt"))
+        System:remove(string.joinpath(self.get.buildDir, "build_args.txt"))
         if self.get.objFile and System:exists(self.get.objFile) then
             System:remove(self.get.objFile)
         end
@@ -466,10 +466,10 @@ Nodes:define("WindowsBuildNode", "ProcessNode", {
                         end
 
                         if exitCode == 0 then
-                            System:openDirectory(System:join(self.get.projectPath, "build", "windows"))
+                            System:openDirectory(string.joinpath(self.get.projectPath, "build", "windows"))
                             self.get.printLog.func:handleMessage(Localize:get("label_buildSuccess"))
                         else
-                            System:remove(System:join(self.get.projectPath, "build", "windows"))
+                            System:remove(string.joinpath(self.get.projectPath, "build", "windows"))
                             self.get.printLog.func:handleMessage(Localize:get("label_buildFailed"))
                         end
                     end

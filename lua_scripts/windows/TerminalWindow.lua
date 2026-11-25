@@ -258,21 +258,21 @@ Nodes:define("TerminalWindow", "UIWindow", {
             end
             item.text = string.gsub(item.text, "%[string ", "[")
             ret = true
-        elseif string.starts_with(msg, "C stack overflow") then
+        elseif string.startswith(msg, "C stack overflow") then
             item.text = "Error: Stack overflow. Check for infinite loops or recursion."
             item.color = Colors.Red
             self.get.allowTrace = true
             ret = true
-        elseif string.starts_with(msg, "caught (...) exception") then
+        elseif string.startswith(msg, "caught (...) exception") then
             item.text = "Error: Invalid assignment or function call."
             item.color = Colors.Red
             self.get.allowTrace = true
             ret = true
-        elseif string.starts_with(msg, "Error: ") then
+        elseif string.startswith(msg, "Error: ") then
             item.color = Colors.Red
             self.get.allowTrace = true
             ret = true
-        elseif string.starts_with(msg, "[json.exception.type_error.302]") then
+        elseif string.startswith(msg, "[json.exception.type_error.302]") then
             local details = string.match(msg, '%[json.exception.type_error.302] type must be (.*)')
             details = string.gsub(details, "null", "object")
             details = string.gsub(details, "object", "table")
@@ -280,7 +280,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
             item.color = Colors.Red
             self.get.allowTrace = true
             ret = true
-        elseif string.starts_with(msg, "attempt to index a nil value") then
+        elseif string.startswith(msg, "attempt to index a nil value") then
             item.text = "Error: Attempt to index a nil value."
             item.color = Colors.Red
             self.get.allowTrace = true
@@ -290,11 +290,11 @@ Nodes:define("TerminalWindow", "UIWindow", {
                 item.color = "#5d00ff"
             elseif string.contains(msg, "rendering to window using") then
                 item.color = Colors.Cyan
-            elseif string.starts_with(msg, "Note:") then
+            elseif string.startswith(msg, "Note:") then
                 item.color = Colors.Yellow
-            elseif string.starts_with(msg, "Success:") then
+            elseif string.startswith(msg, "Success:") then
                 item.color = Colors.Green
-            elseif string.starts_with(msg, "Warning:") then
+            elseif string.startswith(msg, "Warning:") then
                 item.color = Colors.Yellow
             else
                 item.color = Colors.White
@@ -307,7 +307,7 @@ Nodes:define("TerminalWindow", "UIWindow", {
         local filePath = string.match(msg, '"([^"]+%.lua[c]?)"')
         if filePath and string.len(filePath) > 0 then
             if self.get.projectPath then
-                local targetPath = System:join(self.get.projectPath, "lua_scripts", filePath)
+                local targetPath = string.joinpath(self.get.projectPath, "lua_scripts", filePath)
                 local settings = self.world.func:getSettings()
                 if System:exists(targetPath) then
                     item.input:activate()
@@ -350,13 +350,13 @@ Nodes:define("TerminalWindow", "UIWindow", {
     end,
 
     pipeMessage = function(self, msg, config)
-        if string.starts_with(msg, "stack traceback") or string.starts_with(msg, "\t[C]:") then
+        if string.startswith(msg, "stack traceback") or string.startswith(msg, "\t[C]:") then
             return;
         end
-        if string.starts_with(msg, "\t...	(skipping") then
+        if string.startswith(msg, "\t...	(skipping") then
             return;
         end
-        if string.starts_with(msg, "\t[") and not self.get.allowTrace then
+        if string.startswith(msg, "\t[") and not self.get.allowTrace then
             return;
         end
         self.get.allowTrace = false

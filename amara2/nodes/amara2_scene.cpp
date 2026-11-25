@@ -107,6 +107,14 @@ namespace Amara {
             return setMainCamera(cam, true);
         }
 
+        Amara::Scene* switchScene(sol::object key_obj, sol::object config){
+            Amara::Node* next_scene = createChild(convert_lua_arg<std::string>(key_obj, "string"));
+            if (!next_scene->is<Amara::Scene>()) {
+                fatal_error("Error: Scene:switchScene() expected key of a Scene node. Got ", next_scene->nodeID, ".");
+            }
+            return next_scene->as<Amara::Scene*>();
+        } 
+        
         Amara::Node* addChild(Amara::Node* node) override {
             Amara::Camera* cam = node->as<Amara::Camera*>();
             if (cam) {

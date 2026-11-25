@@ -11,7 +11,7 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
 
     onCreate = function(self)
         self.super.UIWindow.func:onCreate()
-        local projectData = System:readJSON(System:join(self.get.oldProjectPath, "project.json"))
+        local projectData = System:readJSON(string.joinpath(self.get.oldProjectPath, "project.json"))
 
         self.get.folderPath = System:getDirectoryOf(self.get.oldProjectPath)
         self.get.projectPath = ""
@@ -185,9 +185,9 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
         local txt = self.get.folderField.get.txt
         local str
         if Game.platform == "windows" then
-            str = string.concat(defPath, "\\", target)
+            str = string.join(defPath, "\\", target)
         else 
-            str = string.concat(defPath, "/", target)
+            str = string.join(defPath, "/", target)
         end
         local path = str
 
@@ -195,7 +195,7 @@ Nodes:define("ProjectSettingsWindow", "UIWindow", {
         txt.text = str
         while txt.width > self.get.folderField.width - 16 do
             str = string.sub(str, 2)
-            txt.text = string.concat("...", str)
+            txt.text = string.join("...", str)
         end
         self.get.projectPath = path
         return txt.text

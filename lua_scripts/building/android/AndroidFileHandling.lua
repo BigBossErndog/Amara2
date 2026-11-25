@@ -15,16 +15,16 @@ function Encrypting(key)
 end
 
 function Copy_Travel(srcDir, targetDir, dirPath, shouldEncrypt)
-    local contents = System:getDirectoryContents(System:join(srcDir, dirPath))
+    local contents = System:getDirectoryContents(string.joinpath(srcDir, dirPath))
     for i, v in ipairs(contents) do
         if System:isDirectory(v) then
-            Copy_Travel(srcDir, targetDir, System:join(dirPath, System:getFileName(v)), shouldEncrypt)
+            Copy_Travel(srcDir, targetDir, string.joinpath(dirPath, System:getFileName(v)), shouldEncrypt)
         else
-            local srcPath = System:join(srcDir, dirPath, System:getFileName(v))
-            local targetPath = System:join(targetDir, dirPath, System:getFileName(v))
+            local srcPath = string.joinpath(srcDir, dirPath, System:getFileName(v))
+            local targetPath = string.joinpath(targetDir, dirPath, System:getFileName(v))
             
             local hasCompiled = false
-            if string.ends_with(v, ".lua") and shouldCompile then
+            if string.endswith(v, ".lua") and shouldCompile then
                 targetPath = System:removeFileExtension(targetPath) .. ".luac"
                 System:compileScript(srcPath, targetPath)
                 srcPath = targetPath
@@ -40,16 +40,16 @@ function Copy_Travel(srcDir, targetDir, dirPath, shouldEncrypt)
     end
 end
 
-if System:exists(System:join(props.projectPath, "lua_scripts")) then
-    local srcDir = System:join(props.projectPath, "lua_scripts")
-    local targetDir = System:join(props.projectPath, "build", "android", "android_package", "assets", "lua_scripts")
+if System:exists(string.joinpath(props.projectPath, "lua_scripts")) then
+    local srcDir = string.joinpath(props.projectPath, "lua_scripts")
+    local targetDir = string.joinpath(props.projectPath, "build", "android", "android_package", "assets", "lua_scripts")
     System:createDirectory(targetDir)
     Copy_Travel(srcDir, targetDir, "", Encrypting("encrypt-lua-scripts"))
 end
 
-if System:exists(System:join(props.projectPath, "assets")) then
-    local srcDir = System:join(props.projectPath, "assets")
-    local targetDir = System:join(props.projectPath, "build", "android", "android_package", "assets", "assets")
+if System:exists(string.joinpath(props.projectPath, "assets")) then
+    local srcDir = string.joinpath(props.projectPath, "assets")
+    local targetDir = string.joinpath(props.projectPath, "build", "android", "android_package", "assets", "assets")
     System:createDirectory(targetDir)
     Copy_Travel(srcDir, targetDir, "", Encrypting("encrypt-files-assets"))
 end
@@ -57,9 +57,9 @@ end
 if projectData["build-directories"] then
     local directories = projectData["build-directories"]
     for i, v in ipairs(directories) do
-        if System:exists(System:join(props.projectPath, v)) then
-            local srcDir = System:join(props.projectPath, v)
-            local targetDir = System:join(props.projectPath, "build", "android", "android_package", "assets", System:getDirectoryName(v))
+        if System:exists(string.joinpath(props.projectPath, v)) then
+            local srcDir = string.joinpath(props.projectPath, v)
+            local targetDir = string.joinpath(props.projectPath, "build", "android", "android_package", "assets", System:getDirectoryName(v))
             Copy_Travel(srcDir, targetDir, "", Encrypting("encrypt-files-assets"))
         end
     end
@@ -100,10 +100,10 @@ function ParseAssets(path)
         end
     end
 end
-ParseAssets(System:join(base_path, "assets"))
+ParseAssets(string.joinpath(base_path, "assets"))
 
 System:injectIntoAPK(
-    System:join(props.android_package, "base.apk"),
+    string.joinpath(props.android_package, "base.apk"),
     base_path,
     to_inject
 )

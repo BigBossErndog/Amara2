@@ -16,7 +16,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
     end,
     
     onCreate = function(self)
-        self.get.projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        self.get.projectData = System:readJSON(string.joinpath(self.get.projectPath, "project.json"))
 
         if not self.get.projectData.android then
             self.get.projectData.android = {}
@@ -214,7 +214,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                     self.get.iconField.func:setText(self.func:truncatePath(path))
                 else
                     self.get.projectData.android["app-icon"] = nil
-                    System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
+                    System:writeFile(string.joinpath(self.get.projectPath, "project.json"), self.get.projectData)
                 end
                 if self.get.errorMessage then
                     self.get.errorMessage.visible = false
@@ -600,7 +600,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
                 self.get.buildArgs.func:confirmOptions()
             end
 
-            System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
+            System:writeFile(string.joinpath(self.get.projectPath, "project.json"), self.get.projectData)
         end
 
         if self.get.errorMessage then
@@ -658,7 +658,7 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
         txt.text = str
         while txt.width > self.get.iconField.width - 16 do
             str = string.sub(str, 2)
-            txt.text = string.concat("...", str)
+            txt.text = string.join("...", str)
         end
         return txt.text
     end,
@@ -675,11 +675,11 @@ Nodes:define("AndroidBuildOptions", "PagedWindow", {
             }
         end
         self.func:closeWindow(function(win)
-            System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
+            System:writeFile(string.joinpath(self.get.projectPath, "project.json"), self.get.projectData)
 
-            local buildDir = System:join(self.get.projectPath, "build", "android")
+            local buildDir = string.joinpath(self.get.projectPath, "build", "android")
             local apk_name = self.get.projectData.android["app-name"] .. " " .. (self.get.projectData.android["version-name"] or "1.0.0") .. ".apk"
-            local apk_path = System:join(buildDir, apk_name)
+            local apk_path = string.joinpath(buildDir, apk_name)
             
             if System:exists(apk_path) then
                 local newWindow = self.world.get.windows:createChild("AndroidInstallOrRebuild", {

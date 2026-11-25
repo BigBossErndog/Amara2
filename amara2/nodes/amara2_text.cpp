@@ -244,7 +244,7 @@ namespace Amara {
             for (auto arg : input) {
                 if (arg.is<std::string>()) ss << arg.get<std::string>();
                 else if (arg.is<sol::table>()) {
-                    sol::object result = gameProps->lua["table"]["to_string"](arg);
+                    sol::object result = gameProps->lua["table"]["tostring"](arg);
                     ss << "$" << result.as<std::string>();
                 }
                 else ss << lua_to_string(arg.get<sol::object>());

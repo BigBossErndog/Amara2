@@ -193,7 +193,7 @@ Creator:createWorld({
                 if #settings.projects >= 4 then
                     break
                 end
-                if path ~= oldProjects[i] and System:exists(oldProjects[i]) and System:exists(System:join(oldProjects[i], "project.json")) then
+                if path ~= oldProjects[i] and System:exists(oldProjects[i]) and System:exists(string.joinpath(oldProjects[i], "project.json")) then
                     table.insert(settings.projects, oldProjects[i])
                 end
             end

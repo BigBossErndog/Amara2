@@ -7,7 +7,7 @@ Nodes:define("NewProjectWindow", "UIWindow", {
 
         local settings = self.world.func:getSettings()
 
-        self.get.folderPath = System:join(System:getUserArea(), "Amara2 Projects")
+        self.get.folderPath = string.joinpath(System:getUserArea(), "Amara2 Projects")
         self.get.projectPath = ""
 
         if settings.projects and #settings.projects > 0 then
@@ -178,9 +178,9 @@ Nodes:define("NewProjectWindow", "UIWindow", {
         local txt = self.get.folderField.get.txt
         local str
         if Game.platform == "windows" then
-            str = string.concat(defPath, "\\", target)
+            str = string.join(defPath, "\\", target)
         else 
-            str = string.concat(defPath, "/", target)
+            str = string.join(defPath, "/", target)
         end
         local path = str
 
@@ -188,7 +188,7 @@ Nodes:define("NewProjectWindow", "UIWindow", {
         txt.text = str
         while txt.width > self.get.folderField.width - 16 do
             str = string.sub(str, 2)
-            txt.text = string.concat("...", str)
+            txt.text = string.join("...", str)
         end
         self.get.projectPath = path
         return txt.text
@@ -197,23 +197,23 @@ Nodes:define("NewProjectWindow", "UIWindow", {
     createProject = function(self)
         System:createDirectory(self.get.projectPath)
         System:copy(
-            System:join(System:getBasePath(), "files", "defaultTemplate"),
+            string.joinpath(System:getBasePath(), "files", "defaultTemplate"),
             self.get.projectPath
         )
 
-        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        local projectData = System:readJSON(string.joinpath(self.get.projectPath, "project.json"))
         projectData["project-name"] = self.get.nameField.get.finalText
         projectData["executable-name"] = self.get.nameField.get.finalText
 
         projectData.uninitiated = true
 
-        System:writeFile(System:join(self.get.projectPath, "project.json"), projectData)
+        System:writeFile(string.joinpath(self.get.projectPath, "project.json"), projectData)
         
-        local indexFile = System:readFile(System:join(self.get.projectPath, "lua_scripts", "index.lua"))
+        local indexFile = System:readFile(string.joinpath(self.get.projectPath, "lua_scripts", "index.lua"))
         local fixedIndexFile = string.gsub(indexFile, "${Window_Title}", self.get.nameField.get.finalText)
-        System:writeFile(System:join(self.get.projectPath, "lua_scripts", "index.lua"), fixedIndexFile)
+        System:writeFile(string.joinpath(self.get.projectPath, "lua_scripts", "index.lua"), fixedIndexFile)
 
-        System:createDirectory(System:join(self.get.projectPath, "files"))
+        System:createDirectory(string.joinpath(self.get.projectPath, "files"))
 
         self.func:closeWindow(function()
             self.get.enabled = false

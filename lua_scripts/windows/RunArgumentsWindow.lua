@@ -10,7 +10,7 @@ Nodes:define("RunArgumentsWindow", "UIWindow", {
     end,
     
     onCreate = function(self)
-        self.get.projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        self.get.projectData = System:readJSON(string.joinpath(self.get.projectPath, "project.json"))
 
         self.super.UIWindow.func:onCreate()
 
@@ -308,7 +308,7 @@ Nodes:define("RunArgumentsWindow", "UIWindow", {
                 self.get.projectData.test_arguments[field.get.label] = field.get.value and field.get.value or true
             end
         end
-        System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
+        System:writeFile(string.joinpath(self.get.projectPath, "project.json"), self.get.projectData)
     end,
 
     onUpdate = function(self)

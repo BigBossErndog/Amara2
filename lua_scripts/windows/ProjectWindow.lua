@@ -13,7 +13,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
     onCreate = function(self)
         self.super.UIWindow.func:onCreate()
 
-        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        local projectData = System:readJSON(string.joinpath(self.get.projectPath, "project.json"))
         local projectName = projectData["project-name"]
 
         if projectData.exampleProject then
@@ -380,7 +380,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
         local exe = Game.executable
         local testBuild = nil
         if Game.platform == "windows" then
-            testBuild = System:join(self.get.projectPath, "build", "test", "Amara2.exe")
+            testBuild = string.joinpath(self.get.projectPath, "build", "test", "Amara2.exe")
             if System:exists(testBuild) then
                 exe = testBuild
             else
@@ -388,7 +388,7 @@ Nodes:define("ProjectWindow", "UIWindow", {
             end
         end
         
-        local projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        local projectData = System:readJSON(string.joinpath(self.get.projectPath, "project.json"))
         
         local args = {
             exe,

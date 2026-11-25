@@ -105,10 +105,10 @@ Nodes:define("AndroidADBInstaller", "Action", {
             self.get.sdk = System:locateAndroidSDK()
         end
         if not self.get.buildDir and self.get.projectPath then
-            self.get.buildDir = System:join(self.get.projectPath, "build", "android")
+            self.get.buildDir = string.joinpath(self.get.projectPath, "build", "android")
         end
         if not self.get.errorOutputPath then
-            self.get.errorOutputPath = System:join(self.get.buildDir, "build_error.txt")
+            self.get.errorOutputPath = string.joinpath(self.get.buildDir, "build_error.txt")
         end
         if not self.get.printLog then
             self.get.printLog = self.world.get.windows:createChild("TerminalWindow", {
@@ -145,13 +145,13 @@ Nodes:define("AndroidADBInstaller", "Action", {
         local adb = self.get.sdk["adb"]
 
         local apk_name = self.get.projectData.android["app-name"] .. " " .. (self.get.projectData.android["version-name"] or "1.0.0") .. ".apk"
-        local apk_path = System:join(self.get.buildDir, apk_name)
+        local apk_path = string.joinpath(self.get.buildDir, apk_name)
         local errorCommand = " >> " .. fix_path(self.get.errorOutputPath) .. " 2>&1 || exit 1"
         local command = quote_if_needed(adb) .. " install " .. quote_if_needed(apk_path) .. errorCommand
 
         self.get.printLog.func:handleMessage(apk_name)
 
-        local batchFilePath = System:join(self.get.buildDir, "install_app.bat")
+        local batchFilePath = string.joinpath(self.get.buildDir, "install_app.bat")
         System:writeFile(batchFilePath, command)
         
         local systemCommand = "System:exit(System:executeTerminal(" .. string.format("%q", quote_if_needed(batchFilePath)) .. "))"

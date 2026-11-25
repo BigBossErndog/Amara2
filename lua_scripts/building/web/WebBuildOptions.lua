@@ -10,7 +10,7 @@ Nodes:define("WebBuildOptions", "UIWindow", {
     end,
 
     onCreate = function(self)
-        self.get.projectData = System:readJSON(System:join(self.get.projectPath, "project.json"))
+        self.get.projectData = System:readJSON(string.joinpath(self.get.projectPath, "project.json"))
 
         self.super.UIWindow.func:onCreate()
 
@@ -83,7 +83,7 @@ Nodes:define("WebBuildOptions", "UIWindow", {
     startBuilding = function(self)
         self.func:closeWindow(function(self)
             self.get.includeFolders.func:confirmOptions()
-            System:writeFile(System:join(self.get.projectPath, "project.json"), self.get.projectData)
+            System:writeFile(string.joinpath(self.get.projectPath, "project.json"), self.get.projectData)
             
             local buildNode = self.world.get.windows:createChild("WebBuildNode", {
                 projectPath = self.get.projectPath

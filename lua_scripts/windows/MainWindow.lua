@@ -44,8 +44,8 @@ Nodes:define("MainWindow", "UIWindow", {
 
             for i = 1, #settings.projects do
                 local projectPath = settings.projects[i]
-                if System:exists(projectPath) and System:exists(System:join(projectPath, "project.json")) then
-                    local projectData = System:readJSON(System:join(projectPath, "project.json"))
+                if System:exists(projectPath) and System:exists(string.joinpath(projectPath, "project.json")) then
+                    local projectData = System:readJSON(string.joinpath(projectPath, "project.json"))
                     local projectName = projectData["project-name"]
 
                     local optBacker = self.get.content:createChild("FillRect", {
@@ -96,7 +96,7 @@ Nodes:define("MainWindow", "UIWindow", {
                     local str = projectName
                     while txt.width > optBacker.width - 8 do
                         str = string.sub(str, 2)
-                        txt.text = string.concat("...", str)
+                        txt.text = string.join("...", str)
                     end
                 else
                     failedProjects = failedProjects + 1
@@ -270,12 +270,12 @@ Nodes:define("MainWindow", "UIWindow", {
                                 return
                             end
                             
-                            local indexPath = System:join(path, "lua_scripts", "index.lua")
+                            local indexPath = string.joinpath(path, "lua_scripts", "index.lua")
                             if not System:exists(indexPath) then
                                 return
                             end
 
-                            local projectJsonPath = System:join(path, "project.json")
+                            local projectJsonPath = string.joinpath(path, "project.json")
                             if not System:exists(projectJsonPath) then
                                 return
                             end

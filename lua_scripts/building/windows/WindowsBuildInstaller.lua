@@ -150,7 +150,7 @@ Nodes:define("WindowsBuildInstaller", "UIWindow", {
         txt.text = str
         while txt.width > self.get.pathField.width - 16 do
             str = string.sub(str, 2)
-            txt.text = string.concat("...", str)
+            txt.text = string.join("...", str)
         end
         return txt.text
     end,

@@ -38,13 +38,13 @@ Nodes:define("IncludePlugins", "FillRect", {
             x = self.get.content.left, y = self.get.content.top
         })
 
-        local plugins_path = System:join(self.get.projectPath, "plugins")
+        local plugins_path = string.joinpath(self.get.projectPath, "plugins")
 
         self.get.tempData = {}
         local init = false
         if self.get.projectData["plugin-directories"] then
             for i, v in ipairs(self.get.projectData["plugin-directories"]) do
-                if System:exists(System:join(plugins_path, v)) then
+                if System:exists(string.joinpath(plugins_path, v)) then
                     self.get.tempData[v] = true
                 end
             end
@@ -59,8 +59,8 @@ Nodes:define("IncludePlugins", "FillRect", {
             found = System:getSubDirectories(plugins_path)
             for i, v in ipairs(found) do
                 local dirName = System:getDirectoryName(v)
-                if System:isDirectory(v) and (not string.starts_with(dirName, ".")) then
-                    if System:exists(System:join(v, "plugin.json")) then
+                if System:isDirectory(v) and (not string.startswith(dirName, ".")) then
+                    if System:exists(string.joinpath(v, "plugin.json")) then
                         table.insert(self.get.directories, dirName)
                         if init then
                             self.get.tempData[dirName] = true
@@ -98,7 +98,7 @@ Nodes:define("IncludePlugins", "FillRect", {
                         -- text = v,
                         alpha = self.get.tempData[backer.get.dirName] and 1 or 0.5
                     })
-                    local plugin_data = System:readJSON(System:join(plugins_path, backer.get.dirName, "plugin.json"))
+                    local plugin_data = System:readJSON(string.joinpath(plugins_path, backer.get.dirName, "plugin.json"))
                     backer.get.txt.text = plugin_data.plugin_name
                 end,
                 input = {

@@ -44,7 +44,7 @@ Nodes:define("IncludeFolders", "FillRect", {
         local init = false
         if self.get.projectData["build-directories"] then
             for i, v in ipairs(self.get.projectData["build-directories"]) do
-                if System:exists(System:join(self.get.projectPath, v)) then
+                if System:exists(string.joinpath(self.get.projectPath, v)) then
                     self.get.tempData[v] = true
                 end
             end
@@ -63,7 +63,7 @@ Nodes:define("IncludeFolders", "FillRect", {
         self.get.directories = {}
         for i, v in ipairs(found) do
             local dirName = System:getDirectoryName(v)
-            if System:isDirectory(v) and (not string.starts_with(dirName, ".")) and (not invalidFolders[dirName]) then
+            if System:isDirectory(v) and (not string.startswith(dirName, ".")) and (not invalidFolders[dirName]) then
                 table.insert(self.get.directories, dirName)
                 if init then
                     self.get.tempData[dirName] = true
