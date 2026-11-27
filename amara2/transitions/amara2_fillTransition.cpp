@@ -120,9 +120,9 @@ namespace Amara {
                 }
             }
 
-            if (sm.once()) doTransition();
+            if (sm.once()) doTransition(sol::nil);
             if (sm.event()) {
-                if (transitionFinished()) {
+                if (stage == TransitionStage::Completed) {
                     sm.nextEvent();
                 }
             }

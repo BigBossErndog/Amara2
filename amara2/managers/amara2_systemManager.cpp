@@ -2455,7 +2455,7 @@ namespace Amara {
          std::ostringstream ss;
         (ss << ... << args);
         std::string errorMessage = ss.str();
-
+        
         bool written = false;
 
         if (SystemManager::global_system) {

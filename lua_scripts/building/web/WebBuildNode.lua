@@ -183,7 +183,7 @@ Nodes:define("WebBuildNode", "ProcessNode", {
                     build_args[k] = true
                 end
             end
-            local args_as_str = string.json_string(build_args)
+            local args_as_str = string.jsonstring(build_args)
             local args_macro = quote_bat_arg(args_as_str)
             table.insert(args, "-DAMARA_BUILD_ARGS=" .. args_macro)
         end

@@ -1,4 +1,12 @@
 namespace Amara {
+    enum class TransitionStage {
+        Waiting,
+        Started,
+        Preloading,
+        Created,
+        Completed
+    };
+    
     class Transition: public Amara::Action {
     public:
         std::string next_key;
@@ -10,6 +18,10 @@ namespace Amara {
         bool clear_garbage = false;
 
         double interim = 0;
+
+        sol::function transition_func;
+
+        TransitionStage stage = TransitionStage::Waiting;
         
         Transition(): Amara::Action() {
             set_base_node_id("Transition");
@@ -22,6 +34,50 @@ namespace Amara {
         virtual void create() override {
             if (parent) parent->transition = this;
             Amara::Action::create();
+        }
+
+        virtual void update(double deltaTime) override {
+            Amara::Action::update(deltaTime);
+
+            if (next_node && next_node->destroyed) {
+                destroy();
+                return;
+            }
+
+            if (stage == TransitionStage::Started) {
+                if (next_node == nullptr) stage = TransitionStage::Created;
+                else {
+                    if (next_node->actuated) stage = TransitionStage::Created;
+                    else if (next_node->finishedLoading()) stage = TransitionStage::Created;
+                    else stage = TransitionStage::Preloading;
+                }
+            }
+            if (stage == TransitionStage::Preloading) {
+                if (next_node->finishedLoading() && next_node->actuated) {
+                    stage = TransitionStage::Created;
+                }
+            }
+            if (stage == TransitionStage::Created) {
+                if (transition_func.valid()) {
+                    sol::protected_function guarded_func = transition_func;
+                    sol::protected_function_result result = guarded_func();
+                    if (!result.valid()) {
+                        sol::error err = result;
+                        throw std::runtime_error(std::string(err.what()));
+                    }
+                }
+
+                if (funcs.hasFunction("onTransition")) {
+                    if (next_node) {
+                        funcs.callFunction(actor, "onTransition", get_lua_object(), next_node->get_lua_object());
+                    }
+                    else {
+                        funcs.callFunction(actor, "onTransition", get_lua_object());
+                    }
+                }
+                
+                stage = TransitionStage::Completed;
+            }
         }
 
         virtual Amara::Node* configure(nlohmann::json config) override {
@@ -72,7 +128,16 @@ namespace Amara {
 
         bool checkWorld(Amara::Node* node);
         
-        virtual void doTransition() {
+        virtual void doTransition(sol::object _func) {
+            if (_func.valid()) {
+                if (_func.is<sol::function>()) {
+                    transition_func = _func.as<sol::function>();
+                }
+                else {
+                    fatal_error("Error: Transition:doTransition() expected a function argument.");
+                }
+            }
+            
             Amara::Node* prev_parent = parent;
             
             if (!next_key.empty()) {
@@ -87,15 +152,6 @@ namespace Amara {
                 }
                 else {
                     next_key.clear();
-                }
-            }
-                
-            if (funcs.hasFunction("onTransition")) {
-                if (next_node) {
-                    funcs.callFunction(actor, "onTransition", get_lua_object(), next_node->get_lua_object());
-                }
-                else {
-                    funcs.callFunction(actor, "onTransition", get_lua_object());
                 }
             }
 
@@ -127,10 +183,12 @@ namespace Amara {
             if (clear_garbage) {
                 gameProps->clear_garbage();
             }
+
+            stage = TransitionStage::Started;
         }
 
         bool transitionFinished() {
-            return parent == next_node && (next_node == nullptr || next_node->actuated);
+            return stage == TransitionStage::Completed;
         }
 
         virtual sol::object complete() override {

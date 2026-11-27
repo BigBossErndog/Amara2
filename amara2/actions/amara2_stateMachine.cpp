@@ -263,7 +263,7 @@ namespace Amara {
                 result = condition.as<bool>();
             }
             else if (condition.is<sol::function>()) {
-                sol::function func = condition.as<sol::function>();
+                sol::protected_function func = condition.as<sol::protected_function>();
                 sol::protected_function_result func_result = func();
                 if (func_result.valid()) {
                     if (func_result.get_type() == sol::type::boolean) {
