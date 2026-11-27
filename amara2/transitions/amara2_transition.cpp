@@ -39,6 +39,10 @@ namespace Amara {
         virtual void update(double deltaTime) override {
             Amara::Action::update(deltaTime);
 
+            checkStage();
+        }
+
+        void checkStage() {
             if (next_node && next_node->destroyed) {
                 destroy();
                 return;
@@ -185,6 +189,8 @@ namespace Amara {
             }
 
             stage = TransitionStage::Started;
+
+            checkStage();
         }
 
         bool transitionFinished() {
