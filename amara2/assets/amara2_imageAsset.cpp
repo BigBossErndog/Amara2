@@ -224,6 +224,10 @@ namespace Amara {
             }
         }
 
+        virtual void reloadAsset() override {
+            if (!path.empty()) loadImage(path);
+        }
+
         virtual void destroy() override {
             clearTexture();
             Amara::Asset::destroy();
@@ -245,6 +249,10 @@ namespace Amara {
             frameHeight = _fh;
 
             return ImageAsset::loadImage(_p);
+        }
+
+        virtual void reloadAsset() override {
+            if (!path.empty()) loadSpritesheet(path, frameWidth, frameHeight);
         }
     };
 
@@ -307,6 +315,10 @@ namespace Amara {
             else if (gameProps->gpuDevice) {
                 // TODO: SDL_GPU signle pixel
             }
+        }
+
+        virtual void reloadAsset() override {
+            createPixel();
         }
     };
 }

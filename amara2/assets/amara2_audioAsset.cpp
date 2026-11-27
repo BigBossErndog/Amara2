@@ -191,6 +191,10 @@ namespace Amara {
             channels = 0;
         }
 
+        virtual void reloadAsset() {
+            if (!path.empty()) loadAudio(path);
+        }
+
         virtual void destroy() override {
             clear();
             Amara::Asset::destroy();

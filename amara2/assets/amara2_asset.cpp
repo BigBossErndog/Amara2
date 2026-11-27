@@ -32,6 +32,8 @@ namespace Amara {
         template <typename T>
         T as();
 
+        virtual void reloadAsset() {}
+
         virtual void destroy() {
             destroyed = true;
         }

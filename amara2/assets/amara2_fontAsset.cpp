@@ -210,6 +210,12 @@ namespace Amara {
             return false;
         }
 
+        virtual void reloadAsset() {
+            if (!path.empty()) {
+                loadFont(path, fontSize);
+            }
+        }
+
         void addGlyphToTexture(int codepoint) {
             if (glyphCache.find(codepoint) != glyphCache.end()) return;
         

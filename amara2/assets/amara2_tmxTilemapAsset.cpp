@@ -150,6 +150,10 @@ namespace Amara {
 
         static TMXProperties parseProperties(tinyxml2::XMLElement* parentElement);
         static std::vector<std::pair<float, float>> parsePointsString(const std::string& pointsStr);
+
+        virtual void reloadAsset() {
+            if (!path.empty()) loadTmx(path);
+        }
     };
 
 

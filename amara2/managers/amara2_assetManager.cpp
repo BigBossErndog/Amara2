@@ -205,11 +205,28 @@ namespace Amara {
         ShaderProgram* getShaderProgram(std::string key);
         #endif
 
+        void reloadAssets() {
+            for (auto it = assets.begin(); it != assets.end(); it++) {
+                Amara::Asset* a = it->second;
+                if (a->parent == this) a->reloadAsset();
+            }
+        }
+        void reloadAsset(std::string key) {
+            if (assets.find(key) != assets.end()) {
+                Amara::Asset* asset = assets[key];
+                asset->reloadAsset();
+            }
+        }
+
         static void bind_lua(sol::state& lua) {
             lua.new_usertype<AssetManager>("AssetManager",
                 "has", &AssetManager::has,
                 "remove", &AssetManager::removeAsset,
                 "clear", &AssetManager::clear,
+                "reload", sol::overload(
+                    &Amara::AssetManager::reloadAssets,
+                    &Amara::AssetManager::reloadAsset
+                ),
                 "createTexture", &AssetManager::createTexture,
                 "updateTexture", &AssetManager::updateTexture,
                 "setDefaultFont", &AssetManager::setDefaultFont,
